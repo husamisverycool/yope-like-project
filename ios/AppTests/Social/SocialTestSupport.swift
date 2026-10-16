@@ -51,7 +51,7 @@ final class RecordingPhotoSaver: SocialPhotoSaving, @unchecked Sendable {
     }
 }
 
-/// Fresh `UserDefaults` per test (coach flags, recent emoji).
+/// Fresh `UserDefaults` per test (recently used emoji).
 func socialTestFlags(_ name: String = #function) -> SocialFlags {
     let suite = "social.tests." + name
     let defaults = UserDefaults(suiteName: suite)!

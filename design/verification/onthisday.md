@@ -8,7 +8,7 @@ Retro reference(s): `references/auto/retro/press/tc-2025-12-rewind-device-b.jpg 
 
 Snapshots (CI): `onthisday-loading-light.png`, `onthisday-paused-light.png`, `onthisday-paused-dark.png`, `onthisday-paused-own-memory-light.png`, `onthisday-playing-light.png`, `onthisday-shuffle-light.png`, `onthisday-intro-light.png`, `onthisday-intro-dark.png`, `onthisday-empty-light.png`, `onthisday-error-light.png`, `onthisday-offline-light.png`, `onthisday-entry-light.png`, `onthisday-entry-dark.png`
 
-**Summary: 36 matched · 4 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 38 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Entry (placed by groups.screen)
 
@@ -17,7 +17,7 @@ Snapshots (CI): `onthisday-loading-light.png`, `onthisday-paused-light.png`, `on
 | matched | `onthisday.entry.title`<br>`onthisday.entry.subtitle`<br>`onthisday.entry.button` | “On this day” (SOURCED)<br>“Revisit memories from {date} over the years” (SOURCED)<br>“View memories” (SOURCED) | feed card copy, shown only while the day has rows | OnThisDayEntryModel → MemoryEntryContent (title, line, action); hidden zero-size stack otherwise |
 | matched | `layout.birthday.add.dateFormat` | pattern: MMMM d; example: July 5; ios: Date.FormatStyle().month(.wide).day(); android: DateFormat.getBestDateTimePattern(locale, "MMMMd") (SOURCED) | {date} = today as 'July 5' | MemoryFormat.dayMonth (Date.FormatStyle month(.wide).day()) |
 | matched | `icon.global.rewind` | ios: clock.arrow.circlepath; android: Outlined.History (PLATFORM) | the feature's glyph on the card's header line | MemoryEntryContent.icon; the newest memory's display path as photoPath |
-| approximated | `—` | — (no token) | card look and placement | groups.screen's (account) — the default `MemoryEntryFeedCard` follows groups.screen item 8; a tap pushes `MemoryRoute.onThisDay` |
+| matched | `—` | — (no token) | card look and placement | groups.screen (account) draws its feed card from `MemoryEntryContent` (title, line, action, `icon`, `photoPath`); the default `MemoryEntryFeedCard` follows groups.screen item 8; a tap pushes `MemoryRoute.onThisDay` |
 
 ## Page (C-35 on media)
 
@@ -26,7 +26,7 @@ Snapshots (CI): `onthisday-loading-light.png`, `onthisday-paused-light.png`, `on
 | matched | `color.global.backgroundDeep`<br>`layout.global.appearance` | #000000 (SOURCED)<br>mode: follows the system Light / Dark setting; ios: no UIUserInterfaceStyle key and no preferredColorScheme override; colour tokens are d… (SOURCED) | page black in both appearances, subtree dark | .environment(\.colorScheme, .dark) on the page; sheets over it follow the system |
 | matched | `radius.global.photo` | 0 pt (SOURCED) | photo full bleed, aspect-fill, under the status bar, no top scrim | MemoryRemoteImage (.fill) ignoring the safe area |
 | matched | `layout.global.photoScrim`<br>`color.global.scrim` | color: #000000; startAt: 0.55; startOpacity: 0; endOpacity: 0.6; direction: top → bottom (SOURCED)<br>#00000099 (SOURCED) | bottom scrim from 55 % of the height | C-35 `PhotoScrim` |
-| approximated | `—` | — (no token) | status bar light content | the page renders dark but, pushed in the group's stack with the bar hidden, keeps the system's status-bar style (dark text in light mode) — no SwiftUI API sets it on a pushed page; light content when the shell presents it full screen |
+| matched | `—` | — (no token) | status bar light content; pushed with the system bar hidden, interactive pop kept | light status-bar content from the shell's `.mediaStatusBar()` at the push site (account, `RouteDestination`); `.toolbar(.hidden)` + `memoryInteractivePop()` keeps the edge swipe back |
 
 ## Header (C-02 / C-35 on media)
 

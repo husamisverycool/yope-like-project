@@ -1,6 +1,6 @@
-// Account group — pieces that need UIKit / SwiftUI: shared component logic (two-tone titles, the invite title fit, the
-// image pipeline's pixel buckets, the toast center), the legal footer links, photo picks, and the paywall presenter's
-// session-prompt rule.
+// Account group — pieces that need UIKit / SwiftUI: shared component logic (the invite card's content and backdrop, the
+// App Clip's invocation links, the image pipeline's pixel buckets, the toast center), the legal footer links, photo
+// picks, the paywall presenter's session-prompt rule and the shell's presentations.
 @testable import App
 import AppData
 import AppModels
@@ -18,25 +18,78 @@ final class AccountComponentTests: XCTestCase {
 
     // MARK: Components
 
-    func testTwoToneTitleSplitsOnTheAccentPhrase() {
-        let accented = TwoToneTitle.split("pick your friends", accent: "friends")
-        XCTAssertEqual(accented.first, "pick your")
-        XCTAssertEqual(accented.second, "friends")
-        let halves = TwoToneTitle.split("one two three four", accent: nil)
-        XCTAssertEqual(halves.first, "one two")
-        XCTAssertEqual(halves.second, "three four")
-        let single = TwoToneTitle.split("hello", accent: nil)
-        XCTAssertEqual(single.first, "")
-        XCTAssertEqual(single.second, "hello")
+    func testInviteCardShowsTheInviterTheGroupAndTheMembers() throws {
+        let json = Data("""
+        {"group_name":"Lima family","group_kind":"family","inviter_first_name":"Rui",
+         "cover":{"url":"https://example.test/i/t/cover.jpg","width":1200,"height":900},
+         "members":[{"first_name":"Ana","avatar_url":"https://example.test/i/t/avatar/0.jpg"},
+                    {"first_name":"Rui","avatar_url":"https://example.test/i/t/avatar/1.jpg"},
+                    {"first_name":"Teo","avatar_url":null}]}
+        """.utf8)
+        guard case let .valid(preview) = InvitePreviewLoader.state(status: 200, data: json) else { return XCTFail("not decoded") }
+        XCTAssertEqual(preview.inviterIndex, 1, "the one member named like the inviter")
+        let card = InviteCardContent.invite(preview)
+        XCTAssertEqual(card.headline, Copy.inviteWebInvitedBy(firstName: "Rui"))
+        XCTAssertEqual(card.line, Copy.inviteWebBody(groupName: "Lima family"))
+        XCTAssertEqual(card.backdrop, .url(try XCTUnwrap(URL(string: "https://example.test/i/t/cover.jpg"))), "the cover first")
+        XCTAssertEqual(card.avatar, .url(try XCTUnwrap(URL(string: "https://example.test/i/t/avatar/1.jpg"))))
+        XCTAssertEqual(card.members.count, 3)
+        XCTAssertNil(card.members[2], "no photo: the placeholder avatar")
+        XCTAssertEqual(card.membersLabel, Copy.inviteWebMembersTitle(groupName: "Lima family"))
+
+        let joined = InviteCardContent.invite(preview, joined: true)
+        XCTAssertEqual(joined.headline, Copy.inviteAppclipJoinedTitle(groupName: "Lima family"))
+        XCTAssertEqual(joined.line, Copy.inviteAppclipJoinedBody)
     }
 
-    func testInviteTitleFitShrinksLongTitlesWithinTheTokenRange() {
-        let short = InviteTitleFit.size(for: "Limas", width: 320)
-        let long = InviteTitleFit.size(for: "The extended Lima family and friends of the house", width: 320)
-        XCTAssertLessThanOrEqual(long, short)
-        XCTAssertGreaterThanOrEqual(long, Tokens.FontSizes.inviteWebFontSizeTitleMin)
-        XCTAssertLessThanOrEqual(short, max(Tokens.FontSizes.inviteWebFontSizeTitleSingleLineMax, Tokens.FontSizes.inviteWebFontSizeTitleBase))
-        XCTAssertEqual(InviteTitleFit.size(for: "", width: 320), Tokens.FontSizes.inviteWebFontSizeTitleMin)
+    func testInviteCardFallsBackWithoutCoverOrInviter() {
+        var preview = WebInvitePreview(
+            groupName: "Limas", groupKind: nil, inviterFirstName: "Rui", cover: nil,
+            members: [WebInvitePreview.Member(firstName: "Rui", avatarURL: nil, avatarPath: "avatars/rui.jpg")]
+        )
+        XCTAssertEqual(InviteCardContent.invite(preview).backdrop, .storage("avatars/rui.jpg"), "no cover: the inviter's photo")
+        preview.inviterFirstName = nil
+        let card = InviteCardContent.invite(preview)
+        XCTAssertEqual(card.headline, Copy.inviteWebInvitedFallback)
+        XCTAssertNil(card.backdrop, "neither: color.global.backgroundDeep")
+        XCTAssertTrue(card.showsAvatar, "the placeholder circle shows")
+        XCTAssertNil(card.avatar)
+    }
+
+    func testInviteStateCardsCarryTheirTitleAndExplanation() {
+        let expected: [(InvitePreviewState, String, String?)] = [
+            (.unavailable, Copy.inviteWebUnavailableTitle, Copy.inviteWebUnavailableBody),
+            (.notFound, Copy.inviteWebNotFoundTitle, nil),
+            (.rateLimited, Copy.inviteWebErrorTitle, Copy.inviteWebRateLimitedBody),
+            (.error, Copy.inviteWebErrorTitle, Copy.inviteWebErrorBody),
+            (.offline, Copy.inviteWebErrorTitle, Copy.inviteAppclipOfflineBody),
+            (.full, Copy.inviteAppclipFullTitle, Copy.inviteAppclipFullBody),
+        ]
+        for (state, headline, line) in expected {
+            let card = InviteCardContent.state(state)
+            XCTAssertEqual(card.headline, headline, "\(state)")
+            XCTAssertEqual(card.line, line, "\(state)")
+            XCTAssertFalse(card.showsAvatar)
+            XCTAssertNil(card.backdrop)
+            XCTAssertTrue(card.members.isEmpty)
+        }
+    }
+
+    func testInviteBackdropBlursToAColourField() {
+        XCTAssertEqual(InviteBackdrop.sigma(width: 378), 378 * Tokens.Layouts.InviteWebLayoutBackdrop.blurSigmaToWidth, accuracy: 0.001)
+        XCTAssertGreaterThan(InviteBackdrop.sigma(width: 378), Tokens.Sizes.globalBackdropBlur, "stronger than the recap's C-34 blur")
+    }
+
+    func testAppClipReadsTheTokenFromTheInviteLinkAndTheAppClipLink() throws {
+        let parser = DeepLinkParser(universalLinkHosts: ["invite.example.test"])
+        let invite = try XCTUnwrap(URL(string: "https://invite.example.test/i/tok_123"))
+        XCTAssertEqual(InviteClipLink.token(from: invite, parser: parser), "tok_123")
+        let clip = try XCTUnwrap(URL(string: "https://appclip.apple.com/id?p=com.example.app.Clip&token=tok_123"))
+        XCTAssertEqual(InviteClipLink.token(from: clip, parser: parser), "tok_123")
+        let noToken = try XCTUnwrap(URL(string: "https://appclip.apple.com/id?p=com.example.app.Clip"))
+        XCTAssertNil(InviteClipLink.token(from: noToken, parser: parser))
+        let other = try XCTUnwrap(URL(string: "https://elsewhere.test/id?token=tok_123"))
+        XCTAssertNil(InviteClipLink.token(from: other, parser: parser))
     }
 
     func testImagePipelineBucketsPixelSizes() {
@@ -48,16 +101,17 @@ final class AccountComponentTests: XCTestCase {
         XCTAssertLessThanOrEqual(max(image?.size.width ?? 0, image?.size.height ?? 0) * (image?.scale ?? 1), 16)
     }
 
-    func testToastStaysForItsDwellOrUntilTapped() async {
+    func testToastIsAnAnnouncementThatStaysUntilDismissedOrReplaced() async {
         let toasts = ToastCenter()
+        XCTAssertNil(toasts.message)
         toasts.show("done")
-        XCTAssertEqual(toasts.message, "done")
-        toasts.dismiss()
-        XCTAssertNil(toasts.message, "a tap dismisses it")
-
+        XCTAssertEqual(toasts.message, "done", "posted as an accessibility announcement and recorded")
+        try? await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(toasts.message, "done", "iOS draws nothing, so nothing times out")
         toasts.show("again")
-        try? await Task.sleep(nanoseconds: UInt64((Tokens.Durations.safetyBlockDurationToast + 0.5) * 1_000_000_000))
-        XCTAssertNil(toasts.message, "gone after safety.block.duration.toast")
+        XCTAssertEqual(toasts.message, "again", "the next confirmation replaces it")
+        toasts.dismiss()
+        XCTAssertNil(toasts.message)
     }
 
     // MARK: auth.phone legal footer
@@ -72,13 +126,33 @@ final class AccountComponentTests: XCTestCase {
 
     // MARK: Photo picks
 
-    func testProfilePhotoUploadsBeforeTheProfileSaves() async {
+    func testProfileNameSavesBeforeThePhotoStep() async {
         let fixture = AccountFixture()
         let model = ProfileModel(data: fixture.data)
+        XCTAssertEqual(model.step, .name, "Retro's order: name first")
+        model.setName("  Ana  ")
+        let saved = await model.saveName()
+        XCTAssertTrue(saved)
+        XCTAssertEqual(fixture.data.profilesByID[fixture.me.id]?.displayName, "Ana")
+        model.showPhotoStep()
+        XCTAssertEqual(model.step, .photo)
+    }
+
+    func testProfileNameLongerThanTheLimitIsRefusedInline() async {
+        let model = ProfileModel(data: AccountFixture().data)
+        model.setName(String(repeating: "a", count: ProfileModel.maxNameLength + 1))
+        XCTAssertTrue(model.isNameTooLong)
+        XCTAssertFalse(model.canContinue)
+        let saved = await model.saveName()
+        XCTAssertFalse(saved)
+    }
+
+    func testProfilePhotoUploadsThenSavesTheAvatarPath() async {
+        let fixture = AccountFixture()
+        let model = ProfileModel(data: fixture.data, step: .photo)
         model.setAvatar(imageData: jpeg())
         XCTAssertNotNil(model.avatarImage)
-        model.setName("Ana")
-        let saved = await model.save()
+        let saved = await model.savePhoto()
         XCTAssertTrue(saved)
         XCTAssertEqual(fixture.data.calls.suffix(2), ["uploadAvatar", "updateProfile"])
         XCTAssertNotNil(fixture.data.profilesByID[fixture.me.id]?.avatarPath)
@@ -87,10 +161,9 @@ final class AccountComponentTests: XCTestCase {
     func testProfilePhotoUploadFailureEmptiesTheAvatar() async {
         let fixture = AccountFixture()
         fixture.data.failures["uploadAvatar"] = .http(status: 500)
-        let model = ProfileModel(data: fixture.data)
+        let model = ProfileModel(data: fixture.data, step: .photo)
         model.setAvatar(imageData: jpeg())
-        model.setName("Ana")
-        let saved = await model.save()
+        let saved = await model.savePhoto()
         XCTAssertFalse(saved)
         XCTAssertNil(model.avatarImage)
         XCTAssertEqual(model.failureMessage, Copy.authProfileErrorUpload)
@@ -142,11 +215,12 @@ final class AccountComponentTests: XCTestCase {
         XCTAssertFalse(router.presentPaywallForLockedFeature(isPremium: false), "daily capture is on screen")
     }
 
-    func testPaywallIsFullScreenAndAccountSheetsAreSheets() {
+    func testPaywallIsFullScreenAccountSheetsAreSheetsAndReportIsActionSheets() {
         XCTAssertEqual(AppModal.account(.paywall).presentation, .fullScreen)
         XCTAssertEqual(AppModal.account(.groupCreate).presentation, .sheet)
+        XCTAssertEqual(AppModal.account(.groupCreateKind(.family)).presentation, .sheet)
         XCTAssertEqual(AppModal.account(.groupInvite(groupID: "g")).presentation, .sheet)
-        XCTAssertEqual(AppModal.account(.report(ReportTarget(kind: .post, id: "p"))).presentation, .sheet)
+        XCTAssertEqual(AppModal.account(.report(ReportTarget(kind: .post, id: "p"))).presentation, .dialog)
         XCTAssertEqual(AppModal.invite(token: "t").presentation, .sheet)
         XCTAssertEqual(AppModal.camera(groupID: nil, invitationID: nil).presentation, .tab)
         XCTAssertEqual(AppModal.camera(groupID: "g", invitationID: "i").presentation, .fullScreen)

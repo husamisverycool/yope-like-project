@@ -52,7 +52,7 @@ final class InviteClipModel {
     /// `join_group` is running (the card's pill when already signed in; otherwise the last form capsule).
     private(set) var isJoining = false
     /// `under_minimum_age`: the refusal replaces the clip (auth.agegate).
-    private(set) var refusedMinAge: Int??
+    private(set) var refusedMinAge: Int?? = nil
     /// The full-app overlay (`invite.appclip.layout.fullAppOverlay`): after the join, once per launch.
     var showsFullAppOverlay = false
     @ObservationIgnored private var offeredFullApp = false

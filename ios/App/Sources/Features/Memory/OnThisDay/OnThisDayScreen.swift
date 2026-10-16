@@ -47,7 +47,9 @@ struct OnThisDayScreen: View {
         // The media page is dark in both appearances; its sheets follow the system (RM-16).
         .environment(\.colorScheme, .dark)
         .toolbar(.hidden, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
+        // Pushed with the bar hidden: the edge swipe still pops. The light status bar is set at the push site
+        // (the shell's `.mediaStatusBar()` around `MemoryDestination`).
+        .memoryInteractivePop()
         .task { await model.loadIfNeeded() }
         .onDisappear { model.stopListening() }
         .onChange(of: model.current?.id) { _, _ in
@@ -66,6 +68,8 @@ struct OnThisDayScreen: View {
             .presentationDetents([.medium])
             .dsSheetBackground()
             .environment(\.colorScheme, SystemAppearance.colorScheme)
+            // The page's controller is dark (the shell's `.mediaStatusBar()`); the sheet's chrome follows the system.
+            .preferredColorScheme(SystemAppearance.colorScheme)
             .accessibilityIdentifier("onthisday.intro")
         }
         .alert(

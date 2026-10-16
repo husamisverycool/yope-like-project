@@ -93,8 +93,20 @@ final class AccountAuthTests: XCTestCase {
         XCTAssertEqual(AuthFailure.verifying(DataError.auth(.invalidOTP), codeAge: AuthFailure.codeLifetime), .expired)
         XCTAssertEqual(AuthFailure.verifying(DataError.auth(.rateLimited), codeAge: 10), .tooManyTries)
         XCTAssertEqual(AuthFailure.verifying(DataError.http(status: 429), codeAge: 10), .tooManyTries)
+        XCTAssertEqual(AuthFailure.verifying(DataError.http(status: 503), codeAge: 10), .service)
         XCTAssertEqual(AuthFailure.wrongCode.message, Copy.authCodeErrorWrong)
         XCTAssertEqual(AuthFailure.invalidNumber.message, Copy.authPhoneErrorInvalidNumber)
+    }
+
+    func testCodeErrorsAreTitledAndOfferRetrosRecoveries() {
+        XCTAssertEqual(AuthFailure.wrongCode.title, Copy.authCodeErrorWrongTitle)
+        XCTAssertEqual(AuthFailure.expired.title, Copy.authCodeErrorExpiredTitle)
+        XCTAssertEqual(AuthFailure.service.title, Copy.authCodeErrorServiceTitle)
+        XCTAssertNil(AuthFailure.invalidNumber.title, "phone errors are message-only alerts")
+        XCTAssertTrue(AuthFailure.wrongCode.offersRecovery)
+        XCTAssertTrue(AuthFailure.expired.offersRecovery)
+        XCTAssertFalse(AuthFailure.service.offersRecovery)
+        XCTAssertFalse(AuthFailure.tooManyTries.offersRecovery)
     }
 
     // MARK: auth.phone
@@ -290,28 +302,41 @@ final class AccountAuthTests: XCTestCase {
         XCTAssertFalse(model.canContinue)
         model.setName("  Ana  ")
         XCTAssertTrue(model.canContinue)
-        let saved = await model.save()
+        let saved = await model.saveName()
         XCTAssertTrue(saved)
         XCTAssertEqual(fixture.data.profilesByID[fixture.me.id]?.displayName, "Ana")
-        XCTAssertFalse(fixture.data.calls.contains("uploadAvatar"), "no photo picked")
+        XCTAssertFalse(fixture.data.calls.contains("uploadAvatar"), "the photo is the next step")
     }
 
-    func testProfileNameIsCappedAndFailuresAreReported() async {
+    func testProfileNameTooLongAndFailuresAreReported() async {
         let fixture = AccountFixture()
         let model = ProfileModel(data: fixture.data)
         model.setName(String(repeating: "a", count: 200))
-        XCTAssertEqual(model.name.count, ProfileModel.maxNameLength)
+        XCTAssertEqual(model.name.count, 200, "typing is not cut: 'Name too long' shows under the field")
+        XCTAssertTrue(model.isNameTooLong)
+        var saved = await model.saveName()
+        XCTAssertFalse(saved)
+        XCTAssertFalse(fixture.data.calls.contains("updateProfile"))
 
+        model.setName("Ana")
         fixture.data.failures["updateProfile"] = .http(status: 500)
-        var saved = await model.save()
+        saved = await model.saveName()
         XCTAssertFalse(saved)
         XCTAssertEqual(model.failureMessage, Copy.authProfileErrorSave)
 
         fixture.data.failures["updateProfile"] = .offline
-        saved = await model.save()
+        saved = await model.saveName()
         XCTAssertFalse(saved)
         XCTAssertEqual(model.phase, .offline)
         model.retry()
         XCTAssertEqual(model.phase, .form)
+    }
+
+    func testProfilePhotoStepWithoutAPhotoSavesNothing() async {
+        let fixture = AccountFixture()
+        let model = ProfileModel(data: fixture.data, step: .photo)
+        let saved = await model.savePhoto()
+        XCTAssertFalse(saved, "Maybe Later skips; Next needs a photo")
+        XCTAssertTrue(fixture.data.calls.isEmpty)
     }
 }

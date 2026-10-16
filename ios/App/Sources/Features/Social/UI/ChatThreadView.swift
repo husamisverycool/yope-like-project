@@ -506,6 +506,7 @@ struct ChatMessageRow: View {
             .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
         if let postID = message.postID, let summary = model.reactions[postID], !summary.isEmpty {
             ReactionChip(emoji: summary.distinctEmoji) { actions.openReactions(postID) }
+                .accessibilityIdentifier("chat.reactions." + postID.rawValue) // provenance-ok: accessibility identifier for UI tests
                 .metricGap(Tokens.Sizes.chatReactionsDimensionChipTop, from: .bottom, to: .top)
         }
         if let caption = post?.post.caption, !caption.isEmpty {

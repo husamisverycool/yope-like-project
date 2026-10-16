@@ -177,7 +177,7 @@ class AuthViewModelsTest {
         val events = vm.recordEvents(backgroundScope)
         vm.onCodeChange("123456")
         vm.submit()
-        assertEquals(AppRoute.InviteJoin("AbCdEfGhIjKlMnOpQrStUvWx"), events.navigations().single().route)
+        assertEquals(AppRoute.InviteJoin("AbCdEfGhIjKlMnOpQrStUvWx", join = true), events.navigations().single().route)
         assertTrue(stores.isOnboardingDone(backend.meId))
     }
 

@@ -8,7 +8,7 @@ setups of Retro's references: mobile 390 × 664 CSS px @3x with an iPhone user a
 (`references/auto/retro/web/retro.app-u-nathan-iphone.png`), desktop 1440 × 900 @1x (`retro.app-u-nathan-desktop.png`).
 Values are `getComputedStyle` / `getBoundingClientRect` read back from the page and pixels of the served images.
 
-**Result: 90 matched, 11 approximated, 3 not matched.**
+**Result: 92 matched, 8 approximated, 3 not matched.**
 
 Renders (git-ignored PNGs, written by `test/render/invite.render.test.ts` on every `npm test`):
 `design/verification/invite.web/<state>-<mobile|desktop>-<light|dark>.png` for the states `valid`, `valid-no-cover`, `valid-no-photos`, `unavailable`, `not-found`, `error`, `rate-limited`;
@@ -28,11 +28,10 @@ is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line 
 | matched | `invite.web.size.cardInset` (card x, y) | 6, 6 | 6, 6 |  |
 | matched | card height (full viewport − 2 × inset) | 652px | 652px |  |
 | matched | `invite.web.radius.card` | 36px | 36px |  |
-| matched | card fill: C-34 backdrop blur `size.global.backdropBlur` (σ) | blur(1.8px) | blur(1.8px) | CSS blur() takes σ; the image extends 3σ past the card (clipped) so its edges stay photo |
-| matched | card fill: C-34 dim `color.global.backdropDim` (black 22 %) | rgba(0, 0, 0, 0.224) | rgba(0, 0, 0, 0.224) |  |
-| matched | backdrop bleed (3σ each side) | 388.8px | 388.8px |  |
-| approximated | card fill reads as a colour field | spec: 'the group cover blurred to a colour field (C-34 backdrop)' | C-34 as measured (L-5): σ 1.8 pt + 22 % black — the cover stays recognisable | Retro's /u/ card is a stock image blurred far more (bg2.jpeg); C-34's σ was fitted on the recap preview (ST-04). If the invite card should stay a colour field it needs its own blur token |
-| matched | card fill fallbacks | no cover → inviter's avatar blurred; neither → `color.global.backgroundDeep` | as spec (renders valid-no-cover-*, valid-no-photos-*) | the inviter is the one member whose first name is inviter_first_name (the RPC returns no inviter avatar); ambiguous → placeholder |
+| matched | card fill blur `invite.web.layout.backdrop.blurSigmaToWidth` (σ = 0.08 × card width) | 30.24px | 30.24px | 0.08 × 378 px; CSS blur() takes σ, from 100cqw of the card (viewport fallback for browsers without container units); MERGE_DECISIONS L-6 |
+| matched | card fill dim `invite.web.layout.backdrop.dim` (`color.global.backdropDim`, black 22 %) | rgba(0, 0, 0, 0.224) | rgba(0, 0, 0, 0.224) |  |
+| matched | backdrop bleed (3σ each side, `invite.web.layout.backdrop.source`) | 559.44px | 559.44px |  |
+| matched | card fill fallbacks | no cover → inviter's avatar blurred; neither → `color.global.backgroundDeep` | as spec (renders valid-no-cover-*, valid-no-photos-*) | the inviter's avatar is invite_preview.inviter_avatar_path (migration 0016) |
 | matched | `invite.web.size.avatar` | 112 × 112 | 112 × 112 |  |
 | approximated | avatar position | centred above the text block (approximated in the spec — the capture lost the photo) | centre 199.91px; space above the text 6px–393.81px → centre 199.91px | Retro's broken-image alt text ('athan', clipped by the 112-pt circle) puts the box top ≈ 152 CSS px → centre ≈ 208 on Retro's page; the space-centre rule gives ≈ 209 there |
 | approximated | headline family `font.global.display` | display serif (Retro: Roslindale Display Narrow — commercial) | ui-serif, "Noto Serif", serif | PLATFORM stack: New York on Apple (ui-serif), Noto Serif on Android; this Linux render uses the bundled Noto Serif. Narrower Roslindale fits more per line |
@@ -94,7 +93,7 @@ is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line 
 | status | item | spec | renders | note |
 |---|---|---|---|---|
 | matched | page background (#FFFFFF, `color.global.background` light) | rgb(255, 255, 255) | rgb(255, 255, 255) |  |
-| approximated | order | spec text: avatar → headline → line → QR → link → footer | QR (avatar in its centre) → headline → line → link → footer | follows the spec's own WEBD reference (capture: QR above the headline, photo inside the QR) and Retro's DOM [QR(profilePhotoURL), h1, p]; the spec's Structure list orders it otherwise — spec text to fix |
+| matched | order | QR (avatar in its centre) → headline → line → link → footer | QR (avatar in its centre) → headline → line → link → footer | WEBD capture and Retro's DOM [QR(profilePhotoURL), h1, p]; spec Structure text corrected (RA-29) |
 | matched | `invite.web.size.qrDesktop` | 250 × 250 | 250 × 250 |  |
 | approximated | QR modules | black on white | square, 6 px each (whole pixels), centred; level H | Retro's code uses rounded dot modules (style not tokenised); 231-px ink in its 250-px box = 33 × 7 px, the same whole-pixel rule |
 | matched | QR content | https://<domain>/i/<token> | https://<domain>/i/<token> | decoded from the screenshot (jsQR) with the avatar over the centre |
@@ -160,7 +159,7 @@ is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line 
 | matched | name baseline: ink rows end at 348 (Retro 'nathan' 309–348) | 348 | 348 | 'Roommates' has no descender, so its last ink row is the baseline row |
 | matched | domain ink from row 369 (name baseline + `nameToDomain` 21) | 369 | 369 |  |
 | matched | background without a cover: `color.global.backgroundDeep` | #000000 | #000000 |  |
-| approximated | background with a cover (C-34) | cover blurred to a colour field (C-34 backdrop); Retro: a dark blurred gradient | C-34: σ 1.8 px (1 px = 1 pt of the layout token) + `color.global.backdropDim` (og-cover.png) | Retro's share image is a much softer, darker field; C-34's mild blur keeps the cover recognisable behind the name |
+| matched | background with a cover | `invite.web.layout.backdrop`: σ = 0.08 × 600 = 48 px under `color.global.backdropDim` | σ 48 px (sharp Gaussian, float precision) + rgba(0, 0, 0, 0.224) layer (og-cover.png) | Retro's own field is also darker overall (its profile photo is darker than this cover): photo-dependent |
 | approximated | name face | `font.global.display`, ≈ 52 px; weight not measurable (Gap) | Noto Serif Regular 52 px (bundled, OFL) | Retro's OG name reads bold; the display role's weight (regular) is used |
 | matched | domain line | `font.global.family` 20 px, white ≈ 70 % (#BBC5C9 over Retro's navy) | Inter 20 px, #FFFFFF at 0.7 (brightest 179 on black = #B3B3B3) | colour over a black field; Retro's reading includes its backdrop |
 | approximated | cover circle when there is no cover | not specified | `invite.web.color.avatarPlaceholder` circle | the page's no-photo avatar |
@@ -180,7 +179,7 @@ Large text = 24 CSS px, or 18.66 CSS px bold (WCAG's 18 pt / 14 pt). Sourced val
 | pill fill vs backdrop | #6E4A45 on #4A1D17 | 1.85:1 | 3:1 (nontext) | **FAIL** |
 | footer links (8 px, color.global.textOnMedia) | #FFFFFF on #4A1D17 | 14.20:1 | 4.5:1 (text) | pass |
 
-**Mobile card over this render's backdrop** (`fixtures/photos/family-dinner-4x3.jpg`: mean of its lower half under `color.global.backdropDim` = #311D0B)
+**Mobile card over this render's backdrop** (`fixtures/photos/family-dinner-4x3.jpg`: mean of its lower half under the `invite.web.layout.backdrop` dim = #311D0B)
 
 | pair | colours | ratio | needs | result |
 |---|---|---|---|---|
@@ -219,16 +218,9 @@ In development the server logs the failing pairs of each invite's own backdrop.
 
 ## Not built / open
 
-- **Colour field vs C-34**: the spec asks for the cover "blurred to a colour field (C-34 backdrop)". C-34 is now measured
-  (L-5: σ 1.8 pt + 22 % black, fitted on the recap preview), and the page and share image use exactly that, so the cover
-  stays recognisable; Retro's own /u/ card (a stock image) and share image are much softer. A separate invite blur token
-  would be needed to make them colour fields.
 - **Member stack ring** (C-23 Gap): not drawn, as in the native components.
 - **Initials avatar** (C-23 Gap): the no-photo member shows `icon.global.person`; the inviter without a photo shows the
   `invite.web.color.avatarPlaceholder` circle (spec).
-- **Inviter's photo**: `invite_preview` returns no inviter avatar; the page uses the one member whose first name equals
-  `inviter_first_name` and shows the placeholder when none or several match. An `inviter_avatar_path` field in the RPC
-  would remove the guess (backend change, not made).
 - **App mark on the card**: none (owner's mark, decision 0.2).
 - **Document title**: `invite.web.documentTitle` is BLOCKED until the app is named.
 - **"Full" state**: not a web state in the spec; a full group is reported by `join_group` in the App Clip / app.

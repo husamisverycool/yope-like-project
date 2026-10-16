@@ -8,7 +8,7 @@ Retro reference(s): `references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2
 
 Snapshots (CI): `tagging-run-untagged-light.png`, `tagging-run-untagged-dark.png`, `tagging-run-tagged-light.png`, `tagging-run-tagged-dark.png`, `tagging-run-truncated-light.png`, `tagging-run-pending-light.png`, `tagging-sheet-tagged-light.png`, `tagging-sheet-tagged-dark.png`, `tagging-sheet-not-tagged-light.png`, `tagging-sheet-empty-light.png`
 
-**Summary: 12 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 13 matched · 0 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Footer run (A)
 
@@ -36,4 +36,4 @@ Snapshots (CI): `tagging-run-untagged-light.png`, `tagging-run-untagged-dark.png
 |---|---|---|---|---|
 | matched | `haptic.global.select`<br>`haptic.global.error` | ios: selection; android: SEGMENT_FREQUENT_TICK (PLATFORM)<br>ios: notification.error; android: REJECT (PLATFORM) | tag / untag applied: tick; failure: error | TagRunModel (optimistic, one call at a time, reverted on failure; unit-tested) |
 | matched | `tagging.error`<br>`tagging.removeError`<br>`tagging.notFound`<br>`tagging.offline` | “Unable to add tag” (SOURCED)<br>“Unable to remove tag” (SOURCED)<br>“Couldn't find post” (SOURCED)<br>“Check your connection and try again.” (SOURCED) | failure lines; photo gone → the viewer closes it | C-26 announcement + `onMessage` / `onPostGone` for the host |
-| approximated | `—` | — (no token) | placement in the photo.viewer footer's second line | the social pass hosts `TagRunControl(postID:taggedUserIDs:leadingText:)`; a deprecated `SelfTagToggleControl` keeps its old call site compiling until then |
+| matched | `—` | — (no token) | placement in the photo.viewer footer's second line | social's `PhotoViewerView` draws `TagRunLine(leadingText:run: TagRun(…))` after the date and presents `TaggingSheet` (medium detent); `TagRunControl` is the self-contained variant |

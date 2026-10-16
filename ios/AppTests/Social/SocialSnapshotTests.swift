@@ -117,7 +117,7 @@ final class SocialSnapshotTests: XCTestCase {
     /// Friday 16 Oct 2026, 09:00 UTC (the demo's "now"): the current week starts Monday 12 Oct.
     private let friday: @Sendable () -> Date = { SocialDemo.monday.addingTimeInterval(4 * SocialDemo.day) }
 
-    private static func extraID(_ n: Int) -> PostID { PostID("00000000-0000-4000-8000-00000000c1" + String(10 + n)) }
+    nonisolated private static func extraID(_ n: Int) -> PostID { PostID("00000000-0000-4000-8000-00000000c1" + String(10 + n)) }
     private static let recap2 = RecapID("00000000-0000-4000-8000-00000000d003")
     private static let recap3 = RecapID("00000000-0000-4000-8000-00000000d004")
 
@@ -260,7 +260,7 @@ final class SocialSnapshotTests: XCTestCase {
         // Sending: the message shows with `chat.thread.sending` until the server answers.
         let slow = use(SocialDemo.makeData())
         slow.update { state in
-            state.beforeSendReturns = { _ in try? await Task.sleep(for: .seconds(30)) }
+            state.beforeSendReturns = { _ in _ = try? await Task.sleep(for: .seconds(30)) }
         }
         let sending = ChatThreadModel(groupID: SocialDemo.groupID, data: slow)
         await sending.load()

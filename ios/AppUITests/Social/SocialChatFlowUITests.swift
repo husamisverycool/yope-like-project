@@ -1,6 +1,8 @@
-// Flows of the social group (chat.thread send / reply / react / delete) on the in-memory demo backend:
+// Flows of the social group (chat.thread send / reply / react / unsend) on the in-memory demo backend:
 // `-SocialFakes` (social data), `-SocialOpen chat` (start screen) and the account group's signed-in scenario
 // (`-account-ui-test-scenario signed-in`). The app must call `SocialLaunch.apply(to:)` at launch (DEBUG).
+// Labels are the copy defaults (design/copy.json): "You, {message}", "{name}, {message}", "Reply to {name}'s post",
+// context menu "Reply" / "Unsend", quick reactions "React with {emoji name}".
 import XCTest
 
 final class SocialChatFlowUITests: XCTestCase {
@@ -8,6 +10,7 @@ final class SocialChatFlowUITests: XCTestCase {
     private enum Demo {
         static let snowPhoto = "chat.photo.00000000-0000-4000-8000-00000000c002"
         static let myPhoto = "chat.photo.00000000-0000-4000-8000-00000000c003"
+        static let myPhotoReactions = "chat.reactions.00000000-0000-4000-8000-00000000c003"
     }
 
     override func setUp() {
@@ -31,18 +34,47 @@ final class SocialChatFlowUITests: XCTestCase {
         return field
     }
 
+    /// Scrolls the thread up until `element` exists (older messages are above the bottom anchor).
+    @MainActor
+    private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
+        let thread = app.descendants(matching: .any)["chat.thread"]
+        for _ in 0..<4 where !element.waitForExistence(timeout: 2) {
+            thread.swipeDown()
+        }
+        XCTAssertTrue(element.exists)
+    }
+
     @MainActor
     func testSendingAMessage() {
         let app = launchChat()
         let field = composer(app)
         field.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["chat.composer.mic"].exists, "empty field: the mic circle")
+        XCTAssertTrue(app.descendants(matching: .any)["chat.composer.mic"].exists, "empty field: camera and mic")
         field.typeText("dinner at 8")
         let send = app.buttons["chat.composer.send"]
-        XCTAssertTrue(send.waitForExistence(timeout: 5), "text in the field: the lime send circle replaces the mic")
+        XCTAssertTrue(send.waitForExistence(timeout: 5), "text in the field: the send glyph replaces camera and mic")
         send.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["you, dinner at 8"].waitForExistence(timeout: 5), "the sent message shows in the thread")
+        XCTAssertTrue(app.descendants(matching: .any)["You, dinner at 8"].waitForExistence(timeout: 5), "the sent message shows in the thread")
         XCTAssertTrue(app.descendants(matching: .any)["chat.composer.mic"].waitForExistence(timeout: 5), "the field is empty again: the mic returns")
+    }
+
+    @MainActor
+    func testReplyingToAMessageFromItsMenu() {
+        let app = launchChat()
+        let message = app.descendants(matching: .any)["Ana, i can do pasta"].firstMatch
+        reveal(message, in: app)
+        message.press(forDuration: 1.0)
+        let reply = app.buttons["Reply"].firstMatch
+        XCTAssertTrue(reply.waitForExistence(timeout: 5), "context menu")
+        reply.tap()
+        XCTAssertTrue(app.buttons["Cancel reply"].waitForExistence(timeout: 5), "the reply bar shows above the field")
+        let field = composer(app)
+        field.typeText("count me in")
+        app.buttons["chat.composer.send"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["You, count me in"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Cancel reply"].exists, "the reply bar closes on send")
+        let quotes = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Ana, i can do pasta"))
+        XCTAssertGreaterThanOrEqual(quotes.count, 2, "the reply quotes the message above its text")
     }
 
     @MainActor
@@ -58,44 +90,41 @@ final class SocialChatFlowUITests: XCTestCase {
         reply.tap()
         reply.typeText("love this")
         let send = app.buttons["photo.viewer.send"]
-        XCTAssertTrue(send.waitForExistence(timeout: 5), "the camera circle's slot shows the send circle")
+        XCTAssertTrue(send.waitForExistence(timeout: 5), "text in the field: the send glyph")
         send.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["You, love this"].waitForExistence(timeout: 5), "the reply shows as a comment")
         app.buttons["close"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["you, love this"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["reply to Ana’s pic"].exists, "the reply carries the lime quote of the photo")
+        XCTAssertTrue(app.descendants(matching: .any)["You, love this"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Reply to Ana's post"].exists, "the reply carries the quote of the photo")
     }
 
     @MainActor
-    func testReactingToAPhoto() {
+    func testReactingToAPhotoFromItsMenu() {
         let app = launchChat()
         let photo = app.descendants(matching: .any)[Demo.myPhoto]
         XCTAssertTrue(photo.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)[Demo.myPhotoReactions].exists, "no reactions: no chip")
         photo.press(forDuration: 1.0)
-        let emoji = app.buttons["yellow heart"].firstMatch
-        XCTAssertTrue(emoji.waitForExistence(timeout: 5), "the reaction picker opened")
-        emoji.tap()
-        let reacted = NSPredicate(format: "value CONTAINS[c] 'yellow heart'")
-        expectation(for: reacted, evaluatedWith: photo)
-        waitForExpectations(timeout: 5)
-        let value = (photo.value as? String) ?? ""
-        XCTAssertNil(value.rangeOfCharacter(from: .decimalDigits), "reactions are never counted")
+        let fire = app.buttons["React with fire"].firstMatch
+        XCTAssertTrue(fire.waitForExistence(timeout: 5), "the quick-reaction row of the context menu")
+        fire.tap()
+        let chip = app.descendants(matching: .any)[Demo.myPhotoReactions]
+        XCTAssertTrue(chip.waitForExistence(timeout: 5), "the chip shows at once")
+        XCTAssertTrue(chip.label.localizedCaseInsensitiveContains("fire"))
+        XCTAssertNil(chip.label.rangeOfCharacter(from: .decimalDigits), "reactions are never counted")
     }
 
     @MainActor
-    func testDeletingMyMessage() {
+    func testUnsendingMyMessage() {
         let app = launchChat()
-        let message = app.descendants(matching: .any)["you, yes please"]
-        let thread = app.descendants(matching: .any)["chat.thread"]
-        for _ in 0..<3 where !message.waitForExistence(timeout: 2) {
-            thread.swipeDown()
-        }
-        XCTAssertTrue(message.exists)
+        let message = app.descendants(matching: .any)["You, yes please"].firstMatch
+        reveal(message, in: app)
         message.press(forDuration: 1.0)
-        let delete = app.buttons["delete"].firstMatch
-        XCTAssertTrue(delete.waitForExistence(timeout: 5), "context menu")
-        delete.tap()
-        let confirm = app.sheets.buttons["delete"].firstMatch
-        XCTAssertTrue(confirm.waitForExistence(timeout: 5), "native confirmation")
+        let unsend = app.buttons["Unsend"].firstMatch
+        XCTAssertTrue(unsend.waitForExistence(timeout: 5), "context menu")
+        unsend.tap()
+        let confirm = app.alerts.buttons["Unsend"].firstMatch
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5), "native confirmation alert")
         confirm.tap()
         let gone = NSPredicate(format: "exists == false")
         expectation(for: gone, evaluatedWith: message)

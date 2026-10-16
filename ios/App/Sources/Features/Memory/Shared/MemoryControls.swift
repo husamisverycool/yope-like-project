@@ -56,3 +56,51 @@ enum SystemAppearance {
         return scene?.traitCollection.userInterfaceStyle == .dark ? .dark : .light
     }
 }
+
+extension View {
+    /// Keeps the edge-swipe back on a page pushed with the system bar hidden (onthisday platform notes: "the interactive
+    /// pop gesture kept"); UIKit stops the navigation controller's interactive pop while its bar is hidden. The page's
+    /// navigation controller takes this page's begin rule (another page under it) while it is on screen; restored when it
+    /// leaves.
+    func memoryInteractivePop() -> some View {
+        background(MemoryInteractivePop().frame(width: 0, height: 0).accessibilityHidden(true))
+    }
+}
+
+/// The UIKit bridge behind `memoryInteractivePop()`.
+struct MemoryInteractivePop: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> Controller {
+        Controller()
+    }
+
+    func updateUIViewController(_ controller: Controller, context: Context) {}
+
+    final class Controller: UIViewController, UIGestureRecognizerDelegate {
+        private weak var navigation: UINavigationController?
+        private weak var previousDelegate: (any UIGestureRecognizerDelegate)?
+
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            guard let navigation = navigationController, let gesture = navigation.interactivePopGestureRecognizer else { return }
+            if gesture.delegate !== self {
+                previousDelegate = gesture.delegate
+                gesture.delegate = self
+            }
+            gesture.isEnabled = true
+            self.navigation = navigation
+        }
+
+        override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            // A cancelled swipe shows the page again (viewDidAppear takes the gesture back).
+            guard let gesture = navigation?.interactivePopGestureRecognizer, gesture.delegate === self else { return }
+            gesture.delegate = previousDelegate
+        }
+
+        nonisolated func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+            MainActor.assumeIsolated {
+                (navigation?.viewControllers.count ?? 0) > 1
+            }
+        }
+    }
+}

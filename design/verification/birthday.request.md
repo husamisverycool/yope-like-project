@@ -8,7 +8,7 @@ Retro reference(s): `references/auto/retro/lazyweb/retro-lazyweb-20260529-paywal
 
 Snapshots (CI): `birthday.request-loading-light.png`, `birthday.request-open-light.png`, `birthday.request-open-dark.png`, `birthday.request-contributed-light.png`, `birthday.request-contributed-dark.png`, `birthday.request-closed-light.png`, `birthday.request-not-found-light.png`, `birthday.request-error-light.png`, `birthday.request-offline-light.png`, `birthday.request-entry-light.png`, `birthday.request-entry-dark.png`
 
-**Summary: 20 matched · 3 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 21 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Page
 
@@ -46,4 +46,4 @@ Snapshots (CI): `birthday.request-loading-light.png`, `birthday.request-open-lig
 | matched | `birthday.request.notFound.title` | “Couldn't find request” (SOURCED) | not found: C-27 title on black | EmptyStateView |
 | matched | `birthday.request.error.title`<br>`birthday.request.error.detail`<br>`birthday.request.error.retry`<br>`birthday.request.offline.title`<br>`birthday.request.offline` | “Something went wrong” (SOURCED)<br>“There was a problem. Please try again.” (SOURCED)<br>“Try Again” (SOURCED)<br>“No Connection” (SOURCED)<br>“Check your connection and try again.” (SOURCED) | error / offline on the backdrop + light pill | MemoryMediaStateBlock |
 | matched | `—` | — (no token) | entry row on groups.screen (title + due line + avatar) | BirthdayRequestsEntry → full-screen cover; default `MemoryEntryRequestRow` (C-14 + C-16) |
-| approximated | `—` | — (no token) | full screen from the push | the shell (account) still presents the pushed route as a `.large` sheet (`PresentedRoute.modal`) — hand-off |
+| matched | `—` | — (no token) | full screen from the push | the shell presents the linked route full screen (`PresentedRoute` `.fullScreen`, account); the group-row entry uses `.fullScreenCover` |

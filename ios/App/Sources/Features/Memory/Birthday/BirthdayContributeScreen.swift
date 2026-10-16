@@ -337,6 +337,10 @@ struct BirthdayContributeMessage: View {
     @Bindable var model: BirthdayContributeModel
     @FocusState private var focused: Bool
 
+    init(model: BirthdayContributeModel) {
+        _model = Bindable(model)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Text(Copy.birthdayContributeMessageTitle)
