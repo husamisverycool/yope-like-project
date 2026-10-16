@@ -195,6 +195,54 @@ class SocialFlowTest {
         assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))
     }
 
+    /**
+     * `chat.voice.layout.locked`: pause keeps a draft (its waveform and length), the draft previews and pauses, continue
+     * records on at its end, send sends the whole recording with its waveform (`p_voice_levels`).
+     */
+    @Test fun voicePausePreviewContinueAndSend() {
+        micGranted()
+        val data = FakeSocialData().apply { seedChat() }
+        chat(data)
+        compose.onNodeWithContentDescription("Record a voice message").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Pause recording").performClick()
+        compose.waitForIdle()
+        assertTrue("paused: the draft is kept", testVoice.paused && testVoice.recording)
+        compose.onNodeWithContentDescription("Continue recording").assertExists()
+        compose.onNodeWithTag("chat.composer.preview").performClick()
+        compose.waitForIdle()
+        assertEquals(1, testVoice.previews)
+        compose.onNodeWithContentDescription("Pause").assertExists()
+        compose.onNodeWithTag("chat.composer.preview").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Continue recording").performClick()
+        compose.waitForIdle()
+        assertFalse("continue records again", testVoice.paused)
+        assertTrue(testVoice.recording)
+        compose.onNodeWithContentDescription("Pause recording").assertExists()
+        compose.onNodeWithTag("chat.composer.sendRecording").performClick()
+        compose.waitForIdle()
+        assertFalse(testVoice.recording)
+        assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))
+        assertEquals(FakeVoice.LEVELS, data.sentVoiceLevels.last())
+    }
+
+    /** Deleting a paused draft sends nothing. */
+    @Test fun voicePausedDraftDeletes() {
+        micGranted()
+        val data = FakeSocialData().apply { seedChat() }
+        chat(data)
+        compose.onNodeWithContentDescription("Record a voice message").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Pause recording").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Delete recording").performClick()
+        compose.waitForIdle()
+        assertFalse(testVoice.recording)
+        assertFalse(data.calls.any { it.startsWith("sendVoice") })
+        compose.onNodeWithContentDescription("Record a voice message").assertExists()
+    }
+
     /** TalkBack: activating the mic records hands-free (no hold gesture); trash discards. */
     @Test fun voiceWithTalkBack() {
         micGranted()
