@@ -49,25 +49,31 @@ final class DemoTourUITests: XCTestCase {
             XCTFail("the chat did not open")
         }
 
-        // A photo in the viewer: the newest tile of the week strip.
+        // A photo in the viewer: the first photo tile of the week strip (its tiles are buttons; the group cover above it
+        // is an image that opens nothing).
         launch(app)
         if openRoommates(app) {
-            let tile = element(app, "groups.screen").images.firstMatch
+            let tile = element(app, "groups.screen.week").buttons.firstMatch
             if tile.waitForExistence(timeout: 5) {
                 tile.tap()
                 if element(app, "photo.viewer").waitForExistence(timeout: 10) {
                     shot(app, "08-viewer")
                 } else {
                     shot(app, "08-viewer-missing")
+                    XCTFail("the viewer did not open from the week strip")
                 }
+            } else {
+                XCTFail("no photo tile in the week strip")
             }
         }
 
-        // Memories: On This Day from the group screen.
+        // Memories: On This Day, a card at the end of the members' cards (a horizontal pager under the week strip).
         launch(app)
         if openRoommates(app) {
             let entry = element(app, "onthisday.entry")
-            for _ in 0..<4 where !entry.isHittable { app.swipeUp() }
+            let cards = element(app, "groups.screen.cards")
+            for _ in 0..<3 where !cards.isHittable { app.swipeUp() }
+            for _ in 0..<8 where !(entry.exists && entry.isHittable) && cards.exists { cards.swipeLeft() }
             if entry.exists {
                 entry.tap()
                 _ = element(app, "onthisday").waitForExistence(timeout: 10)

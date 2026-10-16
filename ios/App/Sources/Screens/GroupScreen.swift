@@ -422,6 +422,7 @@ struct GroupFeedView: View {
             }
         }
         .dsAnimation(ComponentMotion.fade, value: model.memberWeeks.map(\.id))
+        .accessibilityIdentifier("groups.screen.cards")
     }
 
     // MARK: Earlier
