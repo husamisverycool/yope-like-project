@@ -66,7 +66,7 @@ States rendered (`android/feature/account/src/test/snapshots/invite.web/`): `and
 | n/a | `invite.web.size.headlineTopDesktop` | 70 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_newProfilePageCo… | web pass |
 | n/a | `invite.web.fontSize.bodyDesktop` | 20 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css .page_newProfilePageCo… | web pass |
 | n/a | `invite.web.lineHeight.bodyDesktop` | 28 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css (140 % of 20 px); refe… | web pass |
-| n/a | `invite.web.color.bodyDesktop` | #00000080 | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css color:rgba(0,0,0,.5) | web pass |
+| n/a | `invite.web.color.bodyDesktop` | #00000091 | desktop layout | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (text under WCAG AA raised to th… | web pass |
 | n/a | `invite.web.size.bodyMaxWidthDesktop` | 300 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css max-width:300px | web pass |
 | n/a | `invite.web.size.bodyToQrDesktop` | 30 pt | desktop layout | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css margin-bottom:30px | web pass |
 | n/a | `invite.web.layout.linkPreview` | titleTags: <title> = copy invite.web.documentTitle; og:title and twitter:title = copy inv… | web document metadata | references/auto/retro/web/retro.app-web-copy-excerpts.txt '# meta apple-itunes-… | web pass |

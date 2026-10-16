@@ -37,12 +37,12 @@ describe("invite page pairs (design/surfaces/invite.web.md Accessibility)", () =
     expect(line.pass).toBe(false);
   });
 
-  it("desktop: black headline passes; the 50 % lines are below 4.5:1 (Retro's values, reported)", () => {
+  it("desktop: every text pair passes (owner decision 20 raised Retro's black 50 % lines to 57 %)", () => {
     const p = desktopPairs();
     expect(ratio(p, "headline").ratio).toBeCloseTo(21);
-    expect(ratio(p, "line").ratio).toBeCloseTo(4.0, 1);
-    expect(ratio(p, "line").pass).toBe(false);
-    expect(ratio(p, "footer").pass).toBe(false);
+    expect(ratio(p, "line").ratio).toBeCloseTo(5.1, 1);
+    expect(ratio(p, "line").pass).toBe(true);
+    expect(ratio(p, "footer").pass).toBe(true);
     expect(ratio(p, "'Download the app'").pass).toBe(true);
   });
 

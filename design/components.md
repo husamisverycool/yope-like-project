@@ -124,8 +124,8 @@ Activity · Profile (2026).
 | height | `size.global.tabBarHeight` (49) above the home indicator; inset `size.global.tabBarInset` (0) |
 | glyph | `size.global.tabBarIcon` (24 box), outline (`icon.global.home`, `.group`, `.rewind`, `.activity`, `.wall`) |
 | selected | `color.global.textPrimary` #000000 / #FFFFFF |
-| unselected | `color.global.tabInactive` #B2B2B2 / #999999 |
-| unread dot | `size.global.tabBadgeDot` (4) circle `color.global.badge` #EA3337, centred, `size.global.tabBadgeOffset` (5) below the glyph |
+| unselected | `color.global.tabInactive` #949494 / #999999 (Retro #B2B2B2 light raised to 3:1, owner decision 20) |
+| unread dot | `size.global.tabBadgeDot` (4) circle `color.global.badge` #D0151A, centred, `size.global.tabBadgeOffset` (5) below the glyph |
 | over a photo (full-bleed page) | selected `color.global.textOnMedia`, unselected `color.global.tabInactiveOnMedia` (white 62 %), on `layout.global.photoScrim` |
 | background | `color.global.background` (iOS) / `.background.android` |
 
@@ -219,7 +219,7 @@ Retro shows destructive actions as **red text**, never a red-filled button: menu
 
 | place | token |
 |---|---|
-| app-drawn row / menu text | `color.global.destructive` #EA3337, text role `body` (rows) |
+| app-drawn row / menu text | `color.global.destructive` #D0151A / #EF6265 (Retro #EA3337 raised to 4.5:1, owner decision 20; media surfaces use the dark value), text role `body` (rows) |
 | glyph | `icon.global.trash` (or the action's glyph) in `color.global.destructive` |
 | native alerts / menus | role `.destructive` / M3 `color.global.system.error` — the platform draws them (iOS systemRed) |
 
@@ -473,7 +473,7 @@ the name. **Evidence.** ED-W3, ED-A, ST-01, ST-02, TC-1B, TC-2B; RV §4 #11.
 
 | part | token |
 |---|---|
-| "new" capsule | fill `color.global.badge` #EA3337; label text role `badge` (11 semibold) `color.global.onBadge` #FFFFFF, lower case; height `size.global.badgeHeight` (24); capsule |
+| "new" capsule | fill `color.global.badge` #D0151A (Retro #EA3337 raised so the white label reaches 4.5:1, owner decision 20); label text role `badge` (11 semibold) `color.global.onBadge` #FFFFFF, lower case; height `size.global.badgeHeight` (24); capsule |
 | placement on a card | `size.global.badgeInset` (12) from top and right |
 | unread dot | `size.global.tabBadgeDot` (4) `color.global.badge` |
 
@@ -545,7 +545,7 @@ RP §2.1 (Rive files), §3.9, §4.1 rule 3.
 | **sheet header** | centred title text role `sheetTitle` (17 semibold); either a trailing close circle (C-11: #262626 on dark, × in #F1F1F1 on light sheets) or the native toolbar "Cancel / Title / Update" (system tint) | C-08, C-11 |
 | **feature-intro sheet** (2023) | light rounded sheet floating `size.global.featureSheetInset` (12) in from the edges over a dimmed screen: icon tile (≈64), title 17 semibold, two rows of 15 regular grey text each with a leading 20 pt outline glyph, full-width primary capsule (C-05) | `color.global.background`, text roles `sheetTitle` / `body`, `color.global.textSecondary` |
 | **context menu / action sheet** | native `UIMenu` / M3 `DropdownMenu`; items Sentence case (copy `retro.voice.menu-labels`), destructive item in red | `color.global.system.ios`, `color.global.system.*` |
-| **alert / dialog** | native `Alert` / M3 `AlertDialog` | `color.global.system.*` (Android: surfaceContainerHigh, onSurface, primary #0A84FF, error #EA3337) |
+| **alert / dialog** | native `Alert` / M3 `AlertDialog` | `color.global.system.*` (Android: surfaceContainerHigh, onSurface, primary #0066CE / #2592FF, error #D0151A / #EF6265 — Retro's #0A84FF / #EA3337 raised to 4.5:1 in the dialog, owner decision 20) |
 | **share sheet** | native (`ShareLink` / `Intent.ACTION_SEND` chooser) | — |
 | **switch, picker, keyboard** | native | tint `color.global.selection` / `color.global.system.primary` |
 
@@ -638,7 +638,7 @@ height.
 | count | width-driven: ⌊(width + gap) ÷ (bar + gap)⌋, at most `layout.global.waveform.samples` (100); each bar is the peak of its bucket of the stored levels (154 pt → 38 bars) |
 | height | `size.global.waveformBarMinHeight` (2.0, a dot) … `layout.global.waveform.maxHeightRatio` (0.553) × the container's height (37-pt capsule → 20.5; 48-pt field → 26.5); a bar's height scales with its level ÷ the note's largest level |
 | played | `color.global.textPrimary` (page) / `color.global.textOnMedia` (media) |
-| unplayed | `color.global.textSecondary` #999999 (page and media, both platforms) |
+| unplayed | `color.global.textSecondary` #6E6E6E / #999999 on a page; #999999 on media (media takes the dark value in both appearances), both platforms |
 | length | set by the holder: the voice capsule `chat.voice.dimension.waveform` (154); the recording field / capsule: what is left of its width |
 
 **States.**

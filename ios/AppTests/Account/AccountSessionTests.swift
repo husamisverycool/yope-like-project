@@ -220,6 +220,21 @@ final class AccountSessionTests: XCTestCase {
         XCTAssertFalse(rig.router.isReady)
     }
 
+    /// The phone step must not keep the previous person's number: every ended session gives the sign-up flow a new
+    /// identity (AuthFlowView `.id`), so auth.phone starts on its landing with an empty field.
+    func testEndedSessionsStartAFreshSignUp() async {
+        let fixture = AccountFixture()
+        let rig = AccountSessionRig(data: fixture.data)
+        rig.onboarding.markComplete(for: fixture.me.id.rawValue)
+        rig.session.start()
+        let first = rig.session.signUpGeneration
+        await rig.session.signOut()
+        XCTAssertEqual(rig.session.signUpGeneration, first + 1, "sign-out")
+        XCTAssertTrue(rig.session.path.isEmpty, "no code step holding the number")
+        rig.session.accountDeleted()
+        XCTAssertEqual(rig.session.signUpGeneration, first + 2, "account deletion")
+    }
+
     func testAccountDeletedShowsTheToastOnThePhoneStep() {
         let fixture = AccountFixture()
         let rig = AccountSessionRig(data: fixture.data)
@@ -313,5 +328,20 @@ final class AccountSessionTests: XCTestCase {
         XCTAssertNil(AccountUITestScenario.signedOut.makeData().currentUserID)
         XCTAssertNotNil(AccountUITestScenario.signedIn.makeData().currentUserID)
         XCTAssertEqual(AccountUITestScenario.withGroups.makeData().groups.count, 2)
+    }
+
+    // MARK: Files of an ended session
+
+    func testSessionFilesRemovesEverythingInTheFolder() throws {
+        let fileManager = FileManager.default
+        let folder = fileManager.temporaryDirectory.appendingPathComponent("SessionFilesTest-\(UUID().uuidString)", isDirectory: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: folder) }
+        let drafts = folder.appendingPathComponent("CaptureDrafts", isDirectory: true)
+        try fileManager.createDirectory(at: drafts, withIntermediateDirectories: true)
+        try Data("photo".utf8).write(to: drafts.appendingPathComponent("original.jpg"))
+        try Data("voice".utf8).write(to: folder.appendingPathComponent("voice-note.m4a"))
+        SessionFiles.removeContents(of: folder)
+        XCTAssertEqual(try fileManager.contentsOfDirectory(atPath: folder.path), [])
+        XCTAssertTrue(fileManager.fileExists(atPath: folder.path), "the folder itself stays")
     }
 }

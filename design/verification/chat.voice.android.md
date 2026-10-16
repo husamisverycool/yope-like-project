@@ -34,10 +34,10 @@ Side by side: [`chat.voice.android.png`](chat.voice.android.png) — ours left (
 | status | token | expected (token) | ours (measured) | reference evidence | note |
 |---|---|---|---|---|---|
 | match | bar count = ⌊(`chat.voice.dimension.waveform` + gap) ÷ (bar + gap)⌋ | 38 | 38 | references/auto/imessage/apple-support/messages-audio-message-ios27.png waveform x205–375 = 171 px (… |  |
-| match | bar width `size.global.waveformBarWidth` | 2 | 2.03 | references/auto/imessage/apple-support/messages-audio-message-ios27.png audio message bars x205–375,… |  |
+| match | bar width `size.global.waveformBarWidth` | 2 | 2.18 | references/auto/imessage/apple-support/messages-audio-message-ios27.png audio message bars x205–375,… |  |
 | match | bar pitch `size.global.waveformBarWidth` + `size.global.waveformBarGap` | 4.1 | 4.08 | references/auto/imessage/apple-support/messages-audio-message-ios27.png audio message bars x205–375,… |  |
 | match | tallest bar `layout.global.waveform` maxHeightRatio × `size.global.pillHeight` | 20.46 | 20.5 | maxHeightRatio: references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png draft capsule … |  |
-| match | silent bar (a dot) `size.global.waveformBarMinHeight` | 2 | 1.5 | references/auto/whatsapp/store/whatsapp-store-02.png silent bars 5.8–5.9 px high vs 6.24 px wide; re… |  |
-| match | unplayed bars `color.global.textSecondary` (idle: all unplayed) | #999999 | #999999 | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–490,1288–1314) = #99999… |  |
+| match | silent bar (a dot) `size.global.waveformBarMinHeight` | 2 | 2.5 | references/auto/whatsapp/store/whatsapp-store-02.png silent bars 5.8–5.9 px high vs 6.24 px wide; re… |  |
+| match | unplayed bars `color.global.textSecondary` (idle: all unplayed) | #6E6E6E | #6E6E6E | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3 : 1 for large text) … |  |
 | match (token) | played bars `color.global.textPrimary` up to the progress edge; split bar at the edge | spec | render `voicePlaying`; core:ui `ComponentLogicTest` (played share) | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' darkest px (255–520,90… |  |
 | match (token) | 100 levels of 0…31 stored per note (`layout.global.waveform` samples / levelMax, Telegram's format); none → dots, or levels decoded from the audio | spec | core:voice `VoiceLevelsTest`; feature:social `AudioLevels` | maxHeightRatio: references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png draft capsule … |  |

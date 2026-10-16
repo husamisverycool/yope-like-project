@@ -33,12 +33,12 @@ public enum Tokens {
         /// Retro · global · media surfaces that stay black in both appearances: photo / story viewer, camera, postcard-style composer, recap preview, full-bleed media (Rewind) · SOURCED
         /// token: `color.global.backgroundDeep`
         public static let globalBackgroundDeep: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
-        /// Retro · global · Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers · SOURCED
+        /// WCAG 2.2 (owner decision 20) · global · Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers · PLATFORM
         /// token: `color.global.badge`
-        public static let globalBadge: Color = Color(.sRGB, red: 0.9176, green: 0.2, blue: 0.2157, opacity: 1)
-        /// Retro · global · grey relative-week pill next to the title ('Last Week'), label color.global.onBadge · SOURCED
+        public static let globalBadge: Color = Color(.sRGB, red: 0.8157, green: 0.0824, blue: 0.102, opacity: 1)
+        /// WCAG 2.2 (owner decision 20) · global · grey relative-week pill next to the title ('Last Week'), label color.global.onBadge · PLATFORM
         /// token: `color.global.badgeMuted`
-        public static let globalBadgeMuted: Color = Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1)
+        public static let globalBadgeMuted: Color = Color(.sRGB, red: 0.4627, green: 0.4627, blue: 0.4627, opacity: 1)
         /// Retro · global · fill of tiles (add tile, empty-day tile, strip placeholder), search / text fields, circle buttons ('+'), fill pills ('Create'), grouped rows on iOS · SOURCED
         /// token: `color.global.control`
         public static let globalControl: Color = Color(light: Color(.sRGB, red: 0.9451, green: 0.9451, blue: 0.9451, opacity: 1), dark: Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1))
@@ -48,9 +48,9 @@ public enum Tokens {
         /// Retro · global · stronger fill: disabled primary capsule, container fill · SOURCED
         /// token: `color.global.controlRaised`
         public static let globalControlRaised: Color = Color(light: Color(.sRGB, red: 0.8, green: 0.8, blue: 0.8, opacity: 1), dark: Color(.sRGB, red: 0.302, green: 0.302, blue: 0.302, opacity: 1))
-        /// Retro · global.system · destructive actions drawn by the app and destructive menu items: delete, remove, report, leave · SOURCED
+        /// WCAG 2.2 (owner decision 20) · global.system · destructive actions drawn by the app and destructive menu items: delete, remove, report, leave · PLATFORM
         /// token: `color.global.destructive`
-        public static let globalDestructive: Color = Color(.sRGB, red: 0.9176, green: 0.2, blue: 0.2157, opacity: 1)
+        public static let globalDestructive: Color = Color(light: Color(.sRGB, red: 0.8157, green: 0.0824, blue: 0.102, opacity: 1), dark: Color(.sRGB, red: 0.9373, green: 0.3843, blue: 0.3961, opacity: 1))
         /// Retro · global · month / day number / weekday on an empty-day tile · SOURCED
         /// token: `color.global.emptyTileText`
         public static let globalEmptyTileText: Color = Color(light: Color(.sRGB, red: 0.851, green: 0.851, blue: 0.851, opacity: 1), dark: Color(.sRGB, red: 0.3176, green: 0.3176, blue: 0.3176, opacity: 1))
@@ -90,9 +90,9 @@ public enum Tokens {
         /// Retro · global · Android secondary surface: grouped settings rows, chips, reply / comment bar, sheet cards (iOS draws these in color.global.control) · SOURCED
         /// token: `color.global.surfaceSecondary.android`
         public static let globalSurfaceSecondaryAndroid: Color = Color(light: Color(.sRGB, red: 0.9686, green: 0.9686, blue: 0.9686, opacity: 1), dark: Color(.sRGB, red: 0.149, green: 0.149, blue: 0.149, opacity: 1))
-        /// Retro · global.system · Android M3 error: error / destructive text and icons in M3 components · SOURCED
+        /// WCAG 2.2 (owner decision 20) · global.system · Android M3 error: error / destructive text and icons in M3 components · PLATFORM
         /// token: `color.global.system.error`
-        public static let globalSystemError: Color = Color(.sRGB, red: 0.9176, green: 0.2, blue: 0.2157, opacity: 1)
+        public static let globalSystemError: Color = Color(light: Color(.sRGB, red: 0.8157, green: 0.0824, blue: 0.102, opacity: 1), dark: Color(.sRGB, red: 0.9373, green: 0.3843, blue: 0.3961, opacity: 1))
         /// Retro · global.system · Android M3 onError: content on the error colour · SOURCED
         /// token: `color.global.system.onError`
         public static let globalSystemOnError: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
@@ -108,9 +108,9 @@ public enum Tokens {
         /// Material 3 · global.system · Android M3 outline (outlined text field border, M3 divider defaults) · PLATFORM
         /// token: `color.global.system.outline`
         public static let globalSystemOutline: Color = Color(light: Color(.sRGB, red: 0.4745, green: 0.4549, blue: 0.4941, opacity: 1), dark: Color(.sRGB, red: 0.5765, green: 0.5608, blue: 0.6, opacity: 1))
-        /// Retro · global.system · Android M3 primary: dialog action labels, switches, selected controls, text-field cursor · SOURCED
+        /// WCAG 2.2 (owner decision 20) · global.system · Android M3 primary: dialog action labels, switches, selected controls, text-field cursor · PLATFORM
         /// token: `color.global.system.primary`
-        public static let globalSystemPrimary: Color = Color(.sRGB, red: 0.0392, green: 0.5176, blue: 1, opacity: 1)
+        public static let globalSystemPrimary: Color = Color(light: Color(.sRGB, red: 0, green: 0.4, blue: 0.8078, opacity: 1), dark: Color(.sRGB, red: 0.1451, green: 0.5725, blue: 1, opacity: 1))
         /// Retro · global.system · Android M3 primary container (on-primary-container #000000 / #FFFFFF) · SOURCED
         /// token: `color.global.system.primaryContainer`
         public static let globalSystemPrimaryContainer: Color = Color(light: Color(.sRGB, red: 0.8, green: 0.8, blue: 0.8, opacity: 1), dark: Color(.sRGB, red: 0.302, green: 0.302, blue: 0.302, opacity: 1))
@@ -129,9 +129,9 @@ public enum Tokens {
         /// Material 3 · global.system · Android M3 modal bottom sheet container (role md.sys.color.surface-container-low) · PLATFORM
         /// token: `color.global.system.surfaceContainerLow`
         public static let globalSystemSurfaceContainerLow: Color = Color(light: Color(.sRGB, red: 0.9686, green: 0.949, blue: 0.9804, opacity: 1), dark: Color(.sRGB, red: 0.1137, green: 0.1059, blue: 0.1255, opacity: 1))
-        /// Retro · global · unselected tab-bar glyphs (black 30 % on white / white 60 % on black) · SOURCED
+        /// WCAG 2.2 (owner decision 20) · global · unselected tab-bar glyphs (black 30 % on white / white 60 % on black) · PLATFORM
         /// token: `color.global.tabInactive`
-        public static let globalTabInactive: Color = Color(light: Color(.sRGB, red: 0.698, green: 0.698, blue: 0.698, opacity: 1), dark: Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1))
+        public static let globalTabInactive: Color = Color(light: Color(.sRGB, red: 0.5804, green: 0.5804, blue: 0.5804, opacity: 1), dark: Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1))
         /// Retro · global · unselected tab glyphs over a full-bleed photo (selected: color.global.textOnMedia) · SOURCED
         /// token: `color.global.tabInactiveOnMedia`
         public static let globalTabInactiveOnMedia: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.6196)
@@ -141,12 +141,12 @@ public enum Tokens {
         /// Retro · global · primary text and glyphs; selected tab glyph; page-dot selected · SOURCED
         /// token: `color.global.textPrimary`
         public static let globalTextPrimary: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1))
-        /// Retro · global · secondary text on iOS: date ranges, real names, list subtitles, meta lines, field placeholders (2025), grey links and legal text · SOURCED
+        /// WCAG 2.2 (owner decision 20) · global · secondary text on iOS: date ranges, real names, list subtitles, meta lines, field placeholders (2025), grey links and legal text · PLATFORM
         /// token: `color.global.textSecondary`
-        public static let globalTextSecondary: Color = Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1)
-        /// Retro · global · secondary text on Android: meta lines ('A · B'), NUX body, list subtitles · SOURCED
+        public static let globalTextSecondary: Color = Color(light: Color(.sRGB, red: 0.4314, green: 0.4314, blue: 0.4314, opacity: 1), dark: Color(.sRGB, red: 0.6, green: 0.6, blue: 0.6, opacity: 1))
+        /// WCAG 2.2 (owner decision 20) · global · secondary text on Android: meta lines ('A · B'), NUX body, list subtitles · PLATFORM
         /// token: `color.global.textSecondary.android`
-        public static let globalTextSecondaryAndroid: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.502), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.6))
+        public static let globalTextSecondaryAndroid: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.5686), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.6))
         /// Retro · global · tertiary / disabled text and glyphs · SOURCED
         /// token: `color.global.textTertiary`
         public static let globalTextTertiary: Color = Color(light: Color(.sRGB, red: 0.7569, green: 0.7569, blue: 0.7569, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.302))
@@ -165,9 +165,9 @@ public enum Tokens {
         /// Retro · invite.web · mobile page: body line colour (white 62 %) over the blurred photo · SOURCED
         /// token: `invite.web.color.body`
         public static let inviteWebColorBody: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.6196)
-        /// Retro · invite.web · desktop page: body line colour (black 50 %) on white · SOURCED
+        /// WCAG 2.2 (owner decision 20) · invite.web · desktop page: body line and footer link colour (black 57 %; Retro's black 50 % raised by owner decision 20) on white · PLATFORM
         /// token: `invite.web.color.bodyDesktop`
-        public static let inviteWebColorBodyDesktop: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.502)
+        public static let inviteWebColorBodyDesktop: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.5686)
         /// Retro · invite.web · mobile page: 'Let's go' pill fill (white 20 %) over the blurred photo; label #FFFFFF · SOURCED
         /// token: `invite.web.color.pill`
         public static let inviteWebColorPill: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 0.2)

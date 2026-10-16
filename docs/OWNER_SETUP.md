@@ -53,6 +53,28 @@ Placeholders used below:
    Roboto Serif's smaller cap height). (The UI text face needs nothing from you: SF Pro is
    the iPhone's own font and Inter, used on Android, is free under the SIL Open Font License —
    bundled with its licence at `android/core/designsystem/licenses/Inter-OFL.txt`.)
+7. **The faint date on empty days (one contrast exception).** Owner decision 20 raised every grey, red and blue
+   text colour below WCAG AA to the nearest passing shade (design/CONTRAST.md). One text colour was kept: the date
+   Retro prints as a faint watermark on a week-strip day with no photos (`color.global.emptyTileText`, 1.25:1 light /
+   1.91:1 dark). Raised to 4.5:1 it would read like any other label and the strip would no longer show at a glance
+   which days are empty; the tile's VoiceOver / TalkBack label already says the date. Keep it (nothing to do), or say
+   "raise it" and it becomes #6E6E6E / #999999 like other secondary text.
+8. **Resemblance to Retro.** The app follows Retro's look closely (colours, type sizes, spacing, layouts) without
+   copying its name, logo, icons, illustrations or fonts. Decide whether you are comfortable with how close it is
+   before submitting to the stores; a design pass can move it further away if you want.
+9. **Values read from Retro's Android package.** Decision 22 stopped using Locket values read from Locket's decompiled
+   app and re-sourced them from public screenshots and documentation. Retro's Android package (APK) was read the same
+   way in the research passes and is still evidence for **108 design tokens (52 of them rely on it alone — Android
+   colours, Android type metrics, widget and dialog layouts) and 632 copy strings** (Retro's wording, which our copy
+   adapts). Nothing from it is copied into the app as code or assets; it was used to read colour values, sizes and
+   wording. Decide: **keep it** (nothing to do), or **re-source it**, which needs the capture session on a phone with
+   Retro installed (`docs/CAPTURE_GUIDE.md` if present, or ask) and a copy rewrite from public material only.
+10. **Repository visibility.** The repository is public. Screenshots, videos and the decompiled-package excerpts were
+    never committed (git-ignored from the start; checked over the whole history on 2026-10-16). What is public: the
+    research notes and measurements (Markdown, CSV), excerpts of two public web pages (retro.app's stylesheet, a
+    Partiful page script) and Retro's wording quoted in `design/copy/*.json` evidence. If you would rather none of that
+    be public, make the repository private (removing it from history as well needs a rewrite such as
+    `git filter-repo` and a force-push, which breaks existing clones).
 
 ## 1. Apple
 

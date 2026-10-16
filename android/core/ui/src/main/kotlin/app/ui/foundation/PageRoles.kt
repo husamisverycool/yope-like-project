@@ -32,7 +32,16 @@ object PageRoles {
     @Composable
     @ReadOnlyComposable
     fun secondaryText(onMedia: Boolean = false): Color =
-        if (onMedia) Tokens.Colors.globalTextSecondary else Tokens.Colors.globalTextSecondaryAndroid
+        if (onMedia) Tokens.ColorsDark.globalTextSecondary else Tokens.Colors.globalTextSecondaryAndroid
+
+    /**
+     * Destructive red (`color.global.destructive`); [onMedia] = the dark appearance's red, because media surfaces are
+     * black in both appearances (owner decision 20: the light red is raised for white and light-grey fills only).
+     */
+    @Composable
+    @ReadOnlyComposable
+    fun destructive(onMedia: Boolean = false): Color =
+        if (onMedia) Tokens.ColorsDark.globalDestructive else Tokens.Colors.globalDestructive
 }
 
 /**

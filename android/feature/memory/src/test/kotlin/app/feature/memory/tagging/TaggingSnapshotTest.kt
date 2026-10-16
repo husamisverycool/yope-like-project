@@ -53,7 +53,7 @@ private fun ViewerFooterHost(controller: TagRunController) {
             Column(Modifier.padding(Tokens.Sizes.globalScreenMargin)) {
                 Text("Sunday at the lake", style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Wednesday, July 5 · ", style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1)
+                    Text("Wednesday, July 5 · ", style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1)
                     TagRun("p-other", controller = controller)
                 }
             }

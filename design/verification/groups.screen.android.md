@@ -46,7 +46,7 @@ Memory entries (memory pass APIs `OnThisDayEntry`, `YearStoryEntry`, `BirthdayRe
 | match (token) | `groups.screen.shadow.cover` | color: #000000; blur: 8.5; x: 3; y: 10; opacity: 0.25 | Tokens.Shadows.groupsScreenShadowCover | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3: luminance profi… |  |
 | match (token) | `color.global.control` | light: #F1F1F1; dark: #262626 | Tokens.Colors.globalControl | light: references/auto/retro/store/retro-store-01.png (850–1030,870–1130) 104 s… |  |
 | match (token) | `icon.global.group` | Outlined.Group | Tokens.Icons.globalGroup | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png; glyph tab… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `groups.screen.size.coverToTitle` | 36.7 pt | Tokens.Sizes.groupsScreenSizeCoverToTitle · measured above | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3: cover ink botto… |  |
 | match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |

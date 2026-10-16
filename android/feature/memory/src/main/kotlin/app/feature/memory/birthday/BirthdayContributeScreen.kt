@@ -281,8 +281,8 @@ fun ComposerStep(
                     )
                 }
                 when (state.inline) {
-                    ContributeState.Inline.Offline -> InlineLine(stringResource(R.string.birthday_contribute_offline), Tokens.Colors.globalTextSecondary)
-                    ContributeState.Inline.NotEligible -> InlineLine(stringResource(R.string.birthday_contribute_noteligible), Tokens.Colors.globalDestructive)
+                    ContributeState.Inline.Offline -> InlineLine(stringResource(R.string.birthday_contribute_offline), Tokens.ColorsDark.globalTextSecondary)
+                    ContributeState.Inline.NotEligible -> InlineLine(stringResource(R.string.birthday_contribute_noteligible), Tokens.ColorsDark.globalDestructive)
                     ContributeState.Inline.Error -> Box(Modifier.padding(top = Tokens.Sizes.globalListGap)) {
                         EmptyState(stringResource(R.string.birthday_contribute_error_title), stringResource(R.string.birthday_contribute_error_detail))
                     }

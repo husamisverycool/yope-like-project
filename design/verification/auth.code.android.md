@@ -39,7 +39,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.code/`): `defa
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `size.global.screenMargin` | 16 pt | Tokens.Sizes.globalScreenMargin · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (behaviour) | `auth.code.layout.codeField` | one TextField, KeyboardType.NumberPassword with visualTransformation None, autofill Conte… | one FormTextField, KeyboardType.NumberPassword, ContentType.SmsOtpCode; SMS User Consent fills it | docs/PLATFORM_CONSTRAINTS.md §7 (https://developer.apple.com/documentation/secu… |  |
 | match (token) | `size.global.sectionHeaderToContent` | 11.7 pt | Tokens.Sizes.globalSectionHeaderToContent | references/auto/retro/store/retro-store-02.png baseline 1313 → strip 1341 (also… |  |

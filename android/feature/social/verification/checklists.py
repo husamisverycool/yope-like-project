@@ -746,7 +746,10 @@ def mark_measure(img, c1, c2, c5):
     while x < c1["right"] * s and px_hex(img, x, y_mid * s) == fill_hex:
         x += 1
     inset = x / s - c1["left"]
-    primary = tuple(int(tok("color.global.system.primary").lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
+    primary_hex = tok("color.global.system.primary")
+    if isinstance(primary_hex, dict):
+        primary_hex = primary_hex["light"]  # editReady is the light render
+    primary = tuple(int(primary_hex.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
     near = lambda p: all(abs(p[i] - primary[i]) <= 12 for i in range(3))
     box = tok("size.global.checkCircle") + 4
     blues = [(xx, yy) for xx in range(int(c1["left"] * s), int((c1["left"] + box) * s)) for yy in range(int(c1["top"] * s), int((c1["top"] + box) * s))

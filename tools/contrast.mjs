@@ -151,6 +151,7 @@ export const PAIRS = [
   ["color.global.destructive", "color.global.background", "text", "red destructive row / menu text 15–17 regular on the page"],
   ["color.global.destructive", "color.global.control", "text", "red destructive text on an iOS grouped row"],
   ["color.global.destructive", "color.global.surfaceSecondary.android", "text", "red destructive text on an Android grouped row"],
+  ["color.global.destructive", "color.global.controlOnDeep", "nontext", "red mic / trash glyph in the voice capsule on media (#262626; dark value in both appearances)", "dark"],
   // Hairline (decorative)
   ["color.global.separator", "color.global.background", "nontext", "hairline divider (decorative: not required by SC 1.4.11)"],
   // Cards on backdrops
@@ -158,12 +159,13 @@ export const PAIRS = [
   ["color.global.textSecondary", "color.global.surfaceElevated", "text", "secondary text ('retro.app'-style footer, plan footnote) on the card"],
   // Media surfaces (black in both appearances)
   ["color.global.textOnMedia", "color.global.backgroundDeep", "text", "viewer header name 15 semibold, comment text on black"],
-  ["color.global.textSecondary", "color.global.backgroundDeep", "text", "viewer 'Week 49' / date 15 regular on black"],
+  ["color.global.textSecondary", "color.global.backgroundDeep", "text", "viewer 'Week 49' / date 15 regular on black (media surfaces take the dark appearance's value in both appearances: iOS forces .dark, Android reads Tokens.ColorsDark)", "dark"],
   ["color.global.textOnMedia", "color.global.controlOnDeep", "text", "position pill / 'Add a message' label on #262626"],
   ["color.global.textOnMedia", "color.global.controlOnDeep", "nontext", "close / edit glyph in a #262626 circle"],
-  ["color.global.textSecondary", "color.global.controlOnDeep", "text", "comment-field placeholder on #262626"],
+  ["color.global.textSecondary", "color.global.controlOnDeep", "text", "comment-field placeholder on #262626 (media: dark value in both appearances)", "dark"],
   ["color.global.controlOnDeep", "color.global.backgroundDeep", "nontext", "#262626 circle / pill / field against black"],
   ["color.global.onSurfaceLight", "color.global.surfaceLight", "text", "'Share' / 'Send Postcard' label on the white pill"],
+  ["color.global.textSecondary", "color.global.surfaceLight", "text", "recap card detail line on the white card (white in both appearances: it takes the light value)", "light"],
   ["color.global.surfaceLight", "color.global.backgroundDeep", "nontext", "white pill against black"],
   // Over photos (worst case: a white photo)
   ["color.global.textOnMedia", "#00000066,#FFFFFF", "text", "weekday tile label 13 semibold at its baseline (scrim ≈40 % there) over a WHITE photo — worst case"],

@@ -366,7 +366,7 @@ private fun GroupsSection(
     Text(
         stringResource(R.string.camera_sendto_groupslabel),
         style = labelStyle,
-        color = Tokens.Colors.globalTextSecondary,
+        color = Tokens.ColorsDark.globalTextSecondary,
         modifier = Modifier
             .padding(horizontal = Tokens.Sizes.globalScreenMargin)
             // "35.2 pt below the photo" (ST-03, to the label's cap top).

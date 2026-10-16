@@ -173,7 +173,15 @@ final class AccountFlowUITests: XCTestCase {
         let confirm = app.alerts.buttons["Yes, sign out"].firstMatch
         XCTAssertTrue(confirm.waitForExistence(timeout: 5), "Sign out?")
         confirm.tap()
-        XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10), "signed out: the sign-up landing")
+        XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10), "signed out: auth.phone")
+        // The landing (A), not a form kept from the session that ended; its form starts empty (the calling code only).
+        let getStarted = app.buttons["auth.phone.getStarted"]
+        XCTAssertTrue(getStarted.waitForExistence(timeout: 5), "the landing's Get started")
+        getStarted.tap()
+        let phone = app.textFields["auth.phone.field"]
+        XCTAssertTrue(phone.waitForExistence(timeout: 5))
+        let digits = ((phone.value as? String) ?? "").filter(\.isNumber)
+        XCTAssertLessThanOrEqual(digits.count, 3, "no previous number in the field (only the calling code): \(digits)")
     }
 
     @MainActor

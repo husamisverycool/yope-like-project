@@ -129,7 +129,7 @@ class DataGraph(context: Context, val config: SupabaseConfig, val options: DataO
     /** Starts the session glue once (push token, billing identity, widgets, cache upkeep). */
     @Synchronized
     fun startGlue(bridges: GlueBridges = GlueBridges.default(appContext)): SessionGlue =
-        glue ?: SessionGlue(auth, groups, devices, settings, realtime, cache, signedUrls, bridges, scope).also {
+        glue ?: SessionGlue(auth, groups, devices, settings, realtime, cache, signedUrls, bridges, scope, uploads::discardAll).also {
             it.start()
             glue = it
         }

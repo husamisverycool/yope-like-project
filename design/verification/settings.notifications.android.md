@@ -26,13 +26,13 @@ States rendered (`android/feature/account/src/test/snapshots/settings.notificati
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match (token) | `settings.root.size.rowHeight` | 58.7 pt | Tokens.Sizes.settingsRootSizeRowHeight | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.avatarComment` | 31.2 pt | Tokens.Sizes.globalAvatarComment | references/auto/retro/press/tc-2023-07-retro-2b.jpg comment-row avatar x1356–14… |  |
 | match (token) | `icon.global.group` | Outlined.Group | Tokens.Icons.globalGroup | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png; glyph tab… |  |
 | match (behaviour) | `settings.root.layout.list` | component: design/components.md C-14 on both platforms (custom rows; not List(.insetGroup… | C-14 GroupedSection / GroupedRow (core:ui) inside SettingsGroup (settings/SettingsUi.kt); headers SettingsHea… | references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png frames … |  |
 | match (token) | `size.global.sectionGap` | 36.4 pt | Tokens.Sizes.globalSectionGap | references/auto/retro/store/retro-store-02.png 1608 → 1695 — design/research/re… |  |
 | match (behaviour) | `color.global.selection` | light: #0088FF; dark: #0091FF | M3 Switch checked track (core:ui GroupedRow toggle, AppTheme colour scheme) | HIG Color (system colors table, 2025-06-09: Blue R-0,G-136,B-255 / R-0,G-145,B-… | PLATFORM tint |
-| match (token) | `color.global.system.primary` | #0A84FF | Tokens.Colors.globalSystemPrimary | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt M3 ColorSchem… |  |
+| match (token) | `color.global.system.primary` | light: #0066CE; dark: #2592FF | Tokens.Colors.globalSystemPrimary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (behaviour) | `spring.global.platformDefault.android` | response: 0.16223; dampingFraction: 1 | M3 Switch / Material motion defaults | Compose Spring constants (MERGE_DECISIONS Foundations); Retro relies on Compose… | PLATFORM |
 | match (token) | `duration.global.fade` | 150 ms | Tokens.Durations.globalFade | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'APP-CODE MOT… |  |
 | match (behaviour) | `settings.root.layout.toggleHaptic` | TOGGLE_ON / TOGGLE_OFF (API 34) only if the Switch does not already play one | M3 Switch plays no custom haptic; the view model raises haptic.global.select on toggle | https://developer.apple.com/design/human-interface-guidelines/playing-haptics ;… | PLATFORM |

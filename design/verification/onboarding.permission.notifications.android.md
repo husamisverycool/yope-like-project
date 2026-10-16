@@ -34,7 +34,7 @@ States rendered (`android/feature/account/src/test/snapshots/onboarding.permissi
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `size.global.screenMargin` | 16 pt | Tokens.Sizes.globalScreenMargin · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.buttonMarginH` | 20 pt | Tokens.Sizes.globalButtonMarginH · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 | match (behaviour) | `settings.account.layout.alert` | M3 AlertDialog: container color.global.system.surfaceContainerHigh, corner 28 dp, headlin… | M3 AlertDialog (core:ui SystemAlertDialog / ErrorAlert), destructive confirm in color.global.destructive | https://developer.apple.com/design/human-interface-guidelines/alerts ; https://… |  |
 | match (token) | `duration.global.pageTransition` | 500 ms | Tokens.Durations.globalPageTransition | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt tween 500 ms … |  |

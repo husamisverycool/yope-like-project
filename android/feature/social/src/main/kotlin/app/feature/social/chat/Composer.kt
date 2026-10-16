@@ -216,7 +216,7 @@ fun RowScope.RecordingContent(recording: Recording, elapsedMs: Long, onMedia: Bo
     val secondary = PageRoles.secondaryText(onMedia)
     Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionAvatarInset))
     Box(Modifier.size(Tokens.Sizes.globalAvatarComment), contentAlignment = Alignment.Center) {
-        Icon(Tokens.Icons.globalMic, contentDescription = null, tint = Tokens.Colors.globalDestructive, modifier = Modifier.size(Tokens.Sizes.globalIcon))
+        Icon(Tokens.Icons.globalMic, contentDescription = null, tint = PageRoles.destructive(onMedia), modifier = Modifier.size(Tokens.Sizes.globalIcon))
     }
     Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionAvatarToText))
     Text(

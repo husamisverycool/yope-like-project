@@ -23,13 +23,18 @@ public struct SessionHooks: Sendable {
     public var linkPurchases: (@Sendable (UserID?) async -> Void)?
     /// Reload widget timelines after the widget's group list or snapshots changed.
     public var reloadWidgets: (@Sendable () async -> Void)?
+    /// After sign-out, account deletion or expiry: remove the files the app keeps outside AppData for the person who
+    /// was signed in (capture drafts, voice recordings, downloaded media copies, share images, collage pages).
+    public var removeSessionFiles: (@Sendable () async -> Void)?
 
     public init(
         linkPurchases: (@Sendable (UserID?) async -> Void)? = nil,
-        reloadWidgets: (@Sendable () async -> Void)? = nil
+        reloadWidgets: (@Sendable () async -> Void)? = nil,
+        removeSessionFiles: (@Sendable () async -> Void)? = nil
     ) {
         self.linkPurchases = linkPurchases
         self.reloadWidgets = reloadWidgets
+        self.removeSessionFiles = removeSessionFiles
     }
 }
 
@@ -284,5 +289,6 @@ public actor SessionCoordinator {
             await hooks.reloadWidgets?()
         }
         await hooks.linkPurchases?(nil)
+        await hooks.removeSessionFiles?()
     }
 }

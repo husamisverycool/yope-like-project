@@ -156,9 +156,11 @@ struct RecapCard: View {
                             .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
                     }
                     if let detail {
+                        // The card is white in both appearances: the light appearance's grey (owner decision 20).
                         Text(detail)
                             .dsTextStyle(TextRole.meta)
                             .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                            .environment(\.colorScheme, .light)
                     }
                 }
                 .multilineTextAlignment(.trailing)

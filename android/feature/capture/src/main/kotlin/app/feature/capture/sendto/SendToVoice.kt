@@ -320,7 +320,7 @@ internal fun SendToRecordingCapsule(
     ) {
         when (phase) {
             VoicePhase.Paused -> {
-                GlyphButton(Tokens.Icons.globalTrash, stringResource(R.string.chat_voice_a11y_discard), Tokens.Colors.globalDestructive, onDiscard, "sendto.voice.discard")
+                GlyphButton(Tokens.Icons.globalTrash, stringResource(R.string.chat_voice_a11y_discard), Tokens.ColorsDark.globalDestructive, onDiscard, "sendto.voice.discard")
                 GlyphButton(
                     if (previewing) Tokens.Icons.globalPause else Tokens.Icons.globalPlay,
                     if (previewing) stringResource(R.string.chat_voice_a11y_pause) else stringResource(R.string.chat_voice_a11y_play, spokenDuration(live.elapsedMs)),
@@ -330,7 +330,7 @@ internal fun SendToRecordingCapsule(
                 )
                 Waveform(live.levels, previewProgress)
                 Elapsed(live.elapsedMs)
-                GlyphButton(Tokens.Icons.globalMic, stringResource(R.string.chat_voice_a11y_resumerecording), Tokens.Colors.globalDestructive, onResume, "sendto.voice.pauseResume")
+                GlyphButton(Tokens.Icons.globalMic, stringResource(R.string.chat_voice_a11y_resumerecording), Tokens.ColorsDark.globalDestructive, onResume, "sendto.voice.pauseResume")
             }
             VoicePhase.Locked -> {
                 RedMic()
@@ -346,8 +346,8 @@ internal fun SendToRecordingCapsule(
                     horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillIconGap),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(Tokens.Icons.globalBack, contentDescription = null, tint = Tokens.Colors.globalTextSecondary, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
-                    Text(stringResource(R.string.chat_voice_recording_slidetocancel), style = TextRoles.pill, color = Tokens.Colors.globalTextSecondary, maxLines = 1)
+                    Icon(Tokens.Icons.globalBack, contentDescription = null, tint = Tokens.ColorsDark.globalTextSecondary, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
+                    Text(stringResource(R.string.chat_voice_recording_slidetocancel), style = TextRoles.pill, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1)
                 }
             }
         }
@@ -356,7 +356,7 @@ internal fun SendToRecordingCapsule(
 
 @Composable
 private fun RedMic() {
-    Icon(Tokens.Icons.globalMic, contentDescription = null, tint = Tokens.Colors.globalDestructive, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
+    Icon(Tokens.Icons.globalMic, contentDescription = null, tint = Tokens.ColorsDark.globalDestructive, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
 }
 
 /** The recorder's elapsed time, or the paused draft's length (a polite live region, read as words). */

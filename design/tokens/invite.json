@@ -354,13 +354,14 @@
     },
     "invite.web.color.bodyDesktop": {
       "type": "color",
-      "value": "#00000080",
-      "source_app": "Retro",
+      "value": "#00000091",
+      "source_app": "WCAG 2.2 (owner decision 20)",
       "surface": "invite.web",
-      "element": "desktop page: body line colour (black 50 %) on white",
-      "evidence": "references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css color:rgba(0,0,0,.5)",
-      "method": "CSS constant: 0.5 × 255 = 128 = 0x80",
-      "level": "SOURCED"
+      "element": "desktop page: body line and footer link colour (black 57 %; Retro's black 50 % raised by owner decision 20) on white",
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (text under WCAG AA raised to the nearest passing value of the same hue); W3C WCAG 2.2 SC 1.4.3 (https://www.w3.org/TR/WCAG22/). Black 50 % on white composites to #7F7F7F (4.00:1); 57 % (#00000091) composites to #6E6E6E (5.10:1), the same grey as color.global.textSecondary light. Retro's value \"#00000080\" (Retro, SOURCED): references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css color:rgba(0,0,0,.5)",
+      "method": "alpha raised until the composite on #FFFFFF passes 4.5:1 (tools/contrast.mjs)",
+      "level": "PLATFORM",
+      "precision": "exact (computed)"
     },
     "invite.web.size.bodyMaxWidthDesktop": {
       "type": "dimension",

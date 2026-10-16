@@ -92,12 +92,12 @@ export const tokens = {
   "color.global.background.android": {"light":"#FFFFFF","dark":"#1C1C1E"}, // Retro · global · SOURCED
   "color.global.background.android.trueBlack": {"light":"#FFFFFF","dark":"#000000"}, // Retro · global · SOURCED
   "color.global.backgroundDeep": "#000000", // Retro · global · SOURCED
-  "color.global.badge": "#EA3337", // Retro · global · SOURCED
-  "color.global.badgeMuted": "#999999", // Retro · global · SOURCED
+  "color.global.badge": "#D0151A", // WCAG 2.2 (owner decision 20) · global · PLATFORM
+  "color.global.badgeMuted": "#767676", // WCAG 2.2 (owner decision 20) · global · PLATFORM
   "color.global.control": {"light":"#F1F1F1","dark":"#262626"}, // Retro · global · SOURCED
   "color.global.controlOnDeep": "#262626", // Retro · global · SOURCED
   "color.global.controlRaised": {"light":"#CCCCCC","dark":"#4D4D4D"}, // Retro · global · SOURCED
-  "color.global.destructive": "#EA3337", // Retro · global.system · SOURCED
+  "color.global.destructive": {"light":"#D0151A","dark":"#EF6265"}, // WCAG 2.2 (owner decision 20) · global.system · PLATFORM
   "color.global.emptyTileText": {"light":"#D9D9D9","dark":"#515151"}, // Retro · global · SOURCED
   "color.global.glass": "#FFFFFF1F", // Retro · global · SOURCED
   "color.global.onAccent": {"light":"#FFFFFF","dark":"#000000"}, // Retro · global · SOURCED
@@ -111,26 +111,26 @@ export const tokens = {
   "color.global.surfaceElevated": {"light":"#FFFFFF","dark":"#181818"}, // Retro · global · SOURCED
   "color.global.surfaceLight": "#FFFFFF", // Retro · global · SOURCED
   "color.global.surfaceSecondary.android": {"light":"#F7F7F7","dark":"#262626"}, // Retro · global · SOURCED
-  "color.global.system.error": "#EA3337", // Retro · global.system · SOURCED
+  "color.global.system.error": {"light":"#D0151A","dark":"#EF6265"}, // WCAG 2.2 (owner decision 20) · global.system · PLATFORM
   "color.global.system.ios": {"groupedBackground":"systemGroupedBackground","cell":"secondarySystemGroupedBackground","label":"label","secondaryLabel":"secondaryLabel","placeholder":"placeholderText","separator":"separator","tint":"systemBlue","destructive":"systemRed"}, // Apple HIG · global.system · PLATFORM
   "color.global.system.onError": "#FFFFFF", // Retro · global.system · SOURCED
   "color.global.system.onPrimary": "#FFFFFF", // Retro · global.system · SOURCED
   "color.global.system.onSurface": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global.system · SOURCED
   "color.global.system.onSurfaceVariant": {"light":"#49454F","dark":"#CAC4D0"}, // Material 3 · global.system · PLATFORM
   "color.global.system.outline": {"light":"#79747E","dark":"#938F99"}, // Material 3 · global.system · PLATFORM
-  "color.global.system.primary": "#0A84FF", // Retro · global.system · SOURCED
+  "color.global.system.primary": {"light":"#0066CE","dark":"#2592FF"}, // WCAG 2.2 (owner decision 20) · global.system · PLATFORM
   "color.global.system.primaryContainer": {"light":"#CCCCCC","dark":"#4D4D4D"}, // Retro · global.system · SOURCED
   "color.global.system.secondaryContainer": {"light":"#F7F7F7","dark":"#262626"}, // Retro · global.system · SOURCED
   "color.global.system.surface": {"light":"#FFFFFF","dark":"#1C1C1E"}, // Retro · global.system · SOURCED
   "color.global.system.surface.trueBlack": {"light":"#FFFFFF","dark":"#000000"}, // Retro · global.system · SOURCED
   "color.global.system.surfaceContainerHigh": {"light":"#ECE6F0","dark":"#2B2930"}, // Material 3 · global.system · PLATFORM
   "color.global.system.surfaceContainerLow": {"light":"#F7F2FA","dark":"#1D1B20"}, // Material 3 · global.system · PLATFORM
-  "color.global.tabInactive": {"light":"#B2B2B2","dark":"#999999"}, // Retro · global · SOURCED
+  "color.global.tabInactive": {"light":"#949494","dark":"#999999"}, // WCAG 2.2 (owner decision 20) · global · PLATFORM
   "color.global.tabInactiveOnMedia": "#FFFFFF9E", // Retro · global · SOURCED
   "color.global.textOnMedia": "#FFFFFF", // Retro · global · SOURCED
   "color.global.textPrimary": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global · SOURCED
-  "color.global.textSecondary": "#999999", // Retro · global · SOURCED
-  "color.global.textSecondary.android": {"light":"#00000080","dark":"#FFFFFF99"}, // Retro · global · SOURCED
+  "color.global.textSecondary": {"light":"#6E6E6E","dark":"#999999"}, // WCAG 2.2 (owner decision 20) · global · PLATFORM
+  "color.global.textSecondary.android": {"light":"#00000091","dark":"#FFFFFF99"}, // WCAG 2.2 (owner decision 20) · global · PLATFORM
   "color.global.textTertiary": {"light":"#C1C1C1","dark":"#FFFFFF4D"}, // Retro · global · SOURCED
   "color.onthisday.dial.tick": "#FFFFFF4D", // Retro · onthisday · SOURCED
   "color.onthisday.subtitle": "#FFFFFFC2", // Retro · onthisday · SOURCED
@@ -340,7 +340,7 @@ export const tokens = {
   "invite.appclip.layout.messagesCard": {"header":"the App Clip card image (App Store Connect header image) — no text in the image","title":"App Store Connect card title (≤ 30 characters)","subtitle":"copy invite.appclip.card.subtitle (≤ 56 characters)","action":"copy invite.appclip.card.action (one of Apple's preset verbs)","display":"app-clip-display=card on the invite page (Retro uses the card display, not the banner)"}, // Apple HIG · invite.appclip · PLATFORM
   "invite.web.color.avatarPlaceholder": "#EDEDED", // Retro · invite.web · SOURCED
   "invite.web.color.body": "#FFFFFF9E", // Retro · invite.web · SOURCED
-  "invite.web.color.bodyDesktop": "#00000080", // Retro · invite.web · SOURCED
+  "invite.web.color.bodyDesktop": "#00000091", // WCAG 2.2 (owner decision 20) · invite.web · PLATFORM
   "invite.web.color.pill": "#FFFFFF33", // Retro · invite.web · SOURCED
   "invite.web.color.pillHover": "#FFFFFF4D", // Retro · invite.web · SOURCED
   "invite.web.duration.pill": 300, // Retro · invite.web · SOURCED

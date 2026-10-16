@@ -46,8 +46,8 @@ System dialog motion. Confirmed → `haptic.global.warning`; failed → `haptic.
 
 ## Accessibility
 
-Native dialog semantics; destructive role on the confirm button. Contrast: system colours (Android error #EA3337 on
-`color.global.system.surfaceContainerHigh`, CONTRAST failure 6 family — reported).
+Native dialog semantics; destructive role on the confirm button. Contrast: system colours (Android error #D0151A / #EF6265 on
+`color.global.system.surfaceContainerHigh`: 4.51 / 4.52:1 after owner decision 20 — design/CONTRAST.md).
 
 ## Data & actions
 

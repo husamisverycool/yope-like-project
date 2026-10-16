@@ -18,7 +18,7 @@ Snapshots (real sample photos, `fixtures/photos/`): `birthday.tribute/error-ligh
 | match | title leading `size.global.screenMargin` | 16 | 16 |  |  |
 | match | title up to two lines | ≤ 2 | 1 |  | 'Ana's birthday video', `headerTitle`, LineBreak.Heading |
 | match | group baseline `dimension.onthisday.subtitleBaseline` below the title's | 26.4 | 26.5 |  |  |
-| match | group `color.global.textSecondary` | #999999 | #999999 |  |  |
+| match | group `color.global.textSecondary` (media: dark value) | #999999 | #999999 |  |  |
 | match | close `size.global.circleButton` | 36 | 36 |  |  |
 | match | close at `size.global.headerInset` | 16 | 16 |  |  |
 | match | close centred on the first line's cap middle | 48.75 | 48.5 |  |  |

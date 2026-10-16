@@ -94,10 +94,10 @@ object Tokens {
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF000000) else Color(0xFFFFFFFF)
         /** Retro · global · media surfaces that stay black in both appearances: photo / story viewer, camera, postcard-style composer, recap preview, full-bleed media (Rewind) · SOURCED — token `color.global.backgroundDeep` */
         val globalBackgroundDeep: Color = Color(0xFF000000)
-        /** Retro · global · Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers · SOURCED — token `color.global.badge` */
-        val globalBadge: Color = Color(0xFFEA3337)
-        /** Retro · global · grey relative-week pill next to the title ('Last Week'), label color.global.onBadge · SOURCED — token `color.global.badgeMuted` */
-        val globalBadgeMuted: Color = Color(0xFF999999)
+        /** WCAG 2.2 (owner decision 20) · global · Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers · PLATFORM — token `color.global.badge` */
+        val globalBadge: Color = Color(0xFFD0151A)
+        /** WCAG 2.2 (owner decision 20) · global · grey relative-week pill next to the title ('Last Week'), label color.global.onBadge · PLATFORM — token `color.global.badgeMuted` */
+        val globalBadgeMuted: Color = Color(0xFF767676)
         /** Retro · global · fill of tiles (add tile, empty-day tile, strip placeholder), search / text fields, circle buttons ('+'), fill pills ('Create'), grouped rows on iOS · SOURCED — token `color.global.control` */
         val globalControl: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF262626) else Color(0xFFF1F1F1)
@@ -106,8 +106,9 @@ object Tokens {
         /** Retro · global · stronger fill: disabled primary capsule, container fill · SOURCED — token `color.global.controlRaised` */
         val globalControlRaised: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF4D4D4D) else Color(0xFFCCCCCC)
-        /** Retro · global.system · destructive actions drawn by the app and destructive menu items: delete, remove, report, leave · SOURCED — token `color.global.destructive` */
-        val globalDestructive: Color = Color(0xFFEA3337)
+        /** WCAG 2.2 (owner decision 20) · global.system · destructive actions drawn by the app and destructive menu items: delete, remove, report, leave · PLATFORM — token `color.global.destructive` */
+        val globalDestructive: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFEF6265) else Color(0xFFD0151A)
         /** Retro · global · month / day number / weekday on an empty-day tile · SOURCED — token `color.global.emptyTileText` */
         val globalEmptyTileText: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF515151) else Color(0xFFD9D9D9)
@@ -141,8 +142,9 @@ object Tokens {
         /** Retro · global · Android secondary surface: grouped settings rows, chips, reply / comment bar, sheet cards (iOS draws these in color.global.control) · SOURCED — token `color.global.surfaceSecondary.android` */
         val globalSurfaceSecondaryAndroid: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF262626) else Color(0xFFF7F7F7)
-        /** Retro · global.system · Android M3 error: error / destructive text and icons in M3 components · SOURCED — token `color.global.system.error` */
-        val globalSystemError: Color = Color(0xFFEA3337)
+        /** WCAG 2.2 (owner decision 20) · global.system · Android M3 error: error / destructive text and icons in M3 components · PLATFORM — token `color.global.system.error` */
+        val globalSystemError: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFEF6265) else Color(0xFFD0151A)
         /** Retro · global.system · Android M3 onError: content on the error colour · SOURCED — token `color.global.system.onError` */
         val globalSystemOnError: Color = Color(0xFFFFFFFF)
         /** Retro · global.system · Android M3 onPrimary: content on primary (switch thumb on, filled tonal content) · SOURCED — token `color.global.system.onPrimary` */
@@ -156,8 +158,9 @@ object Tokens {
         /** Material 3 · global.system · Android M3 outline (outlined text field border, M3 divider defaults) · PLATFORM — token `color.global.system.outline` */
         val globalSystemOutline: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF938F99) else Color(0xFF79747E)
-        /** Retro · global.system · Android M3 primary: dialog action labels, switches, selected controls, text-field cursor · SOURCED — token `color.global.system.primary` */
-        val globalSystemPrimary: Color = Color(0xFF0A84FF)
+        /** WCAG 2.2 (owner decision 20) · global.system · Android M3 primary: dialog action labels, switches, selected controls, text-field cursor · PLATFORM — token `color.global.system.primary` */
+        val globalSystemPrimary: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF2592FF) else Color(0xFF0066CE)
         /** Retro · global.system · Android M3 primary container (on-primary-container #000000 / #FFFFFF) · SOURCED — token `color.global.system.primaryContainer` */
         val globalSystemPrimaryContainer: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF4D4D4D) else Color(0xFFCCCCCC)
@@ -176,9 +179,9 @@ object Tokens {
         /** Material 3 · global.system · Android M3 modal bottom sheet container (role md.sys.color.surface-container-low) · PLATFORM — token `color.global.system.surfaceContainerLow` */
         val globalSystemSurfaceContainerLow: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF1D1B20) else Color(0xFFF7F2FA)
-        /** Retro · global · unselected tab-bar glyphs (black 30 % on white / white 60 % on black) · SOURCED — token `color.global.tabInactive` */
+        /** WCAG 2.2 (owner decision 20) · global · unselected tab-bar glyphs (black 30 % on white / white 60 % on black) · PLATFORM — token `color.global.tabInactive` */
         val globalTabInactive: Color
-            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF999999) else Color(0xFFB2B2B2)
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF999999) else Color(0xFF949494)
         /** Retro · global · unselected tab glyphs over a full-bleed photo (selected: color.global.textOnMedia) · SOURCED — token `color.global.tabInactiveOnMedia` */
         val globalTabInactiveOnMedia: Color = Color(0x9EFFFFFF)
         /** Retro · global · text and glyphs on media surfaces and over photos in both appearances: viewer header name, close / more glyphs, weekday tile labels, date title on Rewind, controls on color.global.controlOnDeep · SOURCED — token `color.global.textOnMedia` */
@@ -186,11 +189,12 @@ object Tokens {
         /** Retro · global · primary text and glyphs; selected tab glyph; page-dot selected · SOURCED — token `color.global.textPrimary` */
         val globalTextPrimary: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFFFFFFF) else Color(0xFF000000)
-        /** Retro · global · secondary text on iOS: date ranges, real names, list subtitles, meta lines, field placeholders (2025), grey links and legal text · SOURCED — token `color.global.textSecondary` */
-        val globalTextSecondary: Color = Color(0xFF999999)
-        /** Retro · global · secondary text on Android: meta lines ('A · B'), NUX body, list subtitles · SOURCED — token `color.global.textSecondary.android` */
+        /** WCAG 2.2 (owner decision 20) · global · secondary text on iOS: date ranges, real names, list subtitles, meta lines, field placeholders (2025), grey links and legal text · PLATFORM — token `color.global.textSecondary` */
+        val globalTextSecondary: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF999999) else Color(0xFF6E6E6E)
+        /** WCAG 2.2 (owner decision 20) · global · secondary text on Android: meta lines ('A · B'), NUX body, list subtitles · PLATFORM — token `color.global.textSecondary.android` */
         val globalTextSecondaryAndroid: Color
-            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0x99FFFFFF) else Color(0x80000000)
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0x99FFFFFF) else Color(0x91000000)
         /** Retro · global · tertiary / disabled text and glyphs · SOURCED — token `color.global.textTertiary` */
         val globalTextTertiary: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0x4DFFFFFF) else Color(0xFFC1C1C1)
@@ -204,8 +208,8 @@ object Tokens {
         val inviteWebColorAvatarPlaceholder: Color = Color(0xFFEDEDED)
         /** Retro · invite.web · mobile page: body line colour (white 62 %) over the blurred photo · SOURCED — token `invite.web.color.body` */
         val inviteWebColorBody: Color = Color(0x9EFFFFFF)
-        /** Retro · invite.web · desktop page: body line colour (black 50 %) on white · SOURCED — token `invite.web.color.bodyDesktop` */
-        val inviteWebColorBodyDesktop: Color = Color(0x80000000)
+        /** WCAG 2.2 (owner decision 20) · invite.web · desktop page: body line and footer link colour (black 57 %; Retro's black 50 % raised by owner decision 20) on white · PLATFORM — token `invite.web.color.bodyDesktop` */
+        val inviteWebColorBodyDesktop: Color = Color(0x91000000)
         /** Retro · invite.web · mobile page: 'Let's go' pill fill (white 20 %) over the blurred photo; label #FFFFFF · SOURCED — token `invite.web.color.pill` */
         val inviteWebColorPill: Color = Color(0x33FFFFFF)
         /** Retro · invite.web · mobile page: pill fill on hover (white 30 %) · SOURCED — token `invite.web.color.pillHover` */
@@ -2399,12 +2403,12 @@ object Tokens {
         val globalBackgroundAndroid: Color = Color(0xFFFFFFFF)
         val globalBackgroundAndroidTrueBlack: Color = Color(0xFFFFFFFF)
         val globalBackgroundDeep: Color = Color(0xFF000000)
-        val globalBadge: Color = Color(0xFFEA3337)
-        val globalBadgeMuted: Color = Color(0xFF999999)
+        val globalBadge: Color = Color(0xFFD0151A)
+        val globalBadgeMuted: Color = Color(0xFF767676)
         val globalControl: Color = Color(0xFFF1F1F1)
         val globalControlOnDeep: Color = Color(0xFF262626)
         val globalControlRaised: Color = Color(0xFFCCCCCC)
-        val globalDestructive: Color = Color(0xFFEA3337)
+        val globalDestructive: Color = Color(0xFFD0151A)
         val globalEmptyTileText: Color = Color(0xFFD9D9D9)
         val globalGlass: Color = Color(0x1FFFFFFF)
         val globalOnAccent: Color = Color(0xFFFFFFFF)
@@ -2418,32 +2422,32 @@ object Tokens {
         val globalSurfaceElevated: Color = Color(0xFFFFFFFF)
         val globalSurfaceLight: Color = Color(0xFFFFFFFF)
         val globalSurfaceSecondaryAndroid: Color = Color(0xFFF7F7F7)
-        val globalSystemError: Color = Color(0xFFEA3337)
+        val globalSystemError: Color = Color(0xFFD0151A)
         val globalSystemOnError: Color = Color(0xFFFFFFFF)
         val globalSystemOnPrimary: Color = Color(0xFFFFFFFF)
         val globalSystemOnSurface: Color = Color(0xFF000000)
         val globalSystemOnSurfaceVariant: Color = Color(0xFF49454F)
         val globalSystemOutline: Color = Color(0xFF79747E)
-        val globalSystemPrimary: Color = Color(0xFF0A84FF)
+        val globalSystemPrimary: Color = Color(0xFF0066CE)
         val globalSystemPrimaryContainer: Color = Color(0xFFCCCCCC)
         val globalSystemSecondaryContainer: Color = Color(0xFFF7F7F7)
         val globalSystemSurface: Color = Color(0xFFFFFFFF)
         val globalSystemSurfaceTrueBlack: Color = Color(0xFFFFFFFF)
         val globalSystemSurfaceContainerHigh: Color = Color(0xFFECE6F0)
         val globalSystemSurfaceContainerLow: Color = Color(0xFFF7F2FA)
-        val globalTabInactive: Color = Color(0xFFB2B2B2)
+        val globalTabInactive: Color = Color(0xFF949494)
         val globalTabInactiveOnMedia: Color = Color(0x9EFFFFFF)
         val globalTextOnMedia: Color = Color(0xFFFFFFFF)
         val globalTextPrimary: Color = Color(0xFF000000)
-        val globalTextSecondary: Color = Color(0xFF999999)
-        val globalTextSecondaryAndroid: Color = Color(0x80000000)
+        val globalTextSecondary: Color = Color(0xFF6E6E6E)
+        val globalTextSecondaryAndroid: Color = Color(0x91000000)
         val globalTextTertiary: Color = Color(0xFFC1C1C1)
         val onthisdayDialTick: Color = Color(0x4DFFFFFF)
         val onthisdaySubtitle: Color = Color(0xC2FFFFFF)
         val groupsInviteColorNote: Color = Color(0xFF767676)
         val inviteWebColorAvatarPlaceholder: Color = Color(0xFFEDEDED)
         val inviteWebColorBody: Color = Color(0x9EFFFFFF)
-        val inviteWebColorBodyDesktop: Color = Color(0x80000000)
+        val inviteWebColorBodyDesktop: Color = Color(0x91000000)
         val inviteWebColorPill: Color = Color(0x33FFFFFF)
         val inviteWebColorPillHover: Color = Color(0x4DFFFFFF)
         val paywallColorPlanText: Color = Color(0xFF090A0A)
@@ -2459,12 +2463,12 @@ object Tokens {
         val globalBackgroundAndroid: Color = Color(0xFF1C1C1E)
         val globalBackgroundAndroidTrueBlack: Color = Color(0xFF000000)
         val globalBackgroundDeep: Color = Color(0xFF000000)
-        val globalBadge: Color = Color(0xFFEA3337)
-        val globalBadgeMuted: Color = Color(0xFF999999)
+        val globalBadge: Color = Color(0xFFD0151A)
+        val globalBadgeMuted: Color = Color(0xFF767676)
         val globalControl: Color = Color(0xFF262626)
         val globalControlOnDeep: Color = Color(0xFF262626)
         val globalControlRaised: Color = Color(0xFF4D4D4D)
-        val globalDestructive: Color = Color(0xFFEA3337)
+        val globalDestructive: Color = Color(0xFFEF6265)
         val globalEmptyTileText: Color = Color(0xFF515151)
         val globalGlass: Color = Color(0x1FFFFFFF)
         val globalOnAccent: Color = Color(0xFF000000)
@@ -2478,13 +2482,13 @@ object Tokens {
         val globalSurfaceElevated: Color = Color(0xFF181818)
         val globalSurfaceLight: Color = Color(0xFFFFFFFF)
         val globalSurfaceSecondaryAndroid: Color = Color(0xFF262626)
-        val globalSystemError: Color = Color(0xFFEA3337)
+        val globalSystemError: Color = Color(0xFFEF6265)
         val globalSystemOnError: Color = Color(0xFFFFFFFF)
         val globalSystemOnPrimary: Color = Color(0xFFFFFFFF)
         val globalSystemOnSurface: Color = Color(0xFFFFFFFF)
         val globalSystemOnSurfaceVariant: Color = Color(0xFFCAC4D0)
         val globalSystemOutline: Color = Color(0xFF938F99)
-        val globalSystemPrimary: Color = Color(0xFF0A84FF)
+        val globalSystemPrimary: Color = Color(0xFF2592FF)
         val globalSystemPrimaryContainer: Color = Color(0xFF4D4D4D)
         val globalSystemSecondaryContainer: Color = Color(0xFF262626)
         val globalSystemSurface: Color = Color(0xFF1C1C1E)
@@ -2503,7 +2507,7 @@ object Tokens {
         val groupsInviteColorNote: Color = Color(0xFF767676)
         val inviteWebColorAvatarPlaceholder: Color = Color(0xFFEDEDED)
         val inviteWebColorBody: Color = Color(0x9EFFFFFF)
-        val inviteWebColorBodyDesktop: Color = Color(0x80000000)
+        val inviteWebColorBodyDesktop: Color = Color(0x91000000)
         val inviteWebColorPill: Color = Color(0x33FFFFFF)
         val inviteWebColorPillHover: Color = Color(0x4DFFFFFF)
         val paywallColorPlanText: Color = Color(0xFF090A0A)

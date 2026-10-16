@@ -27,7 +27,7 @@ States rendered (`android/feature/account/src/test/snapshots/settings.blocked/`)
 |---|---|---|---|---|---|
 | match (token) | `size.global.avatarPicker` | 37 pt | Tokens.Sizes.globalAvatarPicker | references/auto/retro/press/tc-2023-07-retro-1b.webp (1356–1436) → 36.3 — desig… |  |
 | match (token) | `icon.global.person` | Rounded.Person | Tokens.Icons.globalPerson | glyph table design/research/retro-visual.md §3.6 (SF Symbol / Material candidat… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.pillHeight` | 37 pt | Tokens.Sizes.globalPillHeight | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png outline CT… |  |
 | match (token) | `settings.root.size.rowHeight` | 58.7 pt | Tokens.Sizes.settingsRootSizeRowHeight | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
 | match (token) | `duration.global.fade` | 150 ms | Tokens.Durations.globalFade | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'APP-CODE MOT… |  |

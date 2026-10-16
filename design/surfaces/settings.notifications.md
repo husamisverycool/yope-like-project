@@ -64,8 +64,8 @@ Switches: `settings.root.layout.toggleHaptic`. Presses → `haptic.global.tap` (
 
 - Each switch row is one toggle (name + state); the off block's title is a header.
 - Dynamic Type: rows `subheadline`; footers `footnote`; block title `title3`.
-- Contrast: as `groups.settings` (rows 9, 11–14); switch tint on the group: system (iOS) / Retro blue #0A84FF (Android,
-  CONTRAST failure 6 for dialog text only).
+- Contrast: as `groups.settings` (rows 9, 11–14); switch tint on the group: system (iOS) / Retro blue raised to #0066CE / #2592FF (Android,
+  owner decision 20: 4.52 / 4.54:1 as dialog text — design/CONTRAST.md).
 
 ## Data & actions
 

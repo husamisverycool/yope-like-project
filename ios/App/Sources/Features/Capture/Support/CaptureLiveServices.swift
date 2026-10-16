@@ -401,7 +401,7 @@ final class LiveCaptureCollages: CaptureCollageSource {
     init(data: DataEnvironment?) {
         self.data = data
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
-        directory = caches.appendingPathComponent("CaptureCollagePages", isDirectory: true)
+        directory = caches.appendingPathComponent(SessionFiles.collagePagesFolder, isDirectory: true)
     }
 
     var isOffline: Bool { data?.reachability.currentStatus == .offline }

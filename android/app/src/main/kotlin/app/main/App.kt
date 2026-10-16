@@ -45,7 +45,7 @@ class App : Application() {
         super.onCreate()
         DeepLinkIntents.targetActivity = MainActivity::class.java
         Billing.configure(this)
-        DataGraph.install(this)
+        DataGraph.install(this)?.let { graph -> SessionEndCleanup.start(this, graph.auth.authState, graph.scope) }
         AppNotificationChannels.register(this)
         NotificationAppearance.current = object : NotificationAppearance {
             // Read when a notification is posted, outside composition: the accent of the system appearance.

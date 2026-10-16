@@ -64,7 +64,7 @@ final class AppEnvironment {
         self.widgetStore = widgetStore
         widgetPushTokens = WidgetPushTokenStore.forBundle(bundle)
         // Session glue: RevenueCat follows the signed-in user; widget reloads after the group
-        // list or a deleted post changed the widget store.
+        // list or a deleted post changed the widget store; the person's temporary files go when the session ends.
         let hooks = SessionHooks(
             linkPurchases: { userID in
                 if let userID {
@@ -75,6 +75,9 @@ final class AppEnvironment {
             },
             reloadWidgets: {
                 await MainActor.run { WidgetReloader.reloadGroupWidgets() }
+            },
+            removeSessionFiles: {
+                SessionFiles.removeAll()
             }
         )
         let data = try? DataEnvironment.live(configuration: configuration, widgetStore: widgetStore, hooks: hooks)

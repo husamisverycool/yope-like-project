@@ -155,7 +155,7 @@ fun RecapCard(
                 Text(title, style = TextRoles.headerTitle, color = ink, maxLines = 1)
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     if (name != null) Text(name, style = nameStyle, color = ink, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End)
-                    if (detail != null) Text(detail, style = TextRoles.meta, color = Tokens.Colors.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End)
+                    if (detail != null) Text(detail, style = TextRoles.meta, color = Tokens.ColorsLight.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End)
                 }
             }
         }

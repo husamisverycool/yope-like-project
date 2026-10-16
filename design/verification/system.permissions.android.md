@@ -16,7 +16,7 @@ States rendered (`android/feature/account/src/test/snapshots/system.permissions/
 |---|---|---|---|---|---|
 | match (behaviour) | `settings.account.layout.alert` | M3 AlertDialog: container color.global.system.surfaceContainerHigh, corner 28 dp, headlin… | M3 AlertDialog (core:ui SystemAlertDialog / ErrorAlert), destructive confirm in color.global.destructive | https://developer.apple.com/design/human-interface-guidelines/alerts ; https://… |  |
 | match (token) | `color.global.system.surfaceContainerHigh` | light: #ECE6F0; dark: #2B2930 | Tokens.Colors.globalSystemSurfaceContainerHigh | androidx compose/material3/.../tokens/ColorLightTokens.kt SurfaceContainerHigh … |  |
-| match (token) | `color.global.system.primary` | #0A84FF | Tokens.Colors.globalSystemPrimary | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt M3 ColorSchem… |  |
+| match (token) | `color.global.system.primary` | light: #0066CE; dark: #2592FF | Tokens.Colors.globalSystemPrimary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `haptic.global.tap` | VIRTUAL_KEY | Tokens.Layouts.GlobalTap | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Tap haptic w… |  |
 
 ## Copy named in the spec

@@ -75,7 +75,7 @@ Snapshots (real sample photos, `fixtures/photos/`): `onthisday/delete-confirm-li
 | match | shuffle (dice) | random memory of the whole history; subtitle 'Memories · {name}' | OnThisDayViewModelTest + flow: 'Memories · …' after the dice |  | history_weeks pages of 52 weeks, random week then random post |
 | match | feature intro once per account | C-29 FeatureIntroSheet; never again | intro-light.png; flow: shown on first open, `onthisday.nux` marked seen |  | row glyph `icon.global.rewind` (the component needs one) |
 | match | menu ('•••') | yours: Save to Camera Roll + Delete Post (red); others': Report Post (red) | menu-own-light.png; menu-light.png (someone else's memory); delete-confirm-light.png |  | DsDropdownMenu in the system appearance (RWP phone 2); Save only on your own memory (owner decision 12) |
-| match | share circle (owner decision 12) | your own memory only; on someone else's its place stays empty | paused-own-memory-light.png (share shown); paused-light.png (someone else's: no share, dial in place); OnThisDayViewModelTest |  | alpha 0 + cleared semantics, the dial keeps its slot |
+| match | share circle (owner decision 12) | your own memory only; on someone else's its place stays empty | paused-own-memory-light.png (share shown); paused-light.png (someone else's: no share, dial in place); OnThisDayViewModelTest |  | not composed (FadeVisibility in a 64-dp slot): no drawing, no click, no semantics node; OnThisDaySnapshotTest.shareIsNeverComposedOnSomeoneElsesMemory / hiddenControlsAreAbsent |
 
 ## States
 

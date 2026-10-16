@@ -142,6 +142,16 @@ class UploadQueue(
         store.delete(draftId)
     }
 
+    /**
+     * A session ended (sign-out, account deletion, expiry): every queued upload is cancelled and every draft with its photo
+     * copies deleted, so nothing of the person who left stays on the device or is sent with the next person's session
+     * (as iOS empties its outbox, `PostPublisher.removeAll`).
+     */
+    fun discardAll() {
+        workManager.cancelAllWorkByTag(TAG)
+        store.all().forEach { store.delete(it.id) }
+    }
+
     /** Drafts not yet posted (queued, running, or failed). */
     fun pending(): List<PostDraft> = store.all().filter { it.postIds == null }
 

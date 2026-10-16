@@ -40,7 +40,7 @@ Side by side: [`camera.sendto.android.png`](camera.sendto.android.png) — ours 
 | match (token) | label cap top 35.2 below the photo | 35.2 | paddingFrom(FirstBaseline, 35.2 + cap height) | references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px… | number only in the token's text (reported) |
 | match | row height 16 + 37 + 16 = 69 | 69.0 | 69.0 |  |  |
 | match | rows separated by a 1-px hairline | 0.33 | 0.34 |  |  |
-| match | check `color.global.selection` (Android: system primary #0A84FF) | #0A84FF | #0A84FF | HIG Color (system colors table, 2025-06-09: Blue R-0,G-136,B-255 / R-0,G-145,B-255) — MERGE_DECISIONS Foundati… | C-29 CheckCircle uses the platform tint on Android (components library) |
+| match | check `color.global.selection` (Android: system primary; send-to is a media surface, dark value) | #2592FF | #2592FF | HIG Color (system colors table, 2025-06-09: Blue R-0,G-136,B-255 / R-0,G-145,B-255) — MERGE_DECISIONS Foundati… | C-29 CheckCircle uses the platform tint on Android (components library) |
 | match | name `color.global.textOnMedia` on `backgroundDeep` | #000000 | #000000 |  | row background |
 
 ## Send capsule (C-05 on media)
@@ -99,7 +99,7 @@ Side by side: [`camera.sendto.android.png`](camera.sendto.android.png) — ours 
 | match | C-36 pitch bar + `size.global.waveformBarGap` | 4.1 | 4.1 | references/auto/imessage/apple-support/messages-audio-message-ios27.png: pitch 4.539 px over 38 bars (coverage… |  |
 | match | C-36 tallest bar = `layout.global.waveform` maxHeightRatio × `size.global.pillHeight` | 20.46 | 20.33 | maxHeightRatio: references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png draft capsule 58.4 px (c… |  |
 | match | C-36 shortest bar = `size.global.waveformBarMinHeight` + (tallest − min) × its level ÷ the largest level | 2.62 | 3.0 | references/auto/whatsapp/store/whatsapp-store-02.png silent bars 5.8–5.9 px high vs 6.24 px wide; references/a… | silent bars (level 0) are dots of the min height: core:ui c36 `idle-playing-dots-short` |
-| match | C-36 idle bars unplayed `color.global.textSecondary` | #999999 | #999999 | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–490,1288–1314) = #999999, 'Isabel… |  |
+| match | C-36 idle bars unplayed `color.global.textSecondary` (media: dark value) | #999999 | #999999 | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised … |  |
 | match (token) | played bars `color.global.textOnMedia` up to the playback (split bar at the edge) | spec | render `voice-attached-playing`; core:ui ComponentLogicTest | maxHeightRatio: references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png draft capsule 58.4 px (c… |  |
 | match (token) | hold / slide left past half the row / slide up `size.global.pillHeight` / lock; locked send; paused continue, preview, delete | chat.voice.layout.recording / .locked | FlowTests.voiceCapsuleHoldSlideLockAndNoteMenu; ViewModelTests.voice* | references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png ('Pause/Resume Recording': '0:07' · live… |  |
 | match (token) | TalkBack: voice capsule activates a hands-free recording, then keeps it; glyphs labelled `chat.voice.a11y.*`; waveform decorative | spec Accessibility | clearAndSetSemantics labels; VoiceWaveform clears its semantics |  |  |

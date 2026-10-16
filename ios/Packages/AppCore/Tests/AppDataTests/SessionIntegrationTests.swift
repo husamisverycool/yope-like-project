@@ -85,7 +85,8 @@ final class SessionIntegrationTests: XCTestCase {
         let hookLog = HookLog()
         let hooks = SessionHooks(
             linkPurchases: { await hookLog.link($0) },
-            reloadWidgets: { await hookLog.reload() }
+            reloadWidgets: { await hookLog.reload() },
+            removeSessionFiles: { await hookLog.removeFiles() }
         )
         let rui = try await users.make("Rui", widgetStore: widgetStore, hooks: hooks)
         let ana = try await users.make("Ana")
@@ -170,6 +171,8 @@ final class SessionIntegrationTests: XCTestCase {
         XCTAssertNil(feedAfter)
         let finalLinks = await hookLog.linked
         XCTAssertEqual(finalLinks, [rui.id, nil], "RevenueCat logged out")
+        let removals = await hookLog.fileRemovals
+        XCTAssertEqual(removals, 1, "the app's session files are removed once, after sign-out")
     }
 }
 
@@ -203,7 +206,9 @@ final class StateRecorder: @unchecked Sendable {
 actor HookLog {
     private(set) var linked: [UserID?] = []
     private(set) var reloads = 0
+    private(set) var fileRemovals = 0
 
     func link(_ user: UserID?) { linked.append(user) }
     func reload() { reloads += 1 }
+    func removeFiles() { fileRemovals += 1 }
 }

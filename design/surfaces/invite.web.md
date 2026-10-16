@@ -65,7 +65,7 @@ on white, error correction H) with the inviter's avatar (`invite.web.size.avatar
 `invite.web.lineHeight.bodyDesktop` 28, `invite.web.color.bodyDesktop`, tracking −0.4, max width
 `invite.web.size.bodyMaxWidthDesktop` 300, `invite.web.size.headlineToBody` above, `invite.web.size.bodyToQrDesktop`
 (Retro's p margin-bottom 30) below) → link `invite.web.getApp` (App Store / Play listing; Retro shows store badges
-here) → footer links (Terms, Privacy) at text role `caption`, #000000 50 %, at the bottom of the page. The column is
+here) → footer links (Terms, Privacy) at text role `caption`, #000000 57 % (Retro 50 %, owner decision 20), at the bottom of the page. The column is
 centred vertically between the page top and the footer.
 
 ## Elements
@@ -117,7 +117,7 @@ None (web).
 | line white 62 % on #4A1D17 | 6.30:1 pass; on a lighter backdrop (#8A4A3A) **3.67:1 FAIL** — photo-dependent |
 | pill label #FFFFFF on white 20 % over #5D2C24 | 6.30:1 pass |
 | pill fill vs backdrop (non-text) | **1.80:1 FAIL** (the label identifies it) |
-| desktop line black 50 % on white | **4.00:1 FAIL** (20 px: large-text threshold 3:1 → pass as large text) |
+| desktop line black 57 % on white (Retro 50 %, raised by owner decision 20) | 5.10:1 pass |
 | footer 8 px white on the backdrop | photo-dependent; below any recommended size (Retro's own) |
 
   Reported, not adjusted (Retro's values). The backdrop is the photo under `color.global.backdropDim` (black 22 %,

@@ -270,7 +270,7 @@ private fun androidx.compose.foundation.layout.BoxScope.FrameLine(text: String, 
     Text(
         text,
         style = TextRoles.body,
-        color = Tokens.Colors.globalTextSecondary,
+        color = Tokens.ColorsDark.globalTextSecondary,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .align(Alignment.Center)

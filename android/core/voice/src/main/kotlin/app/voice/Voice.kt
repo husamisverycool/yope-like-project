@@ -48,7 +48,7 @@ class VoiceRecorder(
     clock: () -> Long = SystemClock::elapsedRealtime,
     private val engine: RecordingEngine = MediaRecorderEngine(context, clock),
     private val joiner: (List<File>, File) -> Unit = Mp4AudioJoiner::join,
-    private val directory: File = File(context.cacheDir, "voice"),
+    private val directory: File = voiceCacheDirectory(context),
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val session = RecordingSession(engine) { newFile() }
@@ -273,3 +273,6 @@ object VoiceDurations {
         }
     }
 }
+
+/** Where recordings and drafts live until they are sent or discarded (emptied when a session ends). */
+fun voiceCacheDirectory(context: Context): File = File(context.cacheDir, "voice")

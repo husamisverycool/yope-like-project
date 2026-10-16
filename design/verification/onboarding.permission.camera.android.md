@@ -30,7 +30,7 @@ States rendered (`android/feature/account/src/test/snapshots/onboarding.permissi
 | match (token) | `size.global.emptyIcon` | 22 pt | Tokens.Sizes.globalEmptyIcon · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png icon y1380… |  |
 | match (token) | `color.global.textOnMedia` | #FFFFFF | Tokens.Colors.globalTextOnMedia | references/auto/retro/press/tc-2023-12-retro3.png phone 1 viewer name 'nathan' … |  |
 | match (token) | `size.global.emptyIconToTitle` | 26 pt | Tokens.Sizes.globalEmptyIconToTitle · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 1445 → 152… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.emptyTitleToAction` | 25 pt | Tokens.Sizes.globalEmptyTitleToAction | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 1565.5 → 1… |  |
 | match (token) | `duration.global.fade` | 150 ms | Tokens.Durations.globalFade | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'APP-CODE MOT… |  |
 | match (token) | `easing.global.standard` | x1: 0.4; y1: 0; x2: 0.2; y2: 1 | Tokens.Easings.globalStandard | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt qh4.a FastOut… |  |

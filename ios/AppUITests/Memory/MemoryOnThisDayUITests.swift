@@ -27,16 +27,19 @@ final class MemoryOnThisDayUITests: XCTestCase {
         let subtitle = MemoryUITestLaunch.element(app, "onthisday.subtitle")
         XCTAssertTrue(subtitle.exists)
 
-        // The newest memory is another member's: no share circle (its place stays empty).
+        // The newest memory is another member's: no share circle (not built; its place stays empty).
         let share = MemoryUITestLaunch.element(app, "onthisday.share")
-        XCTAssertFalse(share.isHittable, "no share on someone else's memory")
+        XCTAssertFalse(share.exists, "no share on someone else's memory")
 
         // Play: the centre turns to pause; share and random hide while playing.
         let play = MemoryUITestLaunch.element(app, "onthisday.play")
         let playLabel = play.label
         play.tap()
         XCTAssertNotEqual(play.label, playLabel, "play becomes pause")
-        XCTAssertFalse(share.isHittable, "share hides while playing")
+        XCTAssertFalse(share.exists, "share hides while playing")
+        // Random fades out (`duration.global.fade`) and is then not built.
+        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: MemoryUITestLaunch.element(app, "onthisday.shuffle"))
+        waitForExpectations(timeout: 5)
         play.tap()
         XCTAssertEqual(play.label, playLabel)
 

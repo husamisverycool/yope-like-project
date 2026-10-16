@@ -44,7 +44,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.agegate/`): `c
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
 | match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `size.global.titleTop` | 64 pt | Tokens.Sizes.globalTitleTop · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (behaviour) | `auth.agegate.layout.optIn` | control: C-14 grouped section with a single row: title (text role body) + subtitle (text … | C-14 single-row group with an M3 Switch under the field | design/components.md C-14 (VID-SET grouped rows; APK-X pik 12 dp shapes); refer… |  |
 | match (token) | `size.global.buttonMarginH` | 20 pt | Tokens.Sizes.globalButtonMarginH · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
@@ -55,7 +55,7 @@ States rendered (`android/feature/account/src/test/snapshots/auth.agegate/`): `c
 | match (token) | `radius.global.groupedRow` | 12 pt | Tokens.Radii.globalGroupedRow · measured above | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt pik: single 1… |  |
 | match (token) | `size.global.screenMargin` | 16 pt | Tokens.Sizes.globalScreenMargin · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (behaviour) | `color.global.selection` | light: #0088FF; dark: #0091FF | M3 Switch checked track (core:ui GroupedRow toggle, AppTheme colour scheme) | HIG Color (system colors table, 2025-06-09: Blue R-0,G-136,B-255 / R-0,G-145,B-… | PLATFORM tint |
-| match (token) | `color.global.system.primary` | #0A84FF | Tokens.Colors.globalSystemPrimary | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt M3 ColorSchem… |  |
+| match (token) | `color.global.system.primary` | light: #0066CE; dark: #2592FF | Tokens.Colors.globalSystemPrimary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `settings.root.size.rowHeight` | 58.7 pt | Tokens.Sizes.settingsRootSizeRowHeight · measured above | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
 | match (behaviour) | `auth.phone.layout.inlineError` | presentation: native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account… | message-only M3 AlertDialog (core:ui ErrorAlert) with auth.phone.error.dismiss | references/auto/retro/apk/retro-android-2026.10.1150-strings.txt error_message_… |  |
 | match (token) | `duration.global.crossfade` | 100 ms | Tokens.Durations.globalCrossfade | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt tween 100 ms … |  |

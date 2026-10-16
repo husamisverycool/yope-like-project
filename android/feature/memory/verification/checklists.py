@@ -375,7 +375,7 @@ def onthisday():
     s.check("match", "shuffle (dice)", "random memory of the whole history; subtitle 'Memories · {name}'", "OnThisDayViewModelTest + flow: 'Memories · …' after the dice", "history_weeks pages of 52 weeks, random week then random post")
     s.check("match", "feature intro once per account", "C-29 FeatureIntroSheet; never again", "intro-light.png; flow: shown on first open, `onthisday.nux` marked seen", "row glyph `icon.global.rewind` (the component needs one)")
     s.check("match", "menu ('•••')", "yours: Save to Camera Roll + Delete Post (red); others': Report Post (red)", "menu-own-light.png; menu-light.png (someone else's memory); delete-confirm-light.png", "DsDropdownMenu in the system appearance (RWP phone 2); Save only on your own memory (owner decision 12)")
-    s.check("match", "share circle (owner decision 12)", "your own memory only; on someone else's its place stays empty", "paused-own-memory-light.png (share shown); paused-light.png (someone else's: no share, dial in place); OnThisDayViewModelTest", "alpha 0 + cleared semantics, the dial keeps its slot")
+    s.check("match", "share circle (owner decision 12)", "your own memory only; on someone else's its place stays empty", "paused-own-memory-light.png (share shown); paused-light.png (someone else's: no share, dial in place); OnThisDayViewModelTest", "not composed (FadeVisibility in a 64-dp slot): no drawing, no click, no semantics node; OnThisDaySnapshotTest.shareIsNeverComposedOnSomeoneElsesMemory / hiddenControlsAreAbsent")
     s.section("States")
     states(s, "onthisday", [
         ("paused", "paused", "primary state; dark = light (media page); someone else's memory: no share"),
@@ -736,7 +736,8 @@ def birthday_tribute():
     s.dp("title leading `size.global.screenMargin`", tok("size.global.screenMargin"), t["left"])
     s.check("match" if t["lines"] <= 2 else "not matched", "title up to two lines", "≤ 2", str(t["lines"]), "'Ana's birthday video', `headerTitle`, LineBreak.Heading")
     s.dp("group baseline `dimension.onthisday.subtitleBaseline` below the title's", tok("dimension.onthisday.subtitleBaseline"), g["firstBaseline"] - t["lastBaseline"])
-    s.colour("group `color.global.textSecondary`", tok("color.global.textSecondary"), brightest(n, (g["left"], g["top"], g["right"], g["bottom"])))
+    # The tribute is a media surface (black in both appearances): it takes the dark value (owner decision 20).
+    s.colour("group `color.global.textSecondary` (media: dark value)", tok("color.global.textSecondary", appearance="dark"), brightest(n, (g["left"], g["top"], g["right"], g["bottom"])))
     s.dp("close `size.global.circleButton`", tok("size.global.circleButton"), c["width"])
     s.dp("close at `size.global.headerInset`", tok("size.global.headerInset"), W - c["right"])
     tink = first_glyph(n, t, (0, 0, 0))

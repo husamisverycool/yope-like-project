@@ -2,6 +2,7 @@ package app.feature.account.shell
 
 import android.Manifest
 import app.feature.account.AccountEnvironment
+import app.feature.account.groups.GroupsListViewModel
 import app.model.AppRoute
 import kotlinx.coroutines.flow.first
 import app.ui.permissions.PermissionChecks
@@ -61,6 +62,16 @@ object AccountFlow {
     /** Whether the person is in a group: the cached list when there is one, else the first answer. */
     suspend fun hasGroups(env: AccountEnvironment): Boolean =
         env.backend.observeMyGroups().first { it.value != null || !it.refreshing }.value?.isNotEmpty() == true
+
+    /**
+     * A signed-in session ended: the sign-up session (the number typed, the code's send time), the groups list's row details
+     * (kept for the process so the list never reorders) and optimistic leaves belong to the person who left.
+     */
+    fun sessionEnded(env: AccountEnvironment) {
+        env.signUp.clear()
+        env.optimistic.leftGroups.value = emptySet()
+        GroupsListViewModel.Details.byGroup.clear()
+    }
 
     /** Home, or the pending invite's join first (invite.web install path; the person already chose to join: no second tap). */
     fun home(env: AccountEnvironment): AppRoute = env.stores.pendingInviteToken?.let { AppRoute.InviteJoin(it, join = true) } ?: AppRoute.GroupsList

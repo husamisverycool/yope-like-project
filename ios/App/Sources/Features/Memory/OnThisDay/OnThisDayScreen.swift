@@ -319,8 +319,8 @@ struct OnThisDayScreen: View {
         HStack(spacing: 0) {
             Spacer(minLength: 0)
             shareCircle
-                .modifier(HiddenInPlace(isHidden: model.isPlaying || !model.canExport))
                 .accessibilitySortPriority(4)
+                .modifier(HiddenInPlace(isHidden: model.isPlaying || !model.canExport))
             Spacer(minLength: 0)
             RewindDial(
                 slot: model.dialSlot,
@@ -336,9 +336,9 @@ struct OnThisDayScreen: View {
                 Task { await model.shuffle() }
             }
             .disabled(model.isPicking)
-            .modifier(HiddenInPlace(isHidden: model.isPlaying))
             .accessibilitySortPriority(1)
             .accessibilityIdentifier("onthisday.shuffle")
+            .modifier(HiddenInPlace(isHidden: model.isPlaying))
             Spacer(minLength: 0)
         }
     }
@@ -384,16 +384,21 @@ private struct ModeChevron: View {
     }
 }
 
-/// Share and random while playing (and share on someone else's memory): faded out (`duration.global.fade`,
-/// `easing.global.standard`), not tappable, hidden from VoiceOver; they keep their place so the dial does not move.
+/// Share and random while playing (and share on someone else's memory): fade out (`duration.global.fade`,
+/// `easing.global.standard`) and are then not built at all — not drawn, not tappable, not in the accessibility tree.
+/// A clear circle-sized placeholder keeps their place, so the dial does not move.
 private struct HiddenInPlace: ViewModifier {
     let isHidden: Bool
 
     func body(content: Content) -> some View {
-        content
-            .opacity(isHidden ? 0 : 1)
-            .allowsHitTesting(!isHidden)
-            .accessibilityHidden(isHidden)
-            .dsAnimation(ComponentMotion.fade, value: isHidden)
+        ZStack {
+            Color.clear
+                .frame(width: Tokens.Sizes.globalCircleButtonLarge, height: Tokens.Sizes.globalCircleButtonLarge)
+                .accessibilityHidden(true)
+            if !isHidden {
+                content.dsTransition(.opacity)
+            }
+        }
+        .dsAnimation(ComponentMotion.fade, value: isHidden)
     }
 }

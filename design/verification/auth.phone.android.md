@@ -54,13 +54,13 @@ States rendered (`android/feature/account/src/test/snapshots/auth.phone/`): `cou
 | status | token / copy | expected (spec) | ours | reference evidence | note |
 |---|---|---|---|---|---|
 | match (token) | `auth.phone.fontSize.wordmark` | 71.4 pt | Tokens.FontSizes.authPhoneFontSizeWordmark | references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css (.page_largeRetroWordm… |  |
-| match (token) | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number… | Tokens.Layouts.AuthPhoneLayoutCountryCode | react-native-phone-input 1.4.1 (MIT, public npm package): dist/styles.js flag {width: 30, height: 20}… |  |
+| match (token) | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number… | Tokens.Layouts.AuthPhoneLayoutCountryCode | react-native-phone-input 1.4.1 (MIT; public npm package https://registry.npmjs.… |  |
 | match (token) | `color.global.background` | light: #FFFFFF; dark: #000000 | Tokens.Colors.globalBackground | light: references/auto/retro/store/retro-store-02.png box (600–606,1700–1706); … |  |
 | match (token) | `color.global.background.android` | light: #FFFFFF; dark: #1C1C1E | Tokens.Colors.globalBackgroundAndroid · measured above | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palett… |  |
 | match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `auth.phone.size.wordmarkToTagline` | 19.3 pt | Tokens.Sizes.authPhoneSizeWordmarkToTagline | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png wordmark ink bo… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.buttonMarginH` | 20 pt | Tokens.Sizes.globalButtonMarginH · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 | match (token) | `size.global.buttonHeight` | 60 pt | Tokens.Sizes.globalButtonHeight · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png y2032–2211 (180… |  |
 | match (token) | `auth.phone.size.capsuleToLink` | 20.7 pt | Tokens.Sizes.authPhoneSizeCapsuleToLink · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png capsule y 2032–… |  |

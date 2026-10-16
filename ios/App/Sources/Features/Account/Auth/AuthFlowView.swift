@@ -16,6 +16,8 @@ struct AuthFlowView: View {
                     destination(step)
                 }
         }
+        // A session that ended starts a new sign-up: fresh screen state (no previous number, landing first).
+        .id(session.signUpGeneration)
     }
 
     @ViewBuilder

@@ -28,7 +28,7 @@ States rendered (`android/feature/account/src/test/snapshots/settings.root/`): `
 |---|---|---|---|---|---|
 | match (token) | `settings.root.size.rowHeight` | 58.7 pt | Tokens.Sizes.settingsRootSizeRowHeight · measured above | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (grouped ro… |  |
 | match (behaviour) | `settings.root.layout.list` | component: design/components.md C-14 on both platforms (custom rows; not List(.insetGroup… | C-14 GroupedSection / GroupedRow (core:ui) inside SettingsGroup (settings/SettingsUi.kt); headers SettingsHea… | references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png frames … |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.avatarProfile` | 64 pt | Tokens.Sizes.globalAvatarProfile | references/auto/retro/store/retro-store-02.png avatar 919–1072 — design/researc… |  |
 | match (token) | `settings.account.layout.manageSubscription` | open https://play.google.com/store/account/subscriptions?sku={productId}&package={applica… | Tokens.Layouts.SettingsAccountLayoutManageSubscription | docs/PLATFORM_CONSTRAINTS.md §8 (Play: 'Account settings must link to the Play … |  |
 | match (token) | `haptic.global.select` | SEGMENT_FREQUENT_TICK | Tokens.Haptics.globalSelect | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Tick haptic'… |  |

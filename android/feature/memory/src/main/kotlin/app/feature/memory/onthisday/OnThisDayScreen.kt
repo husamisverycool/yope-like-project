@@ -33,7 +33,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.FirstBaseline
@@ -61,7 +60,6 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import app.designsystem.R
-import app.designsystem.dsAnimateAlphaAsState
 import app.designsystem.generated.Tokens
 import app.feature.memory.common.MediaAppearance
 import app.feature.memory.common.MediaMessage
@@ -77,7 +75,7 @@ import app.ui.components.EmptyStateFill
 import app.ui.components.HeaderIconButton
 import app.ui.components.LoadingState
 import app.ui.components.TickOnStep
-import app.ui.foundation.DsMotion
+import app.ui.foundation.FadeVisibility
 import app.ui.foundation.GlyphInk
 import app.ui.foundation.PhotoScrimOverlay
 import app.ui.foundation.centreAt
@@ -445,9 +443,6 @@ private fun Modifier.drawnAt(centreY: Dp): Modifier = layout { measurable, const
  */
 @Composable
 private fun Controls(state: OnThisDayState.Page, actions: OnThisDayActions, canShare: Boolean, modifier: Modifier) {
-    val alpha by dsAnimateAlphaAsState(if (state.playing) 0f else 1f, DsMotion.fade(), label = "controls")
-    val shareShown = canShare && !state.playing
-    val shareAlpha by dsAnimateAlphaAsState(if (shareShown) 1f else 0f, DsMotion.fade(), label = "share")
     Box(
         modifier
             .fillMaxWidth()
@@ -456,15 +451,13 @@ private fun Controls(state: OnThisDayState.Page, actions: OnThisDayActions, canS
             .semantics { isTraversalGroup = true; traversalIndex = 1f },
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-            // Hidden in place (not composed into the semantics tree while hidden): the dial keeps its slot.
-            Box(Modifier.alpha(shareAlpha).then(if (shareShown) Modifier else Modifier.clearAndSetSemantics { })) {
+            HiddenInPlace(visible = canShare && !state.playing) {
                 CircleIconButton(
                     Tokens.Icons.globalShare,
                     stringResource(R.string.onthisday_a11y_share),
                     actions.onShare,
                     Modifier.testTag(OnThisDayTags.SHARE),
                     style = CircleButtonStyle.GlassLarge,
-                    enabled = shareShown,
                 )
             }
             RewindDial(
@@ -474,14 +467,27 @@ private fun Controls(state: OnThisDayState.Page, actions: OnThisDayActions, canS
                 onStep = actions.onStep,
                 onTogglePlay = actions.onTogglePlay,
             )
-            CircleIconButton(
-                Tokens.Icons.globalRandom,
-                stringResource(R.string.onthisday_a11y_shuffle),
-                actions.onShuffle,
-                Modifier.alpha(alpha).testTag(OnThisDayTags.SHUFFLE),
-                style = CircleButtonStyle.GlassLarge,
-                enabled = !state.playing && !state.picking,
-            )
+            HiddenInPlace(visible = !state.playing) {
+                CircleIconButton(
+                    Tokens.Icons.globalRandom,
+                    stringResource(R.string.onthisday_a11y_shuffle),
+                    actions.onShuffle,
+                    Modifier.testTag(OnThisDayTags.SHUFFLE),
+                    style = CircleButtonStyle.GlassLarge,
+                    enabled = !state.picking,
+                )
+            }
         }
+    }
+}
+
+/**
+ * A control circle that fades in and out (`duration.global.fade`) and, once faded out, is not composed at all — not
+ * drawn, not clickable, not in the semantics tree; its circle-sized slot stays, so the dial does not move.
+ */
+@Composable
+private fun HiddenInPlace(visible: Boolean, content: @Composable () -> Unit) {
+    Box(Modifier.size(Tokens.Sizes.globalCircleButtonLarge), contentAlignment = Alignment.Center) {
+        FadeVisibility(visible) { content() }
     }
 }

@@ -95,7 +95,7 @@ data class GlueBridges(val push: PushTokenBridge, val billing: BillingBridge, va
  *   quiet hours loaded for the push layer, offline cache switched to that user;
  * - group list changes → `WidgetFileStore.retainGroups`;
  * - `post_deleted` broadcasts (all your groups) → the widget showing that post is cleared;
- * - signing out → `unregister_device` first, then billing reset, token deleted, caches and widgets cleared.
+ * - signing out → `unregister_device` first, then billing reset, token deleted, caches, widgets and the outbox cleared.
  */
 class SessionGlue(
     private val auth: AuthRepository,
@@ -107,6 +107,8 @@ class SessionGlue(
     private val signedUrls: SignedUrlCache,
     private val bridges: GlueBridges,
     private val scope: CoroutineScope,
+    /** Empties the outbox when a session ends (the app's: `UploadQueue.discardAll`). */
+    private val discardUploads: () -> Unit = {},
 ) {
     @Volatile private var currentUser: String? = null
     private val jobs = mutableListOf<Job>()
@@ -174,6 +176,7 @@ class SessionGlue(
         quietly { cache.clearAll() }
         quietly { signedUrls.clear() }
         quietly { bridges.widgets.retainGroups(emptySet()) }
+        quietly { discardUploads() }
     }
 
     /** Keeps the cached pages in line with live events, so an offline render shows no deleted content. */

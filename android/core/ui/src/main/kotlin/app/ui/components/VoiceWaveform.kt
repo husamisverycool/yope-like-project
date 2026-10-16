@@ -91,7 +91,8 @@ fun VoiceWaveform(
     onMedia: Boolean = false,
 ) {
     val played = if (onMedia) Tokens.Colors.globalTextOnMedia else Tokens.Colors.globalTextPrimary
-    val unplayed = Tokens.Colors.globalTextSecondary
+    // Media surfaces are black in both appearances: they take the dark appearance's grey (owner decision 20).
+    val unplayed = if (onMedia) Tokens.ColorsDark.globalTextSecondary else Tokens.Colors.globalTextSecondary
     val maxHeight = holderHeight * Tokens.Layouts.GlobalWaveform.maxHeightRatio
     Canvas(modifier.height(maxHeight).clearAndSetSemantics {}) {
         val barWidth = Tokens.Sizes.globalWaveformBarWidth.toPx()

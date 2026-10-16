@@ -1,5 +1,8 @@
 package app.feature.memory.onthisday
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -56,6 +59,37 @@ class OnThisDaySnapshotTest : SnapshotTest() {
     @Test fun empty() = page("empty", OnThisDayState.Empty)
     @Test fun intro() = page("intro", samplePage, intro = true)
     @Test fun saveDenied() = page("save-denied", samplePage, saveDenied = true)
+
+    /** Hidden controls are not composed at all: not drawn, not clickable, no semantics node (merged or unmerged). */
+    @Test fun hiddenControlsAreAbsent() {
+        compose.mainClock.autoAdvance = false
+        var playing by mutableStateOf(false)
+        compose.setContent {
+            MemoryTestContent { OnThisDayScreen(samplePage.copy(index = 3, playing = playing), OnThisDayActions(), isMine = { it.authorId == FakeMemoryBackend.ME }) }
+        }
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithTag(OnThisDayTags.SHARE).assertExists()
+        compose.onNodeWithTag(OnThisDayTags.SHUFFLE).assertExists()
+        playing = true
+        compose.waitForIdle() // applies the state write; the clock then runs the fade-out
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithTag(OnThisDayTags.SHARE, useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag(OnThisDayTags.SHUFFLE, useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithContentDescription("Share", useUnmergedTree = true).assertDoesNotExist()
+        playing = false
+        compose.waitForIdle()
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithTag(OnThisDayTags.SHARE).assertExists()
+    }
+
+    @Test fun shareIsNeverComposedOnSomeoneElsesMemory() {
+        compose.mainClock.autoAdvance = false
+        compose.setContent { MemoryTestContent { OnThisDayScreen(samplePage, OnThisDayActions(), isMine = { false }) } }
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithTag(OnThisDayTags.SHARE, useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithContentDescription("Share", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag(OnThisDayTags.SHUFFLE).assertExists()
+    }
 
     @Test fun menuOnSomeoneElsesMemory() {
         compose.mainClock.autoAdvance = false

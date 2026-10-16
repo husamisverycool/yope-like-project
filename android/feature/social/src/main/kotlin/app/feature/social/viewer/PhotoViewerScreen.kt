@@ -329,7 +329,7 @@ private fun ViewerHeaderRow(state: ViewerState, nav: ViewerNav) {
                 if (week != null) {
                     val line = if (state.fromWall && photo.groupName != null) stringRes(R.string.photo_viewer_header_groupweek, photo.groupName, week)
                     else stringRes(R.string.photo_viewer_header_week, week)
-                    Text(line, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.photoViewerDimensionHeaderLinePitch))
+                    Text(line, style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.photoViewerDimensionHeaderLinePitch))
                 }
             }
         }
@@ -469,7 +469,7 @@ private fun PhotoArea(
                 Text(
                     stringRes(R.string.photo_viewer_error_load),
                     style = TextRoles.body,
-                    color = Tokens.Colors.globalTextSecondary,
+                    color = Tokens.ColorsDark.globalTextSecondary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.tapClickable(onClick = onRetry).padding(horizontal = Tokens.Sizes.globalScreenMargin),
                 )
@@ -581,8 +581,8 @@ private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, vo
                         .endAtLastBaseline(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(date, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1)
-                    Text(SEPARATOR, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1, modifier = Modifier.clearAndSetSemantics { })
+                    Text(date, style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1)
+                    Text(SEPARATOR, style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1, modifier = Modifier.clearAndSetSemantics { })
                     TagRun(post.id, people = tagged, me = me, onPhotoGone = { onPhotoGone(post.id) })
                 }
                 val notePath = post.voicePath
@@ -641,7 +641,7 @@ private fun AddReactionGlyph(onClick: () -> Unit) {
             },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = null, tint = Tokens.Colors.globalTextSecondary, modifier = Modifier.size(box))
+        Icon(icon, contentDescription = null, tint = Tokens.ColorsDark.globalTextSecondary, modifier = Modifier.size(box))
     }
 }
 
@@ -697,7 +697,7 @@ private fun CommentLine(m: Message, photo: ViewerPhoto, state: ViewerState, ui: 
                     buildAnnotatedString {
                         withStyle(TextRoles.listTitle.toSpanStyle().copy(color = Tokens.Colors.globalTextOnMedia)) { append(author?.firstName.orEmpty()) }
                         append(' ')
-                        withStyle(TextRoles.caption.toSpanStyle().copy(color = Tokens.Colors.globalTextSecondary)) { append(Formats.shortTime(m.createdAt)) }
+                        withStyle(TextRoles.caption.toSpanStyle().copy(color = Tokens.ColorsDark.globalTextSecondary)) { append(Formats.shortTime(m.createdAt)) }
                     },
                     style = TextRoles.listTitle,
                     maxLines = 1,
@@ -769,11 +769,11 @@ private fun ReplyField(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, on
         accessibilityLabel = stringRes(R.string.photo_viewer_reply_placeholder),
         avatarPath = myAvatar,
         glyphs = listOf(
-            FieldGlyph(Tokens.Icons.globalCamera, stringRes(R.string.chat_composer_a11y_camera), Tokens.Colors.globalTextSecondary, { post?.let { nav.replyWithPhoto(it.groupId, it.id) } }),
+            FieldGlyph(Tokens.Icons.globalCamera, stringRes(R.string.chat_composer_a11y_camera), Tokens.ColorsDark.globalTextSecondary, { post?.let { nav.replyWithPhoto(it.groupId, it.id) } }),
             FieldGlyph(
                 Tokens.Icons.globalMore,
                 stringRes(R.string.photo_viewer_a11y_more),
-                Tokens.Colors.globalTextSecondary,
+                Tokens.ColorsDark.globalTextSecondary,
                 { ui.menu = true },
                 anchor = { SystemAppearance { DsDropdownMenu(ui.menu, { ui.menu = false }, items) } },
             ),

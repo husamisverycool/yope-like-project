@@ -270,7 +270,7 @@ fun TagRun(
         if (text == null) {
             Text(toggle, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis)
         } else {
-            Text(text, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text, style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
     if (controller.sheetOpen) InThisPhotoSheet(controller, onDismiss = { controller.sheetOpen = false })

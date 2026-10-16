@@ -154,31 +154,34 @@
       "notes": "color.global.textPrimary is black in light appearance, so media surfaces (black in both) use this token; secondary text there stays color.global.textSecondary (#999999: 'Week 49' in the viewer header)."
     },
     "color.global.textSecondary": {
-      "level": "SOURCED",
-      "source_app": "Retro",
-      "surface": "global",
-      "type": "color",
-      "value": "#999999",
-      "element": "secondary text on iOS: date ranges, real names, list subtitles, meta lines, field placeholders (2025), grey links and legal text",
-      "evidence": "light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–490,1288–1314) = #999999, 'Isabel Reyes' darkest px #999999; references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png 'daniel shared 2 posts' #959595, search placeholder #979797. dark: references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png 'Friends Only' (360–840,1230–1310), 'already have an account?' (330–870,2260–2320), legal (110–1090,2385–2435) all #999999; references/auto/retro/store/retro-store-03.png 'Mailing Address' — design/research/retro-visual.md §3.1–§3.2; APK vv3.e #999999 both, web meta #999 — design/research/retro-package-copy-motion.md §3.3",
-      "method": "darkest (light) / brightest (dark) 8–15 % of glyph pixels",
-      "precision": "±4/255",
-      "notes": "Android meta lines use black 50 % / white 60 % (color.global.textSecondary.android). Placeholder = this colour per the 2025 search field (ED-W3 placeholder reads #979797 where known-#999999 text in the same image reads #959595); 2023 renders read #B0B0B0 (light) / #8B8B8B (dark) — MERGE_DECISIONS R-6."
-    },
-    "color.global.textSecondary.android": {
-      "level": "SOURCED",
-      "source_app": "Retro",
+      "level": "PLATFORM",
+      "source_app": "WCAG 2.2 (owner decision 20)",
       "surface": "global",
       "type": "color",
       "value": {
-        "light": "#00000080",
+        "light": "#6E6E6E",
+        "dark": "#999999"
+      },
+      "element": "secondary text on iOS: date ranges, real names, list subtitles, meta lines, field placeholders (2025), grey links and legal text",
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (\"text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised to the nearest passing value of the same hue; non-text fills keep Retro's values\"); W3C WCAG 2.2 SC 1.4.3 / 1.4.11 (https://www.w3.org/TR/WCAG22/, relative luminance and contrast ratio). Light: #6E6E6E is the lightest neutral grey (Retro's hue: none) reaching 4.5:1 on every surface the text sits on — #FFFFFF 5.10, color.global.control #F1F1F1 4.51 (placeholder 'Search', row subtitles), #F7F7F7 4.76; Apple's increased-contrast systemGray light (108,108,112 → 5.23 on white) lands within 2/255 of it. Dark: Retro's #999999 already passes (7.37 on #000000, 5.31 on #262626, 6.23 on #181818) and stays. Retro's value \"#999999\" (Retro, SOURCED): light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–490,1288–1314) = #999999, 'Isabel Reyes' darkest px #999999; references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png 'daniel shared 2 posts' #959595, search placeholder #979797. dark: references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png 'Friends Only' (360–840,1230–1310), 'already have an account?' (330–870,2260–2320), legal (110–1090,2385–2435) all #999999; references/auto/retro/store/retro-store-03.png 'Mailing Address' — design/research/retro-visual.md §3.1–§3.2; APK vv3.e #999999 both, web meta #999 — design/research/retro-package-copy-motion.md §3.3",
+      "method": "HLS lightness stepped by 0.001 from the Retro value, hue and saturation held, until every listed background passes (scratchpad samehue.py; re-checked with tools/contrast.mjs)",
+      "precision": "exact (computed)",
+      "notes": "Media surfaces are black in both appearances: iOS forces .dark there (photo.viewer.layout.appearance, capture, memories), so the dark value applies; Android media code reads Tokens.ColorsDark.globalTextSecondary. Earlier note: Android meta lines use black 50 % / white 60 % (color.global.textSecondary.android). Placeholder = this colour per the 2025 search field (ED-W3 placeholder reads #979797 where known-#999999 text in the same image reads #959595); 2023 renders read #B0B0B0 (light) / #8B8B8B (dark) — MERGE_DECISIONS R-6."
+    },
+    "color.global.textSecondary.android": {
+      "level": "PLATFORM",
+      "source_app": "WCAG 2.2 (owner decision 20)",
+      "surface": "global",
+      "type": "color",
+      "value": {
+        "light": "#00000091",
         "dark": "#FFFFFF99"
       },
       "element": "secondary text on Android: meta lines ('A · B'), NUX body, list subtitles",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.o / vv3.d black @ 50 % : white @ 60 % (46 + 10 call sites) — design/research/retro-package-copy-motion.md §3.3",
-      "method": "APK colour constants (alpha copies of black / white)",
-      "precision": "exact",
-      "notes": "On white this composites to #808080; on #1C1C1E to ≈#A4A4A5. #999999 is Retro Android's quaternary grey (vv3.e: counters, unsupported-message text)."
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (\"text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised to the nearest passing value of the same hue; non-text fills keep Retro's values\"); W3C WCAG 2.2 SC 1.4.3 / 1.4.11 (https://www.w3.org/TR/WCAG22/, relative luminance and contrast ratio). Light: black 50 % (#7F7F7F on white, 4.00:1) raised to 57 % (#00000091 → #6E6E6E on #FFFFFF 5.10:1, #6B6B6B on #F7F7F7 grouped rows 5.01:1), the same lightness as color.global.textSecondary light. Dark: Retro's white 60 % passes (6.85:1 on #1C1C1E) and stays. Retro's value {\"light\": \"#00000080\", \"dark\": \"#FFFFFF99\"} (Retro, SOURCED): references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.o / vv3.d black @ 50 % : white @ 60 % (46 + 10 call sites) — design/research/retro-package-copy-motion.md §3.3",
+      "method": "alpha raised until the composite on #FFFFFF and #F7F7F7 passes 4.5:1 (tools/contrast.mjs)",
+      "precision": "exact (computed)",
+      "notes": "Alpha form kept so the grey still composites like Retro's vv3.o / vv3.d constants. Earlier note: On white this composites to #808080; on #1C1C1E to ≈#A4A4A5. #999999 is Retro Android's quaternary grey (vv3.e: counters, unsupported-message text)."
     },
     "color.global.textTertiary": {
       "level": "SOURCED",
@@ -210,18 +213,19 @@
       "precision": "±6/255 (light), exact (dark)"
     },
     "color.global.tabInactive": {
-      "level": "SOURCED",
-      "source_app": "Retro",
+      "level": "PLATFORM",
+      "source_app": "WCAG 2.2 (owner decision 20)",
       "surface": "global",
       "type": "color",
       "value": {
-        "light": "#B2B2B2",
+        "light": "#949494",
         "dark": "#999999"
       },
       "element": "unselected tab-bar glyphs (black 30 % on white / white 60 % on black)",
-      "evidence": "light: references/auto/retro/store/retro-store-01.png four glyphs, darkest px all #B2B2B2; dark: references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png runs y=2440 x361–366, 381–386; y=2450 x566–571, 599–604 (2 pt stems, solid core) — design/research/retro-visual.md §3.1–§3.2; over photos references/auto/retro/press/tc-2025-12-rewind-device-a.png icon bands y2640–2740 white ≈60 %",
-      "method": "darkest pixel (light render) / solid stem cores (dark RAW)",
-      "precision": "±2/255 (light), exact (dark)"
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (\"text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised to the nearest passing value of the same hue; non-text fills keep Retro's values\"); W3C WCAG 2.2 SC 1.4.3 / 1.4.11 (https://www.w3.org/TR/WCAG22/, relative luminance and contrast ratio). Unselected tab glyphs are graphical objects needed to identify the control (SC 1.4.11, 3:1). Light: #949494 is the lightest neutral grey at 3:1 on the white bar (3.03; Retro's #B2B2B2 gave 2.12); Apple's default systemGray light (142,142,147) is 3.26. Dark: Retro's #999999 passes (7.37) and stays. Retro's value {\"light\": \"#B2B2B2\", \"dark\": \"#999999\"} (Retro, SOURCED): light: references/auto/retro/store/retro-store-01.png four glyphs, darkest px all #B2B2B2; dark: references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png runs y=2440 x361–366, 381–386; y=2450 x566–571, 599–604 (2 pt stems, solid core) — design/research/retro-visual.md §3.1–§3.2; over photos references/auto/retro/press/tc-2025-12-rewind-device-a.png icon bands y2640–2740 white ≈60 %",
+      "method": "HLS lightness stepped by 0.001 from #B2B2B2 until 3:1 on #FFFFFF",
+      "precision": "exact (computed)",
+      "notes": "Decision 20 keeps Retro's non-text fills; a tab glyph is the control itself (not a fill), so it follows the 3:1 rule."
     },
     "color.global.tabInactiveOnMedia": {
       "level": "SOURCED",
@@ -235,16 +239,16 @@
       "precision": "±0.02 alpha"
     },
     "color.global.badge": {
-      "level": "SOURCED",
-      "source_app": "Retro",
+      "level": "PLATFORM",
+      "source_app": "WCAG 2.2 (owner decision 20)",
       "surface": "global",
       "type": "color",
-      "value": "#EA3337",
+      "value": "#D0151A",
       "element": "Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers",
-      "evidence": "references/auto/retro/store/retro-store-01.png badge row y=1480 x640–664, 680–684 #EA3337; references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png tab dot centre (361,2501) #EA3337 — design/research/retro-visual.md §3.1–§3.2; APK error / vv3.g #EA3337 — design/research/retro-package-copy-motion.md §3.2–§3.3",
-      "method": "runs / centre pixel; APK constant",
-      "precision": "±2/255 (render), exact (RAW, APK)",
-      "notes": "Do not sample this red from the Apple editorial images (they read #FF002A: sRGB mis-tagged as P3, retro-visual §0.3). Retro's badge text is a count ('6 new') — ours shows no count (tenets)."
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (\"text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised to the nearest passing value of the same hue; non-text fills keep Retro's values\"); W3C WCAG 2.2 SC 1.4.3 / 1.4.11 (https://www.w3.org/TR/WCAG22/, relative luminance and contrast ratio). White label 'new' (11 semibold, normal text) needs 4.5:1: white on #D0151A is 5.52:1 (Retro's #EA3337 gave 4.18). The same value in both appearances, as Retro (the label is white in both); the 4 pt unread dot on black is 3.80:1 (non-text 3:1). Retro's value \"#EA3337\" (Retro, SOURCED): references/auto/retro/store/retro-store-01.png badge row y=1480 x640–664, 680–684 #EA3337; references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png tab dot centre (361,2501) #EA3337 — design/research/retro-visual.md §3.1–§3.2; APK error / vv3.g #EA3337 — design/research/retro-package-copy-motion.md §3.2–§3.3",
+      "method": "HLS lightness stepped by 0.001 from the Retro value, hue and saturation held, until every listed background passes (scratchpad samehue.py; re-checked with tools/contrast.mjs)",
+      "precision": "exact (computed)",
+      "notes": "One red per appearance, as Retro uses one red constant (vv3.g = M3 error = badge): light #D0151A, dark #EF6265 — the most demanding surface any red text sits on (M3 dialog container #ECE6F0 in light, #2B2930 in dark) sets it. Apple's increased-contrast red (light 233,21,45 → 4.03 on #F1F1F1; dark 255,97,101) moves the same direction but does not pass on these fills. Earlier note: Do not sample this red from the Apple editorial images (they read #FF002A: sRGB mis-tagged as P3, retro-visual §0.3). Retro's badge text is a count ('6 new') — ours shows no count (tenets)."
     },
     "color.global.onBadge": {
       "level": "SOURCED",
@@ -321,16 +325,16 @@
       "notes": "Paywall close circle over colour reads ≈15–23 % (PAY (1045–1055,230–240)); the web invite pill uses white 20 % (retro.app CSS). Used only over photos / colour (retro-visual §3.7)."
     },
     "color.global.badgeMuted": {
-      "level": "SOURCED",
-      "source_app": "Retro",
+      "level": "PLATFORM",
+      "source_app": "WCAG 2.2 (owner decision 20)",
       "surface": "global",
       "type": "color",
-      "value": "#999999",
+      "value": "#767676",
       "element": "grey relative-week pill next to the title ('Last Week'), label color.global.onBadge",
-      "evidence": "references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png (302–304,118–126) #999999; references/auto/retro/press/engadget-2026-08-home-dark.jpg (dark, same pill) — design/research/retro-visual.md §3.1, §4 #1",
-      "method": "box median (REAL screenshot, small)",
-      "precision": "±4/255",
-      "notes": "White on #999999 is 2.85:1 (design/CONTRAST.md) — reported, not changed."
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (\"text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised to the nearest passing value of the same hue; non-text fills keep Retro's values\"); W3C WCAG 2.2 SC 1.4.3 / 1.4.11 (https://www.w3.org/TR/WCAG22/, relative luminance and contrast ratio). White label 'Last Week' (small semibold, normal text) needs 4.5:1: #767676 is the lightest neutral grey with white on it at 4.54:1 (Retro's #999999 gave 2.85:1). Retro's value \"#999999\" (Retro, SOURCED): references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png (302–304,118–126) #999999; references/auto/retro/press/engadget-2026-08-home-dark.jpg (dark, same pill) — design/research/retro-visual.md §3.1, §4 #1",
+      "method": "HLS lightness stepped by 0.001 from the Retro value, hue and saturation held, until every listed background passes (scratchpad samehue.py; re-checked with tools/contrast.mjs)",
+      "precision": "exact (computed)",
+      "notes": "Fill behind text: the rule raises it because the label on it is text. Earlier note: White on #999999 is 2.85:1 (design/CONTRAST.md) — reported, not changed."
     },
     "color.global.pageDotInactive": {
       "level": "SOURCED",
@@ -403,16 +407,19 @@
       "notes": "The pill's purple drop shadow was not measured (gap)."
     },
     "color.global.destructive": {
-      "level": "SOURCED",
-      "source_app": "Retro",
+      "level": "PLATFORM",
+      "source_app": "WCAG 2.2 (owner decision 20)",
       "surface": "global.system",
       "type": "color",
-      "value": "#EA3337",
+      "value": {
+        "light": "#D0151A",
+        "dark": "#EF6265"
+      },
       "element": "destructive actions drawn by the app and destructive menu items: delete, remove, report, leave",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.g #EA3337 (58 call sites: delete glyphs / labels, warning glyph, 'Remove', report) and M3 error #EA3337 — design/research/retro-package-copy-motion.md §3.2–§3.3; menus 'Delete from Photos', 'Make journal private' in red (references/auto/retro/press/tc-2025-12-rewind-panels.png, references/auto/retro/press/tc-2024-04-retro-journals-5.png) — design/research/retro-visual.md §4 #20",
-      "method": "APK colour constant; renders",
-      "precision": "exact",
-      "notes": "Native iOS alerts / menus with role .destructive draw the system red themselves (color.global.system.ios.destructive); app-drawn destructive text uses this token."
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (\"text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised to the nearest passing value of the same hue; non-text fills keep Retro's values\"); W3C WCAG 2.2 SC 1.4.3 / 1.4.11 (https://www.w3.org/TR/WCAG22/, relative luminance and contrast ratio). Light #D0151A: #FFFFFF 5.52, color.global.control #F1F1F1 4.89, #F7F7F7 5.15, #ECE6F0 4.51. Dark #EF6265: #000000 6.61, #1C1C1E 5.35, #262626 4.76, #2B2930 4.52, #181818 5.58. Hue 358.4° / 358.7° (Retro's #EA3337 358.7°). Retro's value \"#EA3337\" (Retro, SOURCED): references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.g #EA3337 (58 call sites: delete glyphs / labels, warning glyph, 'Remove', report) and M3 error #EA3337 — design/research/retro-package-copy-motion.md §3.2–§3.3; menus 'Delete from Photos', 'Make journal private' in red (references/auto/retro/press/tc-2025-12-rewind-panels.png, references/auto/retro/press/tc-2024-04-retro-journals-5.png) — design/research/retro-visual.md §4 #20",
+      "method": "HLS lightness stepped by 0.001 from the Retro value, hue and saturation held, until every listed background passes (scratchpad samehue.py; re-checked with tools/contrast.mjs)",
+      "precision": "exact (computed)",
+      "notes": "One red per appearance, as Retro uses one red constant (vv3.g = M3 error = badge): light #D0151A, dark #EF6265 — the most demanding surface any red text sits on (M3 dialog container #ECE6F0 in light, #2B2930 in dark) sets it. Apple's increased-contrast red (light 233,21,45 → 4.03 on #F1F1F1; dark 255,97,101) moves the same direction but does not pass on these fills. Media surfaces read the dark value (iOS forces .dark there; Android media code reads Tokens.ColorsDark.globalDestructive). Earlier note: Native iOS alerts / menus with role .destructive draw the system red themselves (color.global.system.ios.destructive); app-drawn destructive text uses this token."
     },
     "color.global.selection": {
       "level": "PLATFORM",
@@ -449,15 +456,19 @@
       "notes": "App-drawn surfaces (settings rows included) use the Retro tokens; these names are for components the system draws."
     },
     "color.global.system.primary": {
-      "level": "SOURCED",
-      "source_app": "Retro",
+      "level": "PLATFORM",
+      "source_app": "WCAG 2.2 (owner decision 20)",
       "surface": "global.system",
       "type": "color",
-      "value": "#0A84FF",
+      "value": {
+        "light": "#0066CE",
+        "dark": "#2592FF"
+      },
       "element": "Android M3 primary: dialog action labels, switches, selected controls, text-field cursor",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt M3 ColorScheme d42.u / d42.v / d42.w primary #0A84FF — design/research/retro-package-copy-motion.md §3.2",
-      "method": "APK colour constant (light and dark identical)",
-      "precision": "exact"
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (\"text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised to the nearest passing value of the same hue; non-text fills keep Retro's values\"); W3C WCAG 2.2 SC 1.4.3 / 1.4.11 (https://www.w3.org/TR/WCAG22/, relative luminance and contrast ratio). M3 dialog action labels and text buttons in Retro blue: light #0066CE on #FFFFFF 5.54, #ECE6F0 4.52, #F7F2FA 5.02 (Retro's #0A84FF gave 2.98 in the dialog); dark #2592FF on #1C1C1E 5.38, #000000 6.63, #2B2930 4.54, #1D1B20 5.39 (#0A84FF gave 3.94 in the dark dialog). Hue 210.3° / 210.0° (Retro 210.1°). Apple's increased-contrast blue (30,110,244 → 3.73 on #ECE6F0) moves the same direction. Retro's value \"#0A84FF\" (Retro, SOURCED): references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt M3 ColorScheme d42.u / d42.v / d42.w primary #0A84FF — design/research/retro-package-copy-motion.md §3.2",
+      "method": "HLS lightness stepped by 0.001 from the Retro value, hue and saturation held, until every listed background passes (scratchpad samehue.py; re-checked with tools/contrast.mjs)",
+      "precision": "exact (computed)",
+      "notes": "Switch tracks, checkboxes and the cursor use the same colour (non-text, 3:1 met by the text value)."
     },
     "color.global.system.onPrimary": {
       "level": "SOURCED",
@@ -514,15 +525,19 @@
       "precision": "exact"
     },
     "color.global.system.error": {
-      "level": "SOURCED",
-      "source_app": "Retro",
+      "level": "PLATFORM",
+      "source_app": "WCAG 2.2 (owner decision 20)",
       "surface": "global.system",
       "type": "color",
-      "value": "#EA3337",
+      "value": {
+        "light": "#D0151A",
+        "dark": "#EF6265"
+      },
       "element": "Android M3 error: error / destructive text and icons in M3 components",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt error #EA3337 (light, dark, true black) — design/research/retro-package-copy-motion.md §3.2",
-      "method": "APK colour constant",
-      "precision": "exact"
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 decision 20 (\"text under WCAG AA (4.5 : 1; 3 : 1 for large text) is raised to the nearest passing value of the same hue; non-text fills keep Retro's values\"); W3C WCAG 2.2 SC 1.4.3 / 1.4.11 (https://www.w3.org/TR/WCAG22/, relative luminance and contrast ratio). M3 error text on surface #FFFFFF 5.52 / #1C1C1E 5.35, in a dialog #ECE6F0 4.51 / #2B2930 4.52, in a sheet #F7F2FA 5.00 / #1D1B20 5.37. Retro's value \"#EA3337\" (Retro, SOURCED): references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt error #EA3337 (light, dark, true black) — design/research/retro-package-copy-motion.md §3.2",
+      "method": "HLS lightness stepped by 0.001 from the Retro value, hue and saturation held, until every listed background passes (scratchpad samehue.py; re-checked with tools/contrast.mjs)",
+      "precision": "exact (computed)",
+      "notes": "One red per appearance, as Retro uses one red constant (vv3.g = M3 error = badge): light #D0151A, dark #EF6265 — the most demanding surface any red text sits on (M3 dialog container #ECE6F0 in light, #2B2930 in dark) sets it. Apple's increased-contrast red (light 233,21,45 → 4.03 on #F1F1F1; dark 255,97,101) moves the same direction but does not pass on these fills."
     },
     "color.global.system.onError": {
       "level": "SOURCED",

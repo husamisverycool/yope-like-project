@@ -54,7 +54,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.list/`): `de
 | match (token) | `radius.global.thumbnail` | 4 pt | Tokens.Radii.globalThumbnail | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match (token) | `color.global.control` | light: #F1F1F1; dark: #262626 | Tokens.Colors.globalControl | light: references/auto/retro/store/retro-store-01.png (850–1030,870–1130) 104 s… |  |
 | match (token) | `icon.global.group` | Outlined.Group | Tokens.Icons.globalGroup | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png; glyph tab… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.rowThumbGap` | 17 pt | Tokens.Sizes.globalRowThumbGap | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match (token) | `size.global.avatarSmall` | 22.6 pt | Tokens.Sizes.globalAvatarSmall | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match (token) | `size.global.avatarStackOverlap` | 3 pt | Tokens.Sizes.globalAvatarStackOverlap | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
@@ -64,7 +64,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.list/`): `de
 | match (behaviour) | `groups.list.layout.templateCovers` | android/feature/account/src/main/res/drawable-nodpi/<name>.jpg | TemplateRow thumbnail = painterResource(templateCover(kind)): drawable-nodpi template_cover_<kind> (216 × 291… | references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png phone 3 (… | names and sizes checked against the token by InviteQrAndCoversTest; measured below |
 | match (token) | `size.global.pillHeight` | 37 pt | Tokens.Sizes.globalPillHeight | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png outline CT… |  |
 | match (token) | `icon.global.camera` | Outlined.PhotoCamera | Tokens.Icons.globalCamera | references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png; glyp… |  |
-| match (token) | `color.global.tabInactive` | light: #B2B2B2; dark: #999999 | Tokens.Colors.globalTabInactive | light: references/auto/retro/store/retro-store-01.png four glyphs, darkest px a… |  |
+| match (token) | `color.global.tabInactive` | light: #949494; dark: #999999 | Tokens.Colors.globalTabInactive | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `icon.global.albums` | AutoMirrored.Outlined.MenuBook | Tokens.Icons.globalAlbums | references/auto/retro/lazyweb/retro-lazyweb-20260528-week22-dark-a.png, referen… |  |
 | match (behaviour) | `easing.global.native` | sheet: system (.sheet / ModalBottomSheet) — measured on Retro: spring.global.sheetPresent… | Navigation Compose transitions, M3 ModalBottomSheet / AlertDialog / Switch keep the system motion | references/auto/retro/video/retro-motion-measurements.txt §A, §C (sheet = UIKit… | PLATFORM curve: nothing to set |
 | match (token) | `duration.global.crossfade` | 100 ms | Tokens.Durations.globalCrossfade | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt tween 100 ms … |  |

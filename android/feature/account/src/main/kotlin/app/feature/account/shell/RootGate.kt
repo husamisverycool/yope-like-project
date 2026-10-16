@@ -49,8 +49,9 @@ fun RootGate(nav: NavHostController, env: AccountEnvironment): Boolean {
                 AuthState.Initializing -> Unit
                 AuthState.SignedOut -> {
                     // A signed-in session ended (sign-out, account deletion, expiry): auth.phone opens on its landing (A),
-                    // not on the form holding the previous person's number.
-                    if (resolvedFor != null) env.signUp.clear()
+                    // not on the form holding the previous person's number, and the process-wide state the account screens
+                    // kept for that person goes (the data layer clears its caches, widgets and outbox: SessionGlue).
+                    if (resolvedFor != null) AccountFlow.sessionEnded(env)
                     resolvedFor = null
                     val refused = env.stores.ageRefusal() != null
                     val target = if (refused) AppRoute.AuthAgeGate else AppRoute.AuthPhone

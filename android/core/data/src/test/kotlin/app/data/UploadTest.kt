@@ -264,4 +264,18 @@ class UploadTest {
         assertTrue(infos.all { it.state == WorkInfo.State.CANCELLED })
         assertNotNull(q)
     }
+
+    /** A session ended (SessionGlue): nothing of the person who left stays queued or on disk. */
+    @Test fun discardAllEmptiesTheOutbox() {
+        val q = queue()
+        val first = enqueueTypical()
+        val second = enqueueTypical()
+        store.save(store.load(second)!!.copy(failure = "network"))
+        q.discardAll()
+        assertTrue(q.pending().isEmpty())
+        assertNull(store.load(first))
+        assertTrue(!store.dir(first).exists() && !store.dir(second).exists())
+        val work = WorkManager.getInstance(context)
+        assertTrue(listOf(first, second).all { id -> work.getWorkInfosForUniqueWork(UploadQueue.workName(id)).get().all { it.state == WorkInfo.State.CANCELLED } })
+    }
 }

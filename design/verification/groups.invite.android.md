@@ -49,7 +49,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.invite/`): `
 | match (token) | `size.global.iconSmall` | 14.7 pt | Tokens.Sizes.globalIconSmall | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png CTA icon 1… |  |
 | match (token) | `groups.invite.size.noteGlyphGap` | 6.3 pt | Tokens.Sizes.groupsInviteSizeNoteGlyphGap | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2: eye ink x … |  |
 | match (token) | `groups.invite.color.note` | #767676 | Tokens.Colors.groupsInviteColorNote | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2: note ink b… |  |
-| match (token) | `color.global.textSecondary` | #999999 | Tokens.Colors.globalTextSecondary | light: references/auto/retro/store/retro-store-02.png range 'Jul 3 - 9' (367–49… |  |
+| match (token) | `color.global.textSecondary` | light: #6E6E6E; dark: #999999 | Tokens.Colors.globalTextSecondary | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.buttonMarginH` | 20 pt | Tokens.Sizes.globalButtonMarginH · measured above | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `radius.global.groupedRow` | 12 pt | Tokens.Radii.globalGroupedRow | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt pik: single 1… |  |
@@ -59,7 +59,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.invite/`): `
 | match (token) | `groups.invite.size.menuTextInset` | 52.7 pt | Tokens.Sizes.groupsInviteSizeMenuTextInset | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2: 'Reset lin… |  |
 | match (token) | `color.global.textPrimary` | light: #000000; dark: #FFFFFF | Tokens.Colors.globalTextPrimary | light: references/auto/retro/store/retro-store-02.png info row 'Weeks Posted' d… |  |
 | match (token) | `icon.global.lock` | Rounded.Lock | Tokens.Icons.globalLock | references/auto/retro/video/ig-DDbA_F7x-j7-retrospective-contact-2fps.png; glyp… |  |
-| match (token) | `color.global.destructive` | #EA3337 | Tokens.Colors.globalDestructive | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt vv3.g #EA3337… |  |
+| match (token) | `color.global.destructive` | light: #D0151A; dark: #EF6265 | Tokens.Colors.globalDestructive | docs/OWNER_DECISIONS.md 2026-10-16 decision 20 ("text under WCAG AA (4.5 : 1; 3… |  |
 | match (token) | `size.global.circleButtonLarge` | 64 pt | Tokens.Sizes.globalCircleButtonLarge | references/auto/retro/press/tc-2025-12-rewind-device-a.png, references/auto/ret… |  |
 | match (token) | `size.global.icon` | 24 pt | Tokens.Sizes.globalIcon | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt Modifier.size… |  |
 | match (token) | `groups.invite.size.targetPitch` | 90.4 pt | Tokens.Sizes.groupsInviteSizeTargetPitch | references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 row y 2365:… |  |

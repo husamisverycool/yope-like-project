@@ -209,7 +209,7 @@ private fun Header(title: String?, group: String?, onClose: () -> Unit) {
                     Text(
                         group,
                         style = TextRoles.textButton,
-                        color = Tokens.Colors.globalTextSecondary,
+                        color = Tokens.ColorsDark.globalTextSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.paddingFrom(FirstBaseline, before = Tokens.Sizes.onthisdaySubtitleBaseline),

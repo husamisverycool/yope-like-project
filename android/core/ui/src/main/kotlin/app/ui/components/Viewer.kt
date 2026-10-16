@@ -87,7 +87,7 @@ fun ViewerHeader(
             Spacer(Modifier.width(Tokens.Sizes.globalCardNameGap))
             Column {
                 Text(name, style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1)
-                if (week != null) Text(week, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1)
+                if (week != null) Text(week, style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1)
             }
         }
         if (position != null) PositionPill(position, positionDescription)
@@ -174,7 +174,7 @@ fun ViewerFooter(modifier: Modifier = Modifier, location: String? = null, date: 
     Row(modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
             if (location != null) Text(location, style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia)
-            if (date != null) Text(date, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary)
+            if (date != null) Text(date, style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary)
         }
         trailing?.invoke()
     }
@@ -196,7 +196,7 @@ fun CommentRow(name: String, text: String, avatar: Any?, modifier: Modifier = Mo
                     withStyle(TextRoles.listTitle.toSpanStyle().copy(color = Tokens.Colors.globalTextOnMedia)) { append(name) }
                     if (timestamp != null) {
                         append(' ')
-                        withStyle(TextRoles.caption.toSpanStyle().copy(color = Tokens.Colors.globalTextSecondary)) { append(timestamp) }
+                        withStyle(TextRoles.caption.toSpanStyle().copy(color = Tokens.ColorsDark.globalTextSecondary)) { append(timestamp) }
                     }
                 },
                 style = TextRoles.listTitle,

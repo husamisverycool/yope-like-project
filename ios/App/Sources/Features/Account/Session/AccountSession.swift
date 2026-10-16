@@ -46,6 +46,10 @@ final class AccountSession {
     private(set) var phase: Phase = .launching
     var root: Root = .phone
     var path: [Step] = []
+    /// Bumped each time a session ends (sign-out, account deletion, expiry, the under-age refusal): the sign-up flow
+    /// takes it as its identity, so auth.phone starts again on its landing with an empty number instead of keeping the
+    /// previous person's form (`AuthFlowView`).
+    private(set) var signUpGeneration = 0
     /// The minimum age shown in the refusal (nil when not configured / unknown).
     private(set) var refusalMinAge: Int?
 
@@ -241,6 +245,7 @@ final class AccountSession {
         } catch {
             await data.signOut()
         }
+        signUpGeneration += 1
         phase = .refused
         path = []
         router.setReady(false)
@@ -294,6 +299,7 @@ final class AccountSession {
         launchTask = nil
         signedInUser = nil
         autoJoinToken = nil
+        signUpGeneration += 1
         root = .phone
         path = []
         phase = .signUp

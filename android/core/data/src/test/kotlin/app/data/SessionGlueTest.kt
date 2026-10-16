@@ -123,7 +123,8 @@ class SessionGlueTest {
         val billing = Billing()
         val widgets = Widgets()
         val channels = Channels()
-        val glue = SessionGlue(graph.auth, graph.groups, graph.devices, graph.settings, GroupRealtime(channels, scope), graph.cache, graph.signedUrls, GlueBridges(push, billing, widgets), scope)
+        val outboxEmptied = java.util.concurrent.atomic.AtomicInteger()
+        val glue = SessionGlue(graph.auth, graph.groups, graph.devices, graph.settings, GroupRealtime(channels, scope), graph.cache, graph.signedUrls, GlueBridges(push, billing, widgets), scope) { outboxEmptied.incrementAndGet() }
         glue.start()
 
         mock.signIn(userId)
@@ -162,6 +163,8 @@ class SessionGlueTest {
         val logout = mock.requests.indexOfFirst { it.path.endsWith("/auth/v1/logout") }
         assertTrue("unregister $unregister, logout $logout", unregister in 0 until logout)
         eventually { billing.calls.last() == "reset" && push.deleted && widgets.retained.last() == emptySet<String>() }
+        // The outbox goes with the session: no unsent post of the person who left stays queued or on disk.
+        eventually { outboxEmptied.get() == 1 }
         assertNull(push.current)
         assertNull(QuietHoursSource.current.current())
         assertNull(graph.groups.myGroupIds.value)

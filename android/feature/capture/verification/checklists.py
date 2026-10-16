@@ -145,7 +145,7 @@ def camera_capture():
     margin = tok("size.global.screenMargin")
     s.section("Header (C-01 on media)")
     s.token("`camera.capture.title` text role `headerTitle` (40 / 48, display serif)", "\"Week {number}\" in `textOnMedia`", "ScreenHeader(titleColor = textOnMedia)", ev("size.global.titleTop"), "ISO-8601 week (week.history's numbering)")
-    s.same("`color.global.textOnMedia` (title ink)", tok("color.global.textOnMedia"), px("camera.capture_live.png", 30, 60), "", "sampled in the 'W' stem")
+    s.same("`color.global.textOnMedia` (title ink)", tok("color.global.textOnMedia"), px("camera.capture_live.png", 21, 42), "", "sampled in the 'W' stem")
     fl = m["camera.flash"]
     s.near("flash hit area `size.global.headerButton` → ≥ 48 dp", 48, fl["width"], "", "PLATFORM minimum on Android")
     s.near("flash glyph ink `size.global.headerInset` from the trailing edge (hit box right edge = screen edge)", 393, fl["right"], ev("size.global.headerInset"), "the 24-dp box is centred in the 48-dp hit; the ink inset follows GlyphInk")
@@ -219,7 +219,7 @@ def camera_sendto():
     s.row("match (token)", "label cap top 35.2 below the photo", 35.2, "paddingFrom(FirstBaseline, 35.2 + cap height)", ev("camera.sendto.layout.recipientRow"), "number only in the token's text (reported)")
     s.near("row height 16 + 37 + 16 = 69", 2 * tok("camera.sendto.layout.recipientRow", "padding") + tok("size.global.avatarPicker"), r1["height"])
     s.near("rows separated by a 1-px hairline", 1 / SCALE, r2["top"] - r1["bottom"])
-    s.same("check `color.global.selection` (Android: system primary #0A84FF)", tok("color.global.system.primary") if "color.global.system.primary" in TOKENS else "#0A84FF", px("camera.sendto_loaded.png", 377 - 14, cy(r1)), ev("color.global.selection"), "C-29 CheckCircle uses the platform tint on Android (components library)")
+    s.same("check `color.global.selection` (Android: system primary; send-to is a media surface, dark value)", tok("color.global.system.primary", appearance="dark"), px("camera.sendto_loaded.png", 377 - 14, cy(r1)), ev("color.global.selection"), "C-29 CheckCircle uses the platform tint on Android (components library)")
     s.same("name `color.global.textOnMedia` on `backgroundDeep`", tok("color.global.backgroundDeep"), px("camera.sendto_loaded.png", 300, cy(r1)), "", "row background")
     s.section("Send capsule (C-05 on media)")
     sd = m["sendto.send"]
@@ -308,7 +308,7 @@ def sendto_voice(s):
     low, high = tok("size.global.waveformBarMinHeight"), tok("layout.global.waveform", "maxHeightRatio") * pill
     s.near("C-36 shortest bar = `size.global.waveformBarMinHeight` + (tallest − min) × its level ÷ the largest level", low + (high - low) * min(peaks) / max(levels), wf["min"],
            ev("size.global.waveformBarMinHeight"), "silent bars (level 0) are dots of the min height: core:ui c36 `idle-playing-dots-short`", tol=0.67)
-    s.same("C-36 idle bars unplayed `color.global.textSecondary`", tok("color.global.textSecondary"), wf["colour"], ev("color.global.textSecondary"))
+    s.same("C-36 idle bars unplayed `color.global.textSecondary` (media: dark value)", tok("color.global.textSecondary", appearance="dark"), wf["colour"], ev("color.global.textSecondary"))
     s.token("played bars `color.global.textOnMedia` up to the playback (split bar at the edge)", "spec", "render `voice-attached-playing`; core:ui ComponentLogicTest", ev("layout.global.waveform"))
     s.token("hold / slide left past half the row / slide up `size.global.pillHeight` / lock; locked send; paused continue, preview, delete", "chat.voice.layout.recording / .locked",
             "FlowTests.voiceCapsuleHoldSlideLockAndNoteMenu; ViewModelTests.voice*", ev("chat.voice.layout.locked"))
