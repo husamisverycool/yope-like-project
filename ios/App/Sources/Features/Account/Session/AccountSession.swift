@@ -157,6 +157,7 @@ final class AccountSession {
             case .done: becomeReady(user)
             }
         } catch {
+            AccountTrace.log("session resolve failed: \(String(describing: DataError.from(error)))")
             root = .resolveFailed
         }
     }
@@ -202,6 +203,7 @@ final class AccountSession {
             case .done: becomeReady(user)
             }
         } catch {
+            AccountTrace.log("session after the code failed: \(String(describing: DataError.from(error)))")
             root = .resolveFailed
             path = []
         }

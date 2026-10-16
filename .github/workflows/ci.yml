@@ -291,12 +291,15 @@ jobs:
       - name: generate project
         working-directory: ios
         run: xcodegen generate
+      # Signed ad hoc for the simulator ("Sign to Run Locally", no team): the app then carries its entitlements as the
+      # simulator's, application-identifier included, which the Keychain needs. Unsigned (CODE_SIGNING_ALLOWED=NO), every
+      # Keychain call fails with errSecMissingEntitlement: AppDataSimulatorTests.testTheSessionRoundTripsThroughTheKeychain.
       - name: build and test
         working-directory: ios
         run: |
           SIM=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in sorted(d.items(), reverse=True) if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
           set -o pipefail
-          xcodebuild -project App.xcodeproj -scheme App -destination "id=$SIM" -derivedDataPath build -IDEBuildingContinueBuildingAfterErrors=YES CODE_SIGNING_ALLOWED=NO 'OTHER_SWIFT_FLAGS=$(inherited) -continue-building-after-errors' test 2>&1 | tee xcodebuild.log | grep -E "error:|Test Suite|Executed|BUILD|\*\*" || true
+          xcodebuild -project App.xcodeproj -scheme App -destination "id=$SIM" -derivedDataPath build -IDEBuildingContinueBuildingAfterErrors=YES CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 'OTHER_SWIFT_FLAGS=$(inherited) -continue-building-after-errors' test 2>&1 | tee xcodebuild.log | grep -E "error:|Test Suite|Executed|BUILD|\*\*" || true
           grep -q "\*\* TEST SUCCEEDED \*\*" xcodebuild.log
       - name: upload logs and snapshots
         if: always()
@@ -430,6 +433,9 @@ jobs:
       - name: generate project
         working-directory: ios
         run: xcodegen generate
+      # Signed ad hoc for the simulator, like the "ios" job: unsigned, the app has no application-identifier, the Keychain
+      # refuses the session and the sign-in is lost right after the code (run 102). The build prints the simulator
+      # entitlements Xcode generated for the app.
       - name: build the app and the journey
         working-directory: ios
         run: |
@@ -437,8 +443,9 @@ jobs:
           echo "SIM=$SIM" >> "$GITHUB_ENV"
           xcrun simctl boot "$SIM" || true
           set -o pipefail
-          xcodebuild -project App.xcodeproj -scheme AppUITests -destination "id=$SIM" -derivedDataPath build CODE_SIGNING_ALLOWED=NO 'OTHER_SWIFT_FLAGS=$(inherited) -D SERVER_JOURNEY' build-for-testing 2>&1 | tee xcodebuild-e2e-build.log | grep -E "error:|BUILD|\*\*" || true
+          xcodebuild -project App.xcodeproj -scheme AppUITests -destination "id=$SIM" -derivedDataPath build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 'OTHER_SWIFT_FLAGS=$(inherited) -D SERVER_JOURNEY' build-for-testing 2>&1 | tee xcodebuild-e2e-build.log | grep -E "error:|BUILD|\*\*" || true
           grep -q "\*\* TEST BUILD SUCCEEDED \*\*" xcodebuild-e2e-build.log
+          find build/Build/Intermediates.noindex -name '*.app-Simulated.xcent' -print -exec plutil -p {} \; || true
       - name: wait for the server's address
         env:
           GH_TOKEN: ${{ github.token }}
@@ -464,12 +471,17 @@ jobs:
         working-directory: ios
         run: |
           set -o pipefail
-          xcodebuild -project App.xcodeproj -scheme AppUITests -destination "id=$SIM" -derivedDataPath build -resultBundlePath build/ServerJourney.xcresult CODE_SIGNING_ALLOWED=NO 'OTHER_SWIFT_FLAGS=$(inherited) -D SERVER_JOURNEY' -only-testing:AppUITests/ServerJourneyUITests test-without-building 2>&1 | tee xcodebuild-e2e.log | grep -E "error:|Test Case|Executed|\*\*" || true
+          xcodebuild -project App.xcodeproj -scheme AppUITests -destination "id=$SIM" -derivedDataPath build -resultBundlePath build/ServerJourney.xcresult CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 'OTHER_SWIFT_FLAGS=$(inherited) -D SERVER_JOURNEY' -only-testing:AppUITests/ServerJourneyUITests test-without-building 2>&1 | tee xcodebuild-e2e.log | grep -E "error:|Test Case|Executed|\*\*" || true
           grep -q "\*\* TEST EXECUTE SUCCEEDED \*\*" xcodebuild-e2e.log
       - name: the journey's screenshots
         if: always()
         working-directory: ios
         run: mkdir -p e2e && (xcrun xcresulttool export attachments --path build/ServerJourney.xcresult --output-path e2e || true)
+      # The app's DEBUG sign-up trace (AccountTrace, subsystem app.account.trace) from the simulator's unified log.
+      - name: the app's sign-up trace
+        if: always()
+        working-directory: ios
+        run: xcrun simctl spawn "$SIM" log show --last 2h --style compact --predicate 'subsystem == "app.account.trace"' > e2e-sim-account.log 2>&1 || true
       - name: upload the journey's evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -477,6 +489,7 @@ jobs:
           name: ios-e2e
           path: |
             ios/e2e
+            ios/e2e-sim-account.log
             ios/xcodebuild-e2e.log
             ios/xcodebuild-e2e-build.log
           if-no-files-found: ignore

@@ -1,6 +1,7 @@
 import AppData
 import AppModels
 import Foundation
+import Supabase
 import XCTest
 
 /// Apple-only parts of AppData that the Linux `swift test` job cannot reach (Keychain session
@@ -17,6 +18,21 @@ final class AppDataSimulatorTests: XCTestCase {
     func testSessionsLiveInTheKeychainOnApplePlatforms() {
         let storage = SessionStorage.platformDefault()
         XCTAssertTrue(String(describing: type(of: storage)).contains("Keychain"), "\(type(of: storage))")
+    }
+
+    /// The session supabase-swift writes after the code is read back from the Keychain. A simulator build signed without
+    /// entitlements (CODE_SIGNING_ALLOWED=NO) gets errSecMissingEntitlement here, supabase-swift only logs it, and every
+    /// sign-in is lost right after the code (run 102's "ios e2e": "You're offline" after auth.code); CI signs the app
+    /// ad hoc for the simulator.
+    func testTheSessionRoundTripsThroughTheKeychain() throws {
+        let storage = SessionStorage.platformDefault(service: "app.session.tests.\(UUID().uuidString)")
+        let key = "session"
+        let value = Data(#"{"access_token":"token"}"#.utf8)
+        defer { try? storage.remove(key: key) }
+        try storage.store(key: key, value: value)
+        XCTAssertEqual(try storage.retrieve(key: key), value)
+        try storage.remove(key: key)
+        XCTAssertNil(try storage.retrieve(key: key))
     }
 
     func testDefaultUploadsUseABackgroundSession() throws {
