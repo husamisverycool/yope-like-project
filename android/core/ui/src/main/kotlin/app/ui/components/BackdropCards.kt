@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
+import app.designsystem.blurRadiusForSigma
 import app.designsystem.generated.Tokens
 import app.ui.foundation.DsImage
 import app.ui.foundation.PageRoles
@@ -64,17 +65,6 @@ fun ColourFieldBackdrop(
         BlurredBackdrop(photo, sigma = maxWidth * sigmaToWidth)
     }
 }
-
-/**
- * `Modifier.blur` takes a "radius" r that hwui turns into a Gaussian σ = 0.57735·r + 0.5 px
- * (frameworks/base libs/hwui/utils/Blur.cpp, `Blur::convertRadiusToSigma`; PLATFORM), so a token σ is passed as
- * r = (σ − 0.5) / 0.57735.
- */
-internal fun blurRadiusForSigma(sigmaPx: Float): Float =
-    ((sigmaPx - HWUI_SIGMA_OFFSET) / HWUI_SIGMA_SCALE).coerceAtLeast(0f)
-
-private const val HWUI_SIGMA_SCALE = 0.57735f
-private const val HWUI_SIGMA_OFFSET = 0.5f
 
 /**
  * C-34 recap card: `color.global.surfaceElevated` (#FFFFFF / #181818); [photos] in a [columns]-column grid of

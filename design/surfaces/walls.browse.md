@@ -13,11 +13,11 @@ bar (C-04, `icon.global.group`; tab items owned by `groups.list`, account group)
 | TC-1B | `references/auto/retro/press/tc-2023-07-retro-1b.webp` phone 2 (2.204 px/pt) | **primary**: title, search field, grid (avatar 81, `walls.browse.dimension.columnPitch`, `.rowPitch`, `.nameBaseline`) |
 | H43 | `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png` | root header metrics (C-01) |
 | ED-W3 | `references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png` | 2025 search field (52 pt, r 19 — C-12) |
-| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Friends", "Search", "Error loading friends. Tap here to try again.", "Nothing to see here yet" |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "Members" (`journal_edit_members_screen_title`), "Search", "Error loading friends. Tap here to try again." (noun → members), "Nothing to see here yet" |
 
 ## Structure (top → bottom; page `color.global.background` / `.background.android`)
 
-1. **Header** (C-01 root): `walls.browse.title` ("Friends") in the display serif, baseline `size.global.titleTop` below the
+1. **Header** (C-01 root): `walls.browse.title` ("Members" — owner decision 10: the people of your groups are members) in the display serif, baseline `size.global.titleTop` below the
    top safe area. No trailing text buttons (Retro's "Invite" is group-scoped here and lives in `groups.invite`; "Keys" is
    do-not-copy).
 2. **Search field** (C-12): `size.global.titleToContent` below the title baseline, full width inside
@@ -101,4 +101,4 @@ switch and push native. Reduce Motion: system.
 | `walls.browse.layout.rowOrder` | **BLOCKED** (development approximation: newest wall item first, then name) | one raw screenshot of Retro's current Friends tab with 7 or more friends |
 | `walls.browse.layout.selection` (old BLOCKED) | closed: no selected state — a tap opens the person's wall (Retro grid behaviour) | — |
 | current Friends tab (2023 render only) | 2023 values (±0.6 pt) | same screenshot |
-| title noun "Friends" for family / roommates groups | verbatim Retro; owner decision S-12 carried | owner |
+| title noun for family / roommates groups | closed by owner decision 10 (2026-10-16): "Members" (Retro's journal word, `journal_edit_members_screen_title`; retro.app /j/ "7 members • 24 photos") | — |

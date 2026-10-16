@@ -23,8 +23,18 @@ Not allowed:
 Attribution is not required; `INDEX.md` credits the photographers anyway. Full terms: <https://unsplash.com/terms>.
 
 The licence covers the photographs' copyright only. People shown in them have not endorsed this project, so the photos
-stay test data: they are drawn into snapshot images for design review and are never shipped in an app, used in
-marketing, or presented as real users.
+**with people** stay test data: they are drawn into snapshot images for design review and are never shipped in an app,
+used in marketing, or presented as real users.
+
+**Shipped in the apps (owner decision 9, 2026-10-16):** four photos that show **no person at all** — no face, no figure,
+no hand — ship as the "Ideas to Get Started" template covers: `road-trip-window-3x2.jpg` (friends),
+`cake-chocolate-candles-4x5.jpg` (family), `pizza-table-3x4.jpg` (roommates) and `sunset-lake-9x16.jpg` (custom), cropped
+to 3:4 and resized to 216 × 291 px as `template_cover_<kind>.jpg` (iOS asset catalog `ios/App/Resources/Assets.xcassets`,
+Android `android/feature/account/src/main/res/drawable-nodpi`). The Unsplash License above allows copying, modifying and
+distributing them in a commercial app without permission or attribution; using four photos as decoration in our own
+app neither sells them unmodified nor compiles Unsplash images into a similar or competing service; and with nobody in
+them, no one's likeness is used or appears to endorse the app. Details, sources and processing: `INDEX.md` → "Shipped in
+the apps". No other file here may ship.
 
 ## Pexels License (if Pexels photos are added)
 

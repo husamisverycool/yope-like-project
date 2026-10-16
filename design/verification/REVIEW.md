@@ -46,8 +46,12 @@ side-by-side images are local only (git-ignored: the reference half is third-par
 - **paywall / birthday.request**: plan card on a backdrop with a black capsule (PAY).
 - **invite (web + App Clip + Android)**: Retro's /u/ card: colour field, avatar, serif headline, "Let's go" pill;
   desktop QR column in Retro's order.
-- **Android dark page #1C1C1E** vs iOS #000000: Retro's own Android default dark scheme (R-3); true black is an owner
-  option.
+- **Android dark page #1C1C1E** vs iOS #000000: Retro's own Android default dark scheme (R-3); Retro's true black is
+  offered in Android Settings → Appearance → True Black (owner decision 21; `groups.list/default-trueBlack-dark`,
+  `settings.root/trueBlackOn-dark` next to Retro's iOS black page: same #000000 page, #262626 rows and controls).
+- **paywall trial** (owner decision 7): both platforms show the annual plan's 1-week trial — the FREE pill at Retro's
+  19.5-pt inset (PAY), "Try 1 week free", "And then billed $35.99 yearly after"; people no longer eligible see the plain
+  card (`paywall/default-noTrial`). Android reads Play's free offer phase (core:billing); iOS checks StoreKit eligibility.
 
 ## Known visible gaps (not fixable without the owner or new captures)
 
@@ -56,7 +60,6 @@ side-by-side images are local only (git-ignored: the reference half is third-par
 - "Ideas to Get Started" template thumbnails are placeholder fills (template photos are an owner question).
 - Debug builds show `{app_name}` placeholders where copy names the app (release omits those elements).
 - Display faces are the closest free match, not Roslindale itself (licence: owner).
-- Trial UI on the Android paywall (core:billing exposes no trial offer); iOS shows StoreKit's trial.
 - Component gaps logged by the Pass 4 agents (local variants built from tokens): 64-pt dark circle, header action
   state, grouped-row value/height variants, people-row check slot, white loading indicator
   on media, sheet header with a leading close, reply-bar internals. Each is drawn from tokens; consolidating them into

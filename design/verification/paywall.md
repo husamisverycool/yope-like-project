@@ -6,9 +6,9 @@ Checklist written from the spec (`design/surfaces/paywall.md`) against the iOS c
 
 Reference image(s): `references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/apk/retro_membership_paywall_graphic.webp`
 
-Snapshots (CI, `ios/build/snapshots/account/`): `paywall-loading-light.png`, `paywall-default-light.png`, `paywall-default-dark.png`, `paywall-unavailable-light.png`, `paywall-offline-light.png`, `paywall-welcome-light.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `paywall-loading-light.png`, `paywall-default-light.png`, `paywall-default-dark.png`, `paywall-default-noTrial-light.png`, `paywall-unavailable-light.png`, `paywall-offline-light.png`, `paywall-welcome-light.png`, `paywall-welcome-restored-light.png` (fixtures: $35.99 a year with the 1-week trial, $3.99 a month — owner decision 7; no history perk — T1).
 
-**Summary: 58 matched · 1 approximated · 0 not matched · 3 not applicable on iOS / owner / another pass.**
+**Summary: 61 matched · 1 approximated · 0 not matched · 3 not applicable on iOS / owner / another pass.** (2026-10-16, owner decisions 7: +3 rows — pill inset, trial eligibility, history perk hidden.)
 
 
 ## Structure
@@ -38,6 +38,8 @@ Snapshots (CI, `ios/build/snapshots/account/`): `paywall-loading-light.png`, `pa
 | matched | `paywall.fontWeight.planTitle` | bold (SOURCED) | `Tokens.FontWeights.paywallFontWeightPlanTitle` in PaywallScreen.swift |
 | matched | `paywall.color.planText` | #090A0A (SOURCED) | `Tokens.Colors.paywallColorPlanText` in PaywallScreen.swift |
 | matched | `paywall.plans.trial.badge` | “FREE” (SOURCED) | `Copy.paywallPlansTrialBadge` in PaywallScreen.swift |
+| matched | `paywall.size.planPillInset` | 19.5 pt (SOURCED, PAY) | `PremiumPill … .offset(x: planCardPadding − paywallSizePlanPillInset)` in PlanCard (PaywallScreen.swift) |
+| matched | free trial shown only when eligible (paywall.md Plan cards → Free trial) | StoreKit introductory free trial + RevenueCat eligibility `.eligible` | `PurchasesService.isEligibleForIntroOffer` → `RevenueCatPurchases.plans()` sets `trialDuration` only then; `PlanOption.trialDuration(_:)` "1 week" (AccountSettingsTests) |
 | matched | `paywall.fontSize.planSubtitle` | 15 pt (SOURCED) | `Tokens.FontSizes.paywallFontSizePlanSubtitle` in PaywallScreen.swift |
 | matched | `paywall.color.planTextSecondary` | #757A7D (SOURCED) | `Tokens.Colors.paywallColorPlanTextSecondary` in PaywallScreen.swift |
 | matched | `paywall.fontSize.planBullet` | 17 pt (SOURCED) | `Tokens.FontSizes.paywallFontSizePlanBullet` in PaywallScreen.swift |
@@ -78,6 +80,7 @@ Snapshots (CI, `ios/build/snapshots/account/`): `paywall-loading-light.png`, `pa
 | matched | `paywall.welcome.title` | “Welcome to Premium!” (SOURCED) | `Copy.paywallWelcomeTitle` in PaywallScreen.swift |
 | matched | `paywall.welcome.body` | “You've unlocked all Premium features.” (SOURCED) | `Copy.paywallWelcomeBody` in PaywallScreen.swift |
 | matched | `paywall.welcome.done` | “Done” (SOURCED) | `Copy.paywallWelcomeDone` in PaywallScreen.swift |
+| matched | history perk while `free_history_days` is NULL (T1, owner decision 7) | not listed | `PaywallModel.showsHistoryPerk` false → `PaywallPerk.listed` = video, widgets, export (AccountSettingsTests.testHistoryPerkStaysHiddenWhileFreeHistoryDaysIsNull) |
 | matched | `paywall.restore.done` | “Welcome back to Premium!” (SOURCED) | `Copy.paywallRestoreDone` in PaywallModel.swift, PaywallScreen.swift |
 | matched | `paywall.restore.none` | “No previous purchases found” (SOURCED) | `Copy.paywallRestoreNone` in PaywallModel.swift |
 

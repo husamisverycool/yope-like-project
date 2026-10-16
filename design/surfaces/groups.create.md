@@ -29,7 +29,7 @@ Sheet header (C-29): centred title (text role `sheetTitle`) + trailing close cir
 1. `size.global.titleToContent` under the header: question `groups.create.type.label` (`font.global.display`,
    `displayMedium`) at the margin.
 2. `size.global.titleToContent` below: four template rows (C-15 geometry, `size.global.listGap` apart), as in
-   `groups.list` §3: placeholder thumbnail, `groups.create.type.<kind>` + `.detail`, trailing fill capsule C-06
+   `groups.list` §3: the kind's cover photo (`groups.list.layout.templateCovers`), `groups.create.type.<kind>` + `.detail`, trailing fill capsule C-06
    `groups.create.type.create`. Tapping the row or its capsule → step B with that kind.
 
 ### Step B — cover and name (`groups.create.title`, or `groups.create.titleEdit` in edit mode)
@@ -115,4 +115,4 @@ Created / saved → `haptic.global.success`; failed → `haptic.global.error`.
 | item | status | smallest capture |
 |---|---|---|
 | Retro's New Album form as an image | composition | screenshots of Retro's "New Album" flow (name + cover) |
-| template thumbnails | Fill placeholders | owner photos (optional) |
+| template thumbnails | closed (owner decision 9): the kinds' cover photos (`groups.list.layout.templateCovers`) | — |

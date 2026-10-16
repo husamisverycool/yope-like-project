@@ -53,7 +53,8 @@ Paths under `references/auto/retro/` (`INDEX.md`); research files `design/resear
   (HIG / M3 accessibility, PLATFORM).
 - **Media surfaces** (viewer, camera, full-bleed photos) are black in both appearances: use
   `color.global.backgroundDeep`, `color.global.textOnMedia`, `color.global.controlOnDeep`, `color.global.glass`.
-- **Android page.** On Android, "page" means `color.global.background.android` (#FFFFFF / #1C1C1E); grouped rows,
+- **Android page.** On Android, "page" means `color.global.background.android` (#FFFFFF / #1C1C1E) — with Settings →
+  True Black on (owner decision 21) `color.global.background.android.trueBlack` (#FFFFFF / #000000); grouped rows,
   chips and the reply bar use `color.global.surfaceSecondary.android` where iOS uses `color.global.control`;
   secondary text uses `color.global.textSecondary.android`.
 
@@ -486,7 +487,7 @@ APK-X wv3.a (11/11 W600); RV §3.1, §3.3, §4 #8.
 | fill pill / template "Create" | C-06 fill variant |
 | position pill | see C-22 |
 | video duration ("1:00") | capsule `color.global.surfaceLight` 71 × 24, `icon.global.video` + monospaced digits, text role `pillSmall` (13 bold) `color.global.onSurfaceLight` |
-| premium pill ("FREE") | 51 × 26 capsule, `layout.global.premiumGradient` (top #D543DE → bottom #A327B8) / `color.global.premium`, label text role `pillSmall` (13 bold, caps) `color.global.onBadge`; coloured shadow not measured; **paywall only, owner decides** |
+| premium pill ("FREE") | 51 × 26 capsule, `layout.global.premiumGradient` (top #D543DE → bottom #A327B8) / `color.global.premium`, label text role `pillSmall` (13 bold, caps) `color.global.onBadge`; coloured shadow not measured; **paywall only** (purple kept, owner decision 7): on a plan card with a free trial, centred on the title's cap middle, `paywall.size.planPillInset` (19.5) from the card's edge |
 | relative week | C-03 |
 
 **Evidence.** PAY ((945–955,1480–1495), col x=960 y1450–1525); RV §3.1, §3.3, §4 #8.
@@ -603,6 +604,7 @@ pill below (recap preview) or a pager of plan cards (paywall).
 | recap card | `color.global.surfaceElevated` #FFFFFF / #181818; corners ≈4.5–5 % of the card width (TC-H; no exact fit on the gradient backdrop — **Gap**: one lossless share-image export); photo grid with `size.global.stripGap` gaps, `radius.global.thumbnail` cells; footer: year in `font.global.display` text role `headerTitle` (as the measured recap card, RM-8: TC-REC "2023" is the title cut), name text role `listTitle`, domain line text role `meta` `color.global.textSecondary` |
 | plan card (paywall) | translucent white on iOS (alpha not derivable — **Gap**; opaque `color.global.surfaceElevated` is the APK value); corners `radius.global.cardLarge` (36); padding `size.global.planCardPadding` (27); its capsule (C-05) 16 from the card sides and bottom; next card peeks after `size.global.planCardGap` (8); width = screen − 2 × `size.global.buttonMarginH` |
 | plan card text | title 24 bold / price 22 heavy, body 15, steps 17, footnote 15 (PAY) — paywall surface tokens (Pass 2) |
+| QR card (groups.invite, owner decision 17) | the recap card shell holding a QR code in its grid area: black modules (`color.global.onSurfaceLight`) on the white card in both appearances, a four-module quiet zone, whole-pixel modules; footer = group name (`displayTitle`) over the tiny print `groups.invite.qr.tagline` (`groups.invite.fontSize.qrTagline` 10, `groups.invite.color.note`) — `groups.invite.layout.qrCard` |
 | close | glass circle `size.global.circleButtonSmall` (32) (C-11) |
 | below | page dots (C-31), light pill "Share" (C-09) |
 

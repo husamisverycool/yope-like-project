@@ -213,7 +213,10 @@ object Rows {
     )
 
     fun post(id: String, author: String, at: Instant, group: String = FakeMemoryBackend.GROUP, mediaId: String = "m-$id") =
-        Post(id, mediaId, group, author, null, null, null, null, false, null, at)
+        Post(
+            id = id, mediaId = mediaId, groupId = group, authorId = author, caption = null, voicePath = null, voiceDurationMs = null,
+            invitationId = null, inWindow = false, replyToPostId = null, createdAt = at,
+        )
 
     fun request(id: String = "r-1", honoree: String = FakeMemoryBackend.ANA, birthday: LocalDate = LocalDate.of(2026, 12, 12), group: String = FakeMemoryBackend.GROUP) =
         TributeRequest(id, group, honoree, birthday, birthday.atStartOfDay(java.time.ZoneId.of("Europe/Paris")).toInstant(), null, T0)

@@ -8,9 +8,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.DeviceFontFamilyName
 import androidx.compose.ui.text.font.Font
@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import app.designsystem.generated.Tokens
 
 /**
@@ -103,22 +102,30 @@ private fun variableFamily(resId: Int): FontFamily = synchronized(variableFamili
  * `.shadow(radius:)` takes it as is); [x]/[y] the offset. The color carries the token's opacity.
  */
 @Immutable
-data class DSShadow(val color: Color, val blur: Dp, val x: Dp, val y: Dp) {
-    /**
-     * Compose's [Shadow] radius is a blur radius that Android's blur turns into σ = radius ÷ √3 (Skia
-     * `SkBlurMask::ConvertRadiusToSigma`, 0.57735 × radius), so the token's σ is passed as σ × √3. Measured on the
-     * album cover render: with σ passed as is the shadow fell off at σ ≈ 4.9 dp instead of 8.5.
-     */
-    fun toShadow(): Shadow = Shadow(radius = blur * SIGMA_TO_BLUR_RADIUS, color = color, offset = DpOffset(x, y))
+data class DSShadow(val color: Color, val blur: Dp, val x: Dp, val y: Dp)
 
-    private companion object {
-        /** √3: Skia's blur-radius ↔ σ factor (platform constant, not a design value). */
-        const val SIGMA_TO_BLUR_RADIUS = 1.7320508f // provenance-ok: Skia blur radius ↔ sigma factor (√3), platform constant
-    }
+/**
+ * Draws [shadow] behind the content, outside [shape]. Compose's shadow radius is a blur radius that the platform turns
+ * into σ = 0.57735 · r + 0.5 px ([blurRadiusForSigma]), so the token's σ is converted first — passed as is, the album
+ * cover's shadow measured σ ≈ 4.9 dp instead of 8.5 on the render.
+ */
+fun Modifier.dsShadow(shadow: DSShadow, shape: Shape): Modifier = dropShadow(shape) {
+    radius = blurRadiusForSigma(shadow.blur.toPx())
+    color = shadow.color
+    offset = Offset(shadow.x.toPx(), shadow.y.toPx())
 }
 
-/** Draws [shadow] behind the content, outside [shape]. */
-fun Modifier.dsShadow(shadow: DSShadow, shape: Shape): Modifier = dropShadow(shape, shadow.toShadow())
+/**
+ * The blur radius (px) for a Gaussian σ (px): Android's blurs (`Modifier.blur`, shadows) take a "radius" r that hwui
+ * turns into σ = 0.57735 · r + 0.5 px (frameworks/base libs/hwui/utils/Blur.cpp, `Blur::convertRadiusToSigma`;
+ * Skia's convention; PLATFORM), so a token σ is passed as r = (σ − 0.5) / 0.57735. The one formula for every blur and
+ * shadow drawn from a σ token (core:ui `BlurredBackdrop`, [dsShadow]).
+ */
+fun blurRadiusForSigma(sigmaPx: Float): Float =
+    ((sigmaPx - HWUI_SIGMA_OFFSET) / HWUI_SIGMA_SCALE).coerceAtLeast(0f)
+
+private const val HWUI_SIGMA_SCALE = 0.57735f // provenance-ok: hwui Blur::convertRadiusToSigma scale (platform constant)
+private const val HWUI_SIGMA_OFFSET = 0.5f // provenance-ok: hwui Blur::convertRadiusToSigma offset in px (platform constant)
 
 /**
  * A `spring` token. Generated from SwiftUI response/dampingFraction (mass 1) by designgen:

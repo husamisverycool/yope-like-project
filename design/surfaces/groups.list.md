@@ -33,7 +33,9 @@ C-06, C-04, C-27, C-28.
 3. `size.global.sectionGap` (36.4) below the last row: **"Ideas to Get Started"** section — header
    `groups.list.ideas.title` (text role `sectionLabel`, `color.global.textPrimary`) at the margin; then one template row
    per group kind in `group_kind` order (friends · family · roommates · custom), same C-15 geometry:
-   thumbnail `color.global.control` placeholder (C-17 placeholder look; no art), title `groups.create.type.<kind>`
+   thumbnail = the kind's **cover photo** (`groups.list.layout.templateCovers`, owner decision 9: people-free sample
+   photos bundled with the app — friends a road-trip window, family a birthday cake, roommates dinner on the table,
+   custom a lake at sunset; aspect-fill, `radius.global.thumbnail`, `color.global.control` behind it), title `groups.create.type.<kind>`
    (`listTitle`), description `groups.create.type.<kind>.detail` (`listSubtitle`, `color.global.textSecondary`, ≤ 2 lines),
    trailing **fill capsule** C-06 (`color.global.control`, label `groups.create.type.create` text role `pill`, height
    `size.global.pillHeight`, hugging its label with 12 / 8 padding) at the right margin.
@@ -51,7 +53,7 @@ C-06, C-04, C-27, C-28.
 | avatar stack | C-23 stack; members in joining order, as many as fit the text column (no "+N", no count) | — | part of the row element |
 | "+" circle | C-11 | `groups.list.row.camera.accessibilityLabel` ("Add to {group_name}") | → `camera.capture` with the group preselected (`DeepLink.camera(groupID:)`) |
 | ideas header | `sectionLabel` | `groups.list.ideas.title` | static (Retro's "•••" after the header is not built — its menu was not captured) |
-| template row | C-15 geometry; C-06 fill capsule | `groups.create.type.*`, `.detail`, `groups.create.type.create` | Create → `groups.create` at its name step with that kind preselected |
+| template row | C-15 geometry with the kind's cover (`groups.list.layout.templateCovers`); C-06 fill capsule | `groups.create.type.*`, `.detail`, `groups.create.type.create` | Create → `groups.create` at its name step with that kind preselected |
 | tab bar | C-04 + `groups.list.layout.tabBar` (`icon.global.camera`, `.home`, `.group`, `.wall`; selected `color.global.textPrimary`, unselected `color.global.tabInactive`) | `groups.list.tab.camera.accessibilityLabel`, `.groups`, `.walls`, `.me` | camera → `camera.capture`; groups = this screen; walls → `walls.browse`; me → `walls.mine` |
 
 ## States
@@ -106,7 +108,10 @@ Row, "+", template "Create", tab presses → `haptic.global.tap` (Android VIRTUA
   `posts` row per group (docs/API.md §5.8) + `groups.created_by` for the no-post subtitle + signed URLs for covers and
   avatars (§7).
 - Realtime: `posts` inserts per group (§8.1) update subtitles and order; refetch on foreground / reconnect (§8.3).
-- In: launch with a session (`DeepLinkRouting.home`), end of onboarding, back from a group.
+- In: launch with a session when the person is in **no group** (owner decision 13: Retro's empty home leads with its
+  templates; a camera with nobody to send to is a dead end — with ≥ 1 group the app opens to `camera.capture`, the cached
+  list deciding, else the first fetch; offline with nothing cached counts as none), end of onboarding, back from a
+  group, the tab bar. iOS `AccountSession.start` (window on `LaunchingView` until the check answers), Android `RootGate`.
 - Out: `groups.screen`, `groups.create` (type step or a preselected kind), `camera.capture` (`DeepLink.camera`),
   `walls.browse`, `walls.mine`.
 
@@ -119,7 +124,8 @@ Row, "+", template "Create", tab presses → `haptic.global.tap` (Android VIRTUA
 ## Do-not-copy
 
 - Counts in subtitles ("shared 2 posts") and Retro's "N new" badges; the user-styled title on Retro's cover thumbnails
-  (this app has no cover-title editor); Retro's sample template photos (Retro assets).
+  (this app has no cover-title editor); Retro's sample template photos (Retro assets — ours are Unsplash photos with no
+  person in them, `fixtures/photos/LICENSE.md`).
 
 ## Gaps
 
@@ -127,5 +133,5 @@ Row, "+", template "Create", tab presses → `haptic.global.tap` (Android VIRTUA
 |---|---|---|
 | light Albums list as a RAW capture | renders only (ED-W3 / TC-J1) | raw light screenshot of the Albums list (RV §6) |
 | "Ideas to Get Started" "•••" menu | not built (menu contents not captured) | one screenshot with that menu open |
-| template thumbnails | Fill placeholders (Retro's photos are its own) | owner may supply four cover photos |
+| template thumbnails | closed (owner decision 9): four people-free Unsplash photos, 216 × 291 px JPEG (3 × 72 × 97) in the iOS asset catalog and Android `drawable-nodpi` | — |
 | tab destinations Rewind / Activity | not in this app's IA | lead / owner (MERGE RA-7) |

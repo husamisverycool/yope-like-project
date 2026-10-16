@@ -2,7 +2,9 @@
 
 Real photographs that the iOS and Android snapshot tests draw wherever a screen shows a photo (posts, walls,
 weeks, albums, collages, widgets, memories, avatars, group covers), so the recorded screens look like the app in use.
-**Test data only:** they are read from this folder by test code and are never part of an app, extension or test bundle.
+**Test data**, read from this folder by test code — with one exception: four of them, which show **no person at all**,
+ship inside the apps as the "Ideas to Get Started" template covers (owner decision 9; see "Shipped in the apps" below).
+No other file is part of an app, extension or test bundle.
 
 - **59 files**: 49 photos and 10 square portraits for avatars, 7.1 MB in total.
 - **Source and licence:** every file comes from [Unsplash](https://unsplash.com) under the
@@ -14,6 +16,32 @@ weeks, albums, collages, widgets, memories, avatars, group covers), so the recor
   (no EXIF, GPS, IPTC, XMP or ICC profile).
 - **Content rules:** groups of friends, family, grandparents and kids, pets, food, trips, celebrations; day and night,
   warm and cool. No logos or brands, no celebrities, no text-heavy pictures, no AI-generated images.
+
+## Shipped in the apps (template covers)
+
+Owner decision 9 (docs/OWNER_DECISIONS.md, 2026-10-16): the groups list's "Ideas to Get Started" rows show one cover photo
+per group kind, as Retro's template rows do (JED, `design/surfaces/groups.list.md`). Every photo here was viewed at full
+size and only photos with **no person in them** (no faces, no figures, no hands) were considered, so no one appears to
+endorse the app; photos with alcohol or brand marks were left out too (`picnic-spread-3x4` shows wine). Four ship:
+
+| kind | source file | shipped as | why it fits |
+|---|---|---|---|
+| friends | `road-trip-window-3x2.jpg` (Maria Ivanova) | `template_cover_friends.jpg` | mountains through a car window: adventures together (Retro's friends template, "Chronicle adventures with your best friends") |
+| family | `cake-chocolate-candles-4x5.jpg` (Duncan Kidd) | `template_cover_family.jpg` | a birthday cake with lit candles: "celebrate milestones together" |
+| roommates | `pizza-table-3x4.jpg` (Nadya Filatova) | `template_cover_roommates.jpg` | dinner on the table at home: "dinners and nights in" |
+| custom | `sunset-lake-9x16.jpg` (Dave Hoefler) | `template_cover_custom.jpg` | an island in a calm lake at sunset: "whatever else your mind takes you to" |
+
+- **Where:** iOS asset catalog `ios/App/Resources/Assets.xcassets/template_cover_<kind>.imageset/` (scale 3x); Android
+  `android/feature/account/src/main/res/drawable-nodpi/template_cover_<kind>.jpg`. Names and size:
+  `groups.list.layout.templateCovers` (design/tokens/account.json).
+- **Processing:** centre crop to 3:4 (road-trip-window x 270–810 of 1080; cake-chocolate-candles x 27–837 of 864;
+  pizza-table whole frame; sunset-lake y 134–945 of 1080), Lanczos resize to 216 × 291 px (3 × the 72 × 97-pt row
+  thumbnail), JPEG quality 80, sRGB, no EXIF / GPS / ICC (python3 -I + PIL). 6–22 KB each.
+- **Why bundling is allowed:** the Unsplash License grants a worldwide licence to "copy, modify, distribute … and use"
+  the photos, "including for commercial purposes, without permission from or attributing the photographer"
+  (`LICENSE.md`). Four photos used as decoration in our own app is neither selling the images unmodified nor
+  "compiling images from Unsplash to replicate a similar or competing service". With no person in them, no one's
+  likeness is used and nobody appears to endorse the app. The photographers stay credited here.
 
 ## File names
 

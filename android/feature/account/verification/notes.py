@@ -38,6 +38,8 @@ NOTES = {
     ("*", "icon.global.download"): (B, "the denied-save block's glyph (drawn by photo.viewer, social pass; rendered here as the same composition)", ""),
     ("*", "groups.invite.layout.contacts"): (B, "Android: READ_CONTACTS after 'Connect Contacts' (rationale / settings via core:ui rememberPermissionRequest), people rows with Invite capsules (SMS)", "iOS 18 ContactAccessButton is iOS only"),
     ("*", "groups.list.layout.tabBar"): (B, "shell ShellTabBar → core:ui TabBar (C-04): camera, home, walls, me icons; over media on the camera", ""),
+    ("*", "groups.list.layout.templateCovers"): (B, "TemplateRow thumbnail = painterResource(templateCover(kind)): drawable-nodpi template_cover_<kind> (216 × 291 px), aspect-fill in the C-15 thumbnail", "names and sizes checked against the token by InviteQrAndCoversTest; measured below"),
+    ("groups.invite", "icon.global.download"): ("match (token)", "the QR card's Save circle (C-11 on media)", ""),
     ("*", "groups.screen.layout.menu"): (AP, "long-press on others' strip tiles / grid cells opens a DsDropdownMenu (Report Post / Block {first_name}); own photos have no menu", "core:ui DayTile / GridCell got a `menu` slot (Modifier.tapLongPressable)"),
     ("*", "safety.report.layout.flow"): (B, "menu item → M3 ModalBottomSheet (reasons) → a reason sends at once and closes; 'I don't like it' → Next Steps; alerts after (ReportFlow)", ""),
     ("*", "safety.block.layout.menu"): (B, "DropdownMenu items in groups.screen / groups.settings", ""),

@@ -341,7 +341,19 @@ def groups_list():
                      ("thumbnail leading inset", "size.global.screenMargin", t("size.global.screenMargin"), ext[0], {"tol": 1.0})]
     if len(thumbs) > 1:
         rows.append(("gap between rows (thumbnail to thumbnail)", "size.global.listGap", t("size.global.listGap"), thumbs[1][0] - thumbs[0][1], {"tol": 1.5}))
-    return [("List (groups.list/default-light)", rows)]
+    sections = [("List (groups.list/default-light)", rows)]
+    # "Ideas to Get Started" covers (owner decision 9): photo thumbnails under the empty state.
+    empty = snap("groups.list/empty-light")
+    covers = M.col_runs(empty, 50, lambda p: max(p[:3]) < 250 or min(p[:3]) < 200, 340, 852, min_len=60)
+    ideas = []
+    for i, (top, bottom) in enumerate(covers[:4]):
+        ext = M.extent(empty, lambda p: max(p[:3]) < 250 or min(p[:3]) < 200, (0, top + 2, 100, bottom - 2))
+        ideas.append((f"template cover {i + 1} height", "groups.list.layout.templateCovers", t("size.global.rowThumbHeight"), bottom - top, {"tol": 1.0}))
+        if ext:
+            ideas.append((f"template cover {i + 1} width", "groups.list.layout.templateCovers", t("size.global.rowThumbWidth"), ext[2] - ext[0], {"tol": 1.0}))
+    ideas.append(("template covers drawn (photos, not placeholders)", "groups.list.layout.templateCovers", 4, len(covers[:4]), {"tol": 0}))
+    sections.append(("Ideas to Get Started covers (groups.list/empty-light)", ideas))
+    return sections
 
 
 def groups_create():
@@ -371,7 +383,32 @@ def groups_invite():
         if cap:
             rows += [("Turn on link sharing height", "size.global.buttonHeight", t("size.global.buttonHeight"), cap["height"]),
                      ("Turn on link sharing side inset", "size.global.buttonMarginH", t("size.global.buttonMarginH"), cap["left"])]
-    return [("Link off (groups.invite/linkOff-light)", rows)]
+    sections = [("Link off (groups.invite/linkOff-light)", rows)]
+    # The QR card (owner decision 17): recap card shell, a whole-pixel code with a four-module quiet zone.
+    qr = snap("groups.invite/qr-light")
+    white = M.near("#FFFFFF", 2)
+    card_rows = M.row_runs(qr, 200, white, 0, 393, min_len=200)  # the card's top padding, above the code
+    q = []
+    if card_rows:
+        left, right = card_rows[0]
+        q.append(("card width (recap card widthRatio × page width)", "layout.year.story.recapCard", round(t("layout.year.story.recapCard", "widthRatio") * M.W, 1), right - left, {"tol": 1.5}))
+        dark = lambda p: max(p[:3]) < 60
+        top = M.col_runs(qr, (left + right) / 2, white, 100, 852, min_len=5)[0][0]
+        corner = t("layout.year.story.recapCard", "cornerRadiusRatio") * (right - left)
+        # Inside the card's square grid area, clear of its rounded corners (the backdrop shows there).
+        code = M.extent(qr, dark, (left + corner, top + corner, right - corner, top + (right - left) - corner))
+        if code:
+            # The top-left finder pattern is 7 modules wide: its first dark run gives the module size.
+            finder = M.row_runs(qr, code[1] + 0.5, dark, code[0], code[2])
+            module = (finder[0][1] - finder[0][0]) / 7 if finder else None
+            padding = t("layout.year.story.recapCard", "paddingRatio") * (right - left)
+            if module:
+                quiet = (code[0] - left - padding) / module
+                q.append(("module size in whole pixels (2 px/dp render)", "groups.invite.layout.qrCard", round(module * M.SCALE), round(module * M.SCALE, 2), {"tol": 0.01}))
+                q.append(("quiet zone ≥ quietZoneModules (modules, left)", "groups.invite.layout.qrCard", t("groups.invite.layout.qrCard", "quietZoneModules"), round(quiet, 2), {"status": "match" if quiet >= 4 - 0.05 else "MISS", "note": "leftover pixels of the whole-pixel module grid widen it"}))
+            q.append(("code square centred in the card", "groups.invite.layout.qrCard", round((left + right) / 2, 1), round((code[0] + code[2]) / 2, 1), {"tol": 1.0}))
+    sections.append(("QR card (groups.invite/qr-light)", q))
+    return sections
 
 
 def groups_screen():
@@ -519,7 +556,7 @@ SURFACES = [
          ours="groups.list/default", dark="groups.list/default", refs=[EDW3, JED, TCJ1], measure=groups_list),
     dict(id="groups.create", what="New group sheet: A. kind (template rows), B. cover + name; edit mode — `groups/GroupCreateScreen.kt`.",
          ours="groups.create/stepB-filled", dark="groups.create/stepB-filled", refs=[TCJ1, JED], measure=groups_create),
-    dict(id="groups.invite", what="Invite sheet: cover, note, link sharing (off / on menu + share targets), contacts — `groups/GroupInviteScreen.kt`.",
+    dict(id="groups.invite", what="Invite sheet: cover, note, link sharing (off / on menu + four share targets), contacts — `groups/GroupInviteScreen.kt`; the QR card (owner decision 17) in the recap preview — `groups/GroupInviteQr.kt`.",
          ours="groups.invite/linkOn", dark="groups.invite/linkOn", refs=[TCJ5, TC1B], measure=groups_invite),
     dict(id="groups.screen", what="The group: cover, serif name, members, actions, this week's strip, members' weeks + memory cards pager, earlier grid — `groups/GroupScreen.kt`.",
          ours="groups.screen/default", dark="groups.screen/default", refs=[TCJ1, ST01, H43], measure=groups_screen,

@@ -1,14 +1,18 @@
 # Verification — `groups.invite` (iOS, Pass 4 — Retro redesign)
 
-Invite sheet — `Features/Account/Groups/GroupInviteScreen.swift`, `GroupInviteModel.swift`, `InviteSystemControllers.swift`.
+Invite sheet — `Features/Account/Groups/GroupInviteScreen.swift`, `GroupInviteModel.swift`, `InviteSystemControllers.swift`;
+QR card (owner decision 17) — `GroupInviteQR.swift`.
 
 Checklist written from the spec (`design/surfaces/groups.invite.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/groups.invite.png` next to the reference image(s) below.
 
 Reference image(s): `references/auto/retro/press/tc-2024-04-retro-journals-5.png`, `references/auto/retro/press/tc-2024-04-journals-1.webp`, `references/auto/retro/press/tc-2023-07-retro-1b.webp`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`
 
-Snapshots (CI, `ios/build/snapshots/account/`): `groups.invite-loading-light.png`, `groups.invite-link-off-light.png`, `groups.invite-link-on-light.png`, `groups.invite-link-on-dark.png`, `groups.invite-error-light.png`, `groups.invite-full-light.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `groups.invite-loading-light.png`, `groups.invite-link-off-light.png`, `groups.invite-link-on-light.png`, `groups.invite-link-on-dark.png`, `groups.invite-error-light.png`, `groups.invite-full-light.png`, `groups.invite-qr-light.png`, `groups.invite-qr-dark.png`, `groups.invite-qr-noCover-light.png`
 
-**Summary: 57 matched · 0 approximated · 0 not matched · 1 not applicable on iOS / owner / another pass.**
+**Summary: 74 matched · 0 approximated · 0 not matched · 1 not applicable on iOS / owner / another pass.** (QR card rows
+added 2026-10-16; the QR snapshots come from the next macOS CI round. Unit tests: `AccountInviteQRTests` — the symbol,
+its four-module quiet zone, whole-pixel modules, the rendered card read back by `CIDetector` as the link at error
+correction H, Save's outcomes.)
 
 
 ## Structure
@@ -69,6 +73,30 @@ Snapshots (CI, `ios/build/snapshots/account/`): `groups.invite-loading-light.png
 | matched | `groups.invite.link.copy` | “Copy Link” (SOURCED) | `Copy.groupsInviteLinkCopy` in GroupInviteScreen.swift |
 | matched | `groups.invite.link.copied` | “Invite link copied to clipboard” (SOURCED) | `Copy.groupsInviteLinkCopied` in GroupInviteScreen.swift |
 | matched | `groups.invite.link.share` | “Share to…” (SOURCED) | `Copy.groupsInviteLinkShare` in GroupInviteScreen.swift |
+| matched | `groups.invite.link.qr` | “QR Code” (SOURCED) | `Copy.groupsInviteLinkQr` in GroupInviteScreen.swift (first target, TC-J5 order) |
+| matched | `groups.invite.icon.qr` | ios: qrcode; android: Rounded.QrCode2 (PLATFORM) | `Tokens.Icons.groupsInviteIconQr` in GroupInviteScreen.swift |
+
+## QR card (owner decision 17)
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `groups.invite.layout.qrCard` | recap preview + recap card shell, EC H, quiet zone 4, whole-pixel modules, card PNG at exportScale 3 (SOURCED) | `GroupInviteQRScreen` (`RecapPreviewScreen`), `InviteQRCard`, `InviteQRCode` (CIQRCodeGenerator `correctionLevel` = `errorCorrection`, `quietZoneModules`, `exportScale`) in GroupInviteQR.swift |
+| matched | `layout.year.story.recapCard` | widthRatio 0.825, paddingRatio 0.0241, cornerRadiusRatio 0.051, footerHeightRatio 0.21 (SOURCED) | `Tokens.Layouts.YearStoryRecapCard` in GroupInviteQR.swift |
+| matched | `collage.view.layout.screen` | media page, close, bottom row (SOURCED) | `RecapPreviewScreen` / `RecapPreviewClose` (capture's shared screen) |
+| matched | `color.global.surfaceLight` | #FFFFFF (SOURCED) | card fill in both appearances (`Tokens.Colors.globalSurfaceLight`) |
+| matched | `color.global.onSurfaceLight` | #000000 (SOURCED) | modules (template image tinted) and the group name |
+| matched | `color.global.controlOnDeep` | #262626 (SOURCED) | media page without a cover |
+| matched | `size.global.backdropBlur` | 1.8 pt (SOURCED) | `BlurredBackdrop` of the group's cover |
+| matched | `groups.invite.fontSize.qrTagline` | 10 pt (SOURCED) | `Tokens.FontSizes.groupsInviteFontSizeQrTagline` in GroupInviteQR.swift |
+| matched | `groups.invite.color.note` | #767676 (SOURCED) | tagline colour on the white card |
+| matched | `icon.global.download` | ios: arrow.down.to.line (PLATFORM) | Save circle (`CircleButton` `.media`) |
+| matched | `collage.share.layout.pill` | 43.5 high, padding 23 (SOURCED) | `RecapPill` "Share" |
+| matched | `groups.invite.qr.accessibilityLabel` | “QR code for joining {group_name}” (SOURCED) | `Copy.groupsInviteQrAccessibilityLabel` — the card is one image element |
+| matched | `groups.invite.qr.tagline` | “Photos with friends and family” (SOURCED) | `Copy.groupsInviteQrTagline` |
+| matched | `groups.invite.qr.save` / `.share` | “Save” / “Share” (SOURCED) | `Copy.groupsInviteQrSave`, `Copy.groupsInviteQrShare` |
+| matched | `groups.invite.qr.saved` / `.saveFailed` | “Saved” / “Couldn't save photo” (SOURCED) | `GroupInviteQRModel.save` → `ToastCenter` (announcement, C-26 iOS) |
+| matched | `groups.invite.qr.saveDenied.*` | “Camera Roll Access” … “Allow Photo Access” / “Cancel” (SOURCED / VERIFIED) | native `.alert`, button opens Settings |
+| matched | `haptic.global.success` / `haptic.global.error` | notification success / error (PLATFORM) | `.dsHaptic` on Save's outcome |
 
 ## States
 

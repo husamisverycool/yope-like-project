@@ -8,7 +8,9 @@ Reference image(s): `references/auto/retro/store/editorial/retro-appstore-story-
 
 Snapshots (CI, `ios/build/snapshots/account/`): `groups.list-loading-light.png`, `groups.list-empty-light.png`, `groups.list-empty-dark.png`, `groups.list-default-light.png`, `groups.list-default-dark.png`, `groups.list-error-light.png`, `groups.list-offline-light.png`
 
-**Summary: 46 matched · 0 approximated · 0 not matched · 2 not applicable on iOS / owner / another pass.**
+**Summary: 48 matched · 0 approximated · 0 not matched · 2 not applicable on iOS / owner / another pass.** (Template
+covers and the launch rule added 2026-10-16; `AccountInviteQRTests.testEveryKindHasItsCoverInTheAssetCatalog`,
+`AccountSessionTests` launch tests.)
 
 
 ## Structure
@@ -50,6 +52,7 @@ Snapshots (CI, `ios/build/snapshots/account/`): `groups.list-loading-light.png`,
 | matched | `size.global.sectionGap` | 36.4 pt (SOURCED) | `Tokens.Sizes.globalSectionGap` in AccountGroupedRows.swift, GroupInviteScreen.swift, GroupScreen.swift, GroupsHomeScreen.swift … |
 | matched | `groups.list.ideas.title` | “Ideas to Get Started” (SOURCED) | `Copy.groupsListIdeasTitle` in GroupsHomeScreen.swift |
 | matched | `groups.create.type.create` | “Create” (SOURCED) | `Copy.groupsCreateTypeCreate` in GroupsHomeScreen.swift |
+| matched | `groups.list.layout.templateCovers` | template_cover_friends / _family / _roommates / _custom, 216 × 291 px (SOURCED) | `GroupKindCopy.coverAsset` → `Image(_:)` from `ios/App/Resources/Assets.xcassets` (3x imagesets) in `GroupTemplateRow`, aspect-fill 72 × 97, `radius.global.thumbnail` |
 | matched | `size.global.pillHeight` | 37 pt (SOURCED) | `Tokens.Sizes.globalPillHeight` in CapsuleButton.swift, LightPill.swift, OutlineCTA.swift |
 
 ## Elements
@@ -102,3 +105,5 @@ Snapshots (CI, `ios/build/snapshots/account/`): `groups.list-loading-light.png`,
 ## Notes
 
 - Loading rows: three placeholder rows (`GroupRowPlaceholder`).
+- First screen (owner decision 13): `AccountSession.start` lands on the camera only when `hasGroups()` (cached list, else
+  the first fetch) is true; otherwise this list. `LaunchingView` covers the window until the answer.

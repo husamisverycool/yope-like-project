@@ -8,7 +8,7 @@ Side by side: [`groups.create.android.png`](groups.create.android.png) — ours 
 
 States rendered (`android/feature/account/src/test/snapshots/groups.create/`): `coverFailed-light`, `createFailed-light`, `creating-light`, `edit-light`, `offline-light`, `saveFailed-light`, `stepA-dark`, `stepA-light`, `stepB-filled-dark`, `stepB-filled-light`, `stepB-light`, `stepB-preset-light`, `stepB-tooLong-light`.
 
-**Result: 58 checks — 56 match, 2 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 59 checks — 57 match, 2 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Step B (groups.create/stepB-filled-light)
 
@@ -40,6 +40,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.create/`): `
 | match (token) | `size.global.titleToContent` | 30 pt | Tokens.Sizes.globalTitleToContent | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references… |  |
 | match (token) | `font.global.display` | roboto_serif_title | Tokens.Fonts.globalDisplay | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png 'Week 43' … |  |
 | match (token) | `size.global.listGap` | 22.5 pt | Tokens.Sizes.globalListGap | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
+| match (behaviour) | `groups.list.layout.templateCovers` | android/feature/account/src/main/res/drawable-nodpi/<name>.jpg | TemplateRow thumbnail = painterResource(templateCover(kind)): drawable-nodpi template_cover_<kind> (216 × 291… | references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png phone 3 (… | names and sizes checked against the token by InviteQrAndCoversTest; measured below |
 | match (token) | `groups.screen.size.coverWidth` | 173.5 pt | Tokens.Sizes.groupsScreenSizeCoverWidth · measured above | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3 (album detail 'C… |  |
 | match (token) | `radius.global.thumbnail` | 4 pt | Tokens.Radii.globalThumbnail | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-alb… |  |
 | match (token) | `groups.screen.size.coverToTitle` | 36.7 pt | Tokens.Sizes.groupsScreenSizeCoverToTitle | references/auto/retro/press/tc-2024-04-journals-1.webp phone 3: cover ink botto… |  |

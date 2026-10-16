@@ -60,8 +60,12 @@ differs between appearances is `{"light": "#…", "dark": "#…"}`:
   `color.global.textSecondary`; controls `color.global.controlOnDeep` (#262626); light pills
   `color.global.surfaceLight` / `color.global.onSurfaceLight`. Sheets presented over media follow the appearance.
 - **Android page.** Android screens use `color.global.background.android` (Retro's default dark page #1C1C1E);
-  iOS uses `color.global.background` (#000000 in every iOS capture). Retro's Android "true black" option is not
-  offered (R-3).
+  iOS uses `color.global.background` (#000000 in every iOS capture). Retro's Android "true black" option is offered
+  in Android Settings → Appearance → True Black (owner decision 21, MERGE OD21-*): while it is on, the dark appearance
+  draws the page in `color.global.background.android.trueBlack` and the M3 background / surface in
+  `color.global.system.surface.trueBlack` (both #000000; light values equal the defaults). Code reads the page through
+  core:ui `PageRoles.page` (it follows `LocalDsTrueBlack`, provided by `DsTheme(trueBlack = …)` / `AppTheme`); outside
+  composition pick the `Tokens.ColorsDark.*TrueBlack` value when `AppearanceSettings.trueBlack` is on.
 - **Platform-drawn components** (alerts, menus, share sheet, keyboard, pickers, segmented control) take their
   colours from the system in the current appearance (`color.global.system.ios` names; Android M3 roles
   `color.global.system.*` are `{light, dark}` from Retro's own ColorScheme plus the M3 baseline).
@@ -70,7 +74,7 @@ differs between appearances is `{"light": "#…", "dark": "#…"}`:
 
 | need | token(s) |
 |---|---|
-| page background (iOS / Android) · media surfaces (viewer, camera) | `color.global.background` / `color.global.background.android` · `color.global.backgroundDeep` |
+| page background (iOS / Android; Android True Black) · media surfaces (viewer, camera) | `color.global.background` / `color.global.background.android` (`….trueBlack`) · `color.global.backgroundDeep` |
 | tile, field, '+' circle, fill pill, iOS grouped row · Android grouped row, chip, reply bar | `color.global.control` · `color.global.surfaceSecondary.android` |
 | card on a blurred backdrop (recap, plan card) | `color.global.surfaceElevated`, `radius.global.cardLarge` / `radius.global.thumbnail`, `layout.global.materials` |
 | primary / secondary / tertiary text (iOS · Android secondary) · on media | `color.global.textPrimary` / `.textSecondary` / `.textTertiary` · `color.global.textSecondary.android` · `color.global.textOnMedia` |
@@ -114,6 +118,7 @@ Generated from `design/tokens/global.json` (values; full evidence in the JSON an
 |---|---|---|---|---|---|
 | `color.global.background` | #FFFFFF | #000000 | SOURCED | page background of every app screen (home, profile, albums, settings, sheets); iOS — and Android's 'true black' option | `Tokens.Colors.globalBackground` |
 | `color.global.background.android` | #FFFFFF | #1C1C1E | SOURCED | page background on Android (Retro's default dark scheme; the iOS / true-black value is color.global.background) | `Tokens.Colors.globalBackgroundAndroid` |
+| `color.global.background.android.trueBlack` | #FFFFFF | #000000 | SOURCED | page background on Android while Settings → True Black is on (dark only; Retro d42.w / vv3.k) | `Tokens.Colors.globalBackgroundAndroidTrueBlack` |
 | `color.global.backgroundDeep` | #000000 | #000000 | SOURCED | media surfaces that stay black in both appearances: photo / story viewer, camera, postcard-style composer, recap preview, full-bleed media (Rewind) | `Tokens.Colors.globalBackgroundDeep` |
 | `color.global.control` | #F1F1F1 | #262626 | SOURCED | fill of tiles (add tile, empty-day tile, strip placeholder), search / text fields, circle buttons ('+'), fill pills ('Create'), grouped rows on iOS | `Tokens.Colors.globalControl` |
 | `color.global.surfaceSecondary.android` | #F7F7F7 | #262626 | SOURCED | Android secondary surface: grouped settings rows, chips, reply / comment bar, sheet cards (iOS draws these in color.global.control) | `Tokens.Colors.globalSurfaceSecondaryAndroid` |
@@ -151,6 +156,7 @@ Generated from `design/tokens/global.json` (values; full evidence in the JSON an
 | `color.global.system.ios` | groupedBackground: systemGroupedBackground; cell: secondarySystemGroupedBackground; label: label; secondaryLabel: secondaryLabel; placeholder: placeholderText; separator: separator; tint: systemBlue; destructive: systemRed | groupedBackground: systemGroupedBackground; cell: secondarySystemGroupedBackground; label: label; secondaryLabel: secondaryLabel; placeholder: placeholderText; separator: separator; tint: systemBlue; destructive: systemRed | PLATFORM | semantic colours of native components on iOS (alerts, menus, share sheet, pickers, keyboard, system permission prompts); dynamic — they follow Light / Dark | `Tokens.Layouts.GlobalSystemIos.<key>` |
 | `color.global.system.primary` | #0A84FF | #0A84FF | SOURCED | Android M3 primary: dialog action labels, switches, selected controls, text-field cursor | `Tokens.Colors.globalSystemPrimary` |
 | `color.global.system.surface` | #FFFFFF | #1C1C1E | SOURCED | Android M3 surface / background (dialogs and sheets inherit from it unless a container role applies) | `Tokens.Colors.globalSystemSurface` |
+| `color.global.system.surface.trueBlack` | #FFFFFF | #000000 | SOURCED | Android M3 surface / background while Settings → True Black is on (Retro d42.w) | `Tokens.Colors.globalSystemSurfaceTrueBlack` |
 | `color.global.system.onSurface` | #000000 | #FFFFFF | SOURCED | Android M3 on-surface: list item labels, dialog headline | `Tokens.Colors.globalSystemOnSurface` |
 | `color.global.system.error` | #EA3337 | #EA3337 | SOURCED | Android M3 error: error / destructive text and icons in M3 components | `Tokens.Colors.globalSystemError` |
 | `color.global.system.primaryContainer` | #CCCCCC | #4D4D4D | SOURCED | Android M3 primary container (on-primary-container #000000 / #FFFFFF) | `Tokens.Colors.globalSystemPrimaryContainer` |

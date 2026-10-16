@@ -60,11 +60,17 @@ enum class CircleButtonStyle {
 
     /** Close over colour (paywall): `size.global.circleButtonSmall` (32), glass (PAY measured ≈15 % white as a range — `color.global.glass`). */
     GlassSmall,
+
+    /**
+     * A page circle in the primary fill (the locked voice recording's send, `chat.voice.layout.locked`: C-11's shape in
+     * C-06's primary colours): 36, fill `color.global.accent`, glyph `color.global.onAccent`.
+     */
+    Primary,
     ;
 
     val diameter: Dp
         get() = when (this) {
-            OnPage, OnMedia -> Tokens.Sizes.globalCircleButton
+            OnPage, OnMedia, Primary -> Tokens.Sizes.globalCircleButton
             Glass -> Tokens.Sizes.globalCircleButtonPhoto
             GlassLarge -> Tokens.Sizes.globalCircleButtonLarge
             GlassSmall -> Tokens.Sizes.globalCircleButtonSmall
@@ -75,11 +81,13 @@ enum class CircleButtonStyle {
             OnPage -> Tokens.Colors.globalControl
             OnMedia -> Tokens.Colors.globalControlOnDeep
             Glass, GlassLarge, GlassSmall -> Tokens.Colors.globalGlass
+            Primary -> Tokens.Colors.globalAccent
         }
 
     val glyph: Color
         @Composable get() = when (this) {
             OnPage -> Tokens.Colors.globalTextPrimary
+            Primary -> Tokens.Colors.globalOnAccent
             else -> Tokens.Colors.globalTextOnMedia
         }
 }
@@ -100,6 +108,8 @@ fun CircleIconButton(
     modifier: Modifier = Modifier,
     style: CircleButtonStyle = CircleButtonStyle.OnPage,
     enabled: Boolean = true,
+    /** Overrides the style's glyph colour (a red C-10 glyph in a page circle: `chat.voice.layout.locked`). */
+    tint: Color? = null,
 ) {
     Box(
         modifier
@@ -110,6 +120,6 @@ fun CircleIconButton(
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = null, tint = style.glyph, modifier = Modifier.size(Tokens.Sizes.globalIcon))
+        Icon(icon, contentDescription = null, tint = tint ?: style.glyph, modifier = Modifier.size(Tokens.Sizes.globalIcon))
     }
 }
