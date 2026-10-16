@@ -11,7 +11,7 @@ Side by side: [`week.history.android.png`](week.history.android.png) — ours le
 | status | token | expected (token) | ours (measured) | reference evidence | note |
 |---|---|---|---|---|---|
 | match | back hit target | 48 | 48 |  |  |
-| match (token) | title: display serif on the chevron line (`size.global.titleTop`) | 64 | WallHeader (shared with walls.member, measured 64) | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references/auto/retro/lazyweb/r… |  |
+| match (token) | title: display serif on the chevron line (`size.global.titleTop`) | 64 | core:ui PushedHeader (as chat.thread) | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references/auto/retro/lazyweb/r… |  |
 
 ## Weeks (`week.history.layout.weeks`)
 

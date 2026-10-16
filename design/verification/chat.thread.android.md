@@ -12,9 +12,9 @@ Side by side: [`chat.thread.android.png`](chat.thread.android.png) — ours left
 |---|---|---|---|---|---|
 | match | `color.global.background.android` (light) | #FFFFFF | #FFFFFF | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palette + M3 ColorScheme' (… |  |
 | match | `color.global.background.android` (dark) | #1C1C1E | #1C1C1E | references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palette + M3 ColorScheme' (… |  |
-| match (token) | `size.global.backInset` / `size.global.headerGap` (‹ then the serif group name) | 21.1 / 14.6 | WallHeader: chevron ink at backInset, title headerGap after the ink | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png chevron ink x… | ink is placed from GlyphInk; the hit box is 48 (size.global.minTouchTarget.android) |
+| match (token) | `size.global.backInset` / `size.global.headerGap` (‹ then the serif group name) | 21.1 / 14.6 | core:ui PushedHeader (C-02) with these tokens | references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png chevron ink x… | the hit box is 48 (size.global.minTouchTarget.android) |
 | match | back hit target | 48 | 48 |  |  |
-| match (token) | title baseline `size.global.titleTop` (display serif, `fontSize.global.headerTitle`) | 64 | paddingFromBaseline(titleTop) | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references/auto/retro/lazyweb/r… | the header node's bounds include its padding, so the baseline is not read back here; walls.member (same header) measures 64 |
+| match (token) | title baseline `size.global.titleTop` (display serif, `fontSize.global.headerTitle`) | 64 | core:ui PushedHeader | references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png/references/auto/retro/lazyweb/r… | the header node's bounds include its padding, so the baseline is not read back here; walls.member's header measures 64 |
 
 ## Message rows (C-16)
 
