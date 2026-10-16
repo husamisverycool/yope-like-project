@@ -38,7 +38,7 @@
       "monthly": "premium_monthly",
       "yearly": "premium_yearly"
     },
-    "notes": "Directive Part 6 default (~$3.99/month or ~$36/year). Display prices always come from the store at runtime."
+    "notes": "Owner decision 7 (docs/OWNER_DECISIONS.md, 2026-10-16): $3.99 a month, $35.99 a year, with a 1-week free trial on the yearly plan (App Store introductory offer / Play free-trial offer on premium_yearly — docs/OWNER_SETUP.md §1.6, §2.3). Display prices and the trial always come from the store at runtime."
   },
   "legal": {
     "privacyUrl": null,
