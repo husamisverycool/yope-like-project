@@ -88,6 +88,9 @@ import app.feature.social.common.LocalSocialData
 import app.feature.social.common.LocalSocialServices
 import app.feature.social.common.MediaAppearance
 import app.feature.social.common.PersonAvatar
+import app.feature.social.common.photoModel
+import app.feature.memory.tagging.TagRun
+import app.feature.memory.tagging.TaggedPerson
 import app.feature.social.common.PhotoSaveUi
 import app.feature.social.common.RemotePhoto
 import app.feature.social.common.SocialBlocked
@@ -134,7 +137,6 @@ class ViewerUiState(
     confirmDelete: Boolean = false,
     picker: Boolean = false,
     reactions: Boolean = false,
-    inThisPhoto: Boolean = false,
     saveDenied: Boolean = false,
     draft: TextFieldValue? = null,
 ) {
@@ -143,7 +145,6 @@ class ViewerUiState(
     var confirmDelete by mutableStateOf(confirmDelete)
     var picker by mutableStateOf(picker)
     var reactions by mutableStateOf(reactions)
-    var inThisPhoto by mutableStateOf(inThisPhoto)
     var commentMenu by mutableStateOf<String?>(null)
     var confirmUnsend by mutableStateOf<String?>(null)
     val save = PhotoSaveUi(saveDenied)
@@ -228,7 +229,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         onSend = vm::sendReply,
         onReact = vm::react,
         onUnreact = vm::unreact,
-        onTag = vm::setTagged,
+        onPhotoGone = vm::markGone,
         onSave = { state.current?.media?.originalPath?.let(save) },
         onDelete = { haptics.perform(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
         onUnsendComment = { id -> haptics.perform(Tokens.Haptics.globalWarning); vm.unsendComment(id) },
@@ -262,7 +263,7 @@ fun PhotoViewerContent(
     onSend: () -> Unit,
     onReact: (String) -> Unit,
     onUnreact: (String) -> Unit,
-    onTag: (Boolean) -> Unit,
+    onPhotoGone: (String) -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
     onUnsendComment: (String) -> Unit,
@@ -289,7 +290,7 @@ fun PhotoViewerContent(
                     else -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                         Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionHeaderToPhoto))
                         PhotoArea(photo, state, ui, nav, area, onNext, onPrevious, onRetry, onReact, onUnreact, onSave)
-                        Footer(photo, state, ui, voice, onTag)
+                        Footer(photo, state, ui, voice, onPhotoGone)
                         Comments(photo, state, ui, onUnsendComment)
                         Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionCommentsToField))
                     }
@@ -297,7 +298,7 @@ fun PhotoViewerContent(
             }
             if (photo?.gone != true) ReplyField(state, ui, nav, onDraft, onSend, onSave)
         }
-        ViewerDialogs(state, ui, nav, onReact, onUnreact, onTag, onDelete, onUnsendComment)
+        ViewerDialogs(state, ui, nav, onReact, onUnreact, onDelete, onUnsendComment)
     }
 }
 
@@ -485,14 +486,14 @@ private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNa
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, voice: VoiceUi, onTag: (Boolean) -> Unit) {
+private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, voice: VoiceUi, onPhotoGone: (String) -> Unit) {
     val post = photo.post ?: return
     val pitch = Tokens.Sizes.photoViewerDimensionFooterLinePitch
     val caption = post.caption?.takeIf { it.isNotBlank() }
     val date = Formats.viewerDate(post.createdAt, photo.zone ?: java.time.ZoneId.systemDefault())
-    val taggedNames = photo.tagged.mapNotNull { photo.people[it]?.firstName }
-    val run = tagRunText(taggedNames)
-    val tagLabel = if (taggedNames.isEmpty()) stringRes(R.string.tagging_toggle) else stringRes(R.string.tagging_a11y_people) + ", " + run.text
+    // The memory group's tag run (tagging.md A) gets the tags of the viewer's `post_tags` read, in tag order.
+    val tagged = if (photo.loaded) photo.tagged.map { id -> TaggedPerson(id, photo.people[id]?.firstName.orEmpty(), photoModel(photo.people[id]?.avatarPath)) } else null
+    val me = state.me?.let { id -> TaggedPerson(id, photo.people[id]?.firstName.orEmpty(), photoModel(photo.people[id]?.avatarPath)) }
     Row(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.Top) {
         Column(Modifier.weight(1f)) {
             if (caption != null) {
@@ -509,21 +510,7 @@ private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, vo
             ) {
                 Text(date, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1)
                 Text(SEPARATOR, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1, modifier = Modifier.clearAndSetSemantics { })
-                TagRunCrossfade(run) { text ->
-                    Text(
-                        text,
-                        style = TextRoles.listSubtitle,
-                        color = Tokens.Colors.globalTextSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .tapClickable { if (taggedNames.isEmpty()) onTag(true) else ui.inThisPhoto = true }
-                            .clearAndSetSemantics {
-                                contentDescription = tagLabel
-                                role = Role.Button
-                            },
-                    )
-                }
+                TagRun(post.id, people = tagged, me = me, onPhotoGone = { onPhotoGone(post.id) })
             }
             val notePath = post.voicePath
             if (notePath != null) {
@@ -712,7 +699,6 @@ private fun ViewerDialogs(
     nav: ViewerNav,
     onReact: (String) -> Unit,
     onUnreact: (String) -> Unit,
-    onTag: (Boolean) -> Unit,
     onDelete: () -> Unit,
     onUnsendComment: (String) -> Unit,
 ) {
@@ -731,10 +717,6 @@ private fun ViewerDialogs(
                 onDismiss = { ui.reactions = false },
                 newestFirst = SocialBlocked.reactionListOrder || LocalApproximations.current,
             )
-        }
-        if (ui.inThisPhoto) {
-            val people = photo.tagged.mapNotNull { id -> photo.people[id]?.let { TaggedPerson(id, it.firstName.orEmpty(), it.avatarPath, id == state.me) } }
-            InThisPhotoSheet(people, state.taggedByMe, onTag = onTag, onDismiss = { ui.inThisPhoto = false })
         }
         if (ui.confirmDelete) {
             SystemAlertDialog(

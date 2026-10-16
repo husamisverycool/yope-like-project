@@ -559,12 +559,14 @@ The only thing a non-member can learn about a group before joining:
   "group_kind": "family",
   "cover_path": "u/9f…/covers/1c….jpg",
   "inviter_first_name": "Ana",
+  "inviter_avatar_path": "avatars/9f…/a1….jpg",
   "members": [ { "first_name": "Ana", "avatar_path": "avatars/9f…/a1….jpg" },
                { "first_name": "Rui", "avatar_path": null } ]
 }
 ```
 Members are in joining order. First names are the first word of `display_name` (null if
-empty). Non-members cannot read the objects behind `cover_path` / `avatar_path`, so the
+empty). `inviter_avatar_path` is the avatar of the invite's creator while they are a member
+(the same path as their entry in `members`), else null (migration 0016). Non-members cannot read the objects behind `cover_path` / `avatar_path`, so the
 web invite page (service role) signs them. The App Clip and the apps (before joining)
 get the same preview with signed URLs from that web endpoint. Errors:
 `invite_not_found`, `invite_revoked`, `invite_expired`.

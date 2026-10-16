@@ -43,7 +43,7 @@ data class ViewerPhoto(
     val reactions: List<ReactionEntry> = emptyList(),
     /** Replies to this photo in its group's chat, oldest first (`photo.viewer.layout.comments`). */
     val comments: List<Message> = emptyList(),
-    /** Who said "I'm in this", in tag order (`post_tags`). */
+    /** Who said "I'm in this", in tag order (`post_tags`) — handed to the memory group's tag run. */
     val tagged: List<String> = emptyList(),
     /** Profiles of the author, commenters, reactors and tagged members. */
     val people: Map<String, Profile> = emptyMap(),
@@ -82,11 +82,7 @@ sealed interface ViewerEffect {
     data object DeleteFailed : ViewerEffect
     data object Saved : ViewerEffect
     data object SaveFailed : ViewerEffect
-    /** A tag call failed: [removing] picks `tagging.removeError` over `tagging.error`; [reason] the message. */
-    data class TagFailed(val removing: Boolean, val reason: TagFailure) : ViewerEffect
 }
-
-enum class TagFailure { Error, NotFound, Offline }
 
 /**
  * `photo.viewer`: the opener's photo list ([PhotoContext]), each photo's post / media / author / group /
@@ -109,7 +105,6 @@ class PhotoViewerViewModel(
     private val groups = HashMap<String, app.data.model.Group?>()
     private val subscriptions = HashMap<String, Job>()
     private val loading = HashSet<String>()
-    private var tagPending = false
 
     init {
         viewModelScope.launch { load() }
@@ -341,37 +336,6 @@ class PhotoViewerViewModel(
             } catch (_: Throwable) {
                 update(id) { it.copy(reactions = withReaction(it.reactions, me, emoji)) }
                 _effects.emit(ViewerEffect.ReactionFailed)
-            }
-        }
-    }
-
-    /**
-     * "I'm in this" (tagging.md): only yourself, at once (optimistic), then `tag_self` / `untag_self`; one call
-     * per photo at a time; a failure reverts it. `post_not_found` shows the photo as gone.
-     */
-    fun setTagged(tagged: Boolean) {
-        val me = data.currentUserId() ?: return
-        val id = _state.value.current?.post?.id ?: return
-        if (tagPending || _state.value.taggedByMe == tagged) return
-        tagPending = true
-        update(id) { p -> p.copy(tagged = if (tagged) p.tagged + me else p.tagged - me) }
-        viewModelScope.launch {
-            try {
-                if (tagged) data.tagSelf(id) else data.untagSelf(id)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                update(id) { p -> p.copy(tagged = if (tagged) p.tagged - me else p.tagged + me) }
-                val error = e.dataError()
-                val reason = when {
-                    error == DataError.Network -> TagFailure.Offline
-                    error is DataError.Api && error.code == ApiError.PostNotFound -> TagFailure.NotFound
-                    else -> TagFailure.Error
-                }
-                if (reason == TagFailure.NotFound) markGone(id)
-                _effects.emit(ViewerEffect.TagFailed(removing = !tagged, reason = reason))
-            } finally {
-                tagPending = false
             }
         }
     }
