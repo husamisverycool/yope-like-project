@@ -2,7 +2,7 @@
 // Owned by the social screens pass: add cases here and their screens below; RootView and AppRouter
 // delegate to this file, so other groups never edit it.
 //
-// The `AppRoute` cases `.chat`, `.post` and `.recap` (Screens/ChatScreen, PhotoViewerScreen, RecapScreen) are
+// The `AppRoute` cases `.chat`, `.post` and `.recap` (Screens/ChatScreen, PhotoViewerScreen; `.recap` is built by the shell's RouteDestination) are
 // social surfaces too (`.recap` = one recap's preview). Entry points other groups use:
 //   walls.mine    .social(.wallMine)                         (profile tab)
 //   walls.browse  .social(.wallsBrowse(groupID: nil))        (Friends tab; with a group id: that group's members)

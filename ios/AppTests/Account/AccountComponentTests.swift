@@ -234,5 +234,6 @@ final class AccountComponentTests: XCTestCase {
         XCTAssertEqual(AppModal.camera(groupID: nil, invitationID: nil).presentation, .tab)
         XCTAssertEqual(AppModal.camera(groupID: "g", invitationID: "i").presentation, .fullScreen)
         XCTAssertEqual(AppModal.memory(.yearStory(groupID: "g", year: 2026)).presentation, .fullScreen)
+        XCTAssertEqual(AppModal.social(.recaps(groupID: "g")).presentation, .sheet, "the recap list is a page sheet")
     }
 }

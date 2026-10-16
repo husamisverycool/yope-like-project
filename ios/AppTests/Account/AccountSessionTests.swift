@@ -240,6 +240,11 @@ final class AccountSessionTests: XCTestCase {
         XCTAssertTrue(shell.presentModalRoute(router: router))
         XCTAssertEqual(shell.presentedRoute?.style, .fullScreen, "collage.view: a media cover")
 
+        router.path = [.group(id: "g1"), .recap(groupID: "g1", recapID: "r1")]
+        XCTAssertTrue(shell.presentModalRoute(router: router))
+        XCTAssertEqual(router.path, [.group(id: "g1")], "the recap preview covers its group")
+        XCTAssertEqual(shell.presentedRoute, PresentedRoute(route: .recap(groupID: "g1", recapID: "r1"), style: .fullScreen))
+
         router.path = [.account(.groupSettings(groupID: "g1"))]
         XCTAssertTrue(shell.presentModalRoute(router: router))
         XCTAssertEqual(shell.presentedRoute?.style, .sheet, "groups.settings: a page sheet")

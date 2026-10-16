@@ -511,9 +511,11 @@ struct GroupFeedView: View {
     }
 
     /// The latest recap, or week.history when there is none.
+    /// "Recaps": the recap list (`week.recap` A, a page sheet — week.recap "Navigation in": the recaps entry → list), or
+    /// `week.history` while the group has no recap yet (groups.screen Elements).
     private func openRecaps() {
-        if let recap = model.latestRecapID {
-            push(.recap(groupID: groupID, recapID: recap.rawValue))
+        if model.latestRecapID != nil {
+            dependencies.router.modal = .social(.recaps(groupID: groupID))
         } else if let route = CrossGroupRoutes.weekHistory(groupID: groupID) {
             push(route)
         }

@@ -13,8 +13,8 @@ final class ShellState {
     private(set) var cameraGroupID: String?
 
     /// A route whose spec presents it modally when it arrives as a push from a link (`AppRouter` pushes every link
-    /// route): settings.root and groups.settings are sheets; birthday.request, birthday.tribute and collage.view are full
-    /// screen. `MainShell` presents it.
+    /// route): settings.root and groups.settings are sheets; birthday.request, birthday.tribute, collage.view and the recap
+    /// preview are full screen. `MainShell` presents it.
     var presentedRoute: PresentedRoute?
 
     /// The shell on screen (the paywall entry closes the camera before prompting): the latest one created, and the
@@ -70,6 +70,9 @@ struct PresentedRoute: Identifiable, Hashable {
         case .tribute:
             // birthday.tribute.md structure: full screen.
             return PresentedRoute(route: route, style: .fullScreen)
+        case .recap:
+            // week.recap platform notes: the preview is a `.fullScreenCover` (a link puts it over its group).
+            return PresentedRoute(route: route, style: .fullScreen)
         case .capture(.collage):
             // collage.view: a media cover, presented full screen like send-to and the daily capture.
             return PresentedRoute(route: route, style: .fullScreen)
@@ -84,8 +87,8 @@ struct PresentedRoute: Identifiable, Hashable {
 
 extension ShellState {
     /// Takes a pushed route whose spec presents it modally off the stack: year.story becomes `AppModal.memory(.yearStory)`
-    /// (full screen, its platform notes); birthday.request, birthday.tribute, collage.view, settings.root and
-    /// groups.settings become `presentedRoute`. onthisday stays pushed in the group's stack (onthisday.md B). Returns true
+    /// (full screen, its platform notes); birthday.request, birthday.tribute, collage.view, the recap preview,
+    /// settings.root and groups.settings become `presentedRoute`. onthisday stays pushed in the group's stack (onthisday.md B). Returns true
     /// when it moved one.
     @discardableResult
     func presentModalRoute(router: AppRouter) -> Bool {

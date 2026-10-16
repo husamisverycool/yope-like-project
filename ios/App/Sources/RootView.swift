@@ -93,7 +93,7 @@ struct MainShell: View {
                     }
                 Color.clear
                     .fullScreenCover(item: routeCover) { presented in
-                        RouteDestination(route: presented.route)
+                        RouteDestination(route: presented.route, isPresentedModally: true)
                             .modifier(PresentedContent(dependencies: dependencies))
                     }
             }
@@ -115,8 +115,8 @@ struct MainShell: View {
     }
 
     /// A route pushed from anywhere (notification, link) shows the groups stack, except the routes whose specs present
-    /// them modally (year.story, birthday.request, birthday.tribute, collage.view, settings, groups.settings), which move
-    /// off the stack.
+    /// them modally (year.story, birthday.request, birthday.tribute, collage.view, the recap preview, settings,
+    /// groups.settings), which move off the stack.
     private func routePathChanged(_ path: [AppRoute]) {
         if shell.presentModalRoute(router: router) { return }
         if !path.isEmpty { shell.showGroups() }
@@ -240,13 +240,15 @@ extension AppModal {
 
     /// Account surfaces follow their specs (groups.create / groups.invite: sheets; paywall: full screen; safety.report:
     /// action sheets); the in-app invite card is a sheet so it can be swiped away; the camera without an invitation is
-    /// the camera tab (camera.capture structure item 6). Other groups' modals stay full screen.
+    /// the camera tab (camera.capture structure item 6); social's modals say themselves (the recap list and week.edit are
+    /// page sheets). Other groups' modals stay full screen.
     var presentation: Presentation {
         switch self {
         case .camera(_, nil): return .tab
         case .invite: return .sheet
         case .account(.report): return .dialog
         case let .account(modal): return modal.presentsAsSheet ? .sheet : .fullScreen
+        case let .social(modal): return modal.presentsAsSheet ? .sheet : .fullScreen
         default: return .fullScreen
         }
     }
@@ -261,6 +263,8 @@ struct LaunchingView: View {
 
 struct RouteDestination: View {
     let route: AppRoute
+    /// Shown full screen by the shell (`PresentedRoute`) rather than pushed.
+    var isPresentedModally = false
 
     var body: some View {
         switch route {
@@ -271,7 +275,8 @@ struct RouteDestination: View {
         case let .chat(groupID, messageID):
             ChatScreen(groupID: groupID, messageID: messageID)
         case let .recap(groupID, recapID):
-            RecapScreen(groupID: groupID, recapID: recapID)
+            // week.recap platform notes: the preview is a full-screen cover (light status bar on the dark media page).
+            WeekRecapPreviewScreen(groupID: groupID, recapID: recapID, isPresentedModally: isPresentedModally)
         case let .birthdayRequest(requestID, groupID):
             BirthdayRequestScreen(requestID: requestID, groupID: groupID)
         case let .tribute(tributeID, groupID):
