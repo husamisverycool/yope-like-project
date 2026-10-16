@@ -207,7 +207,7 @@ class SupabaseRealtimeChannels(private val client: SupabaseClient, private val s
 
     private companion object {
         val CHANGE_TABLES = listOf("messages", "posts", "reactions", "selfie_reactions")
-        val BROADCAST_EVENTS = listOf("post_deleted", "message_deleted", "reactions_changed")
+        val BROADCAST_EVENTS = listOf("post_deleted", "message_deleted", "reactions_changed", "developing_changed")
     }
 }
 
@@ -248,6 +248,7 @@ object RealtimeDecoding {
             "post_deleted" -> field("post_id")?.let { GroupEvent.PostDeleted(groupId, it, field("media_id")) }
             "message_deleted" -> field("message_id")?.let { GroupEvent.MessageDeleted(groupId, it) }
             "reactions_changed" -> field("post_id")?.let { GroupEvent.ReactionsChanged(groupId, it) }
+            "developing_changed" -> GroupEvent.DevelopingChanged(groupId)
             else -> null
         }
     }

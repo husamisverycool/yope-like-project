@@ -165,6 +165,8 @@ data class GroupFeedUiState(
     val error: DataError? = null,
     val removed: Boolean = false,
     val endReached: Boolean = false,
+    /** Bumped by each `developing_changed` broadcast: the developing tile refetches `group_developing` (§14.3). */
+    val developingVersion: Int = 0,
 ) {
     val loading: Boolean get() = photos == null && error == null && !removed
 }
@@ -208,7 +210,15 @@ class GroupFeedViewModel(private val env: AccountEnvironment, private val groupI
                         posts = posts.filterNot { it.id == event.postId }
                         publish()
                     }
+                    // A post the screen holds changed (e.g. linked to the week's question by answer_question, which runs
+                    // after create_post): keep the newer row.
+                    is GroupEvent.PostUpdated -> if (posts.any { it.id == event.post.id }) {
+                        posts = posts.map { if (it.id == event.post.id) event.post else it }
+                        publish()
+                    }
                     is GroupEvent.Subscribed -> if (event.resumed) load()
+                    // Someone's 9 AM photo started developing, or the group's photos were revealed.
+                    is GroupEvent.DevelopingChanged -> mutable.update { it.copy(developingVersion = it.developingVersion + 1) }
                     else -> Unit
                 }
             }
@@ -324,9 +334,11 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
     }
     /** Whether a birthday request row is on screen (the plan row's placement). */
     var birthdayRowShown by remember(groupId) { mutableStateOf(false) }
-    // A reveal inserts posts, so the newest post refetches the developing state (and the question card's newest answer).
+    // The developing state refetches on each `developing_changed` broadcast (a 9 AM photo taken in the group, a reveal) and
+    // when the newest post changes; the question card's newest answer refetches with the newest post.
     val newestPost = state.photos?.firstOrNull()?.post?.id
-    val developing = rememberGroupDeveloping(groupId, newestPost)
+    val developing = rememberGroupDeveloping(groupId, newestPost to state.developingVersion)
+    val answeredPosts = state.photos?.mapNotNull { photo -> photo.post.id.takeIf { photo.post.questionId != null } }
     GroupFeedScreen(
         state = state,
         now = env.clock.instant(),
@@ -372,7 +384,9 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             // question.weekly A: the first feed card, after the friend cards, before the memory cards.
             QuestionCardEntry(
                 groupId,
-                refreshKey = newestPost,
+                // The newest post, and the posts linked to a question: answer_question links a photo after create_post,
+                // so a new answer usually arrives as an update of a post the screen already shows.
+                refreshKey = newestPost to answeredPosts,
                 onAnswer = { questionId, key ->
                     nav.navigate(AppRoute.Camera(groupId))
                     nav.currentBackStackEntry?.savedStateHandle?.let { handle ->

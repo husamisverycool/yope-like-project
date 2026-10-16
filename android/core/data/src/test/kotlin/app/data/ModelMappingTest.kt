@@ -161,6 +161,8 @@ class ModelMappingTest {
         assertEquals(GroupEvent.PostDeleted("g1", "p1", "m1"), RealtimeDecoding.broadcast("g1", "post_deleted", wrapped))
         assertEquals(GroupEvent.MessageDeleted("g1", "m9"), RealtimeDecoding.broadcast("g1", "message_deleted", JsonObject(mapOf("message_id" to JsonPrimitive("m9")))))
         assertEquals(GroupEvent.ReactionsChanged("g1", "p1"), RealtimeDecoding.broadcast("g1", "reactions_changed", bare))
+        // create_overnight_post and due_developed_posts send it with an empty payload.
+        assertEquals(GroupEvent.DevelopingChanged("g1"), RealtimeDecoding.broadcast("g1", "developing_changed", JsonObject(emptyMap())))
         assertNull(RealtimeDecoding.broadcast("g1", "unknown_event", bare))
     }
 

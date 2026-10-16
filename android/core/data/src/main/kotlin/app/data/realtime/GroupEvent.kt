@@ -36,11 +36,17 @@ sealed interface GroupEvent {
     /** Refetch that post's reactions and selfie reactions (no user or emoji in the payload, so a block is never revealed). */
     data class ReactionsChanged(override val groupId: String, val postId: String) : GroupEvent
 
+    /**
+     * A 9 AM photo started or stopped developing in the group (`create_overnight_post`, a reveal): refetch
+     * `group_developing` (§14.3; no user, no photo and no number in the payload).
+     */
+    data class DevelopingChanged(override val groupId: String) : GroupEvent
+
     /** The two subscriptions per group. */
     enum class Stream {
         /** Postgres changes on `messages`, `posts`, `reactions`, `selfie_reactions` filtered by `group_id`. */
         Changes,
-        /** The private broadcast topic `group:<id>` (deletions). */
+        /** The private broadcast topic `group:<id>` (deletions, reaction and developing changes). */
         Deletions,
     }
 }

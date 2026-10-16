@@ -478,8 +478,9 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
                 }
             }
             is GroupEvent.Subscribed -> if (event.resumed) refresh()
-            // Selfie reactions show only in photo.viewer (viewer.selfiereaction).
-            is GroupEvent.PostInserted, is GroupEvent.Unavailable, is GroupEvent.SelfieReactionChanged -> Unit
+            // Selfie reactions show only in photo.viewer (viewer.selfiereaction); a reveal reaches the chat as its photo
+            // messages (MessageInserted), not through the developing state.
+            is GroupEvent.PostInserted, is GroupEvent.Unavailable, is GroupEvent.SelfieReactionChanged, is GroupEvent.DevelopingChanged -> Unit
         }
     }
 

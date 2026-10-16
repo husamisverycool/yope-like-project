@@ -253,6 +253,30 @@ class GroupsViewModelsTest {
         assertEquals(42, GroupWeek.number(thursday))
     }
 
+    @Test fun developingBroadcastRefetchesTheDevelopingTile() = runTest(main.dispatcher) {
+        // A 9 AM photo taken in the group (or a reveal) changes no post the screen holds: only the broadcast tells it.
+        val backend = world()
+        val vm = GroupFeedViewModel(fakeEnvironment(backend), "g1")
+        val before = vm.state.value.developingVersion
+        backend.events.emit(GroupEvent.DevelopingChanged("g1"))
+        assertEquals(before + 1, vm.state.value.developingVersion)
+        assertEquals("dinner", vm.state.value.photos!!.first().post.caption) // the photos stay as they were
+    }
+
+    @Test fun realtimeUpdateKeepsTheNewerRowSoTheQuestionCardSeesTheLink() = runTest(main.dispatcher) {
+        // answer_question links the photo after create_post: the link arrives as an update of a post already shown.
+        val backend = world()
+        val vm = GroupFeedViewModel(fakeEnvironment(backend), "g1")
+        val shown = vm.state.value.photos!!.first().post
+        assertEquals(null, shown.questionId)
+        backend.events.emit(GroupEvent.PostUpdated("g1", shown.copy(questionId = "q1")))
+        assertEquals("q1", vm.state.value.photos!!.first { it.post.id == shown.id }.post.questionId)
+        // An update of a post the screen does not hold adds nothing.
+        val elsewhere = backend.post("g2", "u-sam", backend.now)
+        backend.events.emit(GroupEvent.PostUpdated("g1", elsewhere))
+        assertFalse(vm.state.value.photos!!.any { it.post.id == elsewhere.id })
+    }
+
     @Test fun removedMemberSeesTheRemovedState() = runTest(main.dispatcher) {
         val backend = world().apply { members.getValue("g1").removeAll { it.userId == meId } }
         assertTrue(GroupFeedViewModel(fakeEnvironment(backend), "g1").state.value.removed)

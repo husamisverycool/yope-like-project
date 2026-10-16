@@ -126,6 +126,9 @@ class SelfieOvernightIntegrationTest {
         assertEquals(UploadProgress.Done(emptyList()), b.uploads.progress(overnight).first())
         val developing = b.posts.myDeveloping()
         assertTrue(developing.developing)
+        // Ana's open group hears that something develops (the group screen's developing tile refetches on it).
+        eventually(20.seconds) { events.any { it is GroupEvent.DevelopingChanged && it.groupId == group.id } }
+        assertTrue(a.developing.group(group.id).developing)
         val paris = ZoneId.of("Europe/Paris")
         val now = ZonedDateTime.now(paris)
         val nine = now.toLocalDate().atTime(9, 0).atZone(paris).let { if (it.isAfter(now)) it else it.plusDays(1) }
