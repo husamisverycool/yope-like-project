@@ -427,8 +427,9 @@ class JourneyTest {
 
     /**
      * The invite link Copy Link put on the clipboard. Android lets only the focused app read the clipboard, and the
-     * system's "Copied" overlay (Android 13+) can hold focus for a moment after a copy (run 72 read null once while run 71
-     * read the link), so the read is retried for [CLIPBOARD] before it counts as a problem.
+     * system's "Copied" overlay (Android 13+) holds focus while it shows after a copy (run 74's logcat: the
+     * ClipboardOverlay window closed ≈ 7 s after Copy Link, 0.9 s after a 6 s retry gave up), so the read is retried
+     * for [CLIPBOARD] before it counts as a problem.
      */
     private fun clipboardLink(): String? {
         val deadline = SystemClock.uptimeMillis() + CLIPBOARD
@@ -478,8 +479,8 @@ class JourneyTest {
         const val BACK_ATTEMPTS = 4
 
         const val SHORT = 10_000L
-        /** How long a clipboard read is retried after a copy (the system's "Copied" overlay). */
-        const val CLIPBOARD = 6_000L
+        /** How long a clipboard read is retried after a copy (the system's "Copied" overlay stays ≈ 7 s on the emulator). */
+        const val CLIPBOARD = 15_000L
         const val LONG = 30_000L
         /** Upload (storage + `media` + `create_post`) through WorkManager, then the realtime insert. */
         const val UPLOAD = 90_000L
