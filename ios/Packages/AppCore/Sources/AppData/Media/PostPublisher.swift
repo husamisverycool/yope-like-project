@@ -43,6 +43,8 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
     /// Optional voice note (`.m4a`) and its length.
     public var voice: File?
     public var voiceDurationMs: Int?
+    /// The voice note's waveform (100 levels of 0…31, docs/API.md §6.2 `p_voice_levels`).
+    public var voiceLevels: [Int]?
     public var groupIDs: [GroupID]
     public var caption: String?
     /// The daily invitation being answered (the post is in-window only while it is open).
@@ -66,6 +68,7 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         durationMs: Int? = nil,
         voice: File? = nil,
         voiceDurationMs: Int? = nil,
+        voiceLevels: [Int]? = nil,
         groupIDs: [GroupID],
         caption: String? = nil,
         invitationID: InvitationID? = nil,
@@ -84,6 +87,7 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         self.durationMs = durationMs
         self.voice = voice
         self.voiceDurationMs = voiceDurationMs
+        self.voiceLevels = voiceLevels
         self.groupIDs = groupIDs
         self.caption = caption
         self.invitationID = invitationID
@@ -231,6 +235,7 @@ public actor PostPublisher {
                 caption: draft.caption,
                 voicePath: draft.voice.map { _ in StoragePaths.postVoice(owner: owner, media: draft.mediaID) },
                 voiceDurationMs: draft.voice == nil ? nil : draft.voiceDurationMs,
+                voiceLevels: draft.voice == nil ? nil : draft.voiceLevels,
                 invitationID: draft.invitationID,
                 replyToPostID: draft.replyToPostID
             )

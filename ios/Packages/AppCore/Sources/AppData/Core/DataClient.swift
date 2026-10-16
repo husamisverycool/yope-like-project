@@ -220,6 +220,11 @@ extension AnyJSON {
         value.map { .integer($0) } ?? .null
     }
 
+    /// A voice waveform (`smallint[]`, 100 values of 0…31) or null.
+    static func levels(_ value: [Int]?) -> AnyJSON {
+        value.map { .array($0.map { .integer($0) }) } ?? .null
+    }
+
     static func flag(_ value: Bool?) -> AnyJSON {
         value.map { .bool($0) } ?? .null
     }

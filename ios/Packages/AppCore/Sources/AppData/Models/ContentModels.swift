@@ -115,6 +115,8 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
     public var caption: String?
     public var voicePath: String?
     public var voiceDurationMs: Int?
+    /// The voice note's waveform: 100 levels of 0…31 (§5.8 `voice_levels`); nil for notes without one.
+    public var voiceLevels: [Int]?
     /// Set only when posted inside that group's open daily invitation.
     public var invitationID: InvitationID?
     /// True only for posts made during an open invitation. There is no "late" state.
@@ -125,7 +127,7 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
 
     public init(
         id: PostID, mediaID: MediaID, groupID: GroupID, authorID: UserID, caption: String? = nil,
-        voicePath: String? = nil, voiceDurationMs: Int? = nil, invitationID: InvitationID? = nil,
+        voicePath: String? = nil, voiceDurationMs: Int? = nil, voiceLevels: [Int]? = nil, invitationID: InvitationID? = nil,
         inWindow: Bool = false, replyToPostID: PostID? = nil, createdAt: Date
     ) {
         self.id = id
@@ -135,6 +137,7 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         self.caption = caption
         self.voicePath = voicePath
         self.voiceDurationMs = voiceDurationMs
+        self.voiceLevels = voiceLevels
         self.invitationID = invitationID
         self.inWindow = inWindow
         self.replyToPostID = replyToPostID
@@ -149,6 +152,7 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         case caption
         case voicePath = "voice_path"
         case voiceDurationMs = "voice_duration_ms"
+        case voiceLevels = "voice_levels"
         case invitationID = "invitation_id"
         case inWindow = "in_window"
         case replyToPostID = "reply_to_post_id"
@@ -182,6 +186,8 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
     public var postID: PostID?
     public var voicePath: String?
     public var voiceDurationMs: Int?
+    /// A voice message's waveform: 100 levels of 0…31 (§5.9 `voice_levels`); nil when it has none.
+    public var voiceLevels: [Int]?
     /// Reply to a specific photo; nil when that photo is deleted (the reply stays).
     public var replyToPostID: PostID?
     /// Reply to a message; nil if it was deleted.
@@ -190,7 +196,7 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
 
     public init(
         id: MessageID, groupID: GroupID, authorID: UserID, kind: MessageKind, body: String? = nil,
-        postID: PostID? = nil, voicePath: String? = nil, voiceDurationMs: Int? = nil,
+        postID: PostID? = nil, voicePath: String? = nil, voiceDurationMs: Int? = nil, voiceLevels: [Int]? = nil,
         replyToPostID: PostID? = nil, replyToMessageID: MessageID? = nil, createdAt: Date
     ) {
         self.id = id
@@ -201,6 +207,7 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
         self.postID = postID
         self.voicePath = voicePath
         self.voiceDurationMs = voiceDurationMs
+        self.voiceLevels = voiceLevels
         self.replyToPostID = replyToPostID
         self.replyToMessageID = replyToMessageID
         self.createdAt = createdAt
@@ -214,6 +221,7 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
         case postID = "post_id"
         case voicePath = "voice_path"
         case voiceDurationMs = "voice_duration_ms"
+        case voiceLevels = "voice_levels"
         case replyToPostID = "reply_to_post_id"
         case replyToMessageID = "reply_to_message_id"
         case createdAt = "created_at"

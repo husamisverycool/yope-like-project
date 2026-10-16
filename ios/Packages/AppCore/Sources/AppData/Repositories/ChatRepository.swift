@@ -56,6 +56,7 @@ public struct ChatRepository: Sendable {
         groupID: GroupID,
         voicePath: String,
         durationMs: Int,
+        levels: [Int]? = nil,
         replyToPostID: PostID? = nil,
         replyToMessageID: MessageID? = nil
     ) async throws -> Message {
@@ -64,6 +65,7 @@ public struct ChatRepository: Sendable {
             "p_kind": .string(MessageKind.voice.rawValue),
             "p_voice_path": .string(voicePath),
             "p_voice_duration_ms": .integer(durationMs),
+            "p_voice_levels": .levels(levels),
             "p_reply_to_post_id": .id(replyToPostID),
             "p_reply_to_message_id": .id(replyToMessageID),
         ])

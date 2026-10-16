@@ -155,6 +155,7 @@ public struct PostRepository: Sendable {
         caption: String? = nil,
         voicePath: String? = nil,
         voiceDurationMs: Int? = nil,
+        voiceLevels: [Int]? = nil,
         invitationID: InvitationID? = nil,
         replyToPostID: PostID? = nil
     ) async throws -> [Post] {
@@ -164,6 +165,7 @@ public struct PostRepository: Sendable {
             "p_caption": .text(caption),
             "p_voice_path": .text(voicePath),
             "p_voice_duration_ms": .int(voiceDurationMs),
+            "p_voice_levels": .levels(voiceLevels),
             "p_invitation_id": .id(invitationID),
             "p_reply_to_post_id": .id(replyToPostID),
         ])
