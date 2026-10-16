@@ -192,6 +192,7 @@ final class ServerJourneyUITests: XCTestCase {
         }
 
         // ---- Maya: settings → sign out ----
+        closeOverlays(app)
         try openTab(app, Self.profileTab)
         try expect("walls.mine", in: app, timeout: 20)
         step(app, "maya-wall")
@@ -280,16 +281,40 @@ final class ServerJourneyUITests: XCTestCase {
         try expect("groups.screen", in: app, timeout: 15)
     }
 
-    /// The group screen, from wherever a failed step left the app (closes the viewer, sheets, pushed pages).
+    /// The group screen, from wherever a failed step left the app.
     @MainActor
     private func ensureGroup(_ app: XCUIApplication) throws {
-        for _ in 0..<4 where !element(app, "groups.screen").isHittable {
-            if element(app, "close").exists, element(app, "close").isHittable { element(app, "close").tap(); continue }
+        closeOverlays(app)
+        try openGroup(app)
+    }
+
+    /// Back to the screen under whatever a failed step left open: a context menu (a tap above it), the viewer (its close
+    /// circle), a plan page, a chat thread. A covered screen still "exists" to XCUITest, so this checks the covers.
+    @MainActor
+    private func closeOverlays(_ app: XCUIApplication) {
+        for _ in 0..<6 {
+            let menuRow = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH %@", "React with ")).firstMatch
+            if menuRow.exists {
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.06)).tap()
+                _ = waitGoneQuietly(menuRow, 5)
+                continue
+            }
+            if element(app, "photo.viewer").exists {
+                let close = element(app, "photo.viewer").buttons.matching(identifier: "close").firstMatch
+                if close.exists { close.tap() } else { element(app, "close").tap() }
+                _ = waitGoneQuietly(element(app, "photo.viewer"), 10)
+                continue
+            }
             if element(app, "plans.page.back").exists { element(app, "plans.page.back").tap(); continue }
             if element(app, "chat.thread").exists { back(app); continue }
             break
         }
-        try openGroup(app)
+    }
+
+    @MainActor
+    private func waitGoneQuietly(_ target: XCUIElement, _ timeout: TimeInterval) -> Bool {
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: target)
+        return XCTWaiter().wait(for: [gone], timeout: timeout) == .completed
     }
 
     @MainActor
@@ -391,12 +416,14 @@ final class ServerJourneyUITests: XCTestCase {
         add(attachment)
     }
 
-    /// Runs `block`; a failure is recorded (screenshot and the screen's tree) and the journey goes on.
+    /// Runs `block`; a failure is recorded (a test failure in the log at once, the screenshot and the screen's tree) and
+    /// the journey goes on.
     @MainActor
     private func soft(_ name: String, _ app: XCUIApplication, _ block: () throws -> Void) {
         do {
             try block()
         } catch {
+            XCTFail("\(name): \(error)")
             problems.append("\(name): \(error)")
             step(app, "problem-\(name)")
             let tree = XCTAttachment(string: app.debugDescription)
