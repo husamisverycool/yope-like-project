@@ -249,6 +249,7 @@ extension AppModal {
         case .account(.report): return .dialog
         case let .account(modal): return modal.presentsAsSheet ? .sheet : .fullScreen
         case let .social(modal): return modal.presentsAsSheet ? .sheet : .fullScreen
+        case let .plans(modal): return modal.presentsAsSheet ? .sheet : .fullScreen
         default: return .fullScreen
         }
     }
@@ -299,6 +300,8 @@ struct RouteDestination: View {
             } else {
                 MemoryDestination(route: route)
             }
+        case let .plans(route):
+            PlansDestination(route: route)
         }
     }
 }
@@ -332,6 +335,8 @@ struct ModalDestination: View {
             SocialModalDestination(modal: modal)
         case let .memory(modal):
             MemoryModalDestination(modal: modal)
+        case let .plans(modal):
+            PlansModalDestination(modal: modal)
         }
     }
 }

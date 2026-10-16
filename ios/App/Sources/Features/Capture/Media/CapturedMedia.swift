@@ -74,6 +74,8 @@ struct CaptureSendRequest: Sendable, Identifiable {
     var confirmation: String?
     /// A photo replying to this post (`create_post p_reply_to_post_id`; exactly one group, the post's).
     var replyToPostID: String?
+    /// Taken in the camera's 9 AM mode: posted with `create_overnight_post` (camera.overnight; photos only).
+    var overnight = false
 
     /// Removes the camera's and the recorder's temporary files once the outbox holds copies.
     func removeTemporaryFiles() {
@@ -135,7 +137,8 @@ enum CaptureDraftBuilder {
                     groupIDs: groupIDs,
                     caption: caption,
                     invitationID: invitationID,
-                    replyToPostID: replyTo
+                    replyToPostID: replyTo,
+                    overnight: request.overnight ? true : nil
                 )
             case .video:
                 guard let video = media.video else { throw CaptureDraftError.missingMedia }

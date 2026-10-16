@@ -172,6 +172,8 @@ final class AppEnvironment {
             // Reloads requested while the app is in the foreground are not budgeted
             // (docs/PLATFORM_CONSTRAINTS.md §1.1), so every foreground refreshes the widgets.
             WidgetReloader.reloadAll()
+            // widget.countdown: the snapshot of `next_plans()` is rewritten on every foreground.
+            PlanWidgetSync.shared.refresh()
             // Picks up a widget push token the widget extension recorded meanwhile.
             syncDeviceTokens()
             let liveActivities = self.liveActivities

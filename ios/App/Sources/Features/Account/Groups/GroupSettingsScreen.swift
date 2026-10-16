@@ -61,6 +61,8 @@ struct GroupSettingsView: View {
                                     .accessibilityIdentifier("groups.settings.edit")
                                     .asSettingsRow(),
                             ])
+                            // question.weekly E: the weekly question's switch (admins, as the group's other settings).
+                            QuestionSettingsSection(groupID: model.groupID.rawValue, isOffline: isOffline)
                         }
                         SettingsGroup(rows: [
                             SettingsRow(Copy.groupsSettingsReport, kind: .destructive { reportGroup() })

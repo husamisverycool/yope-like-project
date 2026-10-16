@@ -59,6 +59,8 @@ struct ReportTarget: Hashable, Identifiable {
         case message
         case user
         case group
+        /// A selfie reaction (`report('selfie', <selfie_reactions.id>, reason)`, viewer.selfiereaction).
+        case selfie
     }
 
     let kind: Kind

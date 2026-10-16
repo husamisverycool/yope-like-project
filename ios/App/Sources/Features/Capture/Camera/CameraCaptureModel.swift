@@ -49,6 +49,8 @@ final class CameraCaptureModel {
 
     /// The group from context (`app://camera?group=`, group screen, chat), preselected in send-to.
     let contextGroupID: String?
+    /// camera.overnight's mode control (9 AM · Now): in 9 AM mode the shutter queues photos that develop later.
+    let overnight: OvernightCaptureModel?
 
     let camera: CaptureCamera
     private let premium: CapturePremium
@@ -70,10 +72,12 @@ final class CameraCaptureModel {
         premium: CapturePremium,
         coach: CaptureCoachStore,
         navigation: CaptureNavigation,
+        overnight: OvernightCaptureModel? = nil,
         longPressThreshold: Duration = CameraCaptureModel.platformLongPress,
         clock: @escaping @MainActor () -> Date = { Date() }
     ) {
         self.contextGroupID = contextGroupID
+        self.overnight = overnight
         self.camera = camera
         self.premium = premium
         self.coach = coach
@@ -116,6 +120,7 @@ final class CameraCaptureModel {
         await startSession()
         isVideoAvailable = await premiumStatus
         showsCoach = isVideoAvailable && !coach.isDismissed(.holdToRecord)
+        await overnight?.appear()
     }
 
     /// `camera.capture.title`: "Week {number}", the week the photo will be added to.
@@ -152,6 +157,9 @@ final class CameraCaptureModel {
     func openSettings() {
         navigation.openSystemSettings()
     }
+
+    /// camera.overnight's destination sheet offers groups.create when the member has no group (as camera.sendto).
+    var canCreateGroup: Bool { navigation.canCreateGroup }
 
     // MARK: Controls
 
@@ -200,8 +208,13 @@ final class CameraCaptureModel {
         }
     }
 
-    /// One tap: a photo (a Live Photo where supported) → camera.sendto. Never blocked.
+    /// One tap: a photo (a Live Photo where supported) → camera.sendto. Never blocked. In 9 AM mode: see
+    /// `takeOvernightPhoto`.
     func takePhoto() async {
+        if let overnight, overnight.isLater {
+            await takeOvernightPhoto(overnight)
+            return
+        }
         guard phase == .live, !isCapturing, !isRecording else { return }
         isCapturing = true
         defer { isCapturing = false }
@@ -213,7 +226,28 @@ final class CameraCaptureModel {
         }
     }
 
+    /// 9 AM mode (camera.overnight): one photo without Live Photo motion, straight to the upload queue for the chosen
+    /// groups — no preview, no send-to — and the camera stays ready for the next one. No groups chosen: the destination
+    /// sheet opens instead.
+    private func takeOvernightPhoto(_ overnight: OvernightCaptureModel) async {
+        guard phase == .live, !isCapturing else { return }
+        guard !overnight.selection.isEmpty else {
+            overnight.isDestinationOpen = true
+            return
+        }
+        isCapturing = true
+        defer { isCapturing = false }
+        do {
+            let still = try await camera.captureStill(flash: isFlashOn && isFlashAvailable)
+            overnight.capture(still, capturedAt: clock())
+        } catch {
+            phase = .unavailable
+        }
+    }
+
     private func beginLongPress() async {
+        // 9 AM mode takes photos only (camera.overnight: "tap = photo … Hold = nothing").
+        if overnight?.isLater == true { return }
         guard isVideoAvailable else {
             // Free member: the session's first long press opens the paywall (at most one prompt
             // per session); later long presses do nothing.

@@ -16,17 +16,22 @@ final class SocialServices {
     let saver: any SocialPhotoSaving
     /// One voice message plays at a time across the social screens.
     let playback: SocialVoicePlayback
+    /// The front camera of the selfie-reaction layer (viewer.selfiereaction): the capture group's camera
+    /// (`CaptureCamera`), one per open viewer.
+    let selfieCamera: @MainActor () -> CaptureCamera
 
     init(
         data: any SocialDataSource,
         images: SocialImageLoader,
         flags: SocialFlags = SocialFlags(),
-        saver: any SocialPhotoSaving = LibraryPhotoSaver()
+        saver: any SocialPhotoSaving = LibraryPhotoSaver(),
+        selfieCamera: @escaping @MainActor () -> CaptureCamera = { CaptureEnvironment.shared.makeCamera(false) }
     ) {
         self.data = data
         self.images = images
         self.flags = flags
         self.saver = saver
+        self.selfieCamera = selfieCamera
         playback = SocialVoicePlayback(data: data)
     }
 
@@ -40,6 +45,8 @@ final class SocialServices {
             // The backend echoes every insert over realtime, the sender's own too, so a message sent on one screen (a
             // comment in the photo viewer) reaches the screens under it (the chat). The demo backend does the same.
             data.update { $0.beforeSendReturns = { message in data.emit(.messageInserted(message), groupID: message.groupID) } }
+            // The Jolt demo: faces on a few "roommates" photos, and the demo member's own selfies kept for the session.
+            DemoSelfies.install(in: data)
             return SocialServices(
                 data: data, images: .demo(), flags: SocialFlags(defaults: SocialLaunch.defaults), saver: DemoPhotoSaver()
             )

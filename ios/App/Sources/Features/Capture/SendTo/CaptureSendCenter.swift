@@ -64,6 +64,8 @@ final class CaptureSendCenter {
         }
         do {
             try await posting.publish(draft)
+            // question.weekly B: a capture answering the week's question is linked to it (`answer_question`).
+            QuestionCameraContext.shared.didPost(draft)
             CaptureDraftBuilder.cleanUp(request)
             request.removeTemporaryFiles()
             postedCount += 1

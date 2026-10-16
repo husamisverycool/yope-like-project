@@ -52,6 +52,10 @@ final class LiveCaptureCamera: CaptureCamera {
         Self.device(position)?.hasTorch ?? false
     }
 
+    func hasCamera(at position: CameraPosition) -> Bool {
+        Self.device(position) != nil
+    }
+
     /// The configured graph is kept between openings: configuring the same mode again only
     /// restarts a stopped session (the first frame comes faster, e.g. after a pre-warm).
     private var activeMode: CaptureCameraMode?
@@ -85,6 +89,16 @@ final class LiveCaptureCamera: CaptureCamera {
         let position = activePosition
         let photo = try await withTorch(flash, position: position) {
             try await self.service.capturePhoto()
+        }
+        return CaptureStill(photo)
+    }
+
+    /// The session keeps Live Photo on (camera.capture); this shot asks for none (`isLivePhotoCaptureEnabled` stays on,
+    /// the shot's settings carry no movie URL).
+    func captureStill(flash: Bool) async throws -> CaptureStill {
+        let position = activePosition
+        let photo = try await withTorch(flash, position: position) {
+            try await self.service.capturePhoto(livePhoto: false)
         }
         return CaptureStill(photo)
     }
@@ -244,7 +258,7 @@ final class LiveCaptureGroups: CaptureGroupSource {
 
 private extension CaptureGroup {
     init(_ group: PhotoGroup) {
-        self.init(id: group.id.rawValue, name: group.name, coverPath: group.coverPath)
+        self.init(id: group.id.rawValue, name: group.name, coverPath: group.coverPath, timeZone: group.timeZone)
     }
 }
 
@@ -340,6 +354,11 @@ final class LiveCapturePosting: CapturePosting {
     func discard(_ mediaID: MediaID) async {
         guard let data else { return }
         await data.publisher.discard(mediaID)
+    }
+
+    func myDeveloping() async throws -> OvernightStatus {
+        guard let data else { throw DataError.notConfigured }
+        return try await data.posts.myDeveloping()
     }
 }
 

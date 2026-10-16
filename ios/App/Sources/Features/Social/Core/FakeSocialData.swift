@@ -38,6 +38,11 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var messages: [Message] = []
         var posts: [PostWithMedia] = []
         var reactions: [Reaction] = []
+        /// Selfie reactions, one per person and post (`react_with_selfie` replaces).
+        var selfies: [SelfieReaction] = []
+        /// Stores a sent selfie's JPEG and returns its storage path (the Jolt demo keeps the file so the face shows);
+        /// nil: a `fake/selfie/<id>` path.
+        var selfieUpload: (@Sendable (Data) -> String)?
         var tags: [PostTag] = []
         var collages: [Collage] = []
         var recaps: [WeeklyRecap] = []
@@ -248,6 +253,16 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         return read { state in ids.compactMap { id in state.posts.first { $0.id == id } } }
     }
 
+    func revealedWith(_ post: Post) async throws -> [PostWithMedia] {
+        try call("revealedWith")
+        guard let revealedAt = post.revealedAt else { return [] }
+        return read { state in
+            state.posts
+                .filter { $0.post.groupID == post.groupID && $0.post.revealedAt == revealedAt }
+                .sorted { ($0.post.createdAt, $0.id.rawValue) < ($1.post.createdAt, $1.id.rawValue) }
+        }
+    }
+
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { read { $0.cachedFeeds[groupID] ?? [] } }
 
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] {
@@ -264,6 +279,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
             state.posts.removeAll { gone.contains($0.id) }
             state.messages.removeAll { $0.postID.map(gone.contains) ?? false }
             state.reactions.removeAll { gone.contains($0.postID) }
+            state.selfies.removeAll { gone.contains($0.postID) }
             state.deletedMedia.append(id)
         }
     }
@@ -290,6 +306,40 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         try call("unreact")
         let me = read { $0.me } ?? UserID("me")
         update { $0.reactions.removeAll { $0.postID == postID && $0.userID == me && $0.emoji == emoji } }
+    }
+
+    func selfieReactions(postIDs: [PostID]) async throws -> [SelfieReaction] {
+        await hold("selfieReactions")
+        try call("selfieReactions")
+        let wanted = Set(postIDs)
+        return read { $0.selfies.filter { wanted.contains($0.postID) }.sorted { $0.createdAt < $1.createdAt } }
+    }
+
+    /// Like `react_with_selfie`: `post_not_found`, `own_post`; a new selfie replaces mine (same row id, new time).
+    func reactWithSelfie(postID: PostID, jpeg: Data) async throws -> SelfieReaction {
+        await hold("reactWithSelfie")
+        try call("reactWithSelfie")
+        let me = read { $0.me } ?? UserID("me")
+        guard let post = read({ $0.posts.first { $0.id == postID } }) else { throw DataError.api(.postNotFound) }
+        guard post.post.authorID != me else { throw DataError.database(code: "PT400", message: "own_post") }
+        let id = read { state in state.selfies.first { $0.postID == postID && $0.userID == me }?.id } ?? SelfieReactionID(nextID())
+        let path = read { $0.selfieUpload }?(jpeg) ?? "fake/selfie/\(id.rawValue.suffix(2))"
+        let selfie = SelfieReaction(id: id, postID: postID, userID: me, groupID: post.post.groupID, imagePath: path, createdAt: tick())
+        update { state in
+            state.selfies.removeAll { $0.postID == postID && $0.userID == me }
+            state.selfies.append(selfie)
+        }
+        return selfie
+    }
+
+    /// Like `remove_selfie_reaction`: mine, or anyone's on my own post (`not_allowed` otherwise).
+    func removeSelfieReaction(postID: PostID, userID: UserID?) async throws {
+        try call("removeSelfieReaction")
+        let me = read { $0.me } ?? UserID("me")
+        let target = userID ?? me
+        guard let post = read({ $0.posts.first { $0.id == postID } }) else { throw DataError.api(.postNotFound) }
+        guard target == me || post.post.authorID == me else { throw DataError.database(code: "PT403", message: "not_allowed") }
+        update { $0.selfies.removeAll { $0.postID == postID && $0.userID == target } }
     }
 
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool {

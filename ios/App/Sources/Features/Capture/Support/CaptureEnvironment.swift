@@ -28,6 +28,8 @@ final class CaptureEnvironment {
     let navigation: CaptureNavigation
     let coach: CaptureCoachStore
     let sendCenter: CaptureSendCenter
+    /// camera.overnight's 9 AM uploads (they continue after the camera closes).
+    let overnightQueue: CaptureOvernightQueue
 
     init(
         makeCamera: @escaping @MainActor (_ supportsDualCapture: Bool) -> CaptureCamera,
@@ -52,6 +54,7 @@ final class CaptureEnvironment {
         self.navigation = navigation
         self.coach = coach
         sendCenter = CaptureSendCenter(posting: posting)
+        overnightQueue = CaptureOvernightQueue(posting: posting)
     }
 
     static func live(_ app: AppEnvironment) -> CaptureEnvironment {
@@ -99,8 +102,14 @@ final class CaptureEnvironment {
             camera: sharedSingleCamera(),
             premium: premium,
             coach: coach,
-            navigation: navigation
+            navigation: navigation,
+            overnight: overnightModel(contextGroupID: contextGroupID)
         )
+    }
+
+    /// camera.overnight's mode on the camera (9 AM · Now) with its groups and upload queue.
+    func overnightModel(contextGroupID: String?) -> OvernightCaptureModel {
+        OvernightCaptureModel(contextGroupID: contextGroupID, groups: groups, posting: posting, queue: overnightQueue)
     }
 
     func sendToModel(

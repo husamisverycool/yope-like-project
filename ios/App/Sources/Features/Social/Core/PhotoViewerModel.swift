@@ -24,16 +24,21 @@ struct PhotoViewerContext: Hashable, Identifiable, Sendable {
     var start: PostID
     /// The group the photos belong to, when the opener is a group screen (offline copy of its feed).
     var groupID: GroupID?
+    /// Opened from a link (a push): when the photo developed overnight, the viewer holds every photo revealed with it,
+    /// oldest first (camera.overnight C: "photo.viewer opens on the photos revealed at that time").
+    var opensReveal: Bool
+
     /// Opened from a wall: the header's second line names the group (`photo.viewer.header.groupWeek`).
     var showsGroupName: Bool
 
     var id: String { start.rawValue + "|" + postIDs.map(\.rawValue).joined(separator: ",") }
 
-    init(postIDs: [PostID], start: PostID, groupID: GroupID? = nil, showsGroupName: Bool = false) {
+    init(postIDs: [PostID], start: PostID, groupID: GroupID? = nil, showsGroupName: Bool = false, opensReveal: Bool = false) {
         self.postIDs = postIDs.contains(start) ? postIDs : [start] + postIDs
         self.start = start
         self.groupID = groupID
         self.showsGroupName = showsGroupName
+        self.opensReveal = opensReveal
     }
 }
 
@@ -73,6 +78,8 @@ final class PhotoViewerModel {
     /// Posts that are not there anymore (`post_not_found`, or a `post_deleted` broadcast while open).
     private(set) var gone: Set<PostID> = []
     private(set) var reactions: [PostID: ReactionSummary] = [:]
+    /// Selfie reactions on the photos (viewer.selfiereaction): the faces, the sheet rows, send and remove.
+    let selfies: SelfieReactionsModel
     private(set) var profiles: [UserID: Profile] = [:]
     private(set) var groups: [GroupID: PhotoGroup] = [:]
     /// Who is in each photo (`post_tags`), in tag order; absent until read.
@@ -91,13 +98,16 @@ final class PhotoViewerModel {
 
     init(context: PhotoViewerContext, data: any SocialDataSource) {
         self.data = data
+        selfies = SelfieReactionsModel(data: data)
         postIDs = context.postIDs
         selection = context.start
         contextGroupID = context.groupID
+        expandsReveal = context.opensReveal
         showsGroupName = context.showsGroupName
     }
 
     @ObservationIgnored private let contextGroupID: GroupID?
+    @ObservationIgnored private var expandsReveal: Bool
 
     // MARK: Derived
 
@@ -167,9 +177,21 @@ final class PhotoViewerModel {
             }
         }
         for id in postIDs where posts[id] == nil { gone.insert(id) }
+        await expandReveal()
         phase = .ready
         await loadDetails()
         await loadSelectedDetails()
+    }
+
+    /// camera.overnight C: a link to an overnight photo opens on all the photos revealed with it, oldest first, keeping
+    /// the linked photo selected (the reveal push names the first). Once; a failure keeps the one photo.
+    private func expandReveal() async {
+        guard expandsReveal, let post = posts[selection], post.post.revealedAt != nil else { return }
+        expandsReveal = false
+        guard let together = try? await data.revealedWith(post.post), together.count > 1,
+              together.contains(where: { $0.id == selection }) else { return }
+        for photo in together { posts[photo.id] = photo }
+        postIDs = together.map(\.id)
     }
 
     /// Error line "Tap to retry".
@@ -197,7 +219,8 @@ final class PhotoViewerModel {
             let summaries = ReactionSummary.byPost(rows)
             for id in ids { reactions[id] = summaries[id] ?? ReactionSummary() }
         }
-        await loadProfiles(posts.values.map(\.post.authorID) + [me].compactMap { $0 })
+        await selfies.load(postIDs: ids)
+        await loadProfiles(posts.values.map(\.post.authorID) + [me].compactMap { $0 } + selfies.reactors)
         if let mine = try? await data.myGroups() {
             for group in mine { groups[group.id] = group }
         } else if let cached = await data.cachedGroups() {
@@ -289,7 +312,11 @@ final class PhotoViewerModel {
     }
 
     func handle(_ event: GroupEvent) async {
+        await selfies.handle(event)
         switch event {
+        case let .selfieReactionUpserted(selfie):
+            guard posts[selfie.postID] != nil else { return }
+            await loadProfiles([selfie.userID])
         case let .postDeleted(postID, mediaID):
             let matching = postIDs.filter { id in
                 id == postID || (mediaID != nil && posts[id]?.post.mediaID == mediaID)
@@ -375,6 +402,33 @@ final class PhotoViewerModel {
             signals.emit(.failed)
             signals.post(.reactionFailed)
         }
+    }
+
+    // MARK: Selfie reactions (viewer.selfiereaction)
+
+    /// The photo on screen takes a selfie from me: someone else's photo that is still there (the entry points are hidden
+    /// on my own photo).
+    var canReactWithSelfie: Bool {
+        guard let post = current, !isCurrentGone else { return false }
+        return selfies.canReact(to: post, me: me)
+    }
+
+    /// Sends the selfie taken in the capture layer to the photo it was opened on.
+    func sendSelfie(_ jpeg: Data, to postID: PostID) async {
+        guard let me, let post = posts[postID], !gone.contains(postID) else { return }
+        if await selfies.send(jpeg, to: post, me: me) == .notFound { gone.insert(postID) }
+    }
+
+    /// Tap on my selfie row in the Reactions sheet: takes it back.
+    func removeMySelfie(postID: PostID) async {
+        guard let me else { return }
+        if await selfies.removeMine(from: postID, me: me) == .notFound { gone.insert(postID) }
+    }
+
+    /// The confirmed "Remove" on someone's selfie on my own photo.
+    func removeSelfie(of userID: UserID, postID: PostID) async {
+        guard let post = posts[postID], isOwn(post) else { return }
+        if await selfies.removeFromMyPhoto(userID: userID, postID: postID) == .notFound { gone.insert(postID) }
     }
 
     // MARK: "I'm in this" (tagging.md)

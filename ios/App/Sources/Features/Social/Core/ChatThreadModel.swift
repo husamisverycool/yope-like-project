@@ -321,6 +321,10 @@ final class ChatThreadModel {
             await refresh()
         case .subscribed, .subscriptionFailed:
             break
+        case .selfieReactionUpserted, .developingChanged:
+            // Selfie reactions show in photo.viewer only (viewer.selfiereaction); revealed photos arrive as their own
+            // inserted messages.
+            break
         }
     }
 

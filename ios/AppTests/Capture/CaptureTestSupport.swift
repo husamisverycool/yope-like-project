@@ -68,8 +68,23 @@ final class CaptureTestRig {
             premium: premium,
             coach: coach,
             navigation: navigation,
+            overnight: overnightModel(contextGroupID: contextGroupID, now: now),
             longPressThreshold: .milliseconds(20),
             clock: { now }
+        )
+    }
+
+    /// camera.overnight's 9 AM uploads over the fake posting; announcements are recorded instead of posted.
+    private(set) var announcements: [String] = []
+    lazy var overnightQueue: CaptureOvernightQueue = CaptureOvernightQueue(posting: posting) { [weak self] text in
+        self?.announcements.append(text)
+    }
+
+    /// The camera's mode control (9 AM · Now) over the rig's groups and posting.
+    func overnightModel(contextGroupID: String? = nil, now: Date = CaptureTestRig.fixedNow) -> OvernightCaptureModel {
+        OvernightCaptureModel(
+            contextGroupID: contextGroupID, groups: groups, posting: posting, queue: overnightQueue, clock: { now },
+            announce: { [weak self] text in self?.announcements.append(text) }
         )
     }
 

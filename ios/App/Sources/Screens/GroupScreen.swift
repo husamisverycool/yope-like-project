@@ -26,6 +26,10 @@ struct GroupFeedView: View {
     @State private var model: GroupFeedModel
     @State private var blockTarget: BlockTarget?
     @State private var reportTarget: ReportTarget?
+    /// The developing tile's state (camera.overnight B), made when the screen first loads.
+    @State private var developingTile: DevelopingTileModel?
+    /// Whether the birthday request row is on screen (the plan row's placement, `planRow`).
+    @State private var birthdayRowShown = false
     @Environment(AccountDependencies.self) private var dependencies
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -53,14 +57,24 @@ struct GroupFeedView: View {
                 }
             }
             .scrollBounceBehavior(.basedOnSize)
-            .refreshable { await model.refresh() }
+            .refreshable {
+                await model.refresh()
+                await developingTile?.refresh()
+            }
         }
         .background(Tokens.Colors.globalBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .task { await model.load() }
+        .task { await followDeveloping() }
+        .task(id: PlansServices.shared.revision) { await developingTile?.refresh() }
         .onDisappear { model.stop() }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await model.refresh() } }
+            if phase == .active {
+                Task {
+                    await model.refresh()
+                    await developingTile?.refresh()
+                }
+            }
         }
         .onChange(of: model.insertedCount) { _, _ in
             UIAccessibility.post(notification: .layoutChanged, argument: nil)
@@ -77,8 +91,9 @@ struct GroupFeedView: View {
 
     // MARK: Layout
 
-    /// Header row, cover, name, members, actions, the birthday row, this week, the members' weeks and memories, earlier
-    /// photos — each placed by the spec's measured gaps (TC-J1) and the C-20 / C-17 / C-18 metrics.
+    /// Header row, cover, name, members, actions, the birthday row, the plan row, this week (with the developing tile),
+    /// the members' weeks, the week's question and memories, earlier photos — each placed by the spec's measured gaps
+    /// (TC-J1) and the C-20 / C-17 / C-18 metrics.
     private func content(width: CGFloat) -> some View {
         let cap = TextMetrics(style: TextRole.headerTitle, size: titleSize).capHeight
         let rowTop = Tokens.Sizes.globalTitleTop - cap / 2 - Tokens.Sizes.globalHeaderButton / 2
@@ -120,6 +135,8 @@ struct GroupFeedView: View {
             }
             if showsWeek {
                 birthdayRequests
+                    .metricGap(0, from: .bottom, to: .top)
+                planRow
                     .metricGap(0, from: .bottom, to: .top)
                 weekHeader
                     .metricGap(Tokens.Sizes.globalSectionGap, from: .bottom, to: .capTop)
@@ -253,7 +270,26 @@ struct GroupFeedView: View {
             ])
             .padding(.top, Tokens.Sizes.globalSectionGap)
             .accessibilityElement(children: .combine)
+            .onAppear { birthdayRowShown = true }
+            .onDisappear { birthdayRowShown = false }
         }
+    }
+
+    // MARK: Plan row (plans group's entry)
+
+    /// The group's next plan, or "Make a Plan" (`PlanRowEntry`: one C-14 row, `size.global.sectionGap` under the
+    /// capsules or the birthday row). Its order next to the birthday request row is BLOCKED (design/research/plans.md §12
+    /// item 6): release builds show the plan row only while no birthday row is on screen, so no order is decided; DEBUG
+    /// builds show both, the birthday row first.
+    @ViewBuilder
+    private var planRow: some View {
+        #if DEBUG
+        PlanRowEntry(groupID: groupID)
+        #else
+        if !birthdayRowShown {
+            PlanRowEntry(groupID: groupID)
+        }
+        #endif
     }
 
     // MARK: This week
@@ -315,10 +351,25 @@ struct GroupFeedView: View {
             tiles: tiles,
             accessibilityLabel: tileLabel,
             onSelect: selectTile,
-            menuPost: { tile in post(for: tile) }
+            menuPost: { tile in post(for: tile) },
+            developing: model.phase == .loading ? nil : developingLabel
         ) { post in
             photoMenu(post)
         }
+    }
+
+    /// The developing tile's label while the group has photos developing (camera.overnight B), else nil.
+    private var developingLabel: String? {
+        guard let developingTile, developingTile.isDeveloping else { return nil }
+        return developingTile.accessibilityLabel
+    }
+
+    /// `group_developing` now and after each of the group's post changes (a reveal inserts the developed photos).
+    private func followDeveloping() async {
+        let tile = developingTile ?? DevelopingTileModel(groupID: model.groupID, services: .shared)
+        developingTile = tile
+        await tile.refresh()
+        await tile.follow()
     }
 
     private func tileLabel(_ tile: WeekStripTile) -> String {
@@ -382,9 +433,9 @@ struct GroupFeedView: View {
 
     // MARK: Members' weeks and memories
 
-    /// Retro's home feed pager: one C-18 friend card per member who shared this week (newest first), then the memory
-    /// feed cards (on this day, the year story) while they have content. Each card carries the `size.global.sectionGap`
-    /// above it, so the row takes no space when there is nothing to show.
+    /// Retro's home feed pager: one C-18 friend card per member who shared this week (newest first), then the week's
+    /// question card, then the memory feed cards (on this day, the year story) while they have content. Each card
+    /// carries the `size.global.sectionGap` above it, so the row takes no space when there is nothing to show.
     private var cardsPager: some View {
         FriendCardPager {
             ForEach(model.memberWeeks) { week in
@@ -400,6 +451,8 @@ struct GroupFeedView: View {
                 .padding(.top, Tokens.Sizes.globalSectionGap)
                 .dsTransition(.opacity)
             }
+            // question.weekly A: the week's question is the first feed card, after the friend cards.
+            QuestionCardEntry(groupID: groupID)
             OnThisDayEntry(groupID: groupID) { content in
                 MemoryFeedCard(
                     glyph: content.icon ?? Tokens.Icons.globalRewind,
@@ -588,19 +641,50 @@ struct GroupWeekStrip<Menu: View>: View {
     let accessibilityLabel: (WeekStripTile) -> String
     let onSelect: (WeekStripTile) -> Void
     let menuPost: (WeekStripTile) -> PostWithMedia?
+    /// camera.overnight B: while the group has photos developing, the label of the one developing tile, which sits just
+    /// before the add tile (the newest position); nil: no tile.
+    var developing: String? = nil
     @ViewBuilder let menu: (PostWithMedia) -> Menu
+
+    /// A strip position: a day tile, or the developing tile.
+    private enum Item: Identifiable {
+        case tile(WeekStripTile)
+        case developing(String)
+
+        var id: String {
+            switch self {
+            case let .tile(tile): return tile.id
+            case .developing: return "developing" // provenance-ok: list identity, not user-facing
+            }
+        }
+    }
+
+    private var items: [Item] {
+        var items = tiles.map(Item.tile)
+        guard let developing else { return items }
+        let addIndex = tiles.firstIndex { $0.kind == .add } ?? tiles.endIndex
+        items.insert(.developing(developing), at: addIndex)
+        return items
+    }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Tokens.Sizes.globalStripGap) {
-                ForEach(tiles) { tile in
-                    tileView(tile)
-                        .dsTransition(AnyTransition.opacity.animation(ComponentMotion.fade.animation))
+                ForEach(items) { item in
+                    Group {
+                        switch item {
+                        case let .tile(tile):
+                            tileView(tile)
+                        case let .developing(label):
+                            DevelopingTile(accessibilityLabel: label)
+                        }
+                    }
+                    .dsTransition(AnyTransition.opacity.animation(ComponentMotion.fade.animation))
                 }
             }
             .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
             .padding(.leading, Tokens.Sizes.globalScreenMargin)
-            .dsAnimation(ComponentMotion.stripInsert, value: tiles.map(\.id))
+            .dsAnimation(ComponentMotion.stripInsert, value: items.map(\.id))
         }
         .accessibilityElement(children: .contain)
     }

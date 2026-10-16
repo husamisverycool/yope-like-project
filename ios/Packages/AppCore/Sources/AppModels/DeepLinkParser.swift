@@ -4,7 +4,8 @@ import Foundation
 ///
 /// Accepted forms:
 /// - `https://<domain>/i/<token>` for each configured universal-link host (invites, App Clip).
-/// - `<customScheme>://<route>?<field>=<id>…`, e.g. `app://camera?group=<id>` from widgets.
+/// - `<customScheme>://<route>?<field>=<id>…`, e.g. `app://camera?group=<id>` from widgets,
+///   `app://plan?plan=<id>&group=<id>` from the countdown widget (Android `DeepLink.Plan`, same format).
 /// - Notification `userInfo`: a `link` URL, or `type` (`PushType`) with `<field>_id` keys.
 ///
 /// Identifiers are accepted only when they consist of URL-safe characters, so a crafted link
@@ -103,8 +104,8 @@ public struct DeepLinkParser: Sendable {
         case .tribute: route = .tribute
         case .yearStory: route = .yearStory
         case .dailyInvitation: route = .daily
-        // .plan: no plan route yet; the tap opens the app.
-        case .widget, .dailyInvitationEnded, .plan: return nil
+        case .plan: route = .plan
+        case .widget, .dailyInvitationEnded: return nil
         }
         return Self.make(route: route, value: value)
     }
@@ -120,6 +121,7 @@ public struct DeepLinkParser: Sendable {
         case .birthdayRequest?: type = .birthdayRequest
         case .tribute?: type = .tribute
         case .yearStory?: type = .yearStory
+        case .plan?: type = .plan
         case .camera?, nil: type = nil
         }
         guard let type else {
@@ -163,6 +165,10 @@ public struct DeepLinkParser: Sendable {
             guard let group = id(.group), let yearText = value(.year), let year = Int(yearText),
                   (1...9999).contains(year) else { return nil }
             return .yearStory(groupID: group, year: year)
+        case .plan:
+            // The group is optional: an unreadable one is dropped and the plan still opens.
+            guard let plan = id(.plan) else { return nil }
+            return .plan(planID: plan, groupID: id(.group))
         }
     }
 

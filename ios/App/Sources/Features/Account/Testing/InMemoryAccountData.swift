@@ -392,7 +392,18 @@ final class InMemoryAccountData: AccountDataSource {
 
     func setQuietHours(start: LocalTime?, end: LocalTime?) async throws {
         try await record("setQuietHours")
-        settings = NotificationSettings(userID: try requireUser(), quietStart: start, quietEnd: end, timeZone: "UTC", updatedAt: now) // provenance-ok: test fixture
+        settings = NotificationSettings(
+            userID: try requireUser(), quietStart: start, quietEnd: end, timeZone: "UTC", updatedAt: now, // provenance-ok: test fixture
+            overnight: settings?.overnight ?? true
+        )
+    }
+
+    func setOvernightAlerts(_ on: Bool) async throws {
+        try await record("setOvernightAlerts")
+        settings = NotificationSettings(
+            userID: try requireUser(), quietStart: settings?.quietStart, quietEnd: settings?.quietEnd,
+            timeZone: settings?.timeZone, updatedAt: now, overnight: on
+        )
     }
 
     func hasPremium() async throws -> Bool {

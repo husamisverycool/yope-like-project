@@ -288,6 +288,10 @@ struct SendToGroupRow: View {
     let cover: UIImage?
     let isSelected: Bool
     let onToggle: () -> Void
+    /// False in a sheet that follows the appearance (camera.overnight's destination sheet): the name in
+    /// `color.global.textPrimary`.
+    var onMedia = true
+    var identifierPrefix = "camera.sendto.row." // provenance-ok: accessibility identifier for UI tests
 
     var body: some View {
         Button(action: onToggle) {
@@ -295,7 +299,7 @@ struct SendToGroupRow: View {
                 AvatarView(source: cover.map { PhotoSource.image($0) }, diameter: Tokens.Sizes.globalAvatarPicker, placeholderIcon: Tokens.Icons.globalGroup)
                 Text(group.name)
                     .dsTextStyle(TextRole.listTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                    .foregroundStyle(onMedia ? Tokens.Colors.globalTextOnMedia : Tokens.Colors.globalTextPrimary)
                     .lineLimit(1)
                     .padding(.leading, Tokens.Sizes.globalCardNameGap)
                 Spacer(minLength: Tokens.Sizes.globalCardNameGap)
@@ -315,7 +319,7 @@ struct SendToGroupRow: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(group.name))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        .accessibilityIdentifier("camera.sendto.row.\(group.id)")
+        .accessibilityIdentifier(identifierPrefix + group.id)
     }
 }
 

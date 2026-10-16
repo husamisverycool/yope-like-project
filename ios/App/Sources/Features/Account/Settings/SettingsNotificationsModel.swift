@@ -23,10 +23,14 @@ final class SettingsNotificationsModel {
     private(set) var quietHoursOn = false
     /// System notifications off or never asked (section 1).
     private(set) var systemOff = false
+    /// The push when overnight photos develop (`camera.overnight.settings.row`; `notification_settings.overnight`), on
+    /// by default and when no settings row exists.
+    private(set) var overnightOn = true
     /// The failed change of each section (`settings.notifications.error`); the screen shows it as a message-only alert
     /// (trigger `errorCount`).
     private(set) var groupsError: String?
     private(set) var quietError: String?
+    private(set) var overnightError: String?
     private(set) var errorCount = 0
 
     private let data: AccountDataSource
@@ -55,6 +59,7 @@ final class SettingsNotificationsModel {
             quietStart = settings.quietStart
             quietEnd = settings.quietEnd
             quietHoursOn = quietStart != nil && quietEnd != nil
+            overnightOn = settings.overnight
         }
         isLoading = false
     }
@@ -110,6 +115,20 @@ final class SettingsNotificationsModel {
         }
     }
 
+    /// `set_overnight_alerts` (camera.overnight's switch). Optimistic; reverts with the error alert.
+    func setOvernightAlerts(_ on: Bool) async {
+        guard on != overnightOn else { return }
+        overnightOn = on
+        overnightError = nil
+        do {
+            try await data.setOvernightAlerts(on)
+        } catch {
+            overnightOn = !on
+            overnightError = Copy.settingsNotificationsError
+            errorCount += 1
+        }
+    }
+
     /// The latest failure's message (the alert).
-    var alertMessage: String? { quietError ?? groupsError }
+    var alertMessage: String? { overnightError ?? quietError ?? groupsError }
 }

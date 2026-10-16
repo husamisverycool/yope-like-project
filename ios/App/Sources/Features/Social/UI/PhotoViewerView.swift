@@ -33,6 +33,15 @@ struct PhotoViewerView: View {
     @State private var reportTarget: ReportTarget?
     @State private var blockTarget: BlockTarget?
     @State private var width: CGFloat = 0
+    /// viewer.selfiereaction: the capture layer while open, the front camera it uses (made once per viewer), the hold on
+    /// the add-reaction glyph, the header's bottom (the panel starts `photo.viewer.dimension.headerToPhoto` below it), and
+    /// the Reactions sheet's pending removal and report.
+    @State private var selfieLayer: SelfieCaptureModel?
+    @State private var selfieCamera: CaptureCamera?
+    @State private var selfieHold = SelfieHoldTracker()
+    @State private var headerBottom: CGFloat = 0
+    @State private var selfieToRemove: SelfieReaction?
+    @State private var selfieReport: ReportTarget?
     @FocusState private var fieldFocused: Bool
     @Environment(\.dismiss) private var dismiss
     @Environment(\.displayScale) private var displayScale
@@ -42,13 +51,16 @@ struct PhotoViewerView: View {
         self.init(model: PhotoViewerModel(context: context, data: SocialServices.shared.data), presentation: presentation)
     }
 
-    init(model: PhotoViewerModel, presentation: Presentation) {
+    /// - Parameter selfieLayer: the capture layer already open (snapshots of viewer.selfiereaction's states).
+    init(model: PhotoViewerModel, presentation: Presentation, selfieLayer: SelfieCaptureModel? = nil) {
         _model = State(initialValue: model)
+        _selfieLayer = State(initialValue: selfieLayer)
         self.presentation = presentation
     }
 
     var body: some View {
         page
+            .overlay { selfieLayerView }
             // `photo.viewer.layout.appearance`: dark in both appearances; sheets and alerts follow the system.
             .environment(\.colorScheme, .dark)
             .socialHidesNavigationBar()
@@ -57,15 +69,26 @@ struct PhotoViewerView: View {
                 prefetchNeighbours()
                 await model.run()
             }
+            .task {
+                if selfieCamera == nil { selfieCamera = SocialServices.shared.selfieCamera() }
+            }
             .onChange(of: model.selection) { _, _ in
+                closeSelfieLayer()
                 prefetchNeighbours()
                 Task { await model.loadSelectedDetails() }
             }
+            // viewer.selfiereaction "photo deleted while open": the layer closes; the gone state shows.
+            .onChange(of: model.isCurrentGone) { _, gone in
+                if gone { closeSelfieLayer() }
+            }
+            .onDisappear { closeSelfieLayer() }
             .onChange(of: model.isClosed) { _, closed in
                 if closed { dismiss() }
             }
             .socialFeedback(model.signals.feedback)
             .socialNotices(model.signals.notice, toasts: toasts)
+            .socialFeedback(model.selfies.signals.feedback)
+            .socialNotices(model.selfies.signals.notice, toasts: toasts)
             .toastHost(toasts)
             .sheet(isPresented: $pickerOpen) {
                 ReactionPicker(
@@ -78,11 +101,31 @@ struct PhotoViewerView: View {
                 if let post = model.current {
                     ReactionsSheet(
                         reactions: model.reactions[post.id] ?? ReactionSummary(),
+                        selfies: model.selfies.summary(for: post.id),
                         me: model.me,
                         profile: { model.profiles[$0] },
-                        onRemove: { emoji in Task { await model.unreact(emoji) } }
+                        onRemove: { emoji in Task { await model.unreact(emoji) } },
+                        selfieActions: selfieRowActions(post)
                     )
                     .presentationDetents([.medium, .large])
+                    // viewer.selfiereaction: the author's removal (`photo.viewer.layout.deleteConfirm` form) and the report
+                    // flow, presented over the sheet.
+                    .confirmationDialog(
+                        Text(Copy.viewerSelfiereactionRemoveTitle(name: selfieToRemove.flatMap { model.profiles[$0.userID]?.socialFirstName } ?? "")),
+                        isPresented: Binding(get: { selfieToRemove != nil }, set: { if !$0 { selfieToRemove = nil } }),
+                        titleVisibility: .visible,
+                        presenting: selfieToRemove
+                    ) { selfie in
+                        Button(Copy.viewerSelfiereactionRemoveConfirm, role: .destructive) {
+                            Task { await model.removeSelfie(of: selfie.userID, postID: selfie.postID) }
+                        }
+                        Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+                    } message: { _ in
+                        Text(Copy.viewerSelfiereactionRemoveMessage)
+                    }
+                    .sheet(item: $selfieReport) { target in
+                        reportSheet(target)
+                    }
                 }
             }
             .sheet(isPresented: $tagSheetOpen) {
@@ -202,6 +245,7 @@ struct PhotoViewerView: View {
                     openPicker: { pickerOpen = true },
                     openReactions: { reactionsOpen = true },
                     openTags: { tagSheetOpen = true },
+                    selfieEntry: selfieEntry,
                     replyToComment: { _ in fieldFocused = true },
                     unsendComment: { unsendCandidate = $0 },
                     reportComment: report(message:)
@@ -222,6 +266,93 @@ struct PhotoViewerView: View {
                 .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: Selfie reactions (viewer.selfiereaction)
+
+    /// The entry points of the photo on screen: hidden on my own photo and without a front camera.
+    private var selfieEntry: SelfieEntry? {
+        guard model.canReactWithSelfie, selfieCamera?.hasCamera(at: .front) == true else { return nil }
+        return SelfieEntry(
+            hold: selfieHold,
+            onTap: { pickerOpen = true },
+            onHoldBegan: { openSelfieLayer(.hold) },
+            onMove: { selfieLayer?.moved(to: $0) },
+            onRelease: { releaseSelfie(at: $0) },
+            openTapMode: { openSelfieLayer(.tap) }
+        )
+    }
+
+    @ViewBuilder
+    private var selfieLayerView: some View {
+        if let layer = selfieLayer {
+            SelfieCaptureLayer(
+                model: layer,
+                panelTop: headerBottom + Tokens.Sizes.photoViewerDimensionHeaderToPhoto,
+                onCapture: { captureSelfie(layer) },
+                onClose: { closeSelfieLayer() },
+                onOpenSettings: {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                }
+            )
+            .transition(.opacity)
+        }
+    }
+
+    /// Layer in: `duration.global.fade` + `easing.global.standard` (Reduce Motion: the same).
+    private func openSelfieLayer(_ mode: SelfieCaptureModel.Mode) {
+        guard selfieLayer == nil, model.canReactWithSelfie, let post = model.current, let camera = selfieCamera else { return }
+        let layer = SelfieCaptureModel(postID: post.id, mode: mode, camera: camera)
+        withDSAnimation(ComponentMotion.fade) { selfieLayer = layer }
+        Task { await layer.start() }
+    }
+
+    private func closeSelfieLayer() {
+        guard let layer = selfieLayer else { return }
+        withDSAnimation(ComponentMotion.fade) { selfieLayer = nil }
+        Task { await layer.stop() }
+    }
+
+    /// Hold mode: released on the target ring or the circle, the selfie is taken and sent; anywhere else nothing is sent
+    /// and the layer closes (touch-up-inside semantics, PLATFORM).
+    private func releaseSelfie(at point: CGPoint) {
+        guard let layer = selfieLayer else { return }
+        if layer.phase == .live, layer.contains(point) {
+            captureSelfie(layer)
+        } else {
+            closeSelfieLayer()
+        }
+    }
+
+    /// Sending: the layer closes and my face joins the stack at once (optimistic), taken back out if the send fails.
+    private func captureSelfie(_ layer: SelfieCaptureModel) {
+        guard layer.phase == .live, !layer.isCapturing else { return }
+        Task {
+            let jpeg = await layer.capture()
+            closeSelfieLayer()
+            guard let jpeg else {
+                model.selfies.captureFailed()
+                return
+            }
+            await model.sendSelfie(jpeg, to: layer.postID)
+        }
+    }
+
+    /// The faces and actions of the Reactions sheet's selfie rows.
+    private func selfieRowActions(_ post: PostWithMedia) -> SelfieRowActions {
+        let scale = displayScale
+        return SelfieRowActions(
+            face: { selfie in SelfieFaceImages.source(selfie, sent: model.selfies.sentImages[selfie.id], displayScale: scale) },
+            isAuthor: model.isOwn(post),
+            removeMine: { _ in Task { await model.removeMySelfie(postID: post.id) } },
+            remove: { selfieToRemove = $0 },
+            report: account == nil ? nil : { selfie in
+                selfieReport = ReportTarget(
+                    kind: .selfie, id: selfie.id.rawValue, name: nil,
+                    person: BlockTarget(userID: selfie.userID.rawValue, firstName: model.profiles[selfie.userID]?.socialFirstName ?? "")
+                )
+            }
+        )
     }
 
     // MARK: Header
@@ -275,6 +406,16 @@ struct PhotoViewerView: View {
         .frame(minHeight: Tokens.Sizes.globalAvatarHeader)
         .padding(.leading, Tokens.Sizes.photoViewerDimensionHeaderInset)
         .padding(.trailing, Tokens.Sizes.globalScreenMargin)
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { headerBottom = proxy.frame(in: .global).maxY }
+                    .onChange(of: proxy.frame(in: .global).maxY) { _, value in headerBottom = value }
+            }
+        }
+        // viewer.selfiereaction: the header stays visible and inert under the capture layer (BeReal keeps its header).
+        .allowsHitTesting(selfieLayer == nil)
+        .accessibilityHidden(selfieLayer != nil)
     }
 
     /// "Week 28", or opened from a wall "{group} · Week 28" (`photo.viewer.header.week` / `.groupWeek`).
@@ -417,11 +558,14 @@ struct ViewerPostPage: View {
     let openPicker: () -> Void
     let openReactions: () -> Void
     let openTags: () -> Void
+    /// viewer.selfiereaction's entry points (nil: hidden — my own photo, no front camera).
+    let selfieEntry: SelfieEntry?
     let replyToComment: (Message) -> Void
     let unsendComment: (Message) -> Void
     let reportComment: (Message) -> Void
 
     @State private var trailingWidth: CGFloat = 0
+    @Environment(\.displayScale) private var displayScale
 
     private var aspectRatio: CGFloat {
         if let media = post.media, let width = media.width, let height = media.height, width > 0, height > 0 {
@@ -436,6 +580,9 @@ struct ViewerPostPage: View {
         MetricStack {
             photo
                 .frame(width: area.width, height: photoHeight)
+                .overlay(alignment: .bottomLeading) {
+                    selfieStack(frame: CGSize(width: area.width, height: photoHeight))
+                }
                 .metricGap(Tokens.Sizes.photoViewerDimensionHeaderToPhoto, from: .top, to: .top)
             footer
                 .metricGap(0, from: .bottom, to: .top)
@@ -473,10 +620,38 @@ struct ViewerPostPage: View {
                     onEmoji: { emoji in Task { await model.toggleReaction(emoji) } },
                     onAdd: openPicker
                 )
+                // viewer.selfiereaction: under the quick-reaction row, the layer in tap mode.
+                if let selfieEntry {
+                    Button(action: selfieEntry.openTapMode) {
+                        Label(Copy.viewerSelfiereactionMenuReact, systemImage: Tokens.Icons.globalCamera)
+                    }
+                }
                 menu
             }
             .accessibilityHint(Text(Copy.photoViewerA11yAdvanceHint))
-            .accessibilityActions { menu }
+            .accessibilityActions {
+                if let selfieEntry {
+                    Button(Copy.viewerSelfiereactionA11yAction, action: selfieEntry.openTapMode)
+                }
+                menu
+            }
+    }
+
+    /// viewer.selfiereaction §3: the faces over the visible image's bottom-leading corner (a letterboxed photo: the
+    /// image's own edges), `size.global.screenMargin` in on both axes (H-RP's equal insets). Tap → the Reactions sheet.
+    private func selfieStack(frame: CGSize) -> some View {
+        let imageWidth = min(frame.width, frame.height * aspectRatio)
+        let faces = model.selfies.summary(for: post.id).faces(limit: Int(Tokens.Counts.chatReactionsCountClusterMaxVisible))
+        let sent = model.selfies.sentImages
+        let scale = displayScale
+        return SelfieFaceStack(
+            faces: faces,
+            names: faces.map { model.profiles[$0.userID]?.socialFirstName ?? "" },
+            source: { SelfieFaceImages.source($0, sent: sent[$0.id], displayScale: scale) },
+            action: openReactions
+        )
+        .padding(.leading, max(0, frame.width - imageWidth) / 2 + Tokens.Sizes.globalScreenMargin)
+        .padding(.bottom, Tokens.Sizes.globalScreenMargin)
     }
 
     private var photoLabel: String {
@@ -564,13 +739,39 @@ struct ViewerPostPage: View {
     private var reactionSlot: some View {
         HStack(spacing: Tokens.Sizes.globalPillGap) {
             ReactionChip(emoji: model.reactions[post.id]?.distinctEmoji ?? [], onMedia: true, action: openReactions)
+            addReactionGlyph
+        }
+    }
+
+    /// The add-reaction glyph: a tap opens the emoji picker; with selfie reactions available, touch and hold opens the
+    /// capture layer in hold mode with the finger still down (viewer.selfiereaction §1; iOS plays no haptic for the
+    /// hold, `haptic.global.longPressStart`), and the accessibility action `viewer.selfiereaction.a11y.action` opens it in
+    /// tap mode (VoiceOver never gets hold mode).
+    @ViewBuilder
+    private var addReactionGlyph: some View {
+        let glyph = Glyph(Tokens.Icons.chatReactionsIconAdd)
+            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            .minimumHitArea(drawn: CGSize(width: Tokens.Sizes.globalIcon, height: Tokens.Sizes.globalIcon))
+        if let selfieEntry {
+            glyph
+                .gesture(
+                    DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                        .onChanged { selfieEntry.changed($0.location) }
+                        .onEnded { selfieEntry.ended($0.location) }
+                )
+                .accessibilityElement()
+                .accessibilityLabel(Text(Copy.chatReactionsA11yAdd))
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAction { openPicker() }
+                .accessibilityAction(named: Text(Copy.viewerSelfiereactionA11yAction)) { selfieEntry.openTapMode() }
+                .accessibilityIdentifier("photo.viewer.addReaction") // provenance-ok: accessibility identifier for UI tests
+        } else {
             Button(action: openPicker) {
-                Glyph(Tokens.Icons.chatReactionsIconAdd)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                    .minimumHitArea(drawn: CGSize(width: Tokens.Sizes.globalIcon, height: Tokens.Sizes.globalIcon))
+                glyph
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text(Copy.chatReactionsA11yAdd))
+            .accessibilityIdentifier("photo.viewer.addReaction") // provenance-ok: accessibility identifier for UI tests
         }
     }
 

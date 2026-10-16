@@ -13,7 +13,8 @@ struct PhotoViewerScreen: View {
 
     var body: some View {
         PhotoViewerView(
-            context: PhotoViewerContext(postIDs: [PostID(postID)], start: PostID(postID), groupID: GroupID(groupID)),
+            // A reveal push names the first overnight photo: the viewer holds all the photos revealed with it.
+            context: PhotoViewerContext(postIDs: [PostID(postID)], start: PostID(postID), groupID: GroupID(groupID), opensReveal: true),
             presentation: .pushed
         )
     }

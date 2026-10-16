@@ -123,12 +123,16 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
     public var inWindow: Bool
     /// A photo replying to a photo; nil if the original was deleted.
     public var replyToPostID: PostID?
+    /// When taken (for an overnight photo too: it is placed by capture time once revealed).
     public var createdAt: Date
+    /// When an overnight photo developed and joined the group (`revealed_at`, docs/API.md §14.3); nil for a post shared
+    /// at once. Photos revealed together share it.
+    public var revealedAt: Date?
 
     public init(
         id: PostID, mediaID: MediaID, groupID: GroupID, authorID: UserID, caption: String? = nil,
         voicePath: String? = nil, voiceDurationMs: Int? = nil, voiceLevels: [Int]? = nil, invitationID: InvitationID? = nil,
-        inWindow: Bool = false, replyToPostID: PostID? = nil, createdAt: Date
+        inWindow: Bool = false, replyToPostID: PostID? = nil, createdAt: Date, revealedAt: Date? = nil
     ) {
         self.id = id
         self.mediaID = mediaID
@@ -142,6 +146,7 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         self.inWindow = inWindow
         self.replyToPostID = replyToPostID
         self.createdAt = createdAt
+        self.revealedAt = revealedAt
     }
 
     enum CodingKeys: String, CodingKey {
@@ -157,6 +162,7 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         case inWindow = "in_window"
         case replyToPostID = "reply_to_post_id"
         case createdAt = "created_at"
+        case revealedAt = "revealed_at"
     }
 }
 

@@ -58,11 +58,17 @@ public final class DataEnvironment: Sendable {
     public let posts: PostRepository
     public let chat: ChatRepository
     public let reactions: ReactionRepository
+    /// Selfie reactions (docs/API.md §14.1).
+    public let selfies: SelfieReactionRepository
     public let memories: MemoriesRepository
     public let invitations: InvitationRepository
     public let birthdays: BirthdayRepository
     public let safety: SafetyRepository
     public let account: AccountRepository
+    /// Plans (docs/API.md §14.2).
+    public let plans: PlanRepository
+    /// The weekly question and the group's developing state (docs/API.md §14.3–§14.4).
+    public let questions: QuestionRepository
 
     /// Session glue (device tokens, widgets, RevenueCat, deletions). Call `start()` once.
     public let coordinator: SessionCoordinator
@@ -103,11 +109,14 @@ public final class DataEnvironment: Sendable {
         posts = PostRepository(client: client, cache: cache)
         chat = ChatRepository(client: client, cache: cache)
         reactions = ReactionRepository(client: client)
+        selfies = SelfieReactionRepository(client: client, uploader: uploader)
         memories = MemoriesRepository(client: client, cache: cache)
         invitations = InvitationRepository(client: client)
         birthdays = BirthdayRepository(client: client)
         safety = SafetyRepository(client: client)
         account = AccountRepository(client: client)
+        plans = PlanRepository(client: client)
+        questions = QuestionRepository(client: client)
         publisher = PostPublisher(posts: posts, uploader: uploader, directory: directories.outbox)
 
         let coordinator = SessionCoordinator(

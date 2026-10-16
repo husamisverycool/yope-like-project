@@ -122,10 +122,13 @@ public final class CameraService {
 
     // MARK: Capture
 
-    /// One photo (a Live Photo when configured with `livePhoto: true` and supported).
-    public func capturePhoto() async throws -> CapturedPhoto {
+    /// One photo (a Live Photo when configured with `livePhoto: true` and supported). `livePhoto: false` takes this one
+    /// shot without motion on a Live Photo session (camera.overnight's 9 AM mode, selfie reactions).
+    public func capturePhoto(livePhoto wantsLivePhoto: Bool = true) async throws -> CapturedPhoto {
         guard case let .photo(position, livePhoto)? = configuration else { throw CameraError.notConfigured }
-        return try await controller.capturePhoto(position: position, livePhoto: livePhoto, rotationAngle: captureAngle(position))
+        return try await controller.capturePhoto(
+            position: position, livePhoto: livePhoto && wantsLivePhoto, rotationAngle: captureAngle(position)
+        )
     }
 
     /// Back and front photos for the daily same-moment capture.

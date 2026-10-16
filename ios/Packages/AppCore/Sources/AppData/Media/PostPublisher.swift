@@ -52,6 +52,10 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
     /// Reply to a photo with a photo (exactly one group: the replied post's).
     public var replyToPostID: PostID?
     public var createdAt: Date
+    /// Taken in the camera's 9 AM mode (camera.overnight): posted with `create_overnight_post` instead of
+    /// `create_post`, so it develops at the groups' next 09:00 (docs/API.md §14.3). Photos only, without caption,
+    /// voice note, invitation or reply. Optional so drafts saved before it existed still decode (nil = posted now).
+    public var overnight: Bool?
 
     public var id: MediaID { mediaID }
 
@@ -73,7 +77,8 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         caption: String? = nil,
         invitationID: InvitationID? = nil,
         replyToPostID: PostID? = nil,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        overnight: Bool? = nil
     ) {
         self.mediaID = mediaID
         self.kind = kind
@@ -93,6 +98,7 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         self.invitationID = invitationID
         self.replyToPostID = replyToPostID
         self.createdAt = createdAt
+        self.overnight = overnight
     }
 
     /// Storage objects of this draft, with the paths of docs/API.md §7.
@@ -155,7 +161,8 @@ public actor PostPublisher {
     }
 
     /// Saves the draft (copying its files into the outbox) and posts it. When it throws a transient
-    /// error (`DataError.isTransient`) the draft stays in the outbox for `resumePending()`.
+    /// error (`DataError.isTransient`) the draft stays in the outbox for `resumePending()`. An `overnight`
+    /// draft returns no posts: it develops at its groups' reveal (docs/API.md §14.3).
     @discardableResult
     public func publish(_ draft: PostDraft) async throws -> [Post] {
         let saved = try enqueue(draft)
@@ -227,6 +234,17 @@ public actor PostPublisher {
             try await uploader.upload(item)
         }
         try await posts.insertMedia(draft.mediaRow(owner: owner))
+        if draft.overnight == true {
+            do {
+                try await posts.createOvernight(mediaID: draft.mediaID, groupIDs: draft.groupIDs)
+            } catch DataError.api(.alreadyPosted, _) {
+                // A replay after the photo was set to develop (the response was lost).
+            }
+            uploader.ledger?.forget(items.map(\.path))
+            discard(draft.mediaID)
+            // Nothing is readable before the reveal: no posts yet.
+            return []
+        }
         let created: [Post]
         do {
             created = try await posts.create(

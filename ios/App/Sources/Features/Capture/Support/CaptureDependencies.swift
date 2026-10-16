@@ -52,10 +52,15 @@ protocol CaptureCamera: AnyObject, Sendable {
     func requestMicrophoneAccess() async -> PermissionStatus
     /// Whether the camera at `position` can light the photo (the flash control is hidden otherwise).
     func hasFlash(at position: CameraPosition) -> Bool
+    /// Whether the device has a camera at `position` (viewer.selfiereaction: no front camera, no selfie entry points).
+    func hasCamera(at position: CameraPosition) -> Bool
     /// Configures and starts the session.
     func configure(_ mode: CaptureCameraMode) async throws
     func stop() async
     func capturePhoto(flash: Bool) async throws -> CaptureStill
+    /// One photo without Live Photo motion, whatever the session supports: camera.overnight's 9 AM mode ("Live Photo
+    /// motion is not captured in 9 AM mode") and a selfie reaction (a still JPEG, docs/API.md §14.1).
+    func captureStill(flash: Bool) async throws -> CaptureStill
     func captureDual(flash: Bool) async throws -> CaptureDualStills
     func startRecording(maxDuration: TimeInterval) async throws
     func stopRecording() async throws -> CaptureVideo
@@ -81,6 +86,9 @@ struct CaptureGroup: Identifiable, Hashable, Sendable {
     let id: String
     let name: String
     let coverPath: String?
+    /// The group's IANA time zone (`groups.time_zone`): camera.overnight reveals at 09:00 there. Nil when unknown (the
+    /// widget's offline group list).
+    var timeZone: String? = nil
 }
 
 @MainActor
@@ -150,6 +158,8 @@ protocol CapturePosting: AnyObject, Sendable {
     /// Removes a draft that failed from the outbox: the composer keeps the capture and sends a new draft when the
     /// member taps Try Again (camera.sendto error state), so the outbox never replays a post the member saw fail.
     func discard(_ mediaID: MediaID) async
+    /// `my_developing()` (camera.overnight): whether my photos are developing, and the earliest reveal.
+    func myDeveloping() async throws -> OvernightStatus
 }
 
 // MARK: - Daily invitation and collage

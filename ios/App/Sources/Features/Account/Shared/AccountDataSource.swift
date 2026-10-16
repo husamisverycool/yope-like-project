@@ -95,6 +95,8 @@ protocol AccountDataSource: AnyObject, Sendable {
     func notificationSettings() async throws -> NotificationSettings?
     /// `set_quiet_hours` with the device's zone; both nil = no quiet hours.
     func setQuietHours(start: LocalTime?, end: LocalTime?) async throws
+    /// `set_overnight_alerts`: the push when overnight photos develop (camera.overnight; docs/API.md §14.3).
+    func setOvernightAlerts(_ on: Bool) async throws
     func hasPremium() async throws -> Bool
 }
 
@@ -356,6 +358,11 @@ final class LiveAccountData: AccountDataSource {
     func setQuietHours(start: LocalTime?, end: LocalTime?) async throws {
         let account = try env().account
         _ = try await account.setQuietHours(start: start, end: end)
+    }
+
+    func setOvernightAlerts(_ on: Bool) async throws {
+        let account = try env().account
+        _ = try await account.setOvernightAlerts(on)
     }
 
     func hasPremium() async throws -> Bool {

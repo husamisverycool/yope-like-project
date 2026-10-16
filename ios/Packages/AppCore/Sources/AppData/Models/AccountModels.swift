@@ -48,13 +48,19 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
     public var quietEnd: LocalTime?
     public var timeZone: String?
     public var updatedAt: Date
+    /// The reveal push of overnight photos (`notification_settings.overnight`, `set_overnight_alerts`; docs/API.md
+    /// §14.3): on unless the member turned it off. No row means on.
+    public var overnight: Bool
 
-    public init(userID: UserID, quietStart: LocalTime?, quietEnd: LocalTime?, timeZone: String?, updatedAt: Date) {
+    public init(
+        userID: UserID, quietStart: LocalTime?, quietEnd: LocalTime?, timeZone: String?, updatedAt: Date, overnight: Bool = true
+    ) {
         self.userID = userID
         self.quietStart = quietStart
         self.quietEnd = quietEnd
         self.timeZone = timeZone
         self.updatedAt = updatedAt
+        self.overnight = overnight
     }
 
     enum CodingKeys: String, CodingKey {
@@ -63,6 +69,18 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
         case quietEnd = "quiet_end"
         case timeZone = "time_zone"
         case updatedAt = "updated_at"
+        case overnight
+    }
+
+    /// Rows read before the `overnight` column existed (offline copies) decode with alerts on, the server default.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        userID = try container.decode(UserID.self, forKey: .userID)
+        quietStart = try container.decodeIfPresent(LocalTime.self, forKey: .quietStart)
+        quietEnd = try container.decodeIfPresent(LocalTime.self, forKey: .quietEnd)
+        timeZone = try container.decodeIfPresent(String.self, forKey: .timeZone)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+        overnight = try container.decodeIfPresent(Bool.self, forKey: .overnight) ?? true
     }
 
     /// The quiet hours as the shared AppModels rule, when set.

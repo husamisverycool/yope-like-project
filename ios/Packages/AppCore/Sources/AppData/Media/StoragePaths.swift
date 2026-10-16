@@ -34,6 +34,11 @@ public enum StoragePaths {
         "u/\(owner.rawValue)/covers/\(id.uuidString.lowercased()).jpg"
     }
 
+    /// `u/<uid>/selfies/<uuid>.jpg` — a selfie reaction (passed to `react_with_selfie`, docs/API.md §14.1).
+    public static func selfie(owner: UserID, id: UUID = UUID()) -> String {
+        "u/\(owner.rawValue)/selfies/\(id.uuidString.lowercased()).jpg"
+    }
+
     /// `avatars/<uid>/<uuid>.jpg`
     public static func avatar(owner: UserID, id: UUID = UUID()) -> String {
         "avatars/\(owner.rawValue)/\(id.uuidString.lowercased()).jpg"

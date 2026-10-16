@@ -21,6 +21,9 @@ public enum DeepLink: Hashable, Sendable {
     case tribute(tributeID: String, groupID: String?)
     /// A group's year story.
     case yearStory(groupID: String, year: Int)
+    /// A plan's page (`plans.page`): plan pushes (type `plan`) and the countdown widget. With the group, Back returns to
+    /// that group's screen.
+    case plan(planID: String, groupID: String?)
 }
 
 /// Hosts of custom-scheme links (`app://<route>?…`), shared with Android
@@ -34,6 +37,7 @@ public enum DeepLinkRoute: String, CaseIterable, Sendable {
     case birthdayRequest = "birthday-request"
     case tribute
     case yearStory = "year-story"
+    case plan
 }
 
 /// The identifiers a deep link carries. URLs use `queryName` (`app://camera?group=<id>`);
@@ -47,6 +51,7 @@ public enum DeepLinkField: String, CaseIterable, Sendable {
     case request
     case tribute
     case year
+    case plan
 
     public var queryName: String { rawValue }
 
@@ -67,6 +72,7 @@ extension DeepLink {
         case .birthdayRequest: return .birthdayRequest
         case .tribute: return .tribute
         case .yearStory: return .yearStory
+        case .plan: return .plan
         }
     }
 
@@ -91,6 +97,8 @@ extension DeepLink {
             return [(.tribute, tributeID)] + (groupID.map { [(.group, $0)] } ?? [])
         case .yearStory(let groupID, let year):
             return [(.group, groupID), (.year, String(year))]
+        case .plan(let planID, let groupID):
+            return [(.plan, planID)] + (groupID.map { [(.group, $0)] } ?? [])
         }
     }
 
@@ -102,7 +110,7 @@ extension DeepLink {
         case .post(let groupID, _), .chatMessage(let groupID, _), .dailyInvitation(let groupID, _),
              .recap(let groupID, _), .yearStory(let groupID, _):
             return groupID
-        case .birthdayRequest(_, let groupID), .tribute(_, let groupID):
+        case .birthdayRequest(_, let groupID), .tribute(_, let groupID), .plan(_, let groupID):
             return groupID
         }
     }

@@ -46,6 +46,13 @@ struct CameraCaptureView: View {
                 }
                 .ignoresSafeArea()
             }
+            // camera.overnight's destination sheet follows the system appearance (C-29).
+            .sheet(isPresented: destinationBinding, onDismiss: { model.overnight?.destinationClosed() }) {
+                if let overnight = model.overnight {
+                    OvernightDestinationSheet(model: overnight, canCreateGroup: model.canCreateGroup)
+                        .preferredColorScheme(systemAppearance)
+                }
+            }
             .task { await model.appear() }
             .onDisappear { Task { await model.disappear() } }
             .onChange(of: model.isRecording) { _, recording in
@@ -59,10 +66,30 @@ struct CameraCaptureView: View {
             }
     }
 
+    private var destinationBinding: Binding<Bool> {
+        Binding(
+            get: { model.overnight?.isDestinationOpen ?? false },
+            set: { open in
+                if open { model.overnight?.isDestinationOpen = true } else { model.overnight?.destinationClosed() }
+            }
+        )
+    }
+
+    /// 9 AM mode (camera.overnight): no library, no hold-to-record, no coach; the destination pill in the coach's slot.
+    private var isLater: Bool { model.overnight?.isLater ?? false }
+
     private var page: some View {
         VStack(spacing: 0) {
             CameraHeader(title: model.title, flash: flashControl)
                 .accessibilitySortPriority(6)
+            if let overnight = model.overnight {
+                // `camera.overnight.layout.modeControl`: shown in both modes so the layout does not jump.
+                OvernightModeControl(model: overnight)
+                    // Not while a video records (the mode changes what the shutter does).
+                    .disabled(model.isRecording)
+                    .padding(.bottom, Tokens.Sizes.globalSectionHeaderToContent)
+                    .accessibilitySortPriority(5.5)
+            }
             GeometryReader { area in
                 let size = Self.viewfinderSize(in: area.size)
                 VStack(spacing: 0) {
@@ -137,13 +164,40 @@ struct CameraCaptureView: View {
             }
         }
         .overlay(alignment: .bottom) {
-            ZStack {
-                if model.showsCoach && model.phase == .live && !model.isRecording {
-                    coach
-                        .dsTransition(.opacity)
+            GeometryReader { proxy in
+                ZStack(alignment: .bottom) {
+                    viewfinderPill(width: proxy.size.width)
                 }
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .bottom)
             }
             .dsAnimation(ComponentMotion.fade, value: model.showsCoach)
+            .dsAnimation(ComponentMotion.fade, value: isLater)
+        }
+        .overlay(alignment: .bottom) {
+            // question.weekly B: the week's question in the coach pill's slot while answering (the coach keeps the slot
+            // while it shows; 9 AM mode drops the question — Features/Question/QuestionCamera.swift).
+            QuestionCameraPill(
+                groupID: model.contextGroupID,
+                isHidden: (model.showsCoach && model.phase == .live && !model.isRecording) || model.overnight?.isLater == true
+                    || !(model.phase == .live || model.phase == .starting)
+            )
+            .onChange(of: model.overnight?.isLater == true) { _, later in
+                if later { QuestionCameraContext.shared.drop() }
+            }
+        }
+    }
+
+    /// The pill slot at the viewfinder's bottom (`camera.sendto.layout.messageField` bottomInset): camera.overnight's
+    /// destination pill in 9 AM mode (the video coach is never shown then), otherwise the first-use coach.
+    @ViewBuilder
+    private func viewfinderPill(width: CGFloat) -> some View {
+        if let overnight = model.overnight, overnight.isLater, model.phase == .live || model.phase == .starting {
+            OvernightDestinationPill(model: overnight, viewfinderWidth: width)
+                .accessibilitySortPriority(5)
+                .dsTransition(.opacity)
+        } else if model.showsCoach && model.phase == .live && !model.isRecording {
+            coach
+                .dsTransition(.opacity)
         }
     }
 
@@ -174,11 +228,16 @@ struct CameraCaptureView: View {
 
     private var controls: some View {
         CaptureControlRow {
-            CaptureLargeCircleButton(icon: Tokens.Icons.globalGallery, accessibilityLabel: Copy.cameraCaptureA11yLibrary) {
-                isPickerPresented = true
+            // 9 AM mode: the leading slot stays empty (the developing stack is BLOCKED, ON-8; a picked photo was
+            // already seen).
+            if !isLater {
+                CaptureLargeCircleButton(icon: Tokens.Icons.globalGallery, accessibilityLabel: Copy.cameraCaptureA11yLibrary) {
+                    isPickerPresented = true
+                }
+                .accessibilitySortPriority(3)
+                .accessibilityIdentifier("camera.capture.library")
+                .dsTransition(.opacity)
             }
-            .accessibilitySortPriority(3)
-            .accessibilityIdentifier("camera.capture.library")
         } centre: {
             if model.phase != .denied {
                 shutter
@@ -192,6 +251,7 @@ struct CameraCaptureView: View {
                 .accessibilityIdentifier("camera.capture.flip")
             }
         }
+        .dsAnimation(ComponentMotion.fade, value: isLater)
     }
 
     /// Tap = photo; hold = video (premium; a free member's first hold opens the paywall once per session). No haptic
@@ -209,7 +269,7 @@ struct CameraCaptureView: View {
             .accessibilityAddTraits(.isButton)
             .accessibilityAction { Task { await model.takePhoto() } }
             .accessibilityActions {
-                if model.isVideoAvailable {
+                if model.isVideoAvailable && !isLater {
                     Button(Copy.cameraCaptureA11yRecordVideo) {
                         Task { await model.toggleRecordingFromAccessibility() }
                     }

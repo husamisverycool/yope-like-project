@@ -52,7 +52,8 @@ enum DemoPhotos {
             let key = String(parts[2].prefix(2))
             switch parts[1] {
             case "photo": return parts[2].hasSuffix(".mov") ? nil : posts[key]
-            case "avatar": return people[key]
+            // A selfie reaction of the demo world (`DemoSelfies`) shows the person's own portrait.
+            case "avatar", "selfie": return people[key]
             case "cover": return covers[key]
             default: return nil
             }

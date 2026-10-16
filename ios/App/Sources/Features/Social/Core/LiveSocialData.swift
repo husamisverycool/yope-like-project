@@ -92,6 +92,14 @@ struct LiveSocialData: SocialDataSource {
         return posts
     }
 
+    func revealedWith(_ post: Post) async throws -> [PostWithMedia] {
+        guard let revealedAt = post.revealedAt else { return [] }
+        let rows = try await environment.posts.revealed(groupID: post.groupID, at: revealedAt)
+        let posts = try await environment.posts.withMedia(rows)
+        memo.store(posts: posts, asked: rows.map(\.id))
+        return posts
+    }
+
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] {
         let known = memo.posts(ids)
         let missing = ids.filter { known[$0] == nil }
@@ -140,6 +148,20 @@ struct LiveSocialData: SocialDataSource {
         } else {
             try await environment.reactions.untagSelf(postID: postID)
         }
+    }
+
+    // MARK: Selfie reactions
+
+    func selfieReactions(postIDs: [PostID]) async throws -> [SelfieReaction] {
+        try await environment.selfies.selfies(postIDs: postIDs)
+    }
+
+    func reactWithSelfie(postID: PostID, jpeg: Data) async throws -> SelfieReaction {
+        try await environment.selfies.react(postID: postID, jpeg: jpeg)
+    }
+
+    func removeSelfieReaction(postID: PostID, userID: UserID?) async throws {
+        try await environment.selfies.remove(postID: postID, userID: userID)
     }
 
     // MARK: Safety
@@ -257,6 +279,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message { try fail() }
     func deleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
     func posts(ids: [PostID]) async throws -> [PostWithMedia] { try fail() }
+    func revealedWith(_ post: Post) async throws -> [PostWithMedia] { try fail() }
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { [] }
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] { [] }
     func deleteMedia(id: MediaID) async throws { try fail() as Void }
@@ -266,6 +289,9 @@ struct UnconfiguredSocialData: SocialDataSource {
     func isTagged(postID: PostID, userID: UserID) async throws -> Bool { try fail() }
     func tags(postID: PostID) async throws -> [PostTag] { try fail() }
     func setTagged(_ tagged: Bool, postID: PostID) async throws { try fail() as Void }
+    func selfieReactions(postIDs: [PostID]) async throws -> [SelfieReaction] { try fail() }
+    func reactWithSelfie(postID: PostID, jpeg: Data) async throws -> SelfieReaction { try fail() }
+    func removeSelfieReaction(postID: PostID, userID: UserID?) async throws { try fail() as Void }
     func block(userID: UserID) async throws { try fail() as Void }
     func wall(userID: UserID, before: Date?, limit: Int) async throws -> Page<WallItem> { try fail() }
     func cachedWall(userID: UserID) async -> [WallItem]? { nil }

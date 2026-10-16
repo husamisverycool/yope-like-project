@@ -92,6 +92,7 @@ final class FakeCaptureCamera: CaptureCamera {
     static func demo() -> FakeCaptureCamera {
         let camera = FakeCaptureCamera()
         camera.previewImage = DemoPhotos.image(named: DemoPhotos.viewfinder)
+        camera.frontPreviewImage = DemoPhotos.image(named: DemoPhotos.frontShot)
         camera.backStill = CaptureFakes.demoStill(DemoPhotos.backShot, position: .back)
         camera.frontStill = CaptureFakes.demoStill(DemoPhotos.frontShot, position: .front)
         return camera
@@ -107,6 +108,8 @@ final class FakeCaptureCamera: CaptureCamera {
     /// Holds `captureDual` until cancelled (the 'capturing' state in snapshots).
     var suspendsCapture = false
     var previewImage: UIImage?
+    /// The front camera's feed (a selfie reaction's live circle); nil: `previewImage`.
+    var frontPreviewImage: UIImage?
     /// What the shutter returns (snapshot tests set photos); nil: small stills in token colours.
     var backStill: CaptureStill?
     var frontStill: CaptureStill?
@@ -114,6 +117,8 @@ final class FakeCaptureCamera: CaptureCamera {
 
     private(set) var configuredModes: [CaptureCameraMode] = []
     private(set) var flashRequests: [Bool] = []
+    /// Shots taken without Live Photo motion (`captureStill`).
+    private(set) var stillRequests = 0
     private(set) var isRecording = false
     private(set) var stopCount = 0
 
@@ -133,6 +138,14 @@ final class FakeCaptureCamera: CaptureCamera {
 
     func hasFlash(at position: CameraPosition) -> Bool { flashAvailable && position == .back }
 
+    func hasCamera(at position: CameraPosition) -> Bool { position == .back || hasFrontCamera }
+
+    /// The camera the session runs (the last photo mode configured).
+    private var activePosition: CameraPosition {
+        if case let .photo(position)? = configuredModes.last { return position }
+        return .back
+    }
+
     func configure(_ mode: CaptureCameraMode) async throws {
         if failsConfigure { throw FakeCaptureError.failed }
         configuredModes.append(mode)
@@ -144,7 +157,15 @@ final class FakeCaptureCamera: CaptureCamera {
 
     func capturePhoto(flash: Bool) async throws -> CaptureStill {
         flashRequests.append(flash)
+        if activePosition == .front, let frontStill { return frontStill }
         return backStill ?? CaptureFakes.still(Tokens.Colors.globalAccent)
+    }
+
+    func captureStill(flash: Bool) async throws -> CaptureStill {
+        stillRequests += 1
+        var still = try await capturePhoto(flash: flash)
+        still.livePhotoMovieURL = nil
+        return still
     }
 
     func captureDual(flash: Bool) async throws -> CaptureDualStills {
@@ -170,7 +191,8 @@ final class FakeCaptureCamera: CaptureCamera {
     }
 
     func preview(position: CameraPosition?) -> AnyView {
-        AnyView(FakeCameraPreview(image: previewImage))
+        let front = (position ?? activePosition) == .front
+        return AnyView(FakeCameraPreview(image: front ? frontPreviewImage ?? previewImage : previewImage))
     }
 
     func interrupt(_ interrupted: Bool) {
@@ -355,6 +377,13 @@ final class FakeCapturePosting: CapturePosting {
             throw publishError
         }
         published.append(draft)
+        if draft.overnight == true {
+            // A 9 AM photo develops: nothing to read until the reveal (`DemoDevelopingPhotos` in the Jolt demo).
+            let reveal = revealAt ?? OvernightReveal.next(after: Date(), timeZones: [.current])
+            developing = OvernightStatus(developing: true, revealAt: min(developing.revealAt ?? reveal, reveal))
+            DemoDevelopingPhotos.add(draft, revealAt: reveal)
+            return
+        }
         // The Jolt demo: the photo joins its groups in the demo world.
         DemoSentPosts.add(draft)
     }
@@ -362,6 +391,20 @@ final class FakeCapturePosting: CapturePosting {
     func discard(_ mediaID: MediaID) async {
         discarded.append(mediaID)
         pending.removeAll { $0.mediaID == mediaID }
+    }
+
+    // MARK: Overnight
+
+    /// What `my_developing()` answers; `publish` of a 9 AM draft sets it.
+    var developing = OvernightStatus.notDeveloping
+    /// When the fake's 9 AM photos develop; nil: the next 09:00 on this device when one is sent.
+    var revealAt: Date?
+    var developingError: DataError?
+
+    func myDeveloping() async throws -> OvernightStatus {
+        if let developingError { throw developingError }
+        if DemoMode.isOn { return DemoDevelopingPhotos.status }
+        return developing
     }
 }
 

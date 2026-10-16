@@ -72,6 +72,8 @@ public enum RenderStatus: String, LenientEnum {
 /// `report_target_kind`
 public enum ReportTargetKind: String, LenientEnum {
     case post, message, user, group
+    /// A selfie reaction, by its `selfie_reactions.id` (docs/API.md §14.1).
+    case selfie
     case unknown
     public static var unknownCase: ReportTargetKind { .unknown }
 }

@@ -227,7 +227,7 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         await model.react("💖")
         XCTAssertEqual(model.reactions[SocialDemo.p2]?.distinctEmoji, ["🔥", "😍"])
         XCTAssertEqual(model.signals.notice?.notice, .reactionFailed)
-        XCTAssertFalse(model.reactions[SocialDemo.p2]!.distinctEmoji.joined().socialContainsDigit)
+        XCTAssertFalse(model.reactions[SocialDemo.p2]!.distinctEmoji.joined().contains(where: \.isNumber))
 
         // Taking it back from the picker (`chat.reactions.layout.unreact`).
         XCTAssertEqual(model.myEmojiOnCurrent, ["🔥"])

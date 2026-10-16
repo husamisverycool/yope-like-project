@@ -6,6 +6,7 @@ struct AppWidgets: WidgetBundle {
     var body: some Widget {
         GroupPhotoWidget()
         GroupLockWidget()
+        PlanCountdownWidget()
         DailyInvitationLiveActivity()
     }
 }

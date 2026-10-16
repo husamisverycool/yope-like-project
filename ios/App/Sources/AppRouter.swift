@@ -16,6 +16,7 @@ enum AppRoute: Hashable {
     case capture(CaptureRoute)
     case social(SocialRoute)
     case memory(MemoryRoute)
+    case plans(PlanRoute)
 }
 
 /// A screen presented over the navigation stack.
@@ -29,6 +30,7 @@ enum AppModal: Hashable, Identifiable {
     case capture(CaptureModal)
     case social(SocialModal)
     case memory(MemoryModal)
+    case plans(PlanModal)
 
     var id: Self { self }
 
@@ -118,6 +120,10 @@ final class AppRouter {
             show([.tribute(tributeID: tributeID, groupID: groupID)])
         case let .yearStory(groupID, year):
             show([.group(id: groupID), .yearStory(groupID: groupID, year: year)])
+        case let .plan(planID, groupID):
+            // plans.page over its group's screen when the link names the group (Back returns there).
+            let page = AppRoute.plans(.page(planID: planID, groupID: groupID))
+            show(groupID.map { [.group(id: $0), page] } ?? [page])
         }
     }
 

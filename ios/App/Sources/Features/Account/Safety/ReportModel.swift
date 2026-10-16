@@ -33,10 +33,11 @@ enum ReportReason: String, CaseIterable, Identifiable {
     var filesReport: Bool { self != .dontLike }
 
     /// The reasons offered for a target kind, in Retro's order: posts and messages "I don't like it · Nudity or sexual
-    /// activity · Other", people and groups "It's impersonating someone · It's inappropriate · Other".
+    /// activity · Other", people and groups "It's impersonating someone · It's inappropriate · Other". A selfie reaction
+    /// is a photo on a post: the post's list (`viewer.selfiereaction.menu.report` is "Report Post" with the noun swapped).
     static func reasons(for kind: ReportTarget.Kind) -> [ReportReason] {
         switch kind {
-        case .post, .message: return [.dontLike, .nudity, .other]
+        case .post, .message, .selfie: return [.dontLike, .nudity, .other]
         case .user, .group: return [.impersonation, .inappropriate, .other]
         }
     }
@@ -46,7 +47,7 @@ enum ReportReason: String, CaseIterable, Identifiable {
     func wireValue(for kind: ReportTarget.Kind) -> String {
         let list: String
         switch kind {
-        case .post: list = Tokens.Layouts.SafetyReportLayoutReasons.post
+        case .post, .selfie: list = Tokens.Layouts.SafetyReportLayoutReasons.post
         case .message: list = Tokens.Layouts.SafetyReportLayoutReasons.message
         case .user: list = Tokens.Layouts.SafetyReportLayoutReasons.user
         case .group: list = Tokens.Layouts.SafetyReportLayoutReasons.group
@@ -84,7 +85,7 @@ final class ReportModel {
     /// `safety.report.title.*` by target kind (Retro's question).
     var title: String {
         switch target.kind {
-        case .post: return Copy.safetyReportTitlePost
+        case .post, .selfie: return Copy.safetyReportTitlePost
         case .message: return Copy.safetyReportTitleMessage
         case .user: return Copy.safetyReportTitleUser
         case .group: return Copy.safetyReportTitleGroup

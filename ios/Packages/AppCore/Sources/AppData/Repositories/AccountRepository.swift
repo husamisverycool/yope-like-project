@@ -70,6 +70,12 @@ public struct AccountRepository: Sendable {
         ])
     }
 
+    /// `set_overnight_alerts`: the push when overnight photos develop (docs/API.md §14.3), on by default.
+    @discardableResult
+    public func setOvernightAlerts(_ on: Bool) async throws -> NotificationSettings {
+        try await client.rpc("set_overnight_alerts", ["p_on": .bool(on)])
+    }
+
     // MARK: Devices
 
     /// `register_device` (iOS): upsert by APNs token. Send all three tokens every time any of

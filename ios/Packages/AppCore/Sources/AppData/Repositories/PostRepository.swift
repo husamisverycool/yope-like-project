@@ -171,6 +171,33 @@ public struct PostRepository: Sendable {
         ])
     }
 
+    // MARK: Overnight (docs/API.md §14.3; camera.overnight)
+
+    /// `create_overnight_post` (step 3 of recipe 9.4 for a photo taken in 9 AM mode): the photo develops for each group
+    /// at the first 09:00 after it was taken in that group's time zone; until then nobody can read it, the sender
+    /// included. Photos only (`develop_photo_only`), once per group (`already_posted`).
+    @discardableResult
+    public func createOvernight(mediaID: MediaID, groupIDs: [GroupID]) async throws -> [DevelopingPost] {
+        try await client.rpc("create_overnight_post", ["p_media_id": .id(mediaID), "p_group_ids": .ids(groupIDs)])
+    }
+
+    /// `my_developing()`: whether the caller has photos developing (any group) and the earliest reveal (the camera).
+    public func myDeveloping() async throws -> OvernightStatus {
+        let rows: [OvernightStatus] = try await client.rpc("my_developing")
+        return rows.first ?? .notDeveloping
+    }
+
+    /// A group's photos revealed together at `revealedAt` (one overnight reveal), oldest first — capture time.
+    public func revealed(groupID: GroupID, at revealedAt: Date) async throws -> [Post] {
+        try await client.rows(Post.self) {
+            client.supabase.from("posts").select()
+                .eq("group_id", value: groupID.rawValue)
+                .eq("revealed_at", value: Timestamp.format(revealedAt))
+                .order("created_at", ascending: true)
+                .order("id", ascending: true)
+        }
+    }
+
     // MARK: Deleting
 
     /// `delete_post` (author): removes the photo from one group; the media goes with its last post.

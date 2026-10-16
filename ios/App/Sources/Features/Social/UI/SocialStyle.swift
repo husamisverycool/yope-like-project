@@ -43,6 +43,8 @@ extension SocialNotice {
         case .changesFailed: return Copy.weekEditErrorSave
         case .playFailed: return Copy.chatVoiceErrorPlay
         case .recordFailed: return Copy.chatVoiceErrorRecord
+        case .selfieFailed: return Copy.viewerSelfiereactionError
+        case .selfieSent: return Copy.viewerSelfiereactionA11ySent
         }
     }
 }

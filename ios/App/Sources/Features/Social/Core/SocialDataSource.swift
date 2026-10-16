@@ -42,6 +42,9 @@ protocol SocialDataSource: Sendable {
     // MARK: Posts (§5.7, §5.8)
     /// Visible posts among `ids` with their media, in the order of `ids`.
     func posts(ids: [PostID]) async throws -> [PostWithMedia]
+    /// The photos revealed together with `post` in one overnight reveal (`revealed_at`, camera.overnight C), oldest
+    /// first; empty for a photo shared at once.
+    func revealedWith(_ post: Post) async throws -> [PostWithMedia]
     /// The offline copy of a group's feed (first page).
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia]
     /// Posts among `ids` already on the device (fetched this session, or in the group's offline feed), in the order
@@ -61,6 +64,14 @@ protocol SocialDataSource: Sendable {
     func tags(postID: PostID) async throws -> [PostTag]
     /// `tag_self` / `untag_self`.
     func setTagged(_ tagged: Bool, postID: PostID) async throws
+
+    // MARK: Selfie reactions (§14.1, viewer.selfiereaction)
+    /// One row per person and post, oldest first. Never a count.
+    func selfieReactions(postIDs: [PostID]) async throws -> [SelfieReaction]
+    /// Uploads the JPEG (`u/<uid>/selfies/<uuid>.jpg`), then `react_with_selfie`: replaces my selfie on the post.
+    func reactWithSelfie(postID: PostID, jpeg: Data) async throws -> SelfieReaction
+    /// `remove_selfie_reaction`: mine (`userID` nil), or anyone's on my own post.
+    func removeSelfieReaction(postID: PostID, userID: UserID?) async throws
 
     // MARK: Safety (§6.3; the report sheet is the account group's `safety.report`)
     func block(userID: UserID) async throws

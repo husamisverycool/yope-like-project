@@ -55,6 +55,7 @@ struct SettingsNotificationsView: View {
             }
             groupsSection
             quietHoursSection
+            overnightSection
             SettingsGroup(footer: [Copy.settingsNotificationsLiveActivityFooter], rows: [
                 SettingsRow(Copy.settingsNotificationsLiveActivity, kind: .toggle($liveActivityOn))
                     .accessibilityIdentifier("settings.notifications.liveActivity")
@@ -160,6 +161,24 @@ struct SettingsNotificationsView: View {
             rows.append(timeRow(Copy.settingsNotificationsQuietHoursEnd, selection: $end))
         }
         return SettingsGroup(footer: [Copy.settingsNotificationsQuietHoursFooter], rows: rows)
+    }
+
+    /// camera.overnight's switch: "Developed Photos" (`camera.overnight.settings.row`), on by default, with
+    /// `camera.overnight.settings.rowDetail` ({time}: the reveal time in the locale's short format) as its footer —
+    /// `set_overnight_alerts`.
+    private var overnightSection: some View {
+        SettingsGroup(footer: [Copy.cameraOvernightSettingsRowDetail(time: OvernightReveal.timeText())], rows: [
+            SettingsRow(
+                Copy.cameraOvernightSettingsRow,
+                kind: .toggle(Binding(
+                    get: { model.overnightOn },
+                    set: { value in Task { await model.setOvernightAlerts(value) } }
+                )),
+                isEnabled: !isOffline
+            )
+            .accessibilityIdentifier("settings.notifications.overnight") // provenance-ok: accessibility identifier for UI tests
+            .asSettingsRow(),
+        ])
     }
 
     private func timeRow(_ title: String, selection: Binding<Date>) -> AnyView {

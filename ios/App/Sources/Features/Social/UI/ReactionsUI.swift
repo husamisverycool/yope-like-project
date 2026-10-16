@@ -197,26 +197,34 @@ struct ReactionsSheetTarget: Identifiable, Hashable {
 /// `chat.thread.dimension.rowAvatarToText` after it, the emoji at the trailing margin in the `size.global.icon` box;
 /// your rows add "Tap to remove" (`listSubtitle`, `color.global.textSecondary`) and a tap takes the reaction back. Rows
 /// `size.global.listGap` apart; order `chat.reactions.layout.listOrder` (newest first, `ReactionSummary.listRows`). Empty (all taken
-/// back while open): C-27 title only. Never a count.
+/// back while open): C-27 title only. Never a count. In photo.viewer the selfie reactions (viewer.selfiereaction §4) sit
+/// among the emoji rows by time (`SelfieReactionRow`).
 struct ReactionsSheet: View {
     let reactions: ReactionSummary
+    /// viewer.selfiereaction: the photo's selfies (photo.viewer only).
+    var selfies = SelfieSummary()
     let me: UserID?
     let profile: (UserID) -> Profile?
     let onRemove: (String) -> Void
+    /// The selfie rows' faces and actions (photo.viewer only).
+    var selfieActions: SelfieRowActions?
 
     var body: some View {
         VStack(spacing: 0) {
             SheetHeader(title: Copy.chatReactionsActivityTitle)
                 .padding(.top, Tokens.Sizes.globalScreenMargin)
-            if reactions.isEmpty {
+            if reactions.isEmpty && selfies.isEmpty {
                 Spacer(minLength: 0)
                 EmptyStateView(title: Copy.chatReactionsEmpty)
                 Spacer(minLength: 0)
             } else {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: Tokens.Sizes.globalListGap) {
-                        ForEach(Array(reactions.listRows().enumerated()), id: \.offset) { _, row in
-                            rowView(row)
+                        ForEach(Array(ReactionsSheetEntry.merged(emoji: reactions.listRows(), selfies: selfies.rows).enumerated()), id: \.offset) { _, entry in
+                            switch entry {
+                            case let .emoji(row): rowView(row)
+                            case let .selfie(selfie): selfieRow(selfie)
+                            }
                         }
                     }
                     .padding(.vertical, Tokens.Sizes.globalTitleToContent)
@@ -257,6 +265,58 @@ struct ReactionsSheet: View {
             content
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(label))
+        }
+    }
+
+    /// A selfie row: mine is a button that takes it back (`chat.reactions.layout.unreact`); a long press on anyone else's
+    /// opens the C-29 menu — "Remove" on my own photo (destructive, → the confirmation) and "Report Selfie"
+    /// (destructive, → `safety.report`); the same items are accessibility actions.
+    @ViewBuilder
+    private func selfieRow(_ selfie: SelfieReaction) -> some View {
+        let isMine = selfie.userID == me
+        let person = profile(selfie.userID)
+        let firstName = person?.socialFirstName ?? ""
+        let content = SelfieReactionRow(
+            name: person?.displayName ?? "",
+            line: isMine ? Copy.viewerSelfiereactionActivityRowMine : Copy.viewerSelfiereactionActivityRow(name: firstName),
+            removeHint: isMine ? Copy.chatReactionsListRemoveHint : nil,
+            face: selfieActions?.face(selfie)
+        )
+        let label = isMine ? Copy.viewerSelfiereactionA11yFaceMine : Copy.viewerSelfiereactionA11yFace(name: firstName)
+        if isMine {
+            Button { selfieActions?.removeMine(selfie) } label: { content.contentShape(Rectangle()) }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(label))
+                .accessibilityValue(Text(Copy.viewerSelfiereactionActivityRowMine))
+                .accessibilityHint(Text(Copy.chatReactionsListRemoveHint))
+                .accessibilityAddTraits(.isButton)
+                .accessibilityIdentifier("chat.reactions.selfie.mine") // provenance-ok: accessibility identifier for UI tests
+        } else {
+            content
+                .contentShape(Rectangle())
+                .contextMenu { selfieMenu(selfie) }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(label))
+                .accessibilityValue(Text(Copy.viewerSelfiereactionActivityRow(name: firstName)))
+                .accessibilityActions { selfieMenu(selfie) }
+                .accessibilityIdentifier("chat.reactions.selfie.\(selfie.userID.rawValue)") // provenance-ok: accessibility identifier for UI tests
+        }
+    }
+
+    @ViewBuilder
+    private func selfieMenu(_ selfie: SelfieReaction) -> some View {
+        if let actions = selfieActions {
+            if actions.isAuthor {
+                Button(role: .destructive) { actions.remove(selfie) } label: {
+                    Label(Copy.viewerSelfiereactionMenuRemove, systemImage: Tokens.Icons.globalTrash)
+                }
+            }
+            if let report = actions.report {
+                Button(role: .destructive) { report(selfie) } label: {
+                    Label(Copy.viewerSelfiereactionMenuReport, systemImage: Tokens.Icons.globalReport)
+                }
+            }
         }
     }
 }

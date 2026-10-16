@@ -64,11 +64,16 @@ enum SocialNotice: Equatable, Sendable {
     case changesFailed
     case playFailed
     case recordFailed
+    /// `viewer.selfiereaction.error` (the face is taken back out of the stack).
+    case selfieFailed
+    /// `viewer.selfiereaction.a11y.sent`: the announcement after a selfie is sent.
+    case selfieSent
 }
 
 extension SocialNotice {
-    /// Shown on screen already (the failed-message label): announced to VoiceOver, never drawn as a toast.
-    var isAnnouncementOnly: Bool { self == .messageNotSent }
+    /// Shown on screen already (the failed-message label), or an iOS announcement by spec (viewer.selfiereaction's
+    /// sent and error lines: "Android Toast / iOS announcement"): announced to VoiceOver, never drawn as a toast.
+    var isAnnouncementOnly: Bool { self == .messageNotSent || self == .selfieSent || self == .selfieFailed }
 }
 
 /// One notice event; `id` changes every time.
