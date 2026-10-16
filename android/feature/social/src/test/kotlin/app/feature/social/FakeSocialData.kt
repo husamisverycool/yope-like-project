@@ -120,9 +120,14 @@ class FakeSocialData(var me: String = ME) : SocialData {
         return messages.filter { it.groupId == groupId && it.replyToPostId == postId }.sortedBy { it.createdAt }
     }
 
-    override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int): Message {
+    /** The waveform sent with each voice message. */
+    val sentVoiceLevels = ArrayList<List<Int>?>()
+
+    override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>?): Message {
         write("sendVoice:$durationMs")
+        sentVoiceLevels += levels
         val m = message("m-voice-${messages.size}", groupId, me, MessageKind.Voice, voicePath = "u/$me/voice/v${messages.size}.m4a", voiceMs = durationMs, at = clock())
+            .copy(voiceLevels = levels)
         messages += m
         return m
     }

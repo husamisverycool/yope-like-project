@@ -166,9 +166,6 @@ class ChatUiState(
     val micDrag = MicDrag()
 }
 
-/** How often the recording timer re-reads the clock (the label changes once a second). */
-private const val TIMER_TICK_MS = 200L
-
 @Composable
 fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: ChatUiState = remember { ChatUiState() }) {
     val state by vm.state.collectAsStateWithLifecycle()
@@ -204,7 +201,8 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
 
     val micLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> ui.micDenied = !granted }
     // Recording (`chat.voice.layout.recording`): hold to record, lift to send, slide left to cancel, slide up to
-    // lock; locked: trash discards, send sends. No haptics while the microphone is in use.
+    // lock; locked (`chat.voice.layout.locked`): pause / continue, preview the paused draft, delete, send. No haptics
+    // while the microphone is in use.
     val startRecording: () -> Boolean = start@{
         if (ui.recording != null) return@start false
         if (!MediaPermissions.isGranted(context, MediaPermission.Microphone)) {
@@ -216,15 +214,17 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
             vm.recordFailed()
             return@start false
         }
-        ui.recording = Recording.Holding(SystemClock.elapsedRealtime())
+        ui.recording = Recording.Holding
         true
     }
     val sendRecording: () -> Unit = {
         if (ui.recording != null) {
-            val note = runCatching { voice.stopRecording() }.getOrNull()
-            if (note != null) vm.sendVoice(note.file, note.durationMs) else vm.recordFailed()
+            ui.recording = null
+            scope.launch {
+                val note = runCatching { voice.stopRecording() }.getOrNull()
+                if (note != null) vm.sendVoice(note.file, note.durationMs, note.levels) else vm.recordFailed()
+            }
         }
-        ui.recording = null
     }
     val cancelRecording: () -> Unit = {
         if (ui.recording != null) runCatching { voice.cancelRecording() }
@@ -232,37 +232,53 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
     }
     BackHandler(enabled = ui.recording != null, onBack = cancelRecording)
     DisposableEffect(Unit) { onDispose { if (ui.recording != null) cancelRecording() } }
-    var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
-    LaunchedEffect(ui.recording) {
-        while (ui.recording != null) {
-            now = SystemClock.elapsedRealtime()
-            delay(TIMER_TICK_MS)
-        }
-    }
+    val elapsed by voice.elapsedMs.collectAsStateWithLifecycle()
+    val liveLevels by voice.levels.collectAsStateWithLifecycle()
+    val previewing = playback.key == VoiceServices.DRAFT_KEY && playback.isPlaying
+    val previewProgress = playback.progress.takeIf { playback.key == VoiceServices.DRAFT_KEY && (playback.isPlaying || it in 0.001f..0.999f) }
     val recorder = RecorderControls(
-        elapsedMs = ui.recording?.let { (now - it.startedAt).coerceAtLeast(0L) } ?: 0L,
+        elapsedMs = elapsed,
+        levels = liveLevels,
+        previewing = previewing,
+        previewProgress = previewProgress,
         gesture = MicGesture(
             onHoldStart = startRecording,
             onRelease = sendRecording,
             onCancel = cancelRecording,
-            onLock = { ui.recording?.let { ui.recording = Recording.Locked(it.startedAt) } },
+            onLock = { if (ui.recording == Recording.Holding) ui.recording = Recording.Locked },
         ),
-        onStartLocked = { if (startRecording()) ui.recording?.let { ui.recording = Recording.Locked(it.startedAt) } },
+        onStartLocked = { if (startRecording()) ui.recording = Recording.Locked },
         onSend = sendRecording,
         onDiscard = cancelRecording,
+        onPauseResume = {
+            when (ui.recording) {
+                Recording.Locked -> { voice.pauseRecording(); ui.recording = Recording.Paused }
+                Recording.Paused -> if (runCatching { voice.resumeRecording() }.isSuccess) ui.recording = Recording.Locked
+                else -> Unit
+            }
+        },
+        onPreview = { if (ui.recording == Recording.Paused) scope.launch { runCatching { voice.toggleDraftPreview() } } },
     )
 
     var loadingKey by remember { mutableStateOf<String?>(null) }
     var failedKeys by remember { mutableStateOf(emptySet<String>()) }
+    var computedLevels by remember { mutableStateOf(emptyMap<String, List<Int>>()) }
     LaunchedEffect(playback.key, playback.isPlaying) { if (playback.isPlaying && playback.key == loadingKey) loadingKey = null }
-    val onPlay: (String) -> Unit = { path ->
+    val onPlay: (String, Boolean) -> Unit = { path, needsLevels ->
         haptics.tap()
         if (playback.key == path && playback.isPlaying) voice.pause()
         else scope.launch {
             failedKeys = failedKeys - path
             loadingKey = path
             val url = runCatching { data.signedUrls(listOf(path))[path] }.getOrNull()
-            if (url != null) voice.play(path, url) else { loadingKey = null; failedKeys = failedKeys + path }
+            if (url != null) {
+                voice.play(path, url)
+                // A note stored without levels: its waveform is computed from the file (C-36 fallback).
+                if (needsLevels && path !in computedLevels) voice.levels(path, url)?.let { computedLevels = computedLevels + (path to it) }
+            } else {
+                loadingKey = null
+                failedKeys = failedKeys + path
+            }
         }
     }
     val savedText = stringRes(R.string.photo_viewer_toast_saved)
@@ -279,7 +295,7 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
         ui = ui,
         nav = nav,
         focusMessageId = focusMessageId,
-        voice = VoiceUi(playback, loadingKey, failedKeys, onPlay),
+        voice = VoiceUi(playback, loadingKey, failedKeys, computedLevels, onPlay),
         recorder = recorder,
         onDraft = vm::setDraft,
         onSend = vm::send,
@@ -305,24 +321,53 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
     )
 }
 
-/** Playback of the thread's voice messages (one at a time). */
-class VoiceUi(val playback: VoicePlayback, val loadingKey: String?, val failedKeys: Set<String>, val onPlay: (String) -> Unit) {
+/**
+ * Playback of the thread's voice messages (one at a time) and their waveforms: the stored levels, else the levels
+ * computed from the file after its first play ([computedLevels], C-36 fallback).
+ */
+class VoiceUi(
+    val playback: VoicePlayback,
+    val loadingKey: String?,
+    val failedKeys: Set<String>,
+    private val computedLevels: Map<String, List<Int>> = emptyMap(),
+    private val onPlay: (path: String, needsLevels: Boolean) -> Unit,
+) {
     fun stateOf(path: String?): VoiceState = voiceStateOf(path, playback.key, playback.isPlaying, playback.progress, loadingKey, failedKeys)
     fun elapsedOf(path: String?, durationMs: Long): Long = if (path != null && path == playback.key) (playback.progress * durationMs).toLong() else 0L
 
+    /** 0…1 of [path] while it plays or is paused part-way (its played bars). */
+    fun progressOf(path: String?): Float? = playback.progress.takeIf { path != null && path == playback.key }
+
+    /** The waveform to draw: [stored] (the note's `voice_levels`), else the computed one, else null (dots). */
+    fun levelsOf(path: String?, stored: List<Int>?): List<Int>? = stored ?: path?.let(computedLevels::get)
+
+    /** Tap on a capsule: plays / pauses [path]; [stored] null → its levels are computed once the file is here. */
+    fun play(path: String, stored: List<Int>?) = onPlay(path, stored == null)
+
     companion object {
-        val Idle = VoiceUi(VoicePlayback(null, false), null, emptySet()) {}
+        val Idle = VoiceUi(VoicePlayback(null, false), null, emptySet()) { _, _ -> }
     }
 }
 
-/** The composer's recording controls. */
+/** The composer's recording controls (`chat.voice.layout.recording` / `.locked`). */
 class RecorderControls(
     val elapsedMs: Long = 0L,
+    /** The live (recording) or draft (paused) waveform. */
+    val levels: List<Int> = emptyList(),
+    /** The paused draft is playing. */
+    val previewing: Boolean = false,
+    /** 0…1 of the draft's preview while it plays or is paused part-way. */
+    val previewProgress: Float? = null,
     val gesture: MicGesture = MicGesture({ false }, {}, {}, {}),
     val onStartLocked: () -> Unit = {},
     val onSend: () -> Unit = {},
     val onDiscard: () -> Unit = {},
-)
+    val onPauseResume: () -> Unit = {},
+    val onPreview: () -> Unit = {},
+) {
+    /** The paused field's label: the preview's elapsed time while previewing, else the draft's length. */
+    val pausedLabelMs: Long get() = previewProgress?.let { (it * elapsedMs).toLong() } ?: elapsedMs
+}
 
 /** Labels of rows, for announcements and semantics. */
 class RowLabels(
@@ -509,15 +554,13 @@ private fun ComposerArea(state: ChatState, ui: ChatUiState, nav: ChatNav, record
     // Mic glyph centre from the field's trailing edge (its ink `glyphInsetTrailing` from the edge).
     val micCentreFromEnd = Tokens.Sizes.chatComposerDimensionGlyphInsetTrailing - GlyphInk.trailing(mic, box) + box / 2
     val height = Tokens.Sizes.globalCommentFieldHeight
+    Column(Modifier.fillMaxWidth()) {
     BoxWithConstraints(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.chatComposerDimensionBottomInset)) {
         val fieldWidth = maxWidth - Tokens.Sizes.globalScreenMargin * 2
         val cancel = fieldWidth / 2 - micCentreFromEnd
         val lock = height / 2 + Tokens.Sizes.globalPillGap + Tokens.Sizes.globalCircleButton / 2
-        val glyphs = when (recording) {
-            is Recording.Locked -> listOf(
-                FieldGlyph(Tokens.Icons.globalTrash, stringRes(R.string.chat_voice_a11y_discard), Tokens.Colors.globalDestructive, recorder.onDiscard),
-                FieldGlyph(Tokens.Icons.globalSend, stringRes(R.string.chat_composer_a11y_send), Tokens.Colors.globalTextPrimary, recorder.onSend),
-            )
+        val glyphs = when {
+            recording.isLocked -> emptyList()
             else -> listOf(
                 FieldGlyph(Tokens.Icons.globalCamera, stringRes(R.string.chat_composer_a11y_camera), PageRoles.secondaryText(), { nav.camera(state.replyTo?.postId) }),
                 FieldGlyph(
@@ -544,9 +587,15 @@ private fun ComposerArea(state: ChatState, ui: ChatUiState, nav: ChatNav, record
                 onSend()
                 field = TextFieldValue()
             },
-            recording = recording?.let { r -> { RecordingContent(r, recorder.elapsedMs) } },
+            recording = recording?.let { r ->
+                if (r.isLocked) {
+                    { LockedRecordingContent(r, recorder.elapsedMs, recorder.levels, recorder.previewing, recorder.previewProgress, recorder.pausedLabelMs, recorder.onPreview) }
+                } else {
+                    { RecordingContent(r, recorder.elapsedMs) }
+                }
+            },
         )
-        if (recording is Recording.Holding) {
+        if (recording == Recording.Holding) {
             LockCircle(
                 recorder.gesture.onLock,
                 Modifier
@@ -555,6 +604,17 @@ private fun ComposerArea(state: ChatState, ui: ChatUiState, nav: ChatNav, record
                     .offset(y = -(height + Tokens.Sizes.globalPillGap)),
             )
         }
+    }
+    // `chat.voice.layout.locked`: delete · pause / continue · send, `size.global.pillGap` under the field.
+    AnimatedVisibility(recording.isLocked, enter = DsMotion.fadeIn, exit = DsMotion.fadeOut) {
+        LockedControls(
+            recording ?: Recording.Locked,
+            onDiscard = recorder.onDiscard,
+            onPauseResume = recorder.onPauseResume,
+            onSend = recorder.onSend,
+            modifier = Modifier.padding(top = Tokens.Sizes.globalPillGap),
+        )
+    }
     }
 }
 
@@ -869,7 +929,7 @@ private fun MessageBody(
         when {
             row.failed -> onRetrySend(row.id)
             row.kind == MessageKind.Photo -> row.message.postId?.let(nav.photo)
-            row.kind == MessageKind.Voice -> row.message.voicePath?.let(voice.onPlay)
+            row.kind == MessageKind.Voice -> row.message.voicePath?.let { voice.play(it, row.message.voiceLevels) }
         }
     }
     val semantics = Modifier.clearAndSetSemantics {
@@ -899,7 +959,10 @@ private fun MessageBody(
                 val duration = (row.message.voiceDurationMs ?: 0).toLong()
                 if (afterName) Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
                 Box(Modifier.combinedClickable(onClick = tap, onLongClick = { ui.menuFor = row.key }).then(semantics)) {
-                    VoiceCapsule(duration, voice.elapsedOf(path, duration), voice.stateOf(path), label, onClick = tap)
+                    VoiceCapsule(
+                        duration, voice.elapsedOf(path, duration), voice.stateOf(path), label, onClick = tap,
+                        levels = voice.levelsOf(path, row.message.voiceLevels), progress = voice.progressOf(path),
+                    )
                 }
             }
             MessageKind.Photo -> PhotoMessage(row, afterName, ui, nav, voice, labels, semantics, tap)
@@ -1009,7 +1072,10 @@ private fun PhotoMessage(row: ChatRow, afterHeader: Boolean, ui: ChatUiState, na
             val voiceLabel = if (row.mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(duration))
             else stringRes(R.string.chat_voice_a11y_message, row.author?.firstName.orEmpty(), Formats.spokenDuration(duration))
             Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
-            VoiceCapsule(duration, voice.elapsedOf(notePath, duration), voice.stateOf(notePath), voiceLabel, onClick = { voice.onPlay(notePath) })
+            VoiceCapsule(
+                duration, voice.elapsedOf(notePath, duration), voice.stateOf(notePath), voiceLabel, onClick = { voice.play(notePath, post.voiceLevels) },
+                levels = voice.levelsOf(notePath, post.voiceLevels), progress = voice.progressOf(notePath),
+            )
         }
     }
 }

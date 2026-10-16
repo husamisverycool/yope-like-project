@@ -11,7 +11,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import app.voice.VoicePlayer
 import app.voice.VoiceRecorder
-import app.voice.Waveform
+import app.voice.VoiceLevels
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,21 +27,38 @@ import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.max
 
-/** A finished recording ready to send. */
-data class RecordedVoice(val file: File, val durationMs: Int)
+/** A finished recording ready to send, with its waveform (100 levels of 0…31, C-36; null when none). */
+data class RecordedVoice(val file: File, val durationMs: Int, val levels: List<Int>? = null)
 
 /** What plays now: [key] = the voice path of the playing message (null = nothing); [progress] 0…1 of it. */
 data class VoicePlayback(val key: String?, val isPlaying: Boolean, val progress: Float = 0f)
 
-/** Voice messages: record (core:voice `VoiceRecorder`) and play (core:voice `VoicePlayer`). */
+/**
+ * Voice messages: record (core:voice `VoiceRecorder`: start, pause, continue, a playable draft, stop) and play (core:voice
+ * `VoicePlayer`). The paused draft plays under [DRAFT_KEY] (`chat.voice.layout.locked` preview).
+ */
 interface VoiceServices {
     /** The running recording's waveform so far (100 levels of 0…31, C-36). */
     val levels: StateFlow<List<Int>>
+
+    /** The running recording's length so far, in ms. */
+    val elapsedMs: StateFlow<Long>
     val playback: StateFlow<VoicePlayback>
 
     /** Starts recording (RECORD_AUDIO granted). Throws when the recorder cannot start. */
     fun startRecording()
-    fun stopRecording(): RecordedVoice?
+
+    /** Recording → paused (`chat.voice.a11y.pauseRecording`). */
+    fun pauseRecording()
+
+    /** Paused → recording at the end of the draft (`chat.voice.a11y.resumeRecording`). Throws when it cannot continue. */
+    fun resumeRecording()
+
+    /** Paused: plays / pauses the draft from its start (playback key [DRAFT_KEY]). */
+    suspend fun toggleDraftPreview()
+
+    /** Stops and returns the recording (segments joined), or null when nothing usable was recorded. */
+    suspend fun stopRecording(): RecordedVoice?
     fun cancelRecording()
 
     /** Plays [url] for the message whose voice path is [key]; only one plays at a time. */
@@ -49,12 +66,16 @@ interface VoiceServices {
     fun pause()
 
     /**
-     * The level envelope of the audio file [key] (its storage path) at [url], as [bars] bars (0…1),
-     * or null when it cannot be decoded. Computed once per file and kept, so bubbles scrolled back
-     * into view draw at once.
+     * The waveform of the audio file [key] (its storage path) at [url] for a note stored without one (C-36 fallback):
+     * 100 levels of 0…31, or null when it cannot be decoded. Computed once per file and kept.
      */
-    suspend fun envelope(key: String, url: String, bars: Int): List<Float>?
+    suspend fun levels(key: String, url: String): List<Int>?
     fun release()
+
+    companion object {
+        /** The playback key of the paused draft's preview. */
+        const val DRAFT_KEY = "voice-draft"
+    }
 }
 
 /** Saves an original to the photo library. */
@@ -74,16 +95,16 @@ class SocialServices(val voice: (Context) -> VoiceServices, val gallery: Gallery
 }
 
 /**
- * core:voice-backed [VoiceServices]. The recorder samples the input level (the paused draft's
- * waveform); the player's progress ticks move the played / unplayed split bar by bar
- * (`chat.voice.color.waveformPlayed`), so they come at least once per bar of a short message.
+ * core:voice-backed [VoiceServices]. The recorder samples the input level every 30 ms (the live and draft waveforms);
+ * the player's progress ticks move the played / unplayed split (`layout.global.waveform.progress`), at least once per
+ * bar of a short message.
  */
 class PlatformVoiceServices(private val context: Context) : VoiceServices {
     private val recorder = VoiceRecorder(context)
     private val player = VoicePlayer(context, progressIntervalMs = PLAYER_TICK_MS)
     private val state = MutableStateFlow(VoicePlayback(null, false))
     private var playingKey: String? = null
-    private var recording: File? = null
+    private var draftUri: String? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     init {
@@ -96,22 +117,40 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
     }
 
     override val levels: StateFlow<List<Int>> get() = recorder.levels
+    override val elapsedMs: StateFlow<Long> get() = recorder.elapsedMs
     override val playback: StateFlow<VoicePlayback> = state.asStateFlow()
 
     override fun startRecording() {
-        val file = File(context.cacheDir, "voice/${UUID.randomUUID()}.m4a")
-        recording = file
-        recorder.start(file, samplingIntervalMs = LEVEL_SAMPLE_MS)
+        stopPlayback()
+        recorder.start()
     }
 
-    override fun stopRecording(): RecordedVoice? = recorder.stop()?.let { note ->
-        recording = null
-        if (note.durationMs <= 0) null else RecordedVoice(note.file, note.durationMs.toInt())
+    override fun pauseRecording() = recorder.pause()
+
+    override fun resumeRecording() {
+        stopDraft()
+        recorder.resume()
+    }
+
+    override suspend fun toggleDraftPreview() {
+        if (playingKey == VoiceServices.DRAFT_KEY && state.value.isPlaying) {
+            pause()
+            return
+        }
+        val uri = draftUri ?: Uri.fromFile(recorder.draftFile()).toString().also { draftUri = it }
+        play(VoiceServices.DRAFT_KEY, uri)
+    }
+
+    override suspend fun stopRecording(): RecordedVoice? {
+        stopDraft()
+        return recorder.finish()?.let { note ->
+            if (note.durationMs <= 0) null else RecordedVoice(note.file, note.durationMs.toInt(), note.levels.takeIf(VoiceLevels::isValid))
+        }
     }
 
     override fun cancelRecording() {
+        stopDraft()
         recorder.cancel()
-        recording = null
     }
 
     override fun play(key: String, url: String) {
@@ -122,10 +161,10 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
 
     override fun pause() {
         player.pause()
-        state.value = VoicePlayback(playingKey, false)
+        state.value = VoicePlayback(playingKey, false, state.value.progress)
     }
 
-    override suspend fun envelope(key: String, url: String, bars: Int): List<Float>? = AudioEnvelope.cached(key, url, bars)
+    override suspend fun levels(key: String, url: String): List<Int>? = AudioLevels.cached(key, url)
 
     override fun release() {
         scope.cancel()
@@ -133,45 +172,59 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
         player.release()
     }
 
+    private fun stopPlayback() {
+        if (state.value.isPlaying) player.pause()
+        playingKey = null
+        state.value = VoicePlayback(null, false)
+    }
+
+    /** The draft changes (continue, send, delete): its preview stops and its file is made again next time. */
+    private fun stopDraft() {
+        draftUri = null
+        if (playingKey == VoiceServices.DRAFT_KEY) stopPlayback()
+    }
+
     private companion object {
-        /** Level sampling of the recorder (waveform resolution before it is resampled to the bar count). */
-        const val LEVEL_SAMPLE_MS = 50L
-        const val PLAYER_TICK_MS = 100L
+        const val PLAYER_TICK_MS = 50L
     }
 }
 
 /**
- * Computes a voice message's level envelope on the receiving device (the API stores none,
- * design/surfaces/chat.voice.md → Platform notes): decodes the AAC track to 16-bit PCM and keeps
- * the peak per bar.
+ * The waveform of a voice note stored without levels (C-36 fallback, Telegram Desktop's `countVoiceWaveform`): decodes
+ * the AAC track to 16-bit PCM, takes the peak of every [VoiceLevels.SAMPLING_INTERVAL_MS] and reduces it like a
+ * recording ([VoiceLevels.reduce]).
  */
-object AudioEnvelope {
-    private val cache = object : LinkedHashMap<String, List<Float>>(16, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<Float>>?): Boolean = size > CACHE_ENTRIES
+object AudioLevels {
+    private val cache = object : LinkedHashMap<String, List<Int>>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<Int>>?): Boolean = size > CACHE_ENTRIES
     }
 
-    /** From memory when this file was decoded before (keyed by storage path and bar count). */
-    suspend fun cached(key: String, url: String, bars: Int): List<Float>? {
-        val id = "$key#$bars"
-        synchronized(cache) { cache[id] }?.let { return it }
-        return decode(url, bars)?.also { synchronized(cache) { cache[id] = it } }
+    /** From memory when this file was decoded before (keyed by storage path). */
+    suspend fun cached(key: String, url: String): List<Int>? {
+        synchronized(cache) { cache[key] }?.let { return it }
+        return decode(url)?.also { synchronized(cache) { cache[key] = it } }
     }
 
-    fun peek(key: String, bars: Int): List<Float>? = synchronized(cache) { cache["$key#$bars"] }
+    fun peek(key: String): List<Int>? = synchronized(cache) { cache[key] }
 
-    suspend fun decode(url: String, bars: Int): List<Float>? = withContext(Dispatchers.IO) {
-        runCatching { decodeBlocking(url, bars) }.getOrNull()
+    suspend fun decode(url: String): List<Int>? = withContext(Dispatchers.IO) {
+        runCatching { decodeBlocking(url) }.getOrNull()
     }
 
-    private fun decodeBlocking(url: String, bars: Int): List<Float>? {
+    private fun decodeBlocking(url: String): List<Int>? {
         val extractor = MediaExtractor()
         try {
             extractor.setDataSource(url)
             val track = (0 until extractor.trackCount).firstOrNull { extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true } ?: return null
             extractor.selectTrack(track)
             val format = extractor.getTrackFormat(track)
+            val rate = if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) format.getInteger(MediaFormat.KEY_SAMPLE_RATE) else DEFAULT_RATE
+            val channels = if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) format.getInteger(MediaFormat.KEY_CHANNEL_COUNT) else 1
+            val window = max(1L, rate * channels * VoiceLevels.SAMPLING_INTERVAL_MS / 1000).toInt()
             val codec = MediaCodec.createDecoderByType(format.getString(MediaFormat.KEY_MIME)!!)
             val peaks = ArrayList<Float>()
+            var peak = 0
+            var count = 0
             try {
                 codec.configure(format, null, null, 0)
                 codec.start()
@@ -196,9 +249,14 @@ object AudioEnvelope {
                     val outIndex = codec.dequeueOutputBuffer(info, TIMEOUT_US)
                     if (outIndex >= 0) {
                         val out = codec.getOutputBuffer(outIndex)!!.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
-                        var peak = 0
-                        while (out.hasRemaining()) peak = max(peak, abs(out.get().toInt()))
-                        peaks += Waveform.level(peak)
+                        while (out.hasRemaining()) {
+                            peak = max(peak, abs(out.get().toInt()))
+                            if (++count >= window) {
+                                peaks += VoiceLevels.level(peak)
+                                peak = 0
+                                count = 0
+                            }
+                        }
                         codec.releaseOutputBuffer(outIndex, false)
                         if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) outputDone = true
                     }
@@ -207,7 +265,8 @@ object AudioEnvelope {
                 runCatching { codec.stop() }
                 codec.release()
             }
-            return if (peaks.isEmpty()) null else Waveform.bars(peaks, bars)
+            if (count > 0) peaks += VoiceLevels.level(peak)
+            return if (peaks.isEmpty()) null else VoiceLevels.reduce(peaks)
         } finally {
             extractor.release()
         }
@@ -215,6 +274,7 @@ object AudioEnvelope {
 
     private const val TIMEOUT_US = 10_000L
     private const val CACHE_ENTRIES = 256
+    private const val DEFAULT_RATE = 44_100
 }
 
 /** MediaStore insert into Pictures (photo.viewer → Save; Android saves the still, PLATFORM_CONSTRAINTS §Summary). */

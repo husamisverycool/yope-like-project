@@ -58,7 +58,8 @@ interface SocialData {
     suspend fun message(messageId: String): Message?
     /** A text message, optionally replying to a photo ([replyToPostId]) or a message ([replyToMessageId]) (`send_message`). */
     suspend fun sendText(groupId: String, body: String, replyToPostId: String? = null, replyToMessageId: String? = null): Message
-    suspend fun sendVoice(groupId: String, audio: File, durationMs: Int): Message
+    /** A voice message with its waveform ([levels]: 100 values of 0…31, `p_voice_levels`; null sends none). */
+    suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>? = null): Message
     suspend fun deleteMessage(messageId: String)
 
     /** Replies to a photo in its group's chat (`messages` with `reply_to_post_id`), oldest first (`photo.viewer.layout.comments`). */
@@ -123,7 +124,7 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     override suspend fun messages(groupId: String, before: Instant?) = graph.chat.messages(groupId, before)
     override suspend fun message(messageId: String) = graph.chat.message(messageId)
     override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?) = graph.chat.sendText(groupId, body, replyToPostId, replyToMessageId)
-    override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int) = graph.chat.sendVoice(groupId, audio, durationMs)
+    override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>?) = graph.chat.sendVoice(groupId, audio, durationMs, levels)
     override suspend fun deleteMessage(messageId: String) = graph.chat.deleteMessage(messageId)
     override suspend fun replies(groupId: String, postId: String): List<Message> =
         graph.api.select(Tables.MESSAGES, Message.serializer()) {
@@ -195,7 +196,7 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun messages(groupId: String, before: Instant?): List<Message> = fail()
     override suspend fun message(messageId: String): Message? = fail()
     override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?): Message = fail()
-    override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int): Message = fail()
+    override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>?): Message = fail()
     override suspend fun deleteMessage(messageId: String) = fail()
     override suspend fun replies(groupId: String, postId: String): List<Message> = fail()
     override suspend fun feed(groupId: String, before: Instant?): List<Post> = fail()

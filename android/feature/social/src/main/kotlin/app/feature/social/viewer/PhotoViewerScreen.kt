@@ -197,15 +197,23 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
 
     var loadingKey by remember { mutableStateOf<String?>(null) }
     var failedKeys by remember { mutableStateOf(emptySet<String>()) }
+    var computedLevels by remember { mutableStateOf(emptyMap<String, List<Int>>()) }
     LaunchedEffect(playback.key, playback.isPlaying) { if (playback.isPlaying && playback.key == loadingKey) loadingKey = null }
-    val onPlay: (String) -> Unit = { path ->
+    val onPlay: (String, Boolean) -> Unit = { path, needsLevels ->
         haptics.tap()
         if (playback.key == path && playback.isPlaying) voice.pause()
         else scope.launch {
             failedKeys = failedKeys - path
             loadingKey = path
             val url = runCatching { data.signedUrls(listOf(path))[path] }.getOrNull()
-            if (url != null) voice.play(path, url) else { loadingKey = null; failedKeys = failedKeys + path }
+            if (url != null) {
+                voice.play(path, url)
+                // A note stored without levels: its waveform is computed from the file (C-36 fallback).
+                if (needsLevels && path !in computedLevels) voice.levels(path, url)?.let { computedLevels = computedLevels + (path to it) }
+            } else {
+                loadingKey = null
+                failedKeys = failedKeys + path
+            }
         }
     }
 
@@ -213,7 +221,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         state = state,
         ui = ui,
         nav = nav,
-        voice = VoiceUi(playback, loadingKey, failedKeys, onPlay),
+        voice = VoiceUi(playback, loadingKey, failedKeys, computedLevels, onPlay),
         onNext = { haptics.tap(); vm.next() },
         onPrevious = { haptics.tap(); vm.previous() },
         onRetry = vm::retryLoad,
@@ -280,7 +288,7 @@ fun PhotoViewerContent(
                         Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionHeaderToPhoto))
                         PhotoArea(photo, state, ui, nav, area, onNext, onPrevious, onRetry, onReact, onUnreact, onSave)
                         Footer(photo, state, ui, voice, onPhotoGone)
-                        Comments(photo, state, ui, onUnsendComment)
+                        Comments(photo, state, ui, voice, onUnsendComment)
                         Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionCommentsToField))
                     }
                 }
@@ -588,8 +596,10 @@ private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, vo
                         voice.elapsedOf(notePath, duration),
                         voice.stateOf(notePath),
                         voiceLabel,
-                        onClick = { voice.onPlay(notePath) },
+                        onClick = { voice.play(notePath, post.voiceLevels) },
                         onMedia = true,
+                        levels = voice.levelsOf(notePath, post.voiceLevels),
+                        progress = voice.progressOf(notePath),
                     )
                 }
             }
@@ -644,28 +654,35 @@ private fun AddReactionGlyph(onClick: () -> Unit) {
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Comments(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, onUnsendComment: (String) -> Unit) {
+private fun Comments(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, voice: VoiceUi, onUnsendComment: (String) -> Unit) {
     if (photo.comments.isEmpty()) return
     Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionFooterToDivider))
     Hairline(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin).testTag("viewer.divider"), onMedia = true)
     Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionDividerToComments))
     Column(verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalListGap)) {
-        photo.comments.forEach { m -> CommentLine(m, photo, state, ui, onUnsendComment) }
+        photo.comments.forEach { m -> CommentLine(m, photo, state, ui, voice, onUnsendComment) }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun CommentLine(m: Message, photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, onUnsendComment: (String) -> Unit) {
+private fun CommentLine(m: Message, photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, voice: VoiceUi, onUnsendComment: (String) -> Unit) {
     val author = photo.people[m.authorId]
     val mine = m.authorId == state.me
-    val label = if (mine) stringRes(R.string.chat_thread_a11y_messagemine, m.body.orEmpty()) else stringRes(R.string.chat_thread_a11y_message, author?.firstName.orEmpty(), m.body.orEmpty())
+    val isVoice = m.kind == app.data.model.MessageKind.Voice && m.voicePath != null
+    val duration = (m.voiceDurationMs ?: 0).toLong()
+    val label = when {
+        isVoice && mine -> stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(duration))
+        isVoice -> stringRes(R.string.chat_voice_a11y_message, author?.firstName.orEmpty(), Formats.spokenDuration(duration))
+        mine -> stringRes(R.string.chat_thread_a11y_messagemine, m.body.orEmpty())
+        else -> stringRes(R.string.chat_thread_a11y_message, author?.firstName.orEmpty(), m.body.orEmpty())
+    }
     val items = commentMenu(m, mine, ui)
     Box {
         Row(
             Modifier
                 .fillMaxWidth()
-                .combinedClickable(onClick = {}, onLongClick = { ui.commentMenu = m.id })
+                .combinedClickable(onClick = { if (isVoice) m.voicePath?.let { voice.play(it, m.voiceLevels) } }, onLongClick = { ui.commentMenu = m.id })
                 .clearAndSetSemantics {
                     contentDescription = label
                     customActions = items.map { i -> CustomAccessibilityAction(i.text) { i.onClick(); true } }
@@ -686,12 +703,25 @@ private fun CommentLine(m: Message, photo: ViewerPhoto, state: ViewerState, ui: 
                     maxLines = 1,
                     modifier = Modifier.endAtLastBaseline(),
                 )
-                Text(
-                    m.body.orEmpty(),
-                    style = TextRoles.body.copy(lineHeight = Tokens.Sizes.chatThreadDimensionRowLinePitch.value.sp),
-                    color = Tokens.Colors.globalTextOnMedia,
-                    modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.chatThreadDimensionRowLinePitch),
-                )
+                if (isVoice) {
+                    // A voice reply: the voice capsule on media with its waveform (chat.voice.md, C-36).
+                    val path = m.voicePath
+                    Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
+                    VoiceCapsule(
+                        duration, voice.elapsedOf(path, duration), voice.stateOf(path), label,
+                        onClick = { path?.let { voice.play(it, m.voiceLevels) } },
+                        onMedia = true,
+                        levels = voice.levelsOf(path, m.voiceLevels),
+                        progress = voice.progressOf(path),
+                    )
+                } else {
+                    Text(
+                        m.body.orEmpty(),
+                        style = TextRoles.body.copy(lineHeight = Tokens.Sizes.chatThreadDimensionRowLinePitch.value.sp),
+                        color = Tokens.Colors.globalTextOnMedia,
+                        modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.chatThreadDimensionRowLinePitch),
+                    )
+                }
             }
         }
         SystemAppearance { DsDropdownMenu(ui.commentMenu == m.id, { ui.commentMenu = null }, items) }
@@ -708,7 +738,8 @@ private fun commentMenu(m: Message, mine: Boolean, ui: ViewerUiState): List<DsMe
     val copy = stringRes(R.string.chat_thread_menu_copy)
     val unsend = stringRes(R.string.chat_thread_menu_delete)
     return buildList {
-        add(
+        // Copy is for text; a voice reply has none (chat.thread's voice menu has no Copy either).
+        if (m.kind != app.data.model.MessageKind.Voice) add(
             DsMenuItem(copy, {
                 val body = m.body.orEmpty()
                 scope.launch { clipboard.setClipEntry(androidx.compose.ui.platform.ClipEntry(android.content.ClipData.newPlainText(body, body))) }

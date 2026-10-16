@@ -66,6 +66,7 @@ import app.feature.social.common.PersonAvatar
 import app.feature.social.common.stringRes
 import app.ui.components.CircleButtonStyle
 import app.ui.components.CircleIconButton
+import app.ui.components.VoiceWaveform
 import app.ui.foundation.DsMotion
 import app.ui.foundation.GlyphInk
 import app.ui.foundation.PageRoles
@@ -233,6 +234,114 @@ fun RowScope.RecordingContent(recording: Recording, elapsedMs: Long, onMedia: Bo
                 Text(stringRes(R.string.chat_voice_recording_slidetocancel), style = TextRoles.body, color = secondary, maxLines = 1)
             }
         }
+    }
+}
+
+/**
+ * The field's content while hands-free (`chat.voice.layout.locked`): recording — `icon.global.mic` in
+ * `color.global.destructive` at the avatar's place · the elapsed time (text role `body`, tabular digits, a polite live
+ * region) · the C-36 live waveform to the trailing glyph inset; paused — the preview glyph (`icon.global.play` /
+ * `.pause`, a button) · the draft's waveform with the preview's [previewProgress] · its length ([pausedLabelMs]).
+ */
+@Composable
+fun RowScope.LockedRecordingContent(
+    recording: Recording,
+    elapsedMs: Long,
+    levels: List<Int>,
+    previewing: Boolean,
+    previewProgress: Float?,
+    pausedLabelMs: Long,
+    onPreview: () -> Unit,
+) {
+    val paused = recording == Recording.Paused
+    val height = Tokens.Sizes.globalCommentFieldHeight
+    Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionAvatarInset))
+    if (paused) {
+        val label = if (previewing) stringRes(R.string.chat_voice_a11y_pause) else stringRes(R.string.chat_voice_a11y_play, Formats.spokenDuration(elapsedMs))
+        Box(
+            Modifier
+                .size(Tokens.Sizes.globalAvatarComment)
+                .tapClickable(onClick = onPreview)
+                .clearAndSetSemantics {
+                    contentDescription = label
+                    role = Role.Button
+                }
+                .testTag("chat.composer.preview"),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(if (previewing) Tokens.Icons.globalPause else Tokens.Icons.globalPlay, contentDescription = null, tint = Tokens.Colors.globalTextPrimary, modifier = Modifier.size(Tokens.Sizes.globalIcon))
+        }
+    } else {
+        Box(Modifier.size(Tokens.Sizes.globalAvatarComment), contentAlignment = Alignment.Center) {
+            Icon(Tokens.Icons.globalMic, contentDescription = null, tint = Tokens.Colors.globalDestructive, modifier = Modifier.size(Tokens.Sizes.globalIcon))
+        }
+    }
+    Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionAvatarToText))
+    if (!paused) ElapsedLabel(elapsedMs)
+    VoiceWaveform(
+        levels = levels,
+        holderHeight = height,
+        modifier = Modifier.weight(1f).then(if (paused) Modifier else Modifier.padding(start = Tokens.Sizes.chatComposerDimensionAvatarToText)),
+        progress = if (paused) previewProgress else null,
+    )
+    if (paused) {
+        Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionAvatarToText))
+        ElapsedLabel(pausedLabelMs)
+    }
+    Spacer(Modifier.width(Tokens.Sizes.chatComposerDimensionGlyphInsetTrailing))
+}
+
+@Composable
+private fun ElapsedLabel(ms: Long) {
+    Text(
+        Formats.voiceDuration(ms),
+        style = TextRoles.body.copy(fontFeatureSettings = TABULAR_DIGITS),
+        color = Tokens.Colors.globalTextPrimary,
+        maxLines = 1,
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    )
+}
+
+/**
+ * The controls row `size.global.pillGap` under the field while hands-free (`chat.voice.layout.locked`,
+ * `size.global.headerButton` high, inside `size.global.screenMargin`): delete — a bare `icon.global.trash` in
+ * `color.global.destructive` under the field's leading glyph; centred, a C-11 page circle with `icon.global.pause`
+ * (recording) or `icon.global.mic` (paused) in `color.global.destructive`; send — a C-11 circle in the primary fill under
+ * the field's trailing glyph.
+ */
+@Composable
+fun LockedControls(recording: Recording, onDiscard: () -> Unit, onPauseResume: () -> Unit, onSend: () -> Unit, modifier: Modifier = Modifier) {
+    val paused = recording == Recording.Paused
+    val leadingCentre = Tokens.Sizes.chatComposerDimensionAvatarInset + Tokens.Sizes.globalAvatarComment / 2
+    val trailingCentre = Tokens.Sizes.chatComposerDimensionGlyphInsetTrailing + Tokens.Sizes.globalIcon / 2
+    Box(
+        modifier
+            .fillMaxWidth()
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin)
+            .heightIn(min = Tokens.Sizes.globalHeaderButton),
+    ) {
+        BareGlyph(
+            Tokens.Icons.globalTrash,
+            stringRes(R.string.chat_voice_a11y_discard),
+            Tokens.Colors.globalDestructive,
+            onDiscard,
+            Modifier.align(Alignment.CenterStart).offset(x = leadingCentre - glyphHit / 2),
+        )
+        CircleIconButton(
+            if (paused) Tokens.Icons.globalMic else Tokens.Icons.globalPause,
+            stringRes(if (paused) R.string.chat_voice_a11y_resumerecording else R.string.chat_voice_a11y_pauserecording),
+            onPauseResume,
+            Modifier.align(Alignment.Center).testTag("chat.composer.pauseResume"),
+            style = CircleButtonStyle.OnPage,
+            tint = Tokens.Colors.globalDestructive,
+        )
+        CircleIconButton(
+            Tokens.Icons.globalSend,
+            stringRes(R.string.chat_composer_a11y_send),
+            onSend,
+            Modifier.align(Alignment.CenterEnd).offset(x = -(trailingCentre - Tokens.Sizes.globalCircleButton / 2)).testTag("chat.composer.sendRecording"),
+            style = CircleButtonStyle.Primary,
+        )
     }
 }
 

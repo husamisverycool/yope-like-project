@@ -34,14 +34,25 @@ final class SocialChatFlowUITests: XCTestCase {
         return field
     }
 
-    /// Scrolls the thread up until `element` exists (older messages are above the bottom anchor).
+    /// Scrolls the thread until `element` sits whole between the header and the composer. A message above the bottom
+    /// anchor is in the accessibility tree before it is on screen, and a press at the centre of a half-visible card lands
+    /// on the header that floats over the thread instead of the card's context menu.
     @MainActor
     private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
+        XCTAssertTrue(element.waitForExistence(timeout: 10))
         let thread = app.descendants(matching: .any)["chat.thread"]
-        for _ in 0..<4 where !element.waitForExistence(timeout: 2) {
-            thread.swipeDown()
+        let screen = app.windows.firstMatch.frame
+        let top = screen.minY + 150 // below the header (its controls end at y ≈ 137)
+        let bottom = screen.maxY - 110 // above the composer (it starts at y ≈ 792)
+        for _ in 0..<10 {
+            let frame = element.frame
+            if frame.minY >= top, frame.maxY <= bottom { break }
+            // A short drag (not a swipe: no fling) moves the thread down when the element is above the band, up otherwise.
+            let start = thread.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            let distance: CGFloat = frame.minY < top ? 220 : -220
+            start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)))
         }
-        XCTAssertTrue(element.exists)
+        XCTAssertTrue(element.isHittable, "\(element) on screen")
     }
 
     @MainActor
@@ -104,6 +115,7 @@ final class SocialChatFlowUITests: XCTestCase {
         let photo = app.descendants(matching: .any)[Demo.myPhoto]
         XCTAssertTrue(photo.waitForExistence(timeout: 10))
         XCTAssertFalse(app.descendants(matching: .any)[Demo.myPhotoReactions].exists, "no reactions: no chip")
+        reveal(photo, in: app)
         photo.press(forDuration: 1.0)
         // The palette item: its accessibility label, or the emoji itself where the system menu keeps the item's title.
         let fire = app.descendants(matching: .any)

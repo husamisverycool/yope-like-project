@@ -262,10 +262,15 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
 
     fun cancelReply() = _state.update { it.copy(replyTo = null) }
 
-    /** Uploads and sends a recorded voice message (`send_message` voice), shown at once; a failure leaves it failed with retry. */
-    fun sendVoice(file: File, durationMs: Int) {
+    /**
+     * Uploads and sends a recorded voice message with its waveform (`send_message` voice, `p_voice_levels`; C-36), shown at
+     * once; a failure leaves it failed with retry. Malformed [levels] are not sent (the API would refuse them).
+     */
+    fun sendVoice(file: File, durationMs: Int, levels: List<Int>? = null) {
         val me = data.currentUserId() ?: return
         val local = optimistic(me, MessageKind.Voice, voicePath = file.absolutePath, durationMs = durationMs)
+            .copy(voiceLevels = levels?.takeIf(app.voice.VoiceLevels::isValid))
+            .also { pending[it.id] = it }
         publish()
         deliver(local)
     }
@@ -282,7 +287,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         viewModelScope.launch {
             try {
                 val sent = when (local.kind) {
-                    MessageKind.Voice -> data.sendVoice(groupId, File(local.voicePath.orEmpty()), local.voiceDurationMs ?: 0)
+                    MessageKind.Voice -> data.sendVoice(groupId, File(local.voicePath.orEmpty()), local.voiceDurationMs ?: 0, local.voiceLevels)
                     else -> data.sendText(groupId, local.body.orEmpty(), local.replyToPostId, local.replyToMessageId)
                 }
                 if (local.kind == MessageKind.Voice) File(local.voicePath.orEmpty()).delete()

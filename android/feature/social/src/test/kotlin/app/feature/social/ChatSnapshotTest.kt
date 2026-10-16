@@ -127,27 +127,43 @@ class ChatSnapshotTest : SnapshotBase() {
     /** `chat.voice.layout.recording`, holding: red mic · time · ‹ Slide to cancel; the lock circle over the mic. */
     @Test fun recordingHolding() {
         val (data, state) = loaded()
-        chat(state, ChatUiState(recording = Recording.Holding(0L)), data, recorder = RecorderControls(elapsedMs = RECORDED_MS))
+        chat(state, ChatUiState(recording = Recording.Holding), data, recorder = RecorderControls(elapsedMs = RECORDED_MS))
     }
 
-    /** Locked (hands-free): trash and send in the trailing glyphs. */
+    /** Locked (`chat.voice.layout.locked`): red mic · time · live waveform in the field; delete · pause · send under it. */
     @Test fun recordingLocked() {
         val (data, state) = loaded()
-        chat(state, ChatUiState(recording = Recording.Locked(0L)), data, recorder = RecorderControls(elapsedMs = RECORDED_MS))
+        chat(state, ChatUiState(recording = Recording.Locked), data, recorder = RecorderControls(elapsedMs = RECORDED_MS, levels = FakeVoice.LEVELS))
+    }
+
+    @Test fun recordingLockedDark() {
+        val (data, state) = loaded()
+        chat(state, ChatUiState(recording = Recording.Locked), data, dark = true, recorder = RecorderControls(elapsedMs = RECORDED_MS, levels = FakeVoice.LEVELS))
+    }
+
+    /** Paused draft, previewing part-way: preview glyph · played / unplayed bars · elapsed; delete · continue · send. */
+    @Test fun recordingPaused() {
+        val (data, state) = loaded()
+        chat(state, ChatUiState(recording = Recording.Paused), data, recorder = RecorderControls(elapsedMs = PAUSED_MS, levels = NOTE_LEVELS, previewProgress = PREVIEW))
+    }
+
+    @Test fun recordingPausedDark() {
+        val (data, state) = loaded()
+        chat(state, ChatUiState(recording = Recording.Paused), data, dark = true, recorder = RecorderControls(elapsedMs = PAUSED_MS, levels = NOTE_LEVELS, previewProgress = PREVIEW))
     }
 
     /** A voice message playing: pause glyph and the elapsed time. */
     @Test fun voicePlaying() {
         val (data, state) = loaded()
         val path = state.rows.first { it.message.id == "m-7" }.message.voicePath
-        chat(state, data = data, voice = VoiceUi(VoicePlayback(path, true, PROGRESS), null, emptySet()) {})
+        chat(state, data = data, voice = VoiceUi(VoicePlayback(path, true, PROGRESS), null, emptySet()) { _, _ -> })
     }
 
     /** A voice message whose file failed to load: the error line in the capsule. */
     @Test fun voiceError() {
         val (data, state) = loaded()
         val path = state.rows.first { it.message.id == "m-7" }.message.voicePath.orEmpty()
-        chat(state, data = data, voice = VoiceUi(VoicePlayback(null, false), null, setOf(path)) {})
+        chat(state, data = data, voice = VoiceUi(VoicePlayback(null, false), null, setOf(path)) { _, _ -> })
     }
 
     @Test fun micPermissionDenied() {
@@ -194,7 +210,9 @@ class ChatSnapshotTest : SnapshotBase() {
 
     companion object {
         const val RECORDED_MS = 7_000L
+        const val PAUSED_MS = 11_000L
         const val PROGRESS = 0.4f
+        const val PREVIEW = 0.45f
         val TODAY: LocalDate = LocalDate.parse("2026-10-12")
         /** Optimistic sends are stamped with this clock (ten minutes after the seed thread's start). */
         val CLOCK: java.time.Clock = java.time.Clock.fixed(BASE.plusSeconds(600), ZoneOffset.UTC)
@@ -210,6 +228,8 @@ fun FakeSocialData.seedThread() {
     val t0 = BASE
     val yesterday = t0.minusSeconds(86_400)
     val photo = addPhoto("p-1", FakeSocialData.ANA, yesterday, caption = "face masks night", voicePath = "u/${FakeSocialData.ANA}/voice/p1.m4a", voiceMs = 9_000)
+        .copy(voiceLevels = NOTE_LEVELS)
+    posts["p-1"] = photo
     reactions["p-1"] = mutableListOf(
         app.data.repo.ReactionEntry(BEN, "😍"),
         app.data.repo.ReactionEntry(ME, "🔥"),
@@ -221,5 +241,15 @@ fun FakeSocialData.seedThread() {
     messages += FakeSocialData.message("m-4", GROUP, FakeSocialData.ANA, MessageKind.Text, body = "obsessed with this one", replyToPostId = "p-1", at = t0.plusSeconds(200))
     messages += FakeSocialData.message("m-5", GROUP, ME, MessageKind.Text, body = "me! bringing dessert", at = t0.plusSeconds(300)).copy(replyToMessageId = "m-3")
     messages += FakeSocialData.message("m-6", GROUP, ME, MessageKind.Voice, voicePath = "u/$ME/voice/v1.m4a", voiceMs = 38_000, at = t0.plusSeconds(305))
+        .copy(voiceLevels = FakeVoice.LEVELS)
     messages += FakeSocialData.message("m-7", GROUP, BEN, MessageKind.Voice, voicePath = "u/$BEN/voice/v2.m4a", voiceMs = 12_000, at = t0.plusSeconds(400))
+        .copy(voiceLevels = NOTE_LEVELS)
 }
+
+/** A second sample waveform (100 levels, speech-like), demo data. */
+val NOTE_LEVELS = listOf(
+    26, 29, 26, 31, 31, 25, 18, 1, 10, 12, 9, 0, 0, 21, 17, 15, 31, 22, 17, 1, 0, 0, 18, 23, 0, 0, 31, 31, 26, 0, 31, 21,
+    14, 19, 0, 0, 28, 31, 31, 25, 0, 0, 20, 21, 14, 11, 1, 5, 22, 18, 0, 0, 17, 31, 31, 0, 23, 31, 10, 31, 1, 14, 23, 31,
+    20, 31, 21, 28, 19, 0, 0, 28, 31, 18, 0, 18, 31, 11, 0, 17, 17, 30, 18, 31, 0, 0, 17, 31, 31, 15, 1, 0, 0, 22, 25, 0,
+    0, 3, 24, 21,
+)

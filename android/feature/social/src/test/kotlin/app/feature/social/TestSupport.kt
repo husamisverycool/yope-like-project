@@ -74,24 +74,46 @@ object TestPhotos {
     private const val PORTRAIT_OFFSETS = 7
 }
 
-/** Voice without hardware: records "levels", plays instantly, synthetic envelopes. */
+/** Voice without hardware: records "levels", pauses, previews and plays instantly, synthetic waveforms. */
 class FakeVoice : VoiceServices {
-    override val levels = MutableStateFlow(listOf(6, 18, 27, 12, 21))
+    override val levels = MutableStateFlow(LEVELS)
+    override val elapsedMs = MutableStateFlow(0L)
     override val playback = MutableStateFlow(VoicePlayback(null, false))
     var recording = false
+    var paused = false
+    var previews = 0
     val played = ArrayList<String>()
 
     override fun startRecording() {
         recording = true
+        paused = false
+        elapsedMs.value = DURATION_MS.toLong()
     }
 
-    override fun stopRecording(): RecordedVoice? {
+    override fun pauseRecording() {
+        if (recording) paused = true
+    }
+
+    override fun resumeRecording() {
+        paused = false
+        if (playback.value.key == VoiceServices.DRAFT_KEY) playback.value = VoicePlayback(null, false)
+    }
+
+    override suspend fun toggleDraftPreview() {
+        val draft = playback.value.key == VoiceServices.DRAFT_KEY
+        playback.value = if (draft && playback.value.isPlaying) playback.value.copy(isPlaying = false) else VoicePlayback(VoiceServices.DRAFT_KEY, true, PROGRESS)
+        if (!draft) previews += 1
+    }
+
+    override suspend fun stopRecording(): RecordedVoice? {
         recording = false
-        return RecordedVoice(File.createTempFile("voice", ".m4a"), DURATION_MS)
+        paused = false
+        return RecordedVoice(File.createTempFile("voice", ".m4a"), DURATION_MS, LEVELS)
     }
 
     override fun cancelRecording() {
         recording = false
+        paused = false
     }
 
     override fun play(key: String, url: String) {
@@ -103,12 +125,20 @@ class FakeVoice : VoiceServices {
         playback.value = playback.value.copy(isPlaying = false)
     }
 
-    override suspend fun envelope(key: String, url: String, bars: Int): List<Float> = List(bars) { i -> ((i * 37) % 100) / 100f }
+    override suspend fun levels(key: String, url: String): List<Int> = LEVELS
     override fun release() = Unit
 
     companion object {
         const val DURATION_MS = 4_000
         const val PROGRESS = 0.4f
+
+        /** A 100-value waveform (speech-like: words and pauses), demo data. */
+        val LEVELS = listOf(
+            23, 25, 26, 14, 10, 21, 22, 22, 23, 0, 15, 18, 12, 11, 3, 15, 31, 15, 4, 20, 31, 10, 16, 0, 31, 14, 21, 31, 1, 12, 15, 31,
+            31, 7, 4, 24, 25, 31, 11, 0, 13, 22, 0, 19, 27, 31, 14, 0, 0, 24, 31, 14, 31, 31, 0, 27, 18, 12, 31, 0, 0, 16, 17, 27,
+            0, 0, 21, 31, 30, 26, 0, 0, 0, 27, 29, 28, 0, 31, 20, 31, 22, 0, 0, 14, 16, 24, 9, 0, 28, 24, 21, 19, 0, 0, 0, 18,
+            21, 31, 19, 0,
+        )
     }
 }
 

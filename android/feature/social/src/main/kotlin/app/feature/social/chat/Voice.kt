@@ -1,5 +1,7 @@
-// Surface: chat.voice — design/surfaces/chat.voice.md
+// Surface: chat.voice — design/surfaces/chat.voice.md (C-36 voice waveform: owner decision 16)
 // References: references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (C-07 anatomy),
+// references/auto/imessage/apple-support/messages-audio-message-ios27.png (play · waveform · duration),
+// references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png (locked recording, draft preview),
 // references/auto/retro/store/retro-store-02.png (C-06 medium capsules), references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png
 // ("1:00" duration format), references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png (record gestures),
 // references/auto/telegram/store/telegram-store-03.png (recording row, lock).
@@ -35,21 +37,29 @@ import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
 import app.feature.social.common.stringRes
 import app.ui.components.ActivityIndicator
+import app.ui.components.VoiceWaveform
 import app.ui.foundation.DsMotion
 import app.ui.foundation.PageRoles
 import app.ui.foundation.tapClickable
 import app.ui.text.TextRoles
 
-/** Voice recording (`chat.voice.layout.recording`: WhatsApp's press-and-hold, slide-to-cancel and lock). */
+/** Voice recording (`chat.voice.layout.recording`: WhatsApp's press-and-hold, slide-to-cancel and lock; `.locked`). */
 sealed interface Recording {
-    val startedAt: Long
-
     /** Recording while the finger holds the mic glyph: lift sends, slide left cancels, slide up locks. */
-    data class Holding(override val startedAt: Long) : Recording
+    data object Holding : Recording
 
-    /** Hands-free after sliding onto the lock (or started from TalkBack's "Record" action): trash discards, send sends. */
-    data class Locked(override val startedAt: Long) : Recording
+    /**
+     * Hands-free after sliding onto the lock (or started from TalkBack's "Record" action): the live waveform in the field;
+     * delete · pause · send under it.
+     */
+    data object Locked : Recording
+
+    /** Locked and paused: the draft's waveform and preview; delete · continue · send. */
+    data object Paused : Recording
 }
+
+/** Hands-free: the field shows the waveform and the controls row shows (`chat.voice.layout.locked`). */
+val Recording?.isLocked: Boolean get() = this == Recording.Locked || this == Recording.Paused
 
 /** What a voice capsule shows (`chat.voice.layout.playback`). */
 enum class VoiceState { Idle, Loading, Playing, Paused, Error }
@@ -60,13 +70,14 @@ internal const val TABULAR_DIGITS = "tnum"
 /**
  * The voice message (`chat.voice.layout.capsule`): C-06 fill capsule with C-07's anatomy, hugging its content —
  * `size.global.pillPaddingLeading` → `icon.global.play` / `icon.global.pause` at `size.global.iconSmall` →
- * `size.global.pillIconGap` → the duration (`chat.voice.layout.durationFormat`, tabular digits, text role `pill`) →
- * `size.global.pillPaddingTrailing`; height `size.global.pillHeight` (grows with the font), `radius.global.capsule`.
- * Fill `color.global.surfaceSecondary.android` on a page, `color.global.controlOnDeep` on media ([onMedia]).
- * The label shows the total while idle and the elapsed time while playing or paused mid-way. Loading: the platform
- * activity indicator in the glyph's place; error: `chat.voice.error.play` in `color.global.destructive` (tap retries).
- * Play ↔ pause cross-fades (`duration.global.crossfade`). One button: [label] (`chat.voice.a11y.message` /
- * `.messageMine`), action `chat.voice.a11y.play` / `.pause`.
+ * `size.global.pillIconGap` → the C-36 waveform ([levels], `chat.voice.dimension.waveform` long; played bars up to
+ * [progress]) → `size.global.pillIconGap` → the duration (`chat.voice.layout.durationFormat`, tabular digits, text role
+ * `pill`) → `size.global.pillPaddingTrailing`; height `size.global.pillHeight` (grows with the font),
+ * `radius.global.capsule`. Fill `color.global.surfaceSecondary.android` on a page, `color.global.controlOnDeep` on media
+ * ([onMedia]). The label shows the total while idle and the elapsed time while playing or paused mid-way. Loading: the
+ * platform activity indicator in the glyph's place; error: `chat.voice.error.play` in `color.global.destructive` in the
+ * waveform's and label's place (tap retries). Play ↔ pause cross-fades (`duration.global.crossfade`). One button: [label]
+ * (`chat.voice.a11y.message` / `.messageMine`), action `chat.voice.a11y.play` / `.pause`; the waveform is decorative.
  */
 @Composable
 fun VoiceCapsule(
@@ -77,9 +88,11 @@ fun VoiceCapsule(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onMedia: Boolean = false,
+    levels: List<Int>? = null,
+    progress: Float? = null,
 ) {
     val fill = if (onMedia) Tokens.Colors.globalControlOnDeep else PageRoles.secondarySurface
-    val ink = Tokens.Colors.globalTextPrimary
+    val ink = if (onMedia) Tokens.Colors.globalTextOnMedia else Tokens.Colors.globalTextPrimary
     val shown = when (state) {
         VoiceState.Playing, VoiceState.Paused -> elapsedMs
         else -> durationMs
@@ -114,6 +127,14 @@ fun VoiceCapsule(
         if (state == VoiceState.Error) {
             Text(errorText, style = TextRoles.pill, color = Tokens.Colors.globalDestructive, maxLines = 1)
         } else {
+            VoiceWaveform(
+                levels = levels,
+                holderHeight = Tokens.Sizes.globalPillHeight,
+                modifier = Modifier.width(Tokens.Sizes.chatVoiceDimensionWaveform),
+                progress = progress?.takeIf { state == VoiceState.Playing || state == VoiceState.Paused },
+                onMedia = onMedia,
+            )
+            Spacer(Modifier.width(Tokens.Sizes.globalPillIconGap))
             Text(Formats.voiceDuration(shown), style = TextRoles.pill.copy(fontFeatureSettings = TABULAR_DIGITS), color = ink, maxLines = 1)
         }
     }
