@@ -32,7 +32,8 @@ final class AppDataSimulatorTests: XCTestCase {
         try storage.store(key: key, value: value)
         XCTAssertEqual(try storage.retrieve(key: key), value)
         try storage.remove(key: key)
-        XCTAssertNil(try storage.retrieve(key: key))
+        // A missing item: nil, or errSecItemNotFound from supabase-swift's Keychain (its session storage reads both as none).
+        XCTAssertNil(try? storage.retrieve(key: key))
     }
 
     func testDefaultUploadsUseABackgroundSession() throws {
