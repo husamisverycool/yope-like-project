@@ -114,7 +114,8 @@ class ViewerSnapshotTest : SnapshotBase() {
 /** Three photos in album a-v: Ana's captioned one with a voice note, reactions, tags and two comments; mine; Ben's. */
 fun viewerData(): FakeSocialData = FakeSocialData().apply {
     seedGroup()
-    addPhoto("v-1", ANA, BASE.minusSeconds(86_400 * 2), caption = "sunday sunsets", voicePath = "u/$ANA/md-v-1/voice.m4a", voiceMs = 21_000)
+    posts["v-1"] = addPhoto("v-1", ANA, BASE.minusSeconds(86_400 * 2), caption = "sunday sunsets", voicePath = "u/$ANA/md-v-1/voice.m4a", voiceMs = 21_000)
+        .copy(voiceLevels = NOTE_LEVELS)
     addPhoto("v-2", ME, BASE.minusSeconds(86_400))
     addPhoto("v-3", BEN, BASE.minusSeconds(3_600))
     albumItems["a-v"] = mutableListOf(AlbumItem("a-v", "v-1", 0), AlbumItem("a-v", "v-2", 1), AlbumItem("a-v", "v-3", 2))
@@ -122,4 +123,7 @@ fun viewerData(): FakeSocialData = FakeSocialData().apply {
     tagRows["v-1"] = mutableListOf(ANA, ME)
     messages += FakeSocialData.message("c-1", GROUP, BEN, MessageKind.Text, body = "whoa!", replyToPostId = "v-1", at = BASE.minusSeconds(86_000))
     messages += FakeSocialData.message("c-2", GROUP, ME, MessageKind.Text, body = "need to go back there", replyToPostId = "v-1", at = BASE.minusSeconds(80_000))
+    // A voice reply: the voice capsule on media with its waveform (chat.voice.md, C-36).
+    messages += FakeSocialData.message("c-3", GROUP, BEN, MessageKind.Voice, voicePath = "u/$BEN/voice/c3.m4a", voiceMs = 7_000, replyToPostId = "v-1", at = BASE.minusSeconds(79_000))
+        .copy(voiceLevels = FakeVoice.LEVELS)
 }

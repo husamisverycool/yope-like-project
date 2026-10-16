@@ -15,7 +15,7 @@ import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
@@ -70,6 +70,9 @@ import java.util.Locale
  */
 @RunWith(AndroidJUnit4::class)
 class JourneyTest {
+    // The v2 rule queues effects on a StandardTestDispatcher run on the main thread, as the app's own effects run there. The
+    // v1 rule's unconfined dispatcher resumed RootGate's auth-state collector on the background thread that emitted the
+    // sign-out, and NavController (main thread only) threw.
     private val compose = createAndroidComposeRule<MainActivity>()
     private val evidence = Evidence(compose)
     private val watcher = object : TestWatcher() {
