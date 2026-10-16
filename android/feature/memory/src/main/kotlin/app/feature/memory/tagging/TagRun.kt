@@ -242,6 +242,7 @@ fun TagRun(
     val withText = if (tagged.isEmpty()) null else withNames(stringResource(R.string.tagging_with, joinNames(tagged, locale)), tagged)
     AnimatedContent(
         targetState = withText,
+        label = "tagRun",
         transitionSpec = { DsMotion.fadeIn togetherWith DsMotion.fadeOut },
         modifier = modifier
             .testTag(TagRunTags.RUN)
@@ -255,7 +256,6 @@ fun TagRun(
                     stateDescription = withText.text
                 }
             },
-        label = "tagRun",
     ) { text ->
         if (text == null) {
             Text(toggle, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis)

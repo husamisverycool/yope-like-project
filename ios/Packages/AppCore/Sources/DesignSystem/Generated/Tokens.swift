@@ -995,7 +995,7 @@ public enum Tokens {
         /// Retro · collage.view · recap-preview layout around the collage: rounded media page with a blurred backdrop, close circle, card, bottom row with page dots and Share · SOURCED
         /// token: `collage.view.layout.screen`
         public enum CollageViewLayoutScreen {
-            public static let mediaPage: String = "the page-1 image blurred full-bleed inside a rounded media page (layout.global.materials.backdrop)"
+            public static let mediaPage: String = "the collage's first photo (post_ids[0], its display rendition) aspect-filled and blurred full-bleed inside a rounded media page (C-34 backdrop: size.global.backdropBlur under color.global.backdropDim — L-5, L-7); page 1's image until that photo has loaded"
             public static let mediaPageTop: String = "safe-area top"
             public static let mediaPageSideInset: CGFloat = 0
             public static let mediaPageBottomFromScreenBottom: CGFloat = 94.8

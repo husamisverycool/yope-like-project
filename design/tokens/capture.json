@@ -808,7 +808,7 @@
     "collage.view.layout.screen": {
       "type": "layout",
       "value": {
-        "mediaPage": "the page-1 image blurred full-bleed inside a rounded media page (layout.global.materials.backdrop)",
+        "mediaPage": "the collage's first photo (post_ids[0], its display rendition) aspect-filled and blurred full-bleed inside a rounded media page (C-34 backdrop: size.global.backdropBlur under color.global.backdropDim — L-5, L-7); page 1's image until that photo has loaded",
         "mediaPageTop": "safe-area top",
         "mediaPageSideInset": 0,
         "mediaPageBottomFromScreenBottom": 94.8,

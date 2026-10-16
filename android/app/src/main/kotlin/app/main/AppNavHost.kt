@@ -24,10 +24,6 @@ import app.feature.capture.captureDestinations
 import app.feature.memory.memoryDestinations
 import app.feature.social.socialDestinations
 import app.model.AppRoute
-import androidx.compose.runtime.getValue
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.compose.currentBackStackEntryAsState
-import app.feature.capture.ui.CaptureToastHost
 import app.ui.components.ToastHost
 import app.model.DeepLink
 import app.model.DeepLinkRouting
@@ -60,10 +56,6 @@ fun AppNavHost(
             val ready = RootGate(navController, env)
             // Until the session is known nothing shows, so no screen flashes before sign-up / home.
             if (!ready) Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundAndroid))
-            // The capture pass's send toasts ("posted in …", "saved to your library", send failures)
-            // over groups.list, where the camera returns to (its own screens place their own host).
-            val current by navController.currentBackStackEntryAsState()
-            if (current?.destination?.hasRoute<AppRoute.GroupsList>() == true) CaptureToastHost()
             // Confirmations raised by the account flows, shown as platform toasts (C-26); they outlive the
             // navigation that follows them.
             ToastHost(env.toasts)

@@ -1053,6 +1053,13 @@ Measured: edge-spread fits on `bg2.jpeg` bound σ at ≤ 7.0 % of the width (sha
 and the share image's backdrop fits the avatar photo best at σ 8.3 % of the width. Token `invite.web.layout.backdrop`
 σ = 0.08 × the card / image width under `color.global.backdropDim`; the App Clip card uses the same.
 
+**L-7 — A recap backdrop is one photo, never the composed grid (capture over collage.view's "page 1 blurred").** ST-04
+(2026, the newest capture of Retro's recap preview) shows the card's own photo magnified ≈3× and blurred σ 1.8 pt behind
+the card; TC-REC (2023) shows a grid card on a smooth wash, not on a blurred grid. A blurred copy of our composed page
+puts a busy grid behind the grid card, a look no Retro capture shows. week.recap and year.story already blur their cover
+photo; collage.view now blurs the collage's first photo (`post_ids[0]`, display rendition), with page 1's image only
+until that photo loads.
+
 ---
 
 ## Redesign — Account (RA-*)

@@ -30,13 +30,13 @@ time, then member id; only `in_window` posts. Files under `g/<group_id>/collages
 Full-screen modal on `color.global.backgroundDeep` (both appearances).
 
 1. **Media page** — full width, from the safe-area top to 94.8 pt above the screen bottom, corners 26.5
-   (`layout.global.cornerStyle`); filled with page 1's image blurred, full bleed (`layout.global.materials.backdrop`;
+   (`layout.global.cornerStyle`); filled with the collage's first photo (`post_ids[0]`, display rendition; page 1's image until it loads) aspect-filled and blurred, full bleed (C-34: `size.global.backdropBlur` under `color.global.backdropDim` — MERGE L-5, L-7; `layout.global.materials.backdrop`;
    blur radius not measurable — Gap).
 2. **Close** circle (C-11 on media: `size.global.circleButton`, `color.global.controlOnDeep`, `icon.global.close`
    in `color.global.textOnMedia`), centre 37.7 pt from the trailing edge and 38 pt below the media page top.
 3. **Card** — the current page image, aspect-fit and centred in the media page inset 76 pt top and bottom and ≥ 32 pt
    at the sides (307 × 546 on this screen), clipped to `collage.view.layout.page.outerRadiusRatio` × its width
-   (continuous on iOS). Pages change by horizontal swipe; the backdrop stays page 1's.
+   (continuous on iOS). Pages change by horizontal swipe; the backdrop stays the first photo.
 4. **Page dots** (C-31, only with 2+ pages) centred horizontally, their centre `dimension.year.story.dots.offset`
    (16.1) below the media page (ST-04: 16.3; MERGE_DECISIONS RC-19) — `size.global.pageDot`, `size.global.pageDotPitch`,
    active `color.global.textOnMedia`, inactive `color.global.pageDotInactive` dark value (#808080; media surface).
@@ -47,7 +47,7 @@ Full-screen modal on `color.global.backgroundDeep` (both appearances).
 
 | element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| media page | C-34 backdrop · `collage.view.layout.screen` (mediaPage*), `layout.global.materials` | — (decorative) | page 1 blurred |
+| media page | C-34 backdrop · `collage.view.layout.screen` (mediaPage*), `layout.global.materials` | — (decorative) | first photo blurred |
 | close | C-11 on media | a11y `collage.view.a11y.close` | dismisses |
 | card / page | C-34 card · `collage.view.layout.page`, `daily.dualimage.layout.composition` | a11y `collage.view.a11y.collage` ({group}, {date} = `daily_invitations.local_date`, `retro.voice.formats`) | horizontal paging; no tile tap |
 | page dots | C-31 · `size.global.pageDot`, `.pageDotPitch`, `dimension.year.story.dots.offset` (below the page), `color.global.textOnMedia`, `color.global.pageDotInactive` (dark) | Android a11y value `collage.view.a11y.page` | tap / swipe changes the page |
@@ -112,6 +112,6 @@ of who answered; any 'missed' / 'late' marker for members without a tile.
 | item | status | capture / decision |
 |---|---|---|
 | collage option (A / B / C, or a Retro recap-card composition — RC-14) | owner | owner |
-| backdrop blur radius | not measurable (C-34 Gap) | none from stills |
+| backdrop blur radius | closed: σ 1.8 pt + 22 % dim fitted on ST-04 (MERGE L-5) | — |
 | exact media-page corner | ±1.5 pt (fit limited by page content) | one raw iOS screenshot of a Retro recap preview |
 | part-filled page in Yope | not observed | (only if option B stays) |

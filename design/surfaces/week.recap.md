@@ -165,6 +165,6 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
 | `week.recap.layout.gridFill` | **BLOCKED** (development approximation: fill row by row, empty cells blank, beyond 24 not drawn) | one Retro recap preview (Week style) for a week with 5 photos |
 | old BLOCKED `shortRowSplit`, `shortRowHeight`, `scrim`, `page2` | closed: Yope's card replaced by Retro's card and full-bleed page (RS-17) | — |
 | preview chrome | 2026 render values via the capture group (RC-15); this pass's TC-REC 2023 readings (inset panel, top-left glass close, 41.9-pt circle) superseded (RS-17) | one raw screenshot of Retro's recap preview |
-| backdrop blur radius | not measurable (C-34 Gap) | Retro's iOS internals |
+| backdrop blur radius | closed: σ 1.8 pt + 22 % dim fitted on ST-04 (MERGE L-5) | — |
 | recap text placement | composition: Retro's journal note under the card (RS-19) | — (Retro recaps carry no text) |
 | list card values are a 2023 render (±1 %) | — | one raw screenshot of "Create Recap" |

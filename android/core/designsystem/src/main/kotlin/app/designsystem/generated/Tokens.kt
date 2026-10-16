@@ -829,7 +829,7 @@ object Tokens {
         }
         /** Retro · collage.view · recap-preview layout around the collage: rounded media page with a blurred backdrop, close circle, card, bottom row with page dots and Share · SOURCED — token `collage.view.layout.screen` */
         object CollageViewLayoutScreen {
-            const val mediaPage: String = "the page-1 image blurred full-bleed inside a rounded media page (layout.global.materials.backdrop)"
+            const val mediaPage: String = "the collage's first photo (post_ids[0], its display rendition) aspect-filled and blurred full-bleed inside a rounded media page (C-34 backdrop: size.global.backdropBlur under color.global.backdropDim — L-5, L-7); page 1's image until that photo has loaded"
             const val mediaPageTop: String = "safe-area top"
             const val mediaPageSideInset: Float = 0f
             const val mediaPageBottomFromScreenBottom: Float = 94.8f
