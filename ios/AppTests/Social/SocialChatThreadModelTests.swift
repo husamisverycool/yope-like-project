@@ -425,6 +425,21 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertFalse(data.read { $0.calls }.contains("deleteMessage"))
     }
 
+    /// Owner decision 12: Save on a photo message exists for your own photo only.
+    func testOnlyMyOwnPhotoMessagesAreSaved() async {
+        let model = makeModel()
+        await model.load()
+        let theirs = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p4 })
+        let saver = RecordingPhotoSaver()
+        await model.savePhoto(theirs, using: saver)
+        XCTAssertEqual(saver.savedCount, 0, "Cleo's photo never leaves the app")
+        XCTAssertNil(model.signals.notice)
+        let mine = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p3 })
+        await model.savePhoto(mine, using: saver)
+        XCTAssertEqual(saver.savedCount, 1)
+        XCTAssertEqual(model.signals.notice?.notice, .photoSaved)
+    }
+
     func testReactShowsTheChipAtOnce() async {
         let data = SocialDemo.makeData()
         let model = makeModel(data)

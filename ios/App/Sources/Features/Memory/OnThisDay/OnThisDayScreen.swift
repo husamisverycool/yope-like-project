@@ -237,14 +237,15 @@ struct OnThisDayScreen: View {
         .accessibilityIdentifier("onthisday.back")
     }
 
-    /// D. The native menu: save (every memory), report (someone else's, destructive), delete (yours, destructive).
+    /// D. The native menu: save and delete (your memory; delete destructive) or report (someone else's, destructive). Saving
+    /// someone else's photo is not offered (owner decision 12).
     private var moreMenu: some View {
         CircleMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.onthisdayA11yMore, style: .glass) {
-            Button(Copy.onthisdayMenuSave) {
-                Task { await model.save() }
-            }
             if let current = model.current {
                 if current.isMine {
+                    Button(Copy.onthisdayMenuSave) {
+                        Task { await model.save() }
+                    }
                     Button(Copy.onthisdayMenuDelete, role: .destructive) {
                         model.requestDelete()
                     }
@@ -262,12 +263,13 @@ struct OnThisDayScreen: View {
     // MARK: Control row (`layout.onthisday.controls`)
 
     /// Share, the dial and random, with equal gaps across the width; share and random fade out while playing
-    /// (`duration.global.fade`, `easing.global.standard`).
+    /// (`duration.global.fade`, `easing.global.standard`). Share shows only on your own memory (owner decision 12); on
+    /// someone else's its place stays empty, so the dial does not move.
     private var controls: some View {
         HStack(spacing: 0) {
             Spacer(minLength: 0)
             shareCircle
-                .modifier(HiddenWhilePlaying(isPlaying: model.isPlaying))
+                .modifier(HiddenInPlace(isHidden: model.isPlaying || !model.canExport))
                 .accessibilitySortPriority(4)
             Spacer(minLength: 0)
             RewindDial(
@@ -284,14 +286,14 @@ struct OnThisDayScreen: View {
                 Task { await model.shuffle() }
             }
             .disabled(model.isPicking)
-            .modifier(HiddenWhilePlaying(isPlaying: model.isPlaying))
+            .modifier(HiddenInPlace(isHidden: model.isPlaying))
             .accessibilitySortPriority(1)
             .accessibilityIdentifier("onthisday.shuffle")
             Spacer(minLength: 0)
         }
     }
 
-    /// The native share sheet with the memory's original; preview title = today's date (`layout.year.story.dateFormat`).
+    /// The native share sheet with your memory's original; preview title = today's date (`layout.year.story.dateFormat`).
     @ViewBuilder
     private var shareCircle: some View {
         MemoryImageScope { images in
@@ -317,16 +319,16 @@ struct OnThisDayScreen: View {
     }
 }
 
-/// Share and random while playing: faded out (`duration.global.fade`, `easing.global.standard`), not tappable, hidden from
-/// VoiceOver; they keep their place so the dial does not move.
-private struct HiddenWhilePlaying: ViewModifier {
-    let isPlaying: Bool
+/// Share and random while playing (and share on someone else's memory): faded out (`duration.global.fade`,
+/// `easing.global.standard`), not tappable, hidden from VoiceOver; they keep their place so the dial does not move.
+private struct HiddenInPlace: ViewModifier {
+    let isHidden: Bool
 
     func body(content: Content) -> some View {
         content
-            .opacity(isPlaying ? 0 : 1)
-            .allowsHitTesting(!isPlaying)
-            .accessibilityHidden(isPlaying)
-            .dsAnimation(ComponentMotion.fade, value: isPlaying)
+            .opacity(isHidden ? 0 : 1)
+            .allowsHitTesting(!isHidden)
+            .accessibilityHidden(isHidden)
+            .dsAnimation(ComponentMotion.fade, value: isHidden)
     }
 }

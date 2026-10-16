@@ -59,6 +59,8 @@ struct YearStoryPhoto: Equatable, Sendable {
     let date: LocalDate
     /// `display_path`.
     let imageURL: URL?
+    /// Posted by the signed-in member: only then does its card offer Share (owner decision 12).
+    var isMine: Bool = false
 }
 
 /// A day when everyone answered the daily invitation, with its collage.
@@ -126,10 +128,13 @@ enum YearStoryCard: Equatable, Identifiable, Sendable {
         }
     }
 
-    /// The cards with the Share pill (the card table's last column): the facts, the outro and the summary.
+    /// The cards with the Share pill (the card table's last column): the facts, the collages, the outro and the summary —
+    /// group pieces made for sharing — and a most-reacted photo only when it is your own (owner decision 12: someone
+    /// else's photo never leaves the app).
     var isShareable: Bool {
         switch self {
-        case .moments, .busiestMonth, .mostReacted, .togetherDay, .outro, .summary: return true
+        case .moments, .busiestMonth, .togetherDay, .outro, .summary: return true
+        case let .mostReacted(photo): return photo.isMine
         case .intro, .lookBack, .mostReactedSetup, .togetherSetup: return false
         }
     }
@@ -294,7 +299,7 @@ final class YearStoryModel {
                 return
             }
             let groupName = try await data.group(id: groupID)?.name ?? ""
-            let photos = try await Self.photos(storyData, data: data)
+            let photos = try await Self.photos(storyData, data: data, me: me)
             let collages = try await Self.collages(storyData, data: data)
             let grid = try await Self.grid(storyData, postIDs: story.postIDs, data: data)
             let cover = try await Self.coverURL(storyData, postIDs: story.postIDs, data: data)
@@ -369,8 +374,8 @@ final class YearStoryModel {
     /// (`count.year.story.listLength`).
     static var preloadCount: Int { Int(Tokens.Counts.yearStoryListLength) }
 
-    /// Most-reacted posts in the worker's order; posts hidden by a block (RLS) are skipped.
-    static func photos(_ story: YearStoryData, data: any MemoryDataSource) async throws -> [YearStoryPhoto] {
+    /// Most-reacted posts in the worker's order; posts hidden by a block (RLS) are skipped. `me` marks your own photos.
+    static func photos(_ story: YearStoryData, data: any MemoryDataSource, me: UserID? = nil) async throws -> [YearStoryPhoto] {
         let listLength = Int(Tokens.Counts.yearStoryListLength)
         guard !story.mostReacted.isEmpty else { return [] }
         let posts = try await data.postsWithMedia(ids: story.mostReacted)
@@ -384,7 +389,8 @@ final class YearStoryModel {
                 postID: post.post.id,
                 name: names[post.post.authorID] ?? "",
                 date: LocalDate(post.post.createdAt, in: story.timeZone),
-                imageURL: post.media?.imagePath(for: .display).flatMap { urls[$0] }
+                imageURL: post.media?.imagePath(for: .display).flatMap { urls[$0] },
+                isMine: me != nil && post.post.authorID == me
             )
         }
     }

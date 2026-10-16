@@ -65,6 +65,10 @@ final class MemoryTributeTests: XCTestCase {
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .ready)
         XCTAssertEqual(model.title, Copy.birthdayTributeTitleMember(name: "Bea"), "members see the honoree's name")
+        XCTAssertFalse(model.offersExport, "save and Share are the honoree's (owner decision 12)")
+        XCTAssertNil(model.localFile, "no file is downloaded for a member")
+        XCTAssertFalse(model.canUseFile)
+        XCTAssertEqual(context.data.calls(of: .downloadFile), 0)
     }
 
     func testRenderingFailedDeletedAndOffline() async {

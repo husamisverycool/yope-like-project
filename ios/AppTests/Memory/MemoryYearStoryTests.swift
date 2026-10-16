@@ -8,8 +8,8 @@ import XCTest
 final class MemoryYearStoryTests: XCTestCase {
     private var year: Int { LocalDate(MemoryTestContext.referenceNow, in: MemoryFormat.utc).year }
 
-    private func photo(_ number: Int) -> YearStoryPhoto {
-        YearStoryPhoto(postID: MemoryIDs.post(number), name: "Bea", date: LocalDate(year: 2026, month: 2, day: 25)!, imageURL: nil)
+    private func photo(_ number: Int, isMine: Bool = false) -> YearStoryPhoto {
+        YearStoryPhoto(postID: MemoryIDs.post(number), name: "Bea", date: LocalDate(year: 2026, month: 2, day: 25)!, imageURL: nil, isMine: isMine)
     }
 
     func testParsesWorkerDataV1() {
@@ -40,7 +40,7 @@ final class MemoryYearStoryTests: XCTestCase {
             "year": .number(2026), "moments_shared": .number(42), "busiest_month": .object(["month": .number(3)]),
         ]), fallbackYear: 2026)!
         let collage = YearStoryCollage(collageID: CollageID("00000000-0000-4000-8000-0000000000e1"), date: LocalDate(year: 2026, month: 6, day: 14)!, postIDs: [], imageURL: nil)
-        let cards = YearStoryCard.build(data: data, groupName: "Sunday dinners", photos: [photo(1), photo(2)], collages: [collage])
+        let cards = YearStoryCard.build(data: data, groupName: "Sunday dinners", photos: [photo(1), photo(2, isMine: true)], collages: [collage])
         XCTAssertEqual(cards.map(\.id), [
             "intro", "look-back", "moments", "busiest-month", "most-reacted-setup",
             "most-reacted-" + MemoryIDs.post(1).rawValue, "most-reacted-" + MemoryIDs.post(2).rawValue,
@@ -48,9 +48,9 @@ final class MemoryYearStoryTests: XCTestCase {
         ])
         XCTAssertEqual(
             cards.filter(\.isShareable).map(\.id),
-            ["moments", "busiest-month", "most-reacted-" + MemoryIDs.post(1).rawValue, "most-reacted-" + MemoryIDs.post(2).rawValue,
+            ["moments", "busiest-month", "most-reacted-" + MemoryIDs.post(2).rawValue,
              "together-" + collage.collageID.rawValue, "outro", "summary"],
-            "the Share pill: the facts, the outro and the summary"
+            "the Share pill: the facts, the collages, the outro, the summary and your own photo — not Bea's (owner decision 12)"
         )
         XCTAssertEqual(cards[0].headline, Copy.yearStoryIntroTitle)
         XCTAssertEqual(cards[0].subline, Copy.yearStoryIntroSubtitle(group: "Sunday dinners", year: "2026"))
@@ -261,6 +261,23 @@ final class MemoryYearStoryTests: XCTestCase {
         while model.currentCard != .mostReactedSetup { model.next() }
         let requested = await memoryEventually { context.images.requested.count >= 3 }
         XCTAssertTrue(requested, "the photo cards after the setup card are loaded before the tap")
+    }
+
+    /// Owner decision 12: of the most-reacted photo cards only your own offers Share; the group pieces keep theirs.
+    func testOnlyYourOwnMostReactedPhotoOffersShare() async {
+        let context = MemoryTestContext()
+        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        let reacted = model.cards.compactMap { card -> YearStoryPhoto? in
+            if case let .mostReacted(photo) = card { return photo }
+            return nil
+        }
+        XCTAssertEqual(reacted.map(\.postID), [MemoryIDs.post(2), MemoryIDs.post(1), MemoryIDs.post(3)])
+        XCTAssertEqual(reacted.map(\.isMine), [false, true, false], "post 1 is the signed-in member's")
+        XCTAssertEqual(reacted.map { YearStoryCard.mostReacted($0).isShareable }, [false, true, false])
+        XCTAssertTrue(model.cards.filter { if case .togetherDay = $0 { return true } else { return false } }.allSatisfy(\.isShareable),
+                      "collages are group pieces made for sharing")
+        XCTAssertTrue(YearStoryCard.summary.isShareable)
     }
 
     func testBlockedPostsAreSkippedAndDeletionsDropCards() async {

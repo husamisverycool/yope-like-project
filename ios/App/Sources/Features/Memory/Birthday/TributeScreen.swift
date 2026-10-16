@@ -13,7 +13,7 @@ import SwiftUI
 import UIKit
 
 /// The birthday video for the honoree (after delivery) and for members (any time): title and group, the player with
-/// native controls, save and Share. Dark in both appearances; full screen.
+/// native controls, and — for the honoree only (owner decision 12) — save and Share. Dark in both appearances; full screen.
 @MainActor
 struct TributeScreen: View {
     let tributeID: String
@@ -190,8 +190,10 @@ struct TributeScreen: View {
         .frame(minHeight: Tokens.Layouts.CollageShareLayoutPill.height)
     }
 
-    /// The row belongs to the video: shown while it loads (disabled) and when it is ready.
+    /// The row belongs to the video and to the honoree: shown to them while it loads (disabled) and when it is ready;
+    /// members have no save or Share (owner decision 12).
     private var showsBottomRow: Bool {
+        guard model.offersExport else { return false }
         switch model.phase {
         case .idle, .loading, .rendering, .ready: return true
         case .notFound, .error, .offline: return false

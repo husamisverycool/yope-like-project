@@ -63,8 +63,12 @@ final class TributeModel {
         return deliveredAt <= now
     }
 
-    /// Save and Share work once the file is on the device.
-    var canUseFile: Bool { phase == .ready && localFile != nil && !isSaving }
+    /// Save and Share are the honoree's: the video was made for them, and it carries other members' photos, which leave the
+    /// app only through the person they were given to (owner decision 12). Members watch it in the app.
+    var offersExport: Bool { isHonoree }
+
+    /// Save and Share work once the file is on the device (the honoree only).
+    var canUseFile: Bool { offersExport && phase == .ready && localFile != nil && !isSaving }
 
     /// "Your birthday video" for the honoree, "{name}'s birthday video" for anyone else.
     var title: String {
@@ -129,7 +133,8 @@ final class TributeModel {
             }
             posterURL = tribute.posterPath.flatMap { urls[$0] }
             phase = .ready
-            // The file for Download / Share comes after the player was prepared.
+            // The file for Download / Share (the honoree's) comes after the player was prepared.
+            guard offersExport else { return }
             localFile = try? await data.downloadFile(from: video, name: tribute.id.rawValue + ".mp4") // provenance-ok: file extension of the MP4
         } catch {
             switch MemoryFailure(error) {

@@ -138,11 +138,20 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertEqual(context.haptics.filter { $0 == Tokens.Haptics.globalSelect }.count, 3)
     }
 
+    /// Moves to the fixture's own memory (index 2, posted by the signed-in member) and forgets the two dial ticks.
+    private func showOwnMemory(_ model: OnThisDayModel, _ context: MemoryTestContext) {
+        model.next()
+        model.next()
+        XCTAssertTrue(model.current?.isMine == true)
+        context.clearHaptics()
+    }
+
     func testSaveDownloadsTheOriginalAndConfirms() async {
         let saved = SavedData()
         let context = MemoryTestContext()
         let model = makeModel(context, savePhoto: { await saved.append($0) })
         await model.loadIfNeeded()
+        showOwnMemory(model, context)
         await model.save()
         let count = await saved.count
         XCTAssertEqual(count, 1)
@@ -153,6 +162,7 @@ final class MemoryOnThisDayTests: XCTestCase {
         let denied = MemoryTestContext()
         let deniedModel = makeModel(denied, savePhoto: { _ in throw PhotoLibraryService.LibraryError.notAuthorized(.denied) })
         await deniedModel.loadIfNeeded()
+        showOwnMemory(deniedModel, denied)
         await deniedModel.save()
         XCTAssertTrue(deniedModel.showsSaveDenied, "add-only access denied: the native alert that opens Settings")
         XCTAssertEqual(denied.haptics, [Tokens.Haptics.globalError])
@@ -161,9 +171,32 @@ final class MemoryOnThisDayTests: XCTestCase {
         let failing = MemoryTestContext()
         let failingModel = makeModel(failing, savePhoto: { _ in throw Broken() })
         await failingModel.loadIfNeeded()
+        showOwnMemory(failingModel, failing)
         await failingModel.save()
         XCTAssertFalse(failingModel.showsSaveDenied)
         XCTAssertEqual(failing.lastToast, Copy.onthisdaySaveFailed)
+    }
+
+    /// Owner decision 12: save and share take a photo out of the app, so only your own memory offers them.
+    func testOnlyYourOwnMemoryCanBeSavedOrShared() async {
+        let saved = SavedData()
+        let context = MemoryTestContext()
+        let model = makeModel(context, savePhoto: { await saved.append($0) })
+        await model.loadIfNeeded()
+        XCTAssertFalse(model.current?.isMine == true, "the newest memory is Bea's")
+        XCTAssertFalse(model.canExport)
+        XCTAssertNil(model.shareItem, "no share sheet for someone else's photo")
+        await model.save()
+        let none = await saved.count
+        XCTAssertEqual(none, 0, "someone else's photo is never saved")
+        XCTAssertEqual(context.data.calls(of: .downloadData), 0)
+        XCTAssertNil(context.lastToast)
+        showOwnMemory(model, context)
+        XCTAssertTrue(model.canExport)
+        XCTAssertNotNil(model.shareItem, "your own memory: the share sheet with its original")
+        model.next()
+        XCTAssertFalse(model.canExport, "the next memory is someone else's again")
+        XCTAssertNil(model.shareItem)
     }
 
     func testReportOpensSafetyReportForSomeoneElsesMemoryOnly() async {

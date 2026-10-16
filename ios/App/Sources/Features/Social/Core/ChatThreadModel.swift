@@ -569,9 +569,10 @@ final class ChatThreadModel {
         }
     }
 
-    /// "Save" on a photo message (as `photo.viewer`'s Save to Camera Roll).
+    /// "Save" on your own photo message (as `photo.viewer`'s Save to Camera Roll); someone else's photo never leaves the
+    /// app (owner decision 12).
     func savePhoto(_ message: Message, using saver: any SocialPhotoSaving) async {
-        guard let media = post(of: message)?.media else { return }
+        guard isMine(message), let media = post(of: message)?.media else { return }
         do {
             let fileURL = try await data.fileURL(path: media.originalPath)
             var motionURL: URL?

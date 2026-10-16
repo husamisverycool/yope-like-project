@@ -1,5 +1,5 @@
-// onthisday: the feature intro once, the Rewind page with the dial's play / pause (share and random hide while playing),
-// the dice (shuffle) and the back chevron.
+// onthisday: the feature intro once, the Rewind page with the dial's play / pause (share and random hide while playing;
+// share shows only on your own memory — owner decision 12), the dice (shuffle) and the back chevron.
 import XCTest
 
 final class MemoryOnThisDayUITests: XCTestCase {
@@ -27,9 +27,12 @@ final class MemoryOnThisDayUITests: XCTestCase {
         let subtitle = MemoryUITestLaunch.element(app, "onthisday.subtitle")
         XCTAssertTrue(subtitle.exists)
 
+        // The newest memory is another member's: no share circle (its place stays empty).
+        let share = MemoryUITestLaunch.element(app, "onthisday.share")
+        XCTAssertFalse(share.isHittable, "no share on someone else's memory")
+
         // Play: the centre turns to pause; share and random hide while playing.
         let play = MemoryUITestLaunch.element(app, "onthisday.play")
-        let share = MemoryUITestLaunch.element(app, "onthisday.share")
         let playLabel = play.label
         play.tap()
         XCTAssertNotEqual(play.label, playLabel, "play becomes pause")

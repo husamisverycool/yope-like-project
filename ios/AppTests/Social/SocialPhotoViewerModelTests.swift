@@ -294,8 +294,18 @@ final class SocialPhotoViewerModelTests: XCTestCase {
     }
 
     func testSaveAndPermissionDenied() async {
-        let model = makeModel(start: SocialDemo.p4)
+        // My own Live Photo (p4 re-authored as mine for this test).
+        let data = SocialDemo.makeData()
+        data.update { state in
+            state.posts = state.posts.map { item in
+                item.post.id == SocialDemo.p4
+                    ? SocialDemo.post(SocialDemo.p4, by: SocialDemo.me, at: item.post.createdAt, kind: .livePhoto)
+                    : item
+            }
+        }
+        let model = makeModel(data, start: SocialDemo.p4)
         await model.load()
+        XCTAssertTrue(model.isCurrentOwn)
         let saver = RecordingPhotoSaver()
         await model.saveCurrent(using: saver)
         XCTAssertEqual(saver.savedCount, 1)
@@ -305,6 +315,18 @@ final class SocialPhotoViewerModelTests: XCTestCase {
 
         await model.saveCurrent(using: RecordingPhotoSaver(denied: true))
         XCTAssertTrue(model.saveDenied, "denied: the inline permission card")
+    }
+
+    /// Owner decision 12: a photo leaves the app only when it is your own.
+    func testOthersPhotosAreNeverSaved() async {
+        let model = makeModel(start: SocialDemo.p4)
+        await model.load()
+        XCTAssertFalse(model.isCurrentOwn, "Cleo's Live Photo")
+        let saver = RecordingPhotoSaver()
+        await model.saveCurrent(using: saver)
+        XCTAssertEqual(saver.savedCount, 0)
+        XCTAssertNil(model.signals.notice)
+        XCTAssertFalse(model.saveDenied)
     }
 
     func testBlockingTheAuthorRemovesTheirPhotos() async throws {
