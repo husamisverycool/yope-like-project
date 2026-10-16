@@ -395,6 +395,9 @@ class SendToViewModel(
                 groupIds = order.map { it.id },
                 caption = caption,
                 replyToPostId = pending?.replyToPostId,
+                // The weekly question (question.weekly B): only the post to the camera's group answers it.
+                questionId = pending?.questionId,
+                questionGroupId = pending?.questionId?.let { pending.contextGroupId },
             ),
         )
     }

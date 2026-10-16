@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import app.designsystem.R
 import app.push.AppChannel
+import app.push.ChannelCopy
 
 /**
  * Registers the notification channels (core:push `AppChannel`, importance fixed there) with the
@@ -23,13 +24,16 @@ object AppNotificationChannels {
         AppChannel.BirthdayRequest -> R.string.notifications_push_channel_birthdayrequest_name to R.string.notifications_push_channel_birthdayrequest_description
         AppChannel.Tribute -> R.string.notifications_push_channel_tribute_name to R.string.notifications_push_channel_tribute_description
         AppChannel.YearStory -> null
+        AppChannel.DevelopedPhotos -> R.string.notifications_push_channel_developedphotos_name to R.string.notifications_push_channel_developedphotos_description
+        AppChannel.Plans -> R.string.notifications_push_channel_plans_name to R.string.notifications_push_channel_plans_description
     }
 
     fun register(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
         val channels = AppChannel.entries.mapNotNull { channel ->
-            val (name, description) = copy(channel) ?: return@mapNotNull null
-            NotificationChannel(channel.id, context.getString(name), channel.importance).apply { setDescription(context.getString(description)) }
+            val (name, _) = copy(channel) ?: return@mapNotNull null
+            // The developed-photos description takes the formatted reveal time (core:push `ChannelCopy.description`).
+            NotificationChannel(channel.id, context.getString(name), channel.importance).apply { setDescription(ChannelCopy.description(context, channel)) }
         }
         manager.createNotificationChannels(channels)
     }

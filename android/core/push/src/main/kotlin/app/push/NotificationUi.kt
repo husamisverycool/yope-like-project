@@ -6,7 +6,13 @@
 package app.push
 
 import android.content.Context
+import android.text.format.DateFormat
 import app.designsystem.R
+import app.designsystem.generated.Tokens
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.util.Date
 
 /**
  * The user-visible copy of each notification channel (`notifications.push.channel.*`) and the set
@@ -29,6 +35,8 @@ object ChannelCopy {
         AppChannel.BirthdayRequest -> R.string.notifications_push_channel_birthdayrequest_name
         AppChannel.Tribute -> R.string.notifications_push_channel_tribute_name
         AppChannel.YearStory -> null
+        AppChannel.DevelopedPhotos -> R.string.notifications_push_channel_developedphotos_name
+        AppChannel.Plans -> R.string.notifications_push_channel_plans_name
     }
 
     fun descriptionRes(channel: AppChannel): Int? = when (channel) {
@@ -39,6 +47,25 @@ object ChannelCopy {
         AppChannel.BirthdayRequest -> R.string.notifications_push_channel_birthdayrequest_description
         AppChannel.Tribute -> R.string.notifications_push_channel_tribute_description
         AppChannel.YearStory -> null
+        AppChannel.DevelopedPhotos -> R.string.notifications_push_channel_developedphotos_description
+        AppChannel.Plans -> R.string.notifications_push_channel_plans_description
+    }
+
+    /**
+     * The channel's description as shown in system settings. `developedPhotos` takes `{time}`: the reveal time
+     * (`camera.overnight.layout.reveal` time, 09:00) in the locale's short time format (`DateFormat.getTimeFormat`,
+     * MERGE ON-10).
+     */
+    fun description(context: Context, channel: AppChannel): String? {
+        val res = descriptionRes(channel) ?: return null
+        return if (channel == AppChannel.DevelopedPhotos) context.getString(res, revealTime(context)) else context.getString(res)
+    }
+
+    /** `{time}` of the overnight copy: 09:00 today in the device's zone, as the locale writes a short time ("9:00 AM"). */
+    fun revealTime(context: Context): String {
+        val time = LocalTime.parse(Tokens.Layouts.CameraOvernightLayoutReveal.time)
+        val zone = ZoneId.systemDefault()
+        return DateFormat.getTimeFormat(context).format(Date.from(LocalDate.now(zone).atTime(time).atZone(zone).toInstant()))
     }
 
     /** Creates or updates every channel that has copy. Safe to call on every process start. */
@@ -47,7 +74,7 @@ object ChannelCopy {
             context,
             registered,
             name = { context.getString(requireNotNull(nameRes(it))) },
-            description = { channel -> descriptionRes(channel)?.let(context::getString) },
+            description = { channel -> description(context, channel) },
         )
     }
 }

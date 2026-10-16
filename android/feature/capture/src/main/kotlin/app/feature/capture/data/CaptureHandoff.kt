@@ -27,15 +27,17 @@ class CaptureHandoff {
     /**
      * [replyToPostId]: a reply to a photo with a photo (`photo.viewer` → camera,
      * `SocialHandoff.REPLY_TO_POST_ID`): it goes to exactly the replied post's group.
+     * [questionId]: the weekly question being answered (`question.weekly` B, `QuestionHandoff.QUESTION_ID`): the post to
+     * [contextGroupId] is linked to it after posting.
      */
-    data class Pending(val media: CapturedMedia, val contextGroupId: String?, val replyToPostId: String? = null)
+    data class Pending(val media: CapturedMedia, val contextGroupId: String?, val replyToPostId: String? = null, val questionId: String? = null)
 
     private val state = MutableStateFlow<Pending?>(null)
     val pending: StateFlow<Pending?> = state.asStateFlow()
 
-    fun put(media: CapturedMedia, contextGroupId: String?, replyToPostId: String? = null) {
+    fun put(media: CapturedMedia, contextGroupId: String?, replyToPostId: String? = null, questionId: String? = null) {
         state.value?.media?.file?.takeIf { it != media.file }?.delete()
-        state.value = Pending(media, contextGroupId, replyToPostId)
+        state.value = Pending(media, contextGroupId, replyToPostId, questionId)
     }
 
     /** Drops the capture and its file (✕ on send-to, or after it was queued). */

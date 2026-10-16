@@ -3,6 +3,7 @@ package app.data
 import android.content.Context
 import app.data.auth.EncryptedSessionManager
 import app.data.auth.KeystoreSessionCipher
+import app.data.glue.CountdownWidgetSync
 import app.data.glue.GlueBridges
 import app.data.glue.SessionGlue
 import app.data.media.MediaStorage
@@ -11,11 +12,13 @@ import app.data.media.upload.PostRemote
 import app.data.media.upload.PostUploader
 import app.data.media.upload.UploadQueue
 import app.data.media.upload.UploadStore
+import app.data.model.DevelopingPost
 import app.data.model.NewMedia
 import app.data.model.Post
 import app.data.offline.Connectivity
 import app.data.offline.OfflineCache
 import app.data.realtime.GroupRealtime
+import app.data.realtime.PlanRealtime
 import app.data.realtime.ReconnectPolicy
 import app.data.realtime.SupabaseRealtimeChannels
 import app.data.remote.Api
@@ -26,16 +29,20 @@ import app.data.repo.AuthRepository
 import app.data.repo.BirthdayRepository
 import app.data.repo.BrowseRepository
 import app.data.repo.ChatRepository
+import app.data.repo.DevelopingRepository
 import app.data.repo.DeviceRepository
 import app.data.repo.EntitlementRepository
 import app.data.repo.GroupRepository
 import app.data.repo.InvitationRepository
 import app.data.repo.PostOptions
+import app.data.repo.PlanRepository
 import app.data.repo.PostRepository
+import app.data.repo.QuestionRepository
 import app.data.repo.ProfileRepository
 import app.data.repo.ReactionRepository
 import app.data.repo.RecapRepository
 import app.data.repo.SafetyRepository
+import app.data.repo.SelfieReactionRepository
 import app.data.repo.SettingsRepository
 import app.data.repo.TagRepository
 import app.data.repo.YearStoryRepository
@@ -101,6 +108,7 @@ class DataGraph(context: Context, val config: SupabaseConfig, val options: DataO
     val posts = PostRepository(api, cache, clock)
     val chat = ChatRepository(api, storage, cache, clock)
     val reactions = ReactionRepository(api)
+    val selfies = SelfieReactionRepository(api, storage)
     val tags = TagRepository(api)
     val browse = BrowseRepository(api, cache, clock)
     val recaps = RecapRepository(api, cache, clock)
@@ -117,8 +125,15 @@ class DataGraph(context: Context, val config: SupabaseConfig, val options: DataO
 
     val realtime = GroupRealtime(SupabaseRealtimeChannels(client, scope), scope, options.reconnect)
 
+    // §14.2 plans, §14.3 a group's developing photos, §14.4 the weekly question; the countdown widget's snapshot.
+    val plans = PlanRepository(api, storage, cache, clock)
+    val planRealtime = PlanRealtime(client, scope)
+    val developing = DevelopingRepository(api)
+    val questions = QuestionRepository(api)
+    val countdown by lazy { CountdownWidgetSync(appContext, plans, groups, storage, scope, clock) }
+
     val uploadStore = UploadStore(options.uploadsDir)
-    val uploader = PostUploader(RepositoryPostRemote(storage, posts), uploadStore)
+    val uploader = PostUploader(RepositoryPostRemote(storage, posts, questions), uploadStore)
     val uploads = UploadQueue(appContext, uploadStore) { auth.currentUserId }
 
     @Volatile private var glue: SessionGlue? = null
@@ -157,8 +172,12 @@ class DataGraph(context: Context, val config: SupabaseConfig, val options: DataO
     }
 }
 
-/** [PostRemote] over storage-kt and [PostRepository]. */
-class RepositoryPostRemote(private val storage: MediaStorage, private val posts: PostRepository) : PostRemote {
+/** [PostRemote] over storage-kt, [PostRepository] and (the weekly question's link) [QuestionRepository]. */
+class RepositoryPostRemote(
+    private val storage: MediaStorage,
+    private val posts: PostRepository,
+    private val questions: QuestionRepository? = null,
+) : PostRemote {
     override suspend fun upload(path: String, file: File, contentType: String, onProgress: (Long, Long) -> Unit) =
         storage.upload(path, file, contentType, onProgress)
 
@@ -168,4 +187,11 @@ class RepositoryPostRemote(private val storage: MediaStorage, private val posts:
         posts.createPost(mediaId, groupIds, options)
 
     override suspend fun postsOfMedia(mediaId: String): List<Post> = posts.postsOfMedia(mediaId)
+
+    override suspend fun createOvernightPost(mediaId: String, groupIds: List<String>): List<DevelopingPost> =
+        posts.createOvernightPost(mediaId, groupIds)
+
+    override suspend fun answerQuestion(postId: String, questionId: String) {
+        questions?.answer(postId, questionId)
+    }
 }

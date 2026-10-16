@@ -69,6 +69,8 @@ data class SettingsNotificationsUiState(
     val online: Boolean = true,
     /** A change failed (the control returned): the message-only alert `settings.notifications.error`. */
     val error: Boolean = false,
+    /** camera.overnight: the reveal push of overnight photos (`notification_settings.overnight`, default on). */
+    val overnightOn: Boolean = true,
 )
 
 class SettingsNotificationsViewModel(private val env: AccountEnvironment) : AccountViewModel() {
@@ -90,7 +92,12 @@ class SettingsNotificationsViewModel(private val env: AccountEnvironment) : Acco
         }
         viewModelScope.launch {
             val settings = runCatching { env.backend.notificationSettings() }.getOrNull()
-            mutable.update { it.copy(quietStart = settings?.quietStart, quietEnd = settings?.quietEnd, quietOn = settings?.quietStart != null && settings.quietEnd != null, loaded = true) }
+            mutable.update {
+                it.copy(
+                    quietStart = settings?.quietStart, quietEnd = settings?.quietEnd, quietOn = settings?.quietStart != null && settings.quietEnd != null,
+                    overnightOn = settings?.overnight ?: true, loaded = true,
+                )
+            }
         }
     }
 
@@ -146,10 +153,32 @@ class SettingsNotificationsViewModel(private val env: AccountEnvironment) : Acco
         }
     }
 
+    /** "Developed Photos" (`camera.overnight.settings.row`): `set_overnight_alerts(p_on)`, optimistic; reverts with the error alert. */
+    fun setOvernight(on: Boolean) {
+        if (!mutable.value.online) return failed()
+        val before = mutable.value.overnightOn
+        mutable.update { it.copy(overnightOn = on, error = false) }
+        viewModelScope.launch {
+            try {
+                env.backend.setOvernightAlerts(on)
+            } catch (t: Throwable) {
+                t.dataError()
+                mutable.update { it.copy(overnightOn = before) }
+                failed()
+            }
+        }
+    }
+
     private fun failed() {
         mutable.update { it.copy(error = true) }
         haptic(Tokens.Haptics.globalError)
     }
+}
+
+/** `{time}` of the overnight copy: `camera.overnight.layout.reveal.time` (09:00) in the locale's short time format (`DateFormat.getTimeFormat`). */
+internal fun overnightTime(context: android.content.Context): String {
+    val today = java.time.ZonedDateTime.now().with(LocalTime.parse(Tokens.Layouts.CameraOvernightLayoutReveal.time))
+    return android.text.format.DateFormat.getTimeFormat(context).format(java.util.Date.from(today.toInstant()))
 }
 
 @Composable
@@ -177,6 +206,7 @@ fun SettingsNotificationsRoute(nav: NavController) {
         onEnd = vm::setEnd,
         onCategories = openSettings,
         onDismissError = vm::dismissError,
+        onOvernight = vm::setOvernight,
     )
 }
 
@@ -186,7 +216,9 @@ fun SettingsNotificationsRoute(nav: NavController) {
  * app's notification settings; the rows below stay editable); 2. Groups — one row per group (cover in a
  * `size.global.avatarComment` circle, C-23 fallback `icon.global.group`; name; native switch, on = notifications on) and
  * the footer (hidden with no groups); 3. Quiet Hours — switch; when on, Start / End with their times → the M3 time
- * picker; footer (the rows expand with `AnimatedVisibility`); 5. Android: "Notification Categories" → the channel settings.
+ * picker; footer (the rows expand with `AnimatedVisibility`); then the overnight photos' switch (camera.overnight: row
+ * `camera.overnight.settings.row` with the detail `.settings.rowDetail` ({time}: 09:00 in the locale's short time format),
+ * on = the reveal push); 5. Android: "Notification Categories" → the channel settings.
  */
 @Composable
 fun SettingsNotificationsScreen(
@@ -200,7 +232,9 @@ fun SettingsNotificationsScreen(
     onEnd: (LocalTime) -> Unit,
     onCategories: () -> Unit,
     onDismissError: () -> Unit = {},
+    onOvernight: (Boolean) -> Unit = {},
 ) {
+    val context = LocalContext.current
     var picking by remember { mutableStateOf<Boolean?>(null) } // true = start, false = end
     SheetPage(
         title = stringResource(R.string.settings_notifications_title),
@@ -249,6 +283,18 @@ fun SettingsNotificationsScreen(
             }
             SettingsGroup(rows)
             SettingsFooter(stringResource(R.string.settings_notifications_quiethours_footer))
+            SettingsGap()
+            // camera.overnight → Push: the member's switch for the one "developed" notification per group and reveal.
+            val revealTime = remember(context) { overnightTime(context) }
+            SettingsGroup(
+                listOf(
+                    GroupedRowSpec(
+                        title = stringResource(R.string.camera_overnight_settings_row),
+                        subtitle = stringResource(R.string.camera_overnight_settings_rowdetail, revealTime),
+                        trailing = GroupedTrailing.Toggle(state.overnightOn, onOvernight),
+                    ),
+                ),
+            )
             SettingsGap()
             SettingsGroup(listOf(navRow(stringResource(R.string.settings_notifications_categories), onClick = onCategories)))
         }

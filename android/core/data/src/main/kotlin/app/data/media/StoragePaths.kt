@@ -29,6 +29,9 @@ object StoragePaths {
     /** `u/<uid>/covers/<uuid>.jpg` — a group cover (the group id does not exist yet at upload). */
     fun cover(uid: String, id: String): String = "u/${seg(uid)}/covers/${seg(id)}.jpg"
 
+    /** `u/<uid>/selfies/<uuid>.jpg` — a selfie reaction (docs/API.md §14.1), uploaded before `react_with_selfie`. */
+    fun selfie(uid: String, id: String): String = "u/${seg(uid)}/selfies/${seg(id)}.jpg"
+
     /** `avatars/<uid>/<uuid>.jpg` */
     fun avatar(uid: String, id: String): String = "avatars/${seg(uid)}/${seg(id)}.jpg"
 

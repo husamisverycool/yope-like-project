@@ -17,6 +17,7 @@ import app.feature.account.AccountEnvironment
 import app.feature.account.AccountEnvironments
 import app.feature.account.LocalAccountEnvironment
 import app.feature.account.accountDestinations
+import app.feature.account.plans.planDestinations
 import app.feature.account.shell.RootGate
 import app.feature.account.shell.ShellTabBar
 import app.feature.capture.captureDestinations
@@ -51,6 +52,8 @@ fun AppNavHost(
                 captureDestinations(navController)
                 socialDestinations(navController)
                 memoryDestinations(navController)
+                // plans.page / plans.create (the account group's plan surfaces).
+                planDestinations(navController)
             }
             ShellTabBar(navController, env, Modifier.align(Alignment.BottomCenter))
             val ready = RootGate(navController, env)

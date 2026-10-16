@@ -28,6 +28,7 @@ import app.data.media.upload.UploadQueue
 import app.data.media.upload.UploadStep
 import app.data.media.upload.UploadStore
 import app.data.media.upload.UploadWorker
+import app.data.model.DevelopingPost
 import app.data.model.MediaKind
 import app.data.model.NewMedia
 import app.data.model.Post
@@ -88,6 +89,15 @@ class UploadTest {
         }
 
         override suspend fun postsOfMedia(mediaId: String): List<Post> = existingPosts
+
+        val developed = mutableListOf<Pair<String, List<String>>>()
+        var failDevelop: DataError? = null
+
+        override suspend fun createOvernightPost(mediaId: String, groupIds: List<String>): List<DevelopingPost> {
+            failDevelop?.let { failDevelop = null; throw DataException(it) }
+            developed += mediaId to groupIds
+            return groupIds.map { DevelopingPost(it, Instant.EPOCH) }
+        }
 
         fun post(mediaId: String, groupId: String) = Post("post-$groupId", mediaId, groupId, "u", null, null, null, null, false, null, Instant.EPOCH)
     }
@@ -210,6 +220,28 @@ class UploadTest {
         assertTrue(PostUploader.isTransient(DataError.Storage(StorageFailure.Other, 500, null)))
         assertFalse(PostUploader.isTransient(DataError.Api(ApiError.InvalidVoice, "invalid_voice", 400, null)))
         assertEquals(UploadOutcome.Failed(DataError.FileUnavailable), PostUploader(FakeRemote(), store).run(UUID.randomUUID().toString()))
+    }
+
+    /** 9 AM mode (camera.overnight): the draft is kept as overnight and goes to `create_overnight_post`, never `create_post`. */
+    @Test fun overnightDraftsDevelopInsteadOfPosting() = runBlocking {
+        val id = queue().enqueue(NewPost(kind = MediaKind.Photo, original = file("night.jpg", 400), width = 3, height = 4, groupIds = listOf("g1", "g2"), overnight = true))
+        assertTrue(store.load(id)!!.overnight)
+        val remote = FakeRemote().apply { failDevelop = DataError.Network }
+        assertEquals(UploadOutcome.Retry(DataError.Network), PostUploader(remote, store).run(id))
+        // already_posted: an earlier attempt went through.
+        remote.failDevelop = DataError.Api(ApiError.AlreadyPosted, "already_posted", 409, "g1")
+        assertEquals(UploadOutcome.Done(emptyList()), PostUploader(remote, store).run(id, attempt = 1))
+        assertTrue(remote.created.isEmpty())
+        assertEquals(emptyList<String>(), store.load(id)!!.postIds)
+        assertFalse(File(store.load(id)!!.original.localPath).exists()) // the local copy goes once uploaded (uploadQueue.localFile)
+
+        val next = queue().enqueue(NewPost(kind = MediaKind.Photo, original = file("night2.jpg", 10), groupIds = listOf("g1"), overnight = true))
+        assertEquals(UploadOutcome.Done(emptyList()), PostUploader(remote, store).run(next))
+        assertEquals(next to listOf("g1"), remote.developed.last())
+        // Photos only, without caption, voice note, invitation or reply.
+        assertThrows(IllegalArgumentException::class.java) { NewPost(kind = MediaKind.Photo, original = file("x.jpg", 1), groupIds = listOf("g"), caption = "hi", overnight = true) }
+        assertThrows(IllegalArgumentException::class.java) { NewPost(kind = MediaKind.Video, original = file("x.mp4", 1), durationMs = 1, groupIds = listOf("g"), overnight = true) }
+        Unit
     }
 
     private fun worker(id: String, uploader: PostUploader, attempt: Int = 0) = TestListenableWorkerBuilder<UploadWorker>(context)

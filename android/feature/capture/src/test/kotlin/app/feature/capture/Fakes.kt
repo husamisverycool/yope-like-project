@@ -109,6 +109,9 @@ class FakeCaptureData : CaptureData {
     override suspend fun members(groupId: String): List<Member> = members
     var myName: String? = "Ana"
     override suspend fun myFirstName(): String? = myName
+    /** `my_developing()` (camera.overnight). */
+    var developing = app.data.model.Developing(developing = false, revealAt = null)
+    override suspend fun myDeveloping(): app.data.model.Developing = developing
 
     override suspend fun download(url: String, target: File) {
         downloadError?.let { throw DataException(it) }

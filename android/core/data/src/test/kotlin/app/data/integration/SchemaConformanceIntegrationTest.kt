@@ -20,6 +20,7 @@ import app.data.model.Profile
 import app.data.model.ProfilePrivate
 import app.data.model.PublicAppConfigRow
 import app.data.model.Reaction
+import app.data.model.SelfieReaction
 import app.data.model.Tribute
 import app.data.model.TributeContribution
 import app.data.model.TributeRequest
@@ -75,6 +76,7 @@ class SchemaConformanceIntegrationTest {
         "posts" to Post.serializer().descriptor,
         "messages" to Message.serializer().descriptor,
         "reactions" to Reaction.serializer().descriptor,
+        "selfie_reactions" to SelfieReaction.serializer().descriptor,
         "post_tags" to PostTag.serializer().descriptor,
         "daily_invitations" to DailyInvitation.serializer().descriptor,
         "collages" to Collage.serializer().descriptor,

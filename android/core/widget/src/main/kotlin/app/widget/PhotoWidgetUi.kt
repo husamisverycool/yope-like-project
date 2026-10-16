@@ -13,6 +13,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.view.View
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
@@ -179,9 +180,9 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
     @Composable
     internal fun Placeholder() = StateBackground()
 
-    /** `color.global.backgroundDeep` edge to edge, no content (the loading state). */
+    /** `color.global.backgroundDeep` edge to edge, no content (the loading state); the countdown widget's states too. */
     @Composable
-    private fun StateBackground(content: @Composable () -> Unit = {}) {
+    internal fun StateBackground(content: @Composable () -> Unit = {}) {
         val context = LocalContext.current
         val size = LocalSize.current
         var modifier = GlanceModifier.fillMaxSize()
@@ -209,17 +210,17 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
     }
 
     /**
-     * The state column (`widget.home.small` → States): `icon.global.camera` at `size.global.icon` in
-     * a `size.global.minTouchTarget.android` box (its padding the difference, 12 dp), then the line
-     * in `widget.home.small.fontSize.overlay`, both tinted `widget.home.small.color.stateTint`,
-     * centred, up to 2 lines.
+     * The state column (`widget.home.small` → States): [icon] (`icon.global.camera`; the countdown widget's
+     * `icon.global.calendar`) at `size.global.icon` in a `size.global.minTouchTarget.android` box (its padding the
+     * difference, 12 dp), then the [line] (none: the glyph alone) in `widget.home.small.fontSize.overlay`, both tinted
+     * `widget.home.small.color.stateTint`, centred, up to 2 lines.
      */
     @Composable
-    private fun StateColumn(line: String) {
+    internal fun StateColumn(line: String?, icon: ImageVector = Tokens.Icons.globalCamera) {
         val context = LocalContext.current
         val tint = WidgetColors.pick(context) { it.widgetHomeSmallColorStateTint }
         val box = Tokens.Sizes.globalMinTouchTargetAndroid
-        val glyph = WidgetArt.glyph(context, Tokens.Icons.globalCamera, box = box, glyph = Tokens.Sizes.globalIcon, color = tint)
+        val glyph = WidgetArt.glyph(context, icon, box = box, glyph = Tokens.Sizes.globalIcon, color = tint)
         StateBackground {
             Column(
                 modifier = GlanceModifier.fillMaxSize().padding(horizontal = Tokens.Sizes.globalScreenMargin),
@@ -227,7 +228,7 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(ImageProvider(glyph), contentDescription = null, modifier = GlanceModifier.size(box))
-                Text(
+                if (line != null) Text(
                     line,
                     maxLines = STATE_MAX_LINES,
                     style = TextStyle(

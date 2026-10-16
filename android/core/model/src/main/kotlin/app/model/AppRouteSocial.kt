@@ -28,6 +28,12 @@ enum class PhotoContext {
 
     /** Only the opened photo (deep links). */
     Single,
+
+    /**
+     * The answers to a group week's question (`question.weekly` → the card opens them), oldest first; `contextId` =
+     * question id (`question_answers`, docs/API.md §14.4).
+     */
+    Question,
 }
 
 /** `photo.viewer` opened with the opener's photo list. [AppRoute.PhotoViewer] (deep links) shows the single photo. */

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Countdown widget (surface widget.countdown; Android form: Glance with the widget.android provider rules).
+  minWidth / minHeight / minResize* / targetCell* / resizeMode = token widget.android.layout.provider (200 dp, resizable
+  down to 100 dp, default 2 x 2, both axes) — the spec's one layout at 2 x 2 and 4 x 2 (SizeMode.Responsive).
+  updatePeriodMillis = token widget.android.duration.updatePeriod (3600000 ms), the backstop of the midnight job
+  (CountdownMidnight). widgetCategory = token widget.android.layout.lockScreen (home_screen|keyguard, owner decision 18:
+  the lock-screen hub opt-in "as widget.android"). Description: copy widget.countdown.gallery.description; label: copy
+  widget.countdown.gallery.name (on the receiver). No configuration activity: the widget shows "All groups"
+  (widget.countdown → configuration default); per-group configuration is not built on Android yet.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_countdown_gallery_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="200dp"
+    android:minHeight="200dp"
+    android:minResizeWidth="100dp"
+    android:minResizeHeight="100dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="3600000"
+    android:widgetCategory="home_screen|keyguard" />

@@ -19,6 +19,7 @@ import app.data.model.Post
 import app.data.model.PostTag
 import app.data.model.Profile
 import app.data.model.RenderStatus
+import app.data.model.SelfieReaction
 import app.data.model.WallItem
 import app.data.model.WallItemKind
 import app.data.model.WeeklyRecap
@@ -51,6 +52,8 @@ class FakeSocialData(var me: String = ME) : SocialData {
     val posts = LinkedHashMap<String, Post>()
     val media = LinkedHashMap<String, Media>()
     val reactions = LinkedHashMap<String, MutableList<ReactionEntry>>()
+    /** `selfie_reactions`: post id → rows, oldest first (one per person). */
+    val selfies = LinkedHashMap<String, MutableList<SelfieReaction>>()
     /** `post_tags`: post id → who said "I'm in this", in tag order. */
     val tagRows = LinkedHashMap<String, MutableList<String>>()
     val walls = LinkedHashMap<String, MutableList<WallItem>>()
@@ -163,6 +166,23 @@ class FakeSocialData(var me: String = ME) : SocialData {
     override suspend fun unreact(postId: String, emoji: String) {
         write("unreact:$postId:$emoji")
         reactions[postId]?.removeAll { it.userId == me && it.emoji == emoji }
+    }
+
+    override suspend fun selfieReactions(postIds: Collection<String>): Map<String, List<SelfieReaction>> {
+        net("selfies")
+        return postIds.associateWith { selfies[it].orEmpty().toList() }
+    }
+
+    override suspend fun reactWithSelfie(postId: String, file: File): SelfieReaction {
+        write("reactWithSelfie:$postId")
+        val row = SelfieReaction(id = "s-$me-$postId-${tick}", postId = postId, userId = me, groupId = GROUP, imagePath = "u/$me/selfies/${file.nameWithoutExtension}.jpg", createdAt = clock())
+        selfies.getOrPut(postId) { ArrayList() }.apply { removeAll { it.userId == me }; add(row) }
+        return row
+    }
+
+    override suspend fun removeSelfieReaction(postId: String, userId: String?) {
+        write("removeSelfie:$postId:${userId ?: ""}")
+        selfies[postId]?.removeAll { it.userId == (userId ?: me) }
     }
 
     override suspend fun isTaggedByMe(postId: String): Boolean { net("tags"); return tagRows[postId].orEmpty().contains(me) }

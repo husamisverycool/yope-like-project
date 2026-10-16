@@ -4,6 +4,7 @@ import app.data.model.DataJson
 import app.data.model.Message
 import app.data.model.Post
 import app.data.model.Reaction
+import app.data.model.SelfieReaction
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.Realtime
@@ -205,7 +206,7 @@ class SupabaseRealtimeChannels(private val client: SupabaseClient, private val s
     }
 
     private companion object {
-        val CHANGE_TABLES = listOf("messages", "posts", "reactions")
+        val CHANGE_TABLES = listOf("messages", "posts", "reactions", "selfie_reactions")
         val BROADCAST_EVENTS = listOf("post_deleted", "message_deleted", "reactions_changed")
     }
 }
@@ -231,6 +232,8 @@ object RealtimeDecoding {
                 ?.let { if (update) GroupEvent.PostUpdated(groupId, it) else GroupEvent.PostInserted(groupId, it) }
             "reactions" -> DataJson.decodeFromJsonElement(Reaction.serializer(), record).takeIf { it.groupId == groupId }
                 ?.let { GroupEvent.ReactionAdded(groupId, it) }
+            "selfie_reactions" -> DataJson.decodeFromJsonElement(SelfieReaction.serializer(), record).takeIf { it.groupId == groupId }
+                ?.let { GroupEvent.SelfieReactionChanged(groupId, it) }
             else -> null
         }
     } catch (_: Exception) {

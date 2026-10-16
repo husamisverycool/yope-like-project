@@ -51,6 +51,8 @@ import app.feature.account.common.SheetPage
 import app.feature.account.common.dataError
 import app.feature.account.common.errorDismissLabel
 import app.feature.account.common.sheetBottomPadding
+import app.feature.account.plans.PlansBackend
+import app.feature.account.plans.rememberPlansBackend
 import app.feature.account.settings.LoadingGroup
 import app.feature.account.settings.SettingsFooter
 import app.feature.account.settings.SettingsGap
@@ -101,7 +103,12 @@ data class GroupSettingsUiState(
     val loading: Boolean get() = group == null || members == null
 }
 
-class GroupSettingsViewModel(private val env: AccountEnvironment, private val groupId: String) : AccountViewModel() {
+class GroupSettingsViewModel(
+    private val env: AccountEnvironment,
+    private val groupId: String,
+    /** The weekly question's switch (`question.weekly` E, `set_group_weekly_question`); null: the switch does nothing. */
+    private val plans: PlansBackend? = null,
+) : AccountViewModel() {
     private val mutable = MutableStateFlow(GroupSettingsUiState())
     val state: StateFlow<GroupSettingsUiState> = mutable.asStateFlow()
 
@@ -191,6 +198,23 @@ class GroupSettingsViewModel(private val env: AccountEnvironment, private val gr
         }
     }
 
+    /** `set_group_weekly_question` (admins, `question.weekly` E), optimistic; reverts with the error alert. */
+    fun setWeeklyQuestion(on: Boolean) {
+        val group = mutable.value.group ?: return
+        val backend = plans ?: return
+        mutable.update { it.copy(group = group.copy(weeklyQuestion = on)) }
+        viewModelScope.launch {
+            try {
+                val saved = backend.setWeeklyQuestion(groupId, on)
+                mutable.update { it.copy(group = saved) }
+            } catch (t: Throwable) {
+                t.dataError()
+                mutable.update { it.copy(group = group, failed = true) }
+                haptic(Tokens.Haptics.globalError)
+            }
+        }
+    }
+
     /** `remove_member` (admins), optimistic. */
     fun remove(member: MemberRow) {
         val before = mutable.value.members
@@ -247,12 +271,14 @@ class GroupSettingsActions(
     val onBlockMember: (MemberRow) -> Unit = {},
     val onOffline: () -> Unit = {},
     val onDismissAlert: () -> Unit = {},
+    val onWeeklyQuestion: (Boolean) -> Unit = {},
 )
 
 @Composable
 fun GroupSettingsRoute(nav: NavController, groupId: String) {
     val env = LocalAccountEnvironment.current
-    val vm = viewModel(key = "groupSettings:$groupId") { GroupSettingsViewModel(env, groupId) }
+    val plans = rememberPlansBackend()
+    val vm = viewModel(key = "groupSettings:$groupId") { GroupSettingsViewModel(env, groupId, plans) }
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
     GroupSettingsScreen(
@@ -273,6 +299,7 @@ fun GroupSettingsRoute(nav: NavController, groupId: String) {
             onBlockMember = { nav.navigate(AppRoute.SafetyBlock(it.userId)) },
             onOffline = vm::offlineTap,
             onDismissAlert = vm::dismissAlert,
+            onWeeklyQuestion = vm::setWeeklyQuestion,
         ),
     )
 }
@@ -285,7 +312,7 @@ fun GroupSettingsRoute(nav: NavController, groupId: String) {
  * 2. Notifications — "Group updates" (native switch, on = not muted), "Quiet Hours" → settings.notifications, footer;
  * 3. Daily Invitation — "Invitation Hours" with its value → the M3 time pickers (start, then end), "Pause Invitations"
  *    (switch), footer; non-admins: rows disabled and the admin-only line;
- * 4. Admin Settings (admins) — "Edit Group" → groups.create (edit);
+ * 4. Admin Settings (admins) — "Edit Group" → groups.create (edit); "Weekly Question" (switch, with its detail line);
  * 5. a last group without header — "Report Group" and "Leave Group" (C-10 red).
  * Loading: each section one row with the platform indicator. Offline: controls disabled; a tap shows the error alert.
  */
@@ -358,10 +385,19 @@ fun GroupSettingsScreen(state: GroupSettingsUiState, actions: GroupSettingsActio
             )
             SettingsFooter(stringResource(R.string.groups_settings_invitation_footer))
             if (!state.isAdmin) SettingsFooter(stringResource(R.string.groups_settings_invitation_adminonly))
-            // 4. Admin Settings
+            // 4. Admin Settings (+ the weekly question's switch, question.weekly E: the same permission as the other settings)
             if (state.isAdmin) {
                 SettingsHeader(stringResource(R.string.groups_settings_group_header))
-                SettingsGroup(listOf(navRow(stringResource(R.string.groups_settings_group_edit), onClick = actions.onEdit)))
+                SettingsGroup(
+                    listOf(
+                        navRow(stringResource(R.string.groups_settings_group_edit), onClick = actions.onEdit),
+                        GroupedRowSpec(
+                            title = stringResource(R.string.question_weekly_settings_row),
+                            subtitle = stringResource(R.string.question_weekly_settings_rowdetail),
+                            trailing = GroupedTrailing.Toggle(group.weeklyQuestion) { on -> if (online) actions.onWeeklyQuestion(on) else actions.onOffline() },
+                        ),
+                    ),
+                )
             }
             // 5. Report · Leave
             SettingsGap()

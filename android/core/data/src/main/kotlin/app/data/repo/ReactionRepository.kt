@@ -6,9 +6,13 @@ import app.data.remote.Api
 import app.data.remote.Rpc
 import app.data.remote.Tables
 import io.github.jan.supabase.postgrest.query.Order
+import java.time.Instant
 
-/** One reaction as shown: who reacted with what. There is deliberately no count anywhere. */
-data class ReactionEntry(val userId: String, val emoji: String)
+/**
+ * One reaction as shown: who reacted with what. There is deliberately no count anywhere. [createdAt] orders it among
+ * selfie reactions in the Reactions sheet (null = optimistic, the newest).
+ */
+data class ReactionEntry(val userId: String, val emoji: String, val createdAt: Instant? = null)
 
 /**
  * Reactions (docs/API.md §5.10, §6.2): rows `(user, emoji)`, never numbers (tenet: no counts).
@@ -20,7 +24,7 @@ class ReactionRepository(private val api: Api) {
     suspend fun reactions(postId: String): List<ReactionEntry> = api.select(Tables.REACTIONS, Reaction.serializer()) {
         filter { eq("post_id", postId) }
         order("created_at", Order.ASCENDING)
-    }.map { ReactionEntry(it.userId, it.emoji) }
+    }.map { ReactionEntry(it.userId, it.emoji, it.createdAt) }
 
     /** Reactions of several posts at once (a feed page), per post id. */
     suspend fun reactionsFor(postIds: Collection<String>): Map<String, List<ReactionEntry>> {
@@ -31,7 +35,7 @@ class ReactionRepository(private val api: Api) {
                 order("created_at", Order.ASCENDING)
             }
         }
-        return rows.groupBy({ it.postId }, { ReactionEntry(it.userId, it.emoji) })
+        return rows.groupBy({ it.postId }, { ReactionEntry(it.userId, it.emoji, it.createdAt) })
     }
 
     /** Idempotent: reacting twice with the same emoji returns the existing row. */

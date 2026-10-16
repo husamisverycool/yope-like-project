@@ -49,6 +49,7 @@ import app.model.AppRoute
 import app.model.PhotoContext
 import app.model.PhotoViewerIn
 import app.model.SafetyReportMessageRoute
+import app.model.SafetyReportSelfieRoute
 import app.model.SocialHandoff
 import app.model.WeekAlbum
 import app.model.WeekRecapAlbum
@@ -234,6 +235,7 @@ private class SocialNavigator(private val nav: NavHostController) {
         replyWithPhoto = { groupId, postId -> camera(groupId, postId) },
         report = { groupId, postId -> nav.navigate(AppRoute.SafetyReport(groupId = groupId, postId = postId)) },
         block = { userId -> nav.navigate(AppRoute.SafetyBlock(userId)) },
+        reportSelfie = { groupId, selfieId, userId -> nav.navigate(SafetyReportSelfieRoute(groupId, selfieId, userId)) },
     )
 
     fun walls() = WallNav(

@@ -6,6 +6,7 @@ import app.data.error.DataError
 import app.data.error.DataException
 import app.data.error.ErrorMapping
 import app.data.error.StorageFailure
+import app.data.model.DevelopingPost
 import app.data.model.NewMedia
 import app.data.model.Post
 import app.data.repo.PostOptions
@@ -18,10 +19,15 @@ interface PostRemote {
     suspend fun insertMedia(media: NewMedia)
     suspend fun createPost(mediaId: String, groupIds: List<String>, options: PostOptions): List<Post>
     suspend fun postsOfMedia(mediaId: String): List<Post>
+    /** §14.3 `create_overnight_post`: the photo develops in each group at its next 09:00. */
+    suspend fun createOvernightPost(mediaId: String, groupIds: List<String>): List<DevelopingPost>
+    /** §14.4 `answer_question`: links [postId] (yours) to the group week's question. */
+    suspend fun answerQuestion(postId: String, questionId: String) {}
 }
 
 /** Where an upload is. */
 sealed interface UploadOutcome {
+    /** Posted; an overnight photo has no post ids yet (it is not a post until its reveal, §14.3). */
     data class Done(val postIds: List<String>) : UploadOutcome
     /** Transient (network, server): WorkManager retries with backoff. */
     data class Retry(val error: DataError) : UploadOutcome
@@ -41,7 +47,8 @@ data class UploadStep(val stage: Stage, val bytesSent: Long, val totalBytes: Lon
  * 1. each file not yet uploaded (an object that already exists counts as uploaded: storage never
  *    overwrites, and an object only exists once fully written);
  * 2. the `media` row (a duplicate id counts as inserted);
- * 3. `create_post` (`already_posted` means an earlier attempt succeeded: its posts are read back).
+ * 3. `create_post` (`already_posted` means an earlier attempt succeeded: its posts are read back), or
+ *    `create_overnight_post` for a photo taken in 9 AM mode.
  * Local copies are deleted once posted. Failed drafts stay on disk (API.md 9.4: "Retry, or leave them").
  */
 class PostUploader(private val remote: PostRemote, private val store: UploadStore) {
@@ -72,17 +79,7 @@ class PostUploader(private val remote: PostRemote, private val store: UploadStor
                 draft = draft.copy(mediaInserted = true)
                 store.save(draft)
             }
-            val posts = try {
-                remote.createPost(draft.mediaId, draft.groupIds, draft.options())
-            } catch (e: DataException) {
-                val error = e.error
-                if (error is DataError.Api && error.code == ApiError.AlreadyPosted) {
-                    remote.postsOfMedia(draft.mediaId).filter { it.groupId in draft.groupIds }
-                } else {
-                    throw e
-                }
-            }
-            val postIds = posts.map { it.id }
+            val postIds = if (draft.overnight) developOvernight(draft) else post(draft)
             store.save(draft.copy(postIds = postIds))
             // Keep the draft record (with post ids) only as long as the work result needs it.
             deleteLocalFiles(draft)
@@ -95,6 +92,52 @@ class PostUploader(private val remote: PostRemote, private val store: UploadStor
             if (!retry) store.save(draft.copy(failure = app.data.error.DataErrorCodec.encode(error)))
             return if (retry) UploadOutcome.Retry(error) else UploadOutcome.Failed(error)
         }
+    }
+
+    /** 3. `create_post`; `already_posted` means an earlier attempt succeeded: its posts are read back. */
+    private suspend fun post(draft: PostDraft): List<String> {
+        val posts = try {
+            remote.createPost(draft.mediaId, draft.groupIds, draft.options())
+        } catch (e: DataException) {
+            val error = e.error
+            if (error is DataError.Api && error.code == ApiError.AlreadyPosted) {
+                remote.postsOfMedia(draft.mediaId).filter { it.groupId in draft.groupIds }
+            } else {
+                throw e
+            }
+        }
+        answerQuestion(draft, posts)
+        return posts.map { it.id }
+    }
+
+    /**
+     * Links the post in the question's group to the weekly question (`question.weekly` B). Best effort: the photo is
+     * posted either way, and a question that closed meanwhile (`question_closed`, `question_off`) is not an upload failure.
+     */
+    private suspend fun answerQuestion(draft: PostDraft, posts: List<Post>) {
+        val question = draft.questionId ?: return
+        val post = posts.firstOrNull { it.groupId == draft.questionGroupId } ?: return
+        try {
+            remote.answerQuestion(post.id, question)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // The post stays an ordinary post of the group.
+        }
+    }
+
+    /**
+     * 3. (9 AM mode) `create_overnight_post`: nobody can read the photo until it develops, so there are no post ids;
+     * `already_posted` means an earlier attempt succeeded.
+     */
+    private suspend fun developOvernight(draft: PostDraft): List<String> {
+        try {
+            remote.createOvernightPost(draft.mediaId, draft.groupIds)
+        } catch (e: DataException) {
+            val error = e.error
+            if (!(error is DataError.Api && error.code == ApiError.AlreadyPosted)) throw e
+        }
+        return emptyList()
     }
 
     private fun PostDraft.options() = PostOptions(

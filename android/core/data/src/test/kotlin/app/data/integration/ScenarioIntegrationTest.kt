@@ -250,9 +250,10 @@ class ScenarioIntegrationTest {
         b.reactions.react(p1.id, "🌅")
         b.reactions.react(p1.id, "🌅") // idempotent
         b.reactions.react(p1.id, "👍🏽")
-        assertEquals(listOf(ReactionEntry(rui.id, "🌅"), ReactionEntry(rui.id, "👍🏽")), a.reactions.reactions(p1.id))
+        // Rows carry their time (they sit among selfie reactions by time); compared without it here.
+        assertEquals(listOf(ReactionEntry(rui.id, "🌅"), ReactionEntry(rui.id, "👍🏽")), a.reactions.reactions(p1.id).map { it.copy(createdAt = null) })
         b.reactions.unreact(p1.id, "👍🏽")
-        assertEquals(mapOf(p1.id to listOf(ReactionEntry(rui.id, "🌅"))), a.reactions.reactionsFor(listOf(p1.id, p2.id)))
+        assertEquals(mapOf(p1.id to listOf(ReactionEntry(rui.id, "🌅"))), a.reactions.reactionsFor(listOf(p1.id, p2.id)).mapValues { (_, rows) -> rows.map { it.copy(createdAt = null) } })
         expectApi(ApiError.InvalidEmoji) { b.reactions.react(p1.id, "abc") }
     }
 

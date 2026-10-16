@@ -56,6 +56,20 @@ data class OnThisDayItem(
     @SerialName("years_ago") val yearsAgo: Int,
 )
 
+/** One row of `create_overnight_post` (§14.3): a group the photo develops in, and when. */
+@Serializable
+data class DevelopingPost(
+    @SerialName("group_id") val groupId: String,
+    @SerialName("develops_at") val developsAt: Instant,
+)
+
+/** `my_developing()` / `group_developing(p_group_id)` (§14.3): whether photos are developing and the next reveal; never a number. */
+@Serializable
+data class Developing(
+    val developing: Boolean,
+    @SerialName("reveal_at") val revealAt: Instant?,
+)
+
 /** The public tunables (§5.25), typed. Null = not configured (the dependent feature fails closed). */
 data class PublicAppConfig(
     val invitationWindowSeconds: Int?,

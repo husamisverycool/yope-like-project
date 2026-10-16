@@ -31,7 +31,17 @@ enum class AppChannel(val id: String, val importance: Int) {
     Recap("recap", NotificationManager.IMPORTANCE_DEFAULT),
     BirthdayRequest("birthday_request", NotificationManager.IMPORTANCE_DEFAULT),
     Tribute("tribute", NotificationManager.IMPORTANCE_DEFAULT),
-    YearStory("year_story", NotificationManager.IMPORTANCE_DEFAULT);
+    YearStory("year_story", NotificationManager.IMPORTANCE_DEFAULT),
+
+    /**
+     * Overnight photos revealed at 09:00 (`camera.overnight` C, `notifications.push.layout.channels` `developed_photos`,
+     * MERGE ON-9). The reveal push is sent as type `new_post` with no marker that tells it from a new post
+     * (docs/API.md §14.3), so [forAlert] cannot route it here yet: it arrives on [NewPost] until the payload says so.
+     */
+    DevelopedPhotos("developed_photos", NotificationManager.IMPORTANCE_DEFAULT),
+
+    /** A plan was made, changed or cancelled, and the day-before reminder (`plans`, MERGE PL-12). */
+    Plans("plans", NotificationManager.IMPORTANCE_DEFAULT);
 
     companion object {
         fun forAlert(kind: PushMessage.AlertKind): AppChannel = when (kind) {
@@ -41,6 +51,7 @@ enum class AppChannel(val id: String, val importance: Int) {
             PushMessage.AlertKind.BirthdayRequest -> BirthdayRequest
             PushMessage.AlertKind.TributeForYou -> Tribute
             PushMessage.AlertKind.YearStory -> YearStory
+            PushMessage.AlertKind.Plan -> Plans
         }
     }
 }

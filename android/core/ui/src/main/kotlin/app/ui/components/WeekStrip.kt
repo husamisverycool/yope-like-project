@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.Dp
 import app.designsystem.generated.Tokens
 import app.ui.foundation.DsImage
 import app.ui.foundation.DsMotion
+import app.ui.foundation.PageRoles
 import app.ui.foundation.PhotoScrimOverlay
 import app.ui.foundation.reduceMotion
 import app.ui.foundation.tapClickable
@@ -73,8 +74,11 @@ sealed interface DayTile {
     /** The add tile ("+"). */
     data class Add(override val accessibilityLabel: String, val onClick: () -> Unit, override val key: Any = ADD_KEY) : DayTile
 
-    /** A grey placeholder (loading, composer slot) — decorative. */
-    data class Placeholder(override val key: Any, override val accessibilityLabel: String? = null) : DayTile
+    /**
+     * A grey placeholder (loading, composer slot) — decorative. With [label]: the word centred in text role `tileLabel`,
+     * secondary text (the developing tile, `camera.overnight.layout.developingTile`); not a button either way.
+     */
+    data class Placeholder(override val key: Any, override val accessibilityLabel: String? = null, val label: String? = null) : DayTile
 
     companion object {
         /** Stable key of the add tile. */
@@ -148,7 +152,7 @@ fun WeekStrip(tiles: List<DayTile>, modifier: Modifier = Modifier, state: LazyLi
  *   Gap: the roles' own line heights).
  * - Add: fill `color.global.control`, `icon.global.add` centred in `color.global.textPrimary` in the
  *   `size.global.icon` box (the 23 pt ink of H43 has no size token — Gap).
- * - Placeholder: fill `color.global.control`, nothing else.
+ * - Placeholder: fill `color.global.control`, nothing else; with a label, that word centred (`tileLabel`, secondary text).
  * Pressed: platform default + `haptic.global.tap`.
  */
 @Composable
@@ -197,7 +201,9 @@ fun DayTileView(tile: DayTile, shape: Shape, modifier: Modifier = Modifier) {
                 Text(tile.weekday, style = TextRoles.tileMonth, color = color, maxLines = 1)
             }
             is DayTile.Add -> Icon(Tokens.Icons.globalAdd, contentDescription = null, tint = Tokens.Colors.globalTextPrimary, modifier = Modifier.size(Tokens.Sizes.globalIcon))
-            is DayTile.Placeholder -> Unit
+            is DayTile.Placeholder -> if (tile.label != null) {
+                Text(tile.label, style = TextRoles.tileLabel, color = PageRoles.secondaryText(), maxLines = 1)
+            }
         }
     }
 }

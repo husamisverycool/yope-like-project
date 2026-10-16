@@ -45,3 +45,12 @@ data object OnboardingWidgetFromSettingsRoute : AppRoute {
 data class SafetyReportMessageRoute(val groupId: String, val messageId: String, val authorId: String? = null) : AppRoute {
     override val surface get() = "safety.report"
 }
+
+/**
+ * `safety.report` for a selfie reaction (target kind `selfie`, by its `selfie_reactions.id`), from the Reactions sheet's
+ * row menu in `photo.viewer` (viewer.selfiereaction §4); [authorId] is who took the selfie (Next Steps → Block).
+ */
+@Serializable
+data class SafetyReportSelfieRoute(val groupId: String, val selfieId: String, val authorId: String) : AppRoute {
+    override val surface get() = "safety.report"
+}

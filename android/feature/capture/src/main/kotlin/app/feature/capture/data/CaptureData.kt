@@ -8,6 +8,7 @@ import app.data.media.upload.NewPost
 import app.data.media.upload.UploadProgress
 import app.data.model.Collage
 import app.data.model.DailyInvitation
+import app.data.model.Developing
 import app.data.model.Group
 import app.data.model.Media
 import app.data.model.Post
@@ -84,6 +85,9 @@ interface CaptureData {
 
     /** The signed-in member's first name (for "Back and front photos from {name}"); null when unknown. */
     suspend fun myFirstName(): String?
+
+    /** `my_developing()` (camera.overnight, docs/API.md §14.3): whether your photos are developing and the next reveal; never a number. */
+    suspend fun myDeveloping(): Developing
 }
 
 /** The app's [CaptureData] over the process-wide [DataGraph]. */
@@ -145,6 +149,8 @@ class GraphCaptureData(private val graph: DataGraph) : CaptureData {
     override suspend fun download(url: String, target: File) = downloadTo(url, target)
 
     override suspend fun myFirstName(): String? = runCatching { graph.profiles.me().firstName }.getOrNull()
+
+    override suspend fun myDeveloping(): Developing = graph.posts.myDeveloping()
 }
 
 /** Used while config/app.json has no Supabase project: nothing loads, nothing sends. */
@@ -167,6 +173,7 @@ object UnconfiguredCaptureData : CaptureData {
     override suspend fun members(groupId: String): List<Member> = emptyList()
     override suspend fun download(url: String, target: File) = throw DataException(DataError.NotConfigured)
     override suspend fun myFirstName(): String? = null
+    override suspend fun myDeveloping(): Developing = Developing(developing = false, revealAt = null)
 }
 
 /** Supplies the process's [CaptureData]; tests set [override]. */

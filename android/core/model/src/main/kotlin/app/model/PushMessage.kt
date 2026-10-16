@@ -53,7 +53,11 @@ sealed interface PushMessage {
         val collapseKey: String?,
     ) : PushMessage
 
-    enum class AlertKind { NewPost, Reaction, Reply, RecapReady, BirthdayRequest, TributeForYou, YearStory }
+    /**
+     * [Plan]: a plan was made, changed or cancelled, or the day-before reminder (`push.plan_*`, docs/API.md §14.2). New
+     * kinds go last: the ordinal is part of the notification id.
+     */
+    enum class AlertKind { NewPost, Reaction, Reply, RecapReady, BirthdayRequest, TributeForYou, YearStory, Plan }
 
     companion object {
         fun parse(data: Map<String, String>, codec: DeepLinkCodec): PushMessage? {
@@ -109,10 +113,12 @@ sealed interface PushMessage {
                 PushTypes.BIRTHDAY_REQUEST -> AlertKind.BirthdayRequest
                 PushTypes.TRIBUTE -> AlertKind.TributeForYou
                 PushTypes.YEAR_STORY -> AlertKind.YearStory
+                PushTypes.PLAN -> AlertKind.Plan
                 else -> return null
             }
             val group = id(PushKeys.GROUP_ID)
-            val derived: DeepLink? = group?.let { g ->
+            // A plan opens without its group too (the page reads the plan's own group).
+            val derived: DeepLink? = if (kind == AlertKind.Plan) id(PushKeys.PLAN_ID)?.let { DeepLink.Plan(it, group) } else group?.let { g ->
                 when (kind) {
                     AlertKind.NewPost, AlertKind.Reaction -> id(PushKeys.POST_ID)?.let { DeepLink.Post(g, it) }
                     AlertKind.Reply -> id(PushKeys.MESSAGE_ID)?.let { DeepLink.ChatMessage(g, it) }
@@ -121,6 +127,7 @@ sealed interface PushMessage {
                     AlertKind.BirthdayRequest -> id(PushKeys.REQUEST_ID)?.let { DeepLink.BirthdayRequest(g, it) }
                     AlertKind.TributeForYou -> id(PushKeys.TRIBUTE_ID)?.let { DeepLink.Tribute(g, it) }
                     AlertKind.YearStory -> s(PushKeys.YEAR)?.toIntOrNull()?.let { DeepLink.YearStory(g, it) }
+                    AlertKind.Plan -> null
                 }
             }
             return Alert(

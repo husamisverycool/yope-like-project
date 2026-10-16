@@ -49,6 +49,18 @@ data class NewPost(
     val replyToPostId: String? = null,
     /** The voice note's waveform: 100 levels of 0…31 (`p_voice_levels`, C-36). Last, so positional calls keep working. */
     val voiceLevels: List<Int>? = null,
+    /**
+     * Taken in 9 AM mode (`camera.overnight`): sent with `create_overnight_post` (§14.3), so a photo without caption,
+     * voice note, invitation or reply. Last, so positional calls keep working.
+     */
+    val overnight: Boolean = false,
+    /**
+     * The weekly question this photo answers (`question.weekly` B, §14.4): after posting, the post in [questionGroupId]
+     * (one of [groupIds]) is linked to it with `answer_question`; the posts to the other groups are not. Last, so
+     * positional calls keep working.
+     */
+    val questionId: String? = null,
+    val questionGroupId: String? = null,
 ) {
     init {
         require(groupIds.isNotEmpty()) { "no groups" }
@@ -56,6 +68,9 @@ data class NewPost(
         require(kind != MediaKind.Video || durationMs != null) { "video needs its duration" }
         require((voice == null) == (voiceDurationMs == null)) { "voice note and its duration go together" }
         require(voiceDurationMs == null || voiceDurationMs > 0) { "voice duration must be > 0" }
+        require(!overnight || (kind == MediaKind.Photo && caption == null && voice == null && invitationId == null && replyToPostId == null)) {
+            "an overnight post is a photo without caption, voice note, invitation or reply"
+        }
     }
 }
 
@@ -116,6 +131,9 @@ class UploadQueue(
                 voiceLevels = post.voiceLevels.takeIf { post.voice != null },
                 invitationId = post.invitationId,
                 replyToPostId = post.replyToPostId,
+                overnight = post.overnight,
+                questionId = post.questionId?.takeIf { post.questionGroupId in post.groupIds },
+                questionGroupId = post.questionGroupId?.takeIf { post.questionId != null && it in post.groupIds },
             )
             if (draft.files.any { it.size > StoragePaths.MAX_OBJECT_BYTES }) {
                 throw DataException(DataError.Storage(app.data.error.StorageFailure.TooLarge, null, null))

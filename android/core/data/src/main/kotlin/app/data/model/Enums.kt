@@ -60,6 +60,8 @@ enum class ReportTargetKind(val wire: String) {
     @SerialName("message") Message("message"),
     @SerialName("user") User("user"),
     @SerialName("group") Group("group"),
+    /** A selfie reaction, by its `selfie_reactions.id` (§14.1). */
+    @SerialName("selfie") Selfie("selfie"),
 }
 
 /** `wall.item_kind` (text, not a Postgres enum). */

@@ -10,6 +10,12 @@ interface CapturePrefs {
 
     /** The lens last used on `camera.capture` ("front after a flip, kept for the session"). */
     var frontLensThisSession: Boolean
+
+    /**
+     * `camera.overnight`: the groups 9 AM photos develop for, as last confirmed in the destination sheet ("kept for the
+     * app session"); null until the sheet was confirmed once in this session (the first switch to 9 AM opens it).
+     */
+    var overnightGroups: Set<String>?
 }
 
 class SharedCapturePrefs(context: Context) : CapturePrefs {
@@ -25,9 +31,16 @@ class SharedCapturePrefs(context: Context) : CapturePrefs {
             SessionFlags.frontLens = value
         }
 
+    override var overnightGroups: Set<String>?
+        get() = SessionFlags.overnightGroups
+        set(value) {
+            SessionFlags.overnightGroups = value
+        }
+
     /** Process-lifetime flags ("for the session"). */
     private object SessionFlags {
         @Volatile var frontLens: Boolean = false
+        @Volatile var overnightGroups: Set<String>? = null
     }
 
     private companion object {
@@ -40,4 +53,5 @@ class SharedCapturePrefs(context: Context) : CapturePrefs {
 class MemoryCapturePrefs(
     override var holdToRecordCoachDone: Boolean = false,
     override var frontLensThisSession: Boolean = false,
+    override var overnightGroups: Set<String>? = null,
 ) : CapturePrefs

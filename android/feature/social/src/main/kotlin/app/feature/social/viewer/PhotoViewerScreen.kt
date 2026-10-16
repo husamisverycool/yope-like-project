@@ -20,7 +20,10 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -116,6 +119,7 @@ import app.ui.components.Hairline
 import app.ui.components.PlatformToast
 import app.ui.components.PositionPill
 import app.ui.components.ViewerTaps
+import app.ui.foundation.FadeVisibility
 import app.ui.foundation.GlyphInk
 import app.ui.foundation.endAtLastBaseline
 import app.ui.foundation.tapClickable
@@ -135,6 +139,8 @@ data class ViewerNav(
     val replyWithPhoto: (groupId: String, postId: String) -> Unit,
     val report: (groupId: String, postId: String) -> Unit,
     val block: (userId: String) -> Unit,
+    /** `safety.report` for a selfie reaction (`report('selfie', <selfie_reactions.id>, …)`, viewer.selfiereaction §4). */
+    val reportSelfie: (groupId: String, selfieId: String, userId: String) -> Unit = { _, _, _ -> },
 )
 
 /** Transient UI state of the viewer (menus, sheets, dialogs), hoisted for tests. */
@@ -146,6 +152,8 @@ class ViewerUiState(
     reactions: Boolean = false,
     saveDenied: Boolean = false,
     draft: TextFieldValue? = null,
+    selfieLayer: SelfieMode? = null,
+    confirmRemoveSelfie: String? = null,
 ) {
     var menu by mutableStateOf(menu)
     var photoMenu by mutableStateOf(photoMenu)
@@ -156,6 +164,18 @@ class ViewerUiState(
     var confirmUnsend by mutableStateOf<String?>(null)
     val save = PhotoSaveUi(saveDenied)
     val fixedDraft = draft
+
+    /** The selfie capture layer (`viewer.selfiereaction` §2): open in hold or tap mode, or closed (null). */
+    var selfieLayer by mutableStateOf(selfieLayer)
+
+    /** The hold that opened the layer in hold mode (the finger's position, its release). */
+    val hold = SelfieHold()
+
+    /** The selfie row (by person) whose long-press menu is open in the Reactions sheet. */
+    var selfieMenu by mutableStateOf<String?>(null)
+
+    /** The person whose selfie the remove confirmation is about (your own photo). */
+    var confirmRemoveSelfie by mutableStateOf(confirmRemoveSelfie)
 }
 
 @Composable
@@ -178,6 +198,8 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         deleteFailed = stringRes(R.string.photo_viewer_error_delete),
         saved = stringRes(R.string.photo_viewer_toast_saved),
         saveFailed = stringRes(R.string.photo_viewer_error_save),
+        selfieSent = stringRes(R.string.viewer_selfiereaction_a11y_sent),
+        selfieFailed = stringRes(R.string.viewer_selfiereaction_error),
     )
     LaunchedEffect(vm) {
         vm.effects.collect { effect ->
@@ -189,6 +211,9 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
                 ViewerEffect.DeleteFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.deleteFailed) }
                 ViewerEffect.Saved -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, texts.saved) }
                 ViewerEffect.SaveFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.saveFailed) }
+                // Sent: no haptic (owner decision 15), an announcement; failed: the face left the stack, Android toast.
+                ViewerEffect.SelfieSent -> announce(view, texts.selfieSent)
+                ViewerEffect.SelfieFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.selfieFailed) }
             }
         }
     }
@@ -234,6 +259,9 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         onSave = { if (state.mine) state.current?.media?.originalPath?.let(save) },
         onDelete = { haptics.perform(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
         onUnsendComment = { id -> haptics.perform(Tokens.Haptics.globalWarning); vm.unsendComment(id) },
+        onSendSelfie = vm::sendSelfie,
+        onSelfieFailed = { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.selfieFailed) },
+        onRemoveSelfie = vm::removeSelfie,
     )
 }
 
@@ -244,6 +272,8 @@ private class ViewerTexts(
     val deleteFailed: String,
     val saved: String,
     val saveFailed: String,
+    val selfieSent: String,
+    val selfieFailed: String,
 )
 
 /** The viewer without its view model (snapshots render this with fixed states). Dark in both appearances. */
@@ -264,38 +294,66 @@ fun PhotoViewerContent(
     onSave: () -> Unit,
     onDelete: () -> Unit,
     onUnsendComment: (String) -> Unit,
+    onSendSelfie: (java.io.File) -> Unit = {},
+    onSelfieFailed: () -> Unit = {},
+    onRemoveSelfie: (String) -> Unit = {},
+    /** Draws the capture layer instead of [SelfieCaptureRoute] (snapshots: a sample photo for the live preview). */
+    selfieLayer: (@Composable (SelfieMode) -> Unit)? = null,
 ) {
+    val context = LocalContext.current
+    // No front camera: the selfie entry points are hidden (viewer.selfiereaction → States).
+    val selfieAllowed = state.canReactWithSelfie && remember(context) { SelfieCameras.hasFrontCamera(context) }
+    val photo = state.current
+    LaunchedEffect(photo?.postId, photo?.gone, selfieAllowed) { if (photo?.gone == true || !selfieAllowed) ui.selfieLayer = null }
     MediaAppearance {
         Column(
             Modifier
                 .fillMaxSize()
                 .background(Tokens.Colors.globalBackgroundDeep)
                 .testTag("photo.viewer")
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .imePadding(),
+                .statusBarsPadding(),
         ) {
-            val photo = state.current
-            ViewerHeaderRow(state, nav)
-            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-                val area = maxHeight
-                when {
-                    photo == null -> Unit
-                    photo.gone -> EmptyStateFill {
-                        EmptyState(stringRes(R.string.photo_viewer_gone_title), stringRes(R.string.photo_viewer_gone_detail))
+            ViewerHeaderRow(state, nav, inert = ui.selfieLayer != null)
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                Column(Modifier.fillMaxSize().navigationBarsPadding().imePadding()) {
+                    BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                        val area = maxHeight
+                        when {
+                            photo == null -> Unit
+                            photo.gone -> EmptyStateFill {
+                                EmptyState(stringRes(R.string.photo_viewer_gone_title), stringRes(R.string.photo_viewer_gone_detail))
+                            }
+                            else -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                                Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionHeaderToPhoto))
+                                PhotoArea(photo, state, ui, nav, area, selfieAllowed, onNext, onPrevious, onRetry, onReact, onUnreact, onSave)
+                                Footer(photo, state, ui, voice, selfieAllowed, onPhotoGone)
+                                Comments(photo, state, ui, voice, onUnsendComment)
+                                Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionCommentsToField))
+                            }
+                        }
                     }
-                    else -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                        Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionHeaderToPhoto))
-                        PhotoArea(photo, state, ui, nav, area, onNext, onPrevious, onRetry, onReact, onUnreact, onSave)
-                        Footer(photo, state, ui, voice, onPhotoGone)
-                        Comments(photo, state, ui, voice, onUnsendComment)
-                        Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionCommentsToField))
+                    if (photo?.gone != true) ReplyField(state, ui, nav, onDraft, onSend, onSave)
+                }
+                // viewer.selfiereaction §2: the capture layer from the photo's top (`photo.viewer.dimension.headerToPhoto` below
+                // the header) to the bottom of the screen; in / out with the fade (`duration.global.fade`, `easing.global.standard`).
+                var shownMode by remember { mutableStateOf(SelfieMode.Hold) }
+                ui.selfieLayer?.let { shownMode = it }
+                FadeVisibility(visible = ui.selfieLayer != null, modifier = Modifier.fillMaxSize().padding(top = Tokens.Sizes.photoViewerDimensionHeaderToPhoto)) {
+                    if (selfieLayer != null) {
+                        selfieLayer(shownMode)
+                    } else {
+                        SelfieCaptureRoute(
+                            mode = shownMode,
+                            hold = ui.hold,
+                            onCaptured = onSendSelfie,
+                            onFailed = onSelfieFailed,
+                            onClose = { ui.selfieLayer = null },
+                        )
                     }
                 }
             }
-            if (photo?.gone != true) ReplyField(state, ui, nav, onDraft, onSend, onSave)
         }
-        ViewerDialogs(state, ui, nav, onReact, onUnreact, onDelete, onUnsendComment)
+        ViewerDialogs(state, ui, nav, onReact, onUnreact, onDelete, onUnsendComment, onRemoveSelfie)
     }
 }
 
@@ -307,38 +365,45 @@ fun PhotoViewerContent(
  * photo), `size.global.pillGap`, the close circle whose right edge sits on `size.global.screenMargin`.
  */
 @Composable
-private fun ViewerHeaderRow(state: ViewerState, nav: ViewerNav) {
+private fun ViewerHeaderRow(state: ViewerState, nav: ViewerNav, inert: Boolean = false) {
     val photo = state.current
     val post = photo?.post
-    Row(
-        Modifier.fillMaxWidth().padding(start = Tokens.Sizes.photoViewerDimensionHeaderInset, end = Tokens.Sizes.globalScreenMargin),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Box {
         Row(
             Modifier
-                .weight(1f)
-                .then(if (post != null) Modifier.tapClickable { nav.person(post.authorId, post.groupId) } else Modifier)
-                .semantics(mergeDescendants = true) { heading() },
+                .fillMaxWidth()
+                .padding(start = Tokens.Sizes.photoViewerDimensionHeaderInset, end = Tokens.Sizes.globalScreenMargin)
+                // Under the selfie capture layer the header stays visible and inert (viewer.selfiereaction §2).
+                .then(if (inert) Modifier.clearAndSetSemantics { } else Modifier),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ViewerAvatarRing(photo?.author?.avatarPath, state.index, state.photos.size, Modifier.testTag("viewer.avatar"))
-            Spacer(Modifier.width(Tokens.Sizes.photoViewerDimensionHeaderAvatarToText))
-            Column {
-                Text(photo?.author?.displayName.orEmpty(), style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.endAtLastBaseline())
-                val week = photo?.weekNumber
-                if (week != null) {
-                    val line = if (state.fromWall && photo.groupName != null) stringRes(R.string.photo_viewer_header_groupweek, photo.groupName, week)
-                    else stringRes(R.string.photo_viewer_header_week, week)
-                    Text(line, style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.photoViewerDimensionHeaderLinePitch))
+            Row(
+                Modifier
+                    .weight(1f)
+                    .then(if (post != null) Modifier.tapClickable { nav.person(post.authorId, post.groupId) } else Modifier)
+                    .semantics(mergeDescendants = true) { heading() },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ViewerAvatarRing(photo?.author?.avatarPath, state.index, state.photos.size, Modifier.testTag("viewer.avatar"))
+                Spacer(Modifier.width(Tokens.Sizes.photoViewerDimensionHeaderAvatarToText))
+                Column {
+                    Text(photo?.author?.displayName.orEmpty(), style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.endAtLastBaseline())
+                    val week = photo?.weekNumber
+                    if (week != null) {
+                        val line = if (state.fromWall && photo.groupName != null) stringRes(R.string.photo_viewer_header_groupweek, photo.groupName, week)
+                        else stringRes(R.string.photo_viewer_header_week, week)
+                        Text(line, style = TextRoles.listSubtitle, color = Tokens.ColorsDark.globalTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.photoViewerDimensionHeaderLinePitch))
+                    }
                 }
             }
+            if (state.photos.size > 1) {
+                val position = stringRes(R.string.photo_viewer_position, state.index + 1, state.photos.size)
+                PositionPill(position, position)
+                Spacer(Modifier.width(Tokens.Sizes.globalPillGap))
+            }
+            CloseCircle(stringRes(R.string.photo_viewer_a11y_close), nav.close)
         }
-        if (state.photos.size > 1) {
-            val position = stringRes(R.string.photo_viewer_position, state.index + 1, state.photos.size)
-            PositionPill(position, position)
-            Spacer(Modifier.width(Tokens.Sizes.globalPillGap))
-        }
-        CloseCircle(stringRes(R.string.photo_viewer_a11y_close), nav.close)
+        if (inert) Box(Modifier.matchParentSize().pointerInput(Unit) { awaitEachGesture { awaitFirstDown(pass = PointerEventPass.Initial).consume() } })
     }
 }
 
@@ -415,6 +480,7 @@ private fun PhotoArea(
     ui: ViewerUiState,
     nav: ViewerNav,
     area: Dp,
+    selfieAllowed: Boolean,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onRetry: () -> Unit,
@@ -442,9 +508,16 @@ private fun PhotoArea(
     val previousLabel = stringRes(R.string.photo_viewer_a11y_previous)
     val hint = stringRes(R.string.photo_viewer_a11y_advancehint) + ". " + stringRes(R.string.photo_viewer_a11y_backhint)
     val menuItems = viewerMenuItems(state, ui, nav, onSave)
+    // viewer.selfiereaction §1: the context menu's single-pointer entry (tap mode), also a custom action on the photo.
+    val selfieAction = stringRes(R.string.viewer_selfiereaction_a11y_action)
+    val selfieItem = if (selfieAllowed) DsMenuItem(stringRes(R.string.viewer_selfiereaction_menu_react), { ui.selfieLayer = SelfieMode.Tap }, icon = Tokens.Icons.globalCamera) else null
+    val faces = stackFaces(photo.selfies)
+    val stackLabel = selfieStackLabel(faces) { id -> photo.people[id]?.firstName.orEmpty() }
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val natural = if (aspect != null) maxWidth / aspect else maxWidth / DEFAULT_ASPECT
         val height = min(natural, area)
+        // A letterboxed photo: the stack sits on the visible image's edges (`viewer.selfiereaction.layout.stack` anchor).
+        val visibleWidth = if (aspect != null) min(maxWidth, height * aspect) else maxWidth
         Box(
             Modifier
                 .fillMaxWidth()
@@ -461,7 +534,8 @@ private fun PhotoArea(
                     customActions = listOf(
                         CustomAccessibilityAction(nextLabel) { next(); true },
                         CustomAccessibilityAction(previousLabel) { previous(); true },
-                    ) + menuItems.map { m -> CustomAccessibilityAction(m.text) { m.onClick(); true } }
+                    ) + listOfNotNull(selfieItem?.let { CustomAccessibilityAction(selfieAction) { it.onClick(); true } }) +
+                        menuItems.map { m -> CustomAccessibilityAction(m.text) { m.onClick(); true } }
                 },
             contentAlignment = Alignment.Center,
         ) {
@@ -500,9 +574,19 @@ private fun PhotoArea(
                 onReact = onReact,
                 onUnreact = onUnreact,
                 onAddReaction = { ui.picker = true },
-                items = menuItems,
+                items = listOfNotNull(selfieItem) + menuItems,
             )
         }
+        // The faces over the photo's bottom-leading corner, `size.global.screenMargin` in from both edges; a sibling of the
+        // photo so a tap on it never advances and TalkBack reads it after the photo.
+        SelfieStack(
+            faces = faces,
+            label = stackLabel,
+            onClick = { ui.reactions = true },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = (maxWidth - visibleWidth) / 2 + Tokens.Sizes.globalScreenMargin, bottom = Tokens.Sizes.globalScreenMargin),
+        )
     }
 }
 
@@ -539,7 +623,7 @@ private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNa
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, voice: VoiceUi, onPhotoGone: (String) -> Unit) {
+private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, voice: VoiceUi, selfieAllowed: Boolean, onPhotoGone: (String) -> Unit) {
     val post = photo.post ?: return
     val pitch = Tokens.Sizes.photoViewerDimensionFooterLinePitch
     val caption = post.caption?.takeIf { it.isNotBlank() }
@@ -560,7 +644,7 @@ private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, vo
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ReactionChip(photo.reactions, onClick = { ui.reactions = true }, onMedia = true)
-                AddReactionGlyph { ui.picker = true }
+                AddReactionGlyph(ui, selfieAllowed) { ui.picker = true }
             }
         }.map { it.measure(loose) }
         val slotWidth = slot.maxOfOrNull { it.width } ?: 0
@@ -623,21 +707,33 @@ private fun Modifier.centredAt(y: Dp): Modifier = layout { measurable, constrain
 
 private const val SEPARATOR = " · " // provenance-ok: Retro's footer separator (media_viewer_footer_tagged_users_divider " · with "), punctuation between two data runs
 
-/** `chat.reactions.icon.add` (`size.global.icon`, `color.global.textSecondary`) with its ink on the margin; hit `size.global.headerButton`. */
+/**
+ * `chat.reactions.icon.add` (`size.global.icon`, `color.global.textSecondary`) with its ink on the margin; hit
+ * `size.global.headerButton`. Tap → the emoji picker; with [selfie], touch and hold opens the selfie capture layer in hold
+ * mode with the finger still down (`viewer.selfiereaction` §1, `haptic.global.longPressStart`) and TalkBack gets the
+ * single-pointer custom action `viewer.selfiereaction.a11y.action` (tap mode).
+ */
 @Composable
-private fun AddReactionGlyph(onClick: () -> Unit) {
+private fun AddReactionGlyph(ui: ViewerUiState, selfie: Boolean, onClick: () -> Unit) {
     val icon = Tokens.Icons.chatReactionsIconAdd
     val box = Tokens.Sizes.globalIcon
     val hit = glyphHit
     val label = stringRes(R.string.chat_reactions_a11y_add)
+    val action = stringRes(R.string.viewer_selfiereaction_a11y_action)
+    val haptics = rememberHaptics()
     Box(
         Modifier
             .endInset(-(GlyphInk.trailing(icon, box) + (hit - box) / 2))
             .size(hit)
+            .selfieHoldGesture(selfie, ui.hold) {
+                haptics.longPress()
+                ui.selfieLayer = SelfieMode.Hold
+            }
             .tapClickable(onClick = onClick)
             .clearAndSetSemantics {
                 contentDescription = label
                 role = Role.Button
+                if (selfie) customActions = listOf(CustomAccessibilityAction(action) { ui.selfieLayer = SelfieMode.Tap; true })
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -796,20 +892,50 @@ private fun ViewerDialogs(
     onUnreact: (String) -> Unit,
     onDelete: () -> Unit,
     onUnsendComment: (String) -> Unit,
+    onRemoveSelfie: (String) -> Unit,
 ) {
     val photo = state.current ?: return
+    val haptics = rememberHaptics()
     SystemAppearance {
         val mine = photo.reactions.filter { it.userId == state.me }.map { it.emoji }.toSet()
         if (ui.picker) {
             ReactionPickerSheet(mine, onPick = { e -> ui.picker = false; onReact(e) }, onUnreact = { e -> ui.picker = false; onUnreact(e) }, onDismiss = { ui.picker = false })
         }
         if (ui.reactions) {
+            val post = photo.post
             ReactionsSheet(
                 entries = photo.reactions,
                 me = state.me,
                 person = { id -> photo.people[id].let { Reactor(id, it?.firstName.orEmpty(), it?.avatarPath) } },
                 onUnreact = onUnreact,
-                onDismiss = { ui.reactions = false },
+                onDismiss = { ui.reactions = false; ui.selfieMenu = null },
+                others = selfieSheetRows(
+                    selfies = photo.selfies,
+                    me = state.me,
+                    myPhoto = state.mine,
+                    firstName = { id -> photo.people[id]?.firstName.orEmpty() },
+                    menuOpen = ui.selfieMenu,
+                    onMenu = { ui.selfieMenu = it },
+                    onRemoveMine = { state.me?.let(onRemoveSelfie) },
+                    onAskRemove = { userId -> ui.confirmRemoveSelfie = userId },
+                    onReport = { entry -> if (post != null && entry.id != null) nav.reportSelfie(post.groupId, entry.id, entry.userId) },
+                ),
+            )
+        }
+        ui.confirmRemoveSelfie?.let { userId ->
+            // viewer.selfiereaction → remove confirmation (C-29 native alert, `photo.viewer.layout.deleteConfirm` form).
+            SystemAlertDialog(
+                title = stringRes(R.string.viewer_selfiereaction_remove_title, photo.people[userId]?.firstName.orEmpty()),
+                text = stringRes(R.string.viewer_selfiereaction_remove_message),
+                confirmLabel = stringRes(R.string.viewer_selfiereaction_remove_confirm),
+                onConfirm = {
+                    ui.confirmRemoveSelfie = null
+                    haptics.perform(Tokens.Haptics.globalWarning)
+                    onRemoveSelfie(userId)
+                },
+                dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
+                onDismiss = { ui.confirmRemoveSelfie = null },
+                destructive = true,
             )
         }
         if (ui.confirmDelete) {

@@ -367,10 +367,11 @@ class SocialViewModelTest {
         val data = FakeSocialData().apply { seedAlbums() }
         val vm = PhotoViewerViewModel(data, GROUP, "w-2", PhotoContext.Single, "w-2", null)
         data.emit(GroupEvent.ReactionAdded(GROUP, Reaction("w-2", BEN, "🔥", GROUP, BASE)))
-        assertEquals(listOf(ReactionEntry(BEN, "🔥")), vm.state.value.current!!.reactions)
+        // The row keeps its time: selfie reactions sit among emoji rows by time in the Reactions sheet.
+        assertEquals(listOf(ReactionEntry(BEN, "🔥", BASE)), vm.state.value.current!!.reactions)
         data.failNext += "react:w-2:💖"
         vm.react("💖")
-        assertEquals(listOf(ReactionEntry(BEN, "🔥")), vm.state.value.current!!.reactions)
+        assertEquals(listOf(ReactionEntry(BEN, "🔥", BASE)), vm.state.value.current!!.reactions)
     }
 
     // ---- walls ----

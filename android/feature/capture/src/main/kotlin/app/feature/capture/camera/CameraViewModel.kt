@@ -2,28 +2,39 @@ package app.feature.capture.camera
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.data.error.DataError
+import app.data.error.DataException
+import app.data.media.upload.NewPost
+import app.data.media.upload.UploadProgress
+import app.data.model.Developing
+import app.data.model.Group
 import app.data.model.MediaKind
 import app.feature.capture.data.CaptureData
 import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.data.CapturePrefs
 import app.feature.capture.data.CapturedMedia
+import app.feature.capture.sendto.SendToViewModel
 import app.media.Lens
 import app.model.SessionPromptGate
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
+import java.time.Instant
 
 /**
  * `camera.capture`: opens to the camera; one tap captures a photo and hands it to `camera.sendto`
  * (no edit step); a long press records a video for premium members (a free member's first long
  * press in a session opens the paywall, later ones do nothing; a tap always captures).
+ * `camera.overnight` adds the 9 AM mode: photos queued to develop in the chosen groups at the next reveal.
  */
 class CameraViewModel(
     private val data: CaptureData,
@@ -35,6 +46,8 @@ class CameraViewModel(
     val contextGroupId: String?,
     /** A reply to a photo with a photo (photo.viewer → camera), carried to `create_post`. */
     val replyToPostId: String? = null,
+    /** The weekly question being answered (`question.weekly` B): carried to send-to, linked after posting. */
+    val questionId: String? = null,
     private val clock: () -> Long = System::currentTimeMillis,
     /** Video length, for a recorded or picked video (MediaMetadataRetriever on device). */
     private val durationOf: (File) -> Long? = { null },
@@ -56,11 +69,31 @@ class CameraViewModel(
         val coachDone: Boolean = false,
         val recording: Boolean = false,
         val capturing: Boolean = false,
+        /** `camera.overnight`: 9 AM or Now (Now at every app launch, MERGE_DECISIONS ON-1). */
+        val mode: CaptureMode = CaptureMode.Now,
+        /** The mode control is offered (not on a reply to a photo: `create_overnight_post` has no reply). */
+        val overnightAvailable: Boolean = true,
+        /** The member's groups for the destination pill and sheet (`camera.sendto`'s loading / empty / failed states). */
+        val groups: SendToViewModel.Groups = SendToViewModel.Groups.Loading,
+        /** The groups the next 9 AM photos develop for. */
+        val destinations: Set<String> = emptySet(),
+        val destinationSheet: Boolean = false,
+        /**
+         * `my_developing()`: whether your photos are developing and the next reveal — for the developing stack in the leading
+         * slot, which stays empty while `camera.overnight.layout.stackCards` is BLOCKED.
+         */
+        val developing: Developing? = null,
     ) {
         val showControls: Boolean get() = permission == Permission.Granted && session != Session.Unavailable
 
-        /** The coach shows once per install, only to members who can record video. */
-        val coachVisible: Boolean get() = videoAvailable && !coachDone && showControls
+        /** The coach shows once per install, only to members who can record video, never in 9 AM mode. */
+        val coachVisible: Boolean get() = videoAvailable && !coachDone && showControls && mode == CaptureMode.Now
+
+        /** 9 AM mode hides the library circle (a picked photo was already seen). */
+        val showLibrary: Boolean get() = mode == CaptureMode.Now
+
+        /** The chosen groups in the member's group order (what `create_overnight_post` gets). */
+        val destinationGroups: List<Group> get() = (groups as? SendToViewModel.Groups.Loaded)?.groups.orEmpty().filter { it.id in destinations }
     }
 
     sealed interface Event {
@@ -70,9 +103,15 @@ class CameraViewModel(
         data object AskMicrophone : Event
         /** Announce `camera.capture.a11y.recording`. */
         data object RecordingStarted : Event
+        /** A 9 AM photo was taken and queued: announce `camera.overnight.a11y.captured` with its [reveal]. */
+        data class OvernightCaptured(val reveal: Instant) : Event
+        /** A 9 AM photo could not be queued or failed after its retries: `camera.sendto.error.sendFailed` (C-26 toast). */
+        data object OvernightFailed : Event
     }
 
-    private val state = MutableStateFlow(UiState(lens = if (prefs.frontLensThisSession) Lens.Front else Lens.Back, coachDone = prefs.holdToRecordCoachDone))
+    private val state = MutableStateFlow(
+        UiState(lens = if (prefs.frontLensThisSession) Lens.Front else Lens.Back, coachDone = prefs.holdToRecordCoachDone, overnightAvailable = replyToPostId == null),
+    )
     val ui: StateFlow<UiState> = state.asStateFlow()
 
     // One-shot events, buffered until the screen collects them.
@@ -83,11 +122,112 @@ class CameraViewModel(
     private var recording: VideoRecording? = null
     private var recordingFile: File? = null
 
+    private var groupsJob: Job? = null
+
     init {
         viewModelScope.launch {
             val premium = runCatching { data.isPremium() }.getOrDefault(false)
             state.update { it.copy(videoAvailable = premium) }
             if (state.value.session == Session.Live) rebind()
+        }
+    }
+
+    // ---- camera.overnight (part A) ------------------------------------------------------------
+
+    /** The member's groups (cache first), with the session's destinations or the default: the camera's group, else all. */
+    fun loadGroups() {
+        groupsJob?.cancel()
+        groupsJob = viewModelScope.launch {
+            data.groups().collect { result ->
+                val list = result.value
+                val groups = when {
+                    list == null && result.refreshing -> SendToViewModel.Groups.Loading
+                    list == null -> when (result.error) {
+                        DataError.NotSignedIn, DataError.NotConfigured, null -> SendToViewModel.Groups.Empty
+                        else -> SendToViewModel.Groups.Failed(offline = result.error == DataError.Network)
+                    }
+                    list.isEmpty() && result.refreshing -> SendToViewModel.Groups.Loading
+                    list.isEmpty() -> SendToViewModel.Groups.Empty
+                    else -> SendToViewModel.Groups.Loaded(list)
+                }
+                state.update { s ->
+                    val ids = (groups as? SendToViewModel.Groups.Loaded)?.groups?.map { it.id } ?: return@update s.copy(groups = groups)
+                    val chosen = prefs.overnightGroups ?: s.destinations.takeIf { it.isNotEmpty() } ?: defaultDestinations(ids)
+                    s.copy(groups = groups, destinations = chosen.filterTo(LinkedHashSet()) { it in ids })
+                }
+            }
+        }
+    }
+
+    /** Every group selected (owner decision 11, as `camera.sendto`), or the group the camera was opened for. */
+    private fun defaultDestinations(ids: List<String>): Set<String> = contextGroupId?.let { setOfNotNull(it.takeIf { id -> id in ids }) } ?: ids.toSet()
+
+    /**
+     * The mode control. The first switch to 9 AM in an app session opens the destination sheet (Dispo's roll drawer);
+     * afterwards the session's choice is kept.
+     */
+    fun selectMode(mode: CaptureMode) {
+        if (!state.value.overnightAvailable || state.value.recording || mode == state.value.mode) return
+        state.update { it.copy(mode = mode, destinationSheet = mode == CaptureMode.Later && prefs.overnightGroups == null) }
+        if (mode == CaptureMode.Later) {
+            // Read only once 9 AM is used: the camera is the app's first screen.
+            if (groupsJob == null) loadGroups()
+            refreshDeveloping()
+        }
+    }
+
+    /** The destination pill. */
+    fun openDestinations() = state.update { it.copy(destinationSheet = true) }
+
+    fun toggleDestination(groupId: String) =
+        state.update { s -> s.copy(destinations = if (groupId in s.destinations) s.destinations - groupId else s.destinations + groupId) }
+
+    /** Done (or the sheet swiped away): the choice is kept for the session; nothing selected switches back to Now. */
+    fun confirmDestinations() {
+        val s = state.value
+        val loaded = s.groups is SendToViewModel.Groups.Loaded
+        if (loaded) prefs.overnightGroups = s.destinations
+        state.update {
+            it.copy(destinationSheet = false, mode = if (loaded && it.destinations.isNotEmpty()) it.mode else CaptureMode.Now)
+        }
+    }
+
+    private fun refreshDeveloping() {
+        viewModelScope.launch {
+            runCatching { data.myDeveloping() }.getOrNull()?.let { d -> state.update { it.copy(developing = d) } }
+        }
+    }
+
+    /**
+     * 9 AM mode's shutter: the photo is stored in app storage and queued (`camera.overnight.layout.uploadQueue`: works
+     * offline, uploads on reconnect, the local copy goes once uploaded) as `create_overnight_post` to the chosen groups — no
+     * preview, no send-to; the camera stays ready. Never written to the photo library.
+     */
+    private suspend fun captureOvernight(c: CameraController) {
+        val groups = state.value.destinationGroups
+        if (groups.isEmpty()) {
+            state.update { it.copy(destinationSheet = true) }
+            return
+        }
+        val file = c.capturePhoto(File(captureDir, "night-${clock()}.jpg"), flash = state.value.flashOn && state.value.hasFlash)
+        val size = sizeOf(file)
+        val draft = try {
+            data.enqueue(NewPost(kind = MediaKind.Photo, original = file, width = size?.first, height = size?.second, groupIds = groups.map { it.id }, overnight = true))
+        } catch (_: DataException) {
+            null
+        } finally {
+            // The queue copied the photo into its own folder.
+            file.delete()
+        }
+        if (draft == null) {
+            events.send(Event.OvernightFailed)
+            return
+        }
+        events.send(Event.OvernightCaptured(OvernightReveal.earliest(Instant.ofEpochMilli(clock()), groups)))
+        viewModelScope.launch {
+            data.progress(draft).first { it is UploadProgress.Done || it is UploadProgress.Failed }.let { result ->
+                if (result is UploadProgress.Failed) events.send(Event.OvernightFailed) else refreshDeveloping()
+            }
         }
     }
 
@@ -141,16 +281,20 @@ class CameraViewModel(
         state.update { it.copy(coachDone = true) }
     }
 
-    /** Tap: one photo, then send-to. */
+    /** Tap: one photo, then send-to (in 9 AM mode: queued to develop, the camera stays). */
     fun capturePhoto() {
         val c = controller ?: return
         if (state.value.capturing || state.value.recording || state.value.session != Session.Live) return
         state.update { it.copy(capturing = true) }
         viewModelScope.launch {
             try {
+                if (state.value.mode == CaptureMode.Later) {
+                    captureOvernight(c)
+                    return@launch
+                }
                 val file = c.capturePhoto(File(captureDir, "photo-${clock()}.jpg"), flash = state.value.flashOn && state.value.hasFlash)
                 val size = sizeOf(file)
-                handoff.put(CapturedMedia(MediaKind.Photo, file, size?.first, size?.second, durationMs = null, fromLibrary = false), contextGroupId, replyToPostId)
+                handoff.put(CapturedMedia(MediaKind.Photo, file, size?.first, size?.second, durationMs = null, fromLibrary = false), contextGroupId, replyToPostId, questionId)
                 events.send(Event.OpenSendTo)
             } catch (e: CancellationException) {
                 throw e
@@ -167,6 +311,8 @@ class CameraViewModel(
      * the session's first long press opens the paywall (at most one prompt per session).
      */
     fun startVideo(microphoneAsked: Boolean) {
+        // 9 AM mode: photos only, hold does nothing (camera.overnight → shutter).
+        if (state.value.mode == CaptureMode.Later) return
         if (state.value.capturing || state.value.recording || state.value.session != Session.Live) return
         if (!state.value.videoAvailable) {
             if (gate.tryClaim()) events.trySend(Event.OpenPaywall)
@@ -204,7 +350,7 @@ class CameraViewModel(
         // The first recorded video ends the coach for good.
         dismissCoach()
         val duration = durationOf(file)?.toInt()?.takeIf { it > 0 } ?: run { file.delete(); return }
-        handoff.put(CapturedMedia(MediaKind.Video, file, null, null, duration, fromLibrary = false), contextGroupId, replyToPostId)
+        handoff.put(CapturedMedia(MediaKind.Video, file, null, null, duration, fromLibrary = false), contextGroupId, replyToPostId, questionId)
         events.trySend(Event.OpenSendTo)
     }
 
@@ -220,7 +366,7 @@ class CameraViewModel(
                 CapturedMedia(MediaKind.Photo, file, size?.first, size?.second, null, fromLibrary = true)
             }
         }
-        handoff.put(media, contextGroupId, replyToPostId)
+        handoff.put(media, contextGroupId, replyToPostId, questionId)
         events.trySend(Event.OpenSendTo)
     }
 

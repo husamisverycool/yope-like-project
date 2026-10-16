@@ -95,6 +95,8 @@ class ScreenSnapshotTest {
             title = "Week 42",
             onShutterTap = {}, onShutterLongPress = {}, onShutterRelease = {}, onFlash = {}, onFlip = {}, onLibrary = {},
             onCoachClose = {}, onOpenSettings = {}, onRetry = {},
+            // camera.overnight's mode control (Now selected): `{time}` as the en-US platform formats 09:00.
+            overnight = app.feature.capture.camera.OvernightChrome(time = "9:00 AM"),
         )
     }
 

@@ -54,6 +54,8 @@ object TestPhotos {
                 SamplePhotos.collage(COLLAGE_W, COLLAGE_H, (0 until 4).map { SamplePhotos.pick(it + 9) }, columns = 2), WIDTH, HEIGHT,
             )
             parts[0] == "u" && "front" in parts -> sized(people[parts[1]] ?: SamplePhotos.avatarForKey(parts[1]))
+            // Selfie reactions (`u/<uid>/selfies/<uuid>.jpg`): a portrait per file.
+            parts[0] == "u" && "selfies" in parts -> sized(SamplePhotos.avatarForKey(parts.last()))
             parts[0] == "u" && parts.size >= 3 -> sized(photoFor(parts[2]))
             else -> sized(SamplePhotos.forKey(path))
         }

@@ -14,6 +14,7 @@ import app.data.model.Message
 import app.data.model.Post
 import app.data.model.PostTag
 import app.data.model.Profile
+import app.data.model.SelfieReaction
 import app.data.model.WallItem
 import app.data.model.WeeklyRecap
 import app.data.offline.CacheKey
@@ -75,6 +76,13 @@ interface SocialData {
     /** Takes back your reaction with [emoji] (`unreact`, `chat.reactions.layout.unreact`). */
     suspend fun unreact(postId: String, emoji: String)
 
+    /** Selfie reactions of several posts (`selfie_reactions`, docs/API.md §14.1), oldest first per post; never a count. */
+    suspend fun selfieReactions(postIds: Collection<String>): Map<String, List<SelfieReaction>>
+    /** Uploads the still [file] (`u/<uid>/selfies/<uuid>.jpg`), then `react_with_selfie`: a new selfie replaces yours. */
+    suspend fun reactWithSelfie(postId: String, file: File): SelfieReaction
+    /** `remove_selfie_reaction`: yours ([userId] null), or — the post's author — anyone's on your post. */
+    suspend fun removeSelfieReaction(postId: String, userId: String? = null)
+
     suspend fun isTaggedByMe(postId: String): Boolean
     /** `post_tags` of a photo in tag order (docs/API.md §5.11): who said "I'm in this". */
     suspend fun tags(postId: String): List<PostTag>
@@ -94,6 +102,9 @@ interface SocialData {
 
     suspend fun albums(groupId: String): List<Album>
     suspend fun albumItems(albumId: String): List<AlbumItem>
+
+    /** Post ids answering the weekly question [questionId], oldest first (`question_answers`, §14.4); none by default. */
+    suspend fun questionAnswers(questionId: String): List<String> = emptyList()
     suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>): Album
     suspend fun renameAlbum(albumId: String, name: String): Album
     suspend fun deleteAlbum(albumId: String)
@@ -146,6 +157,10 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     }
     override suspend fun unreact(postId: String, emoji: String) = graph.reactions.unreact(postId, emoji)
 
+    override suspend fun selfieReactions(postIds: Collection<String>) = graph.selfies.selfiesFor(postIds)
+    override suspend fun reactWithSelfie(postId: String, file: File) = graph.selfies.react(postId, file)
+    override suspend fun removeSelfieReaction(postId: String, userId: String?) = graph.selfies.remove(postId, userId)
+
     override suspend fun isTaggedByMe(postId: String): Boolean {
         val me = currentUserId() ?: return false
         return graph.tags.tags(postId).any { it.userId == me }
@@ -169,6 +184,7 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
 
     override suspend fun albums(groupId: String) = graph.albums.albums(groupId)
     override suspend fun albumItems(albumId: String) = graph.albums.items(albumId)
+    override suspend fun questionAnswers(questionId: String): List<String> = graph.questions.answers(questionId).map { it.id }
     override suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>) = graph.albums.saveAlbum(groupId, name, postIds)
     override suspend fun renameAlbum(albumId: String, name: String) = graph.albums.renameAlbum(albumId, name)
     override suspend fun deleteAlbum(albumId: String) = graph.albums.deleteAlbum(albumId)
@@ -206,6 +222,9 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun reactions(postIds: Collection<String>): Map<String, List<ReactionEntry>> = fail()
     override suspend fun react(postId: String, emoji: String) = fail()
     override suspend fun unreact(postId: String, emoji: String) = fail()
+    override suspend fun selfieReactions(postIds: Collection<String>): Map<String, List<SelfieReaction>> = fail()
+    override suspend fun reactWithSelfie(postId: String, file: File): SelfieReaction = fail()
+    override suspend fun removeSelfieReaction(postId: String, userId: String?) = fail()
     override suspend fun isTaggedByMe(postId: String): Boolean = fail()
     override suspend fun tags(postId: String): List<PostTag> = fail()
     override suspend fun tagSelf(postId: String) = fail()

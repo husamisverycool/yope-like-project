@@ -261,7 +261,12 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
     override suspend fun notificationSettings(): NotificationSettings? = notificationSettings.also { call("notificationSettings") }
     override suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings {
         call("setQuietHours")
-        return NotificationSettings(meId, start, end, timeZone, now).also { notificationSettings = it }
+        return NotificationSettings(meId, start, end, timeZone, now, notificationSettings?.overnight ?: true).also { notificationSettings = it }
+    }
+    override suspend fun setOvernightAlerts(on: Boolean): NotificationSettings {
+        call("setOvernightAlerts")
+        val current = notificationSettings ?: NotificationSettings(meId, null, null, null, now)
+        return current.copy(overnight = on, updatedAt = now).also { notificationSettings = it }
     }
 
     // Safety ----------------------------------------------------------------------------------------

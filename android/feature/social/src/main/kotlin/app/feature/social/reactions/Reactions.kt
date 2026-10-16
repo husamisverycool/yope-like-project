@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -78,6 +79,7 @@ import app.ui.system.SheetHeader
 import app.ui.text.CapTop
 import app.ui.text.TextRoles
 import app.ui.text.capTopAt
+import java.time.Instant
 
 /**
  * The distinct emoji of a photo's reactions for the chip (`chat.reactions.layout.clusterOrder`): newest first —
@@ -315,12 +317,36 @@ private fun PickerCell(emoji: String, mine: Boolean, onPick: () -> Unit, onUnrea
 data class Reactor(val userId: String, val name: String, val avatarPath: String?)
 
 /**
+ * A row of another reaction kind placed among the emoji rows by time (the selfie rows of `viewer.selfiereaction` §4);
+ * [at] null = being sent (the newest).
+ */
+@Immutable
+class ReactionsSheetRow(val key: String, val at: Instant?, val content: @Composable () -> Unit)
+
+/** One line of the sheet: an emoji reaction or a [ReactionsSheetRow]. */
+private sealed interface SheetLine {
+    val key: String
+    val at: Instant?
+
+    data class Emoji(val entry: ReactionEntry) : SheetLine {
+        override val key get() = entry.userId + ":" + entry.emoji
+        override val at get() = entry.createdAt
+    }
+
+    class Other(val row: ReactionsSheetRow) : SheetLine {
+        override val key get() = row.key
+        override val at get() = row.at
+    }
+}
+
+/**
  * The Reactions sheet (`chat.reactions.layout.list`): native sheet titled `chat.reactions.activity.title`, a plain
  * list on the page colour, one C-16 row per person and emoji — avatar `size.global.avatarPicker` at the margin,
  * name (`listTitle`) `chat.thread.dimension.rowAvatarToText` after it, the emoji at the trailing margin in the
  * `size.global.icon` box; your rows add `chat.reactions.list.removeHint` and unreact on tap. Rows
  * `size.global.listGap` apart, newest first (`chat.reactions.layout.listOrder`: [entries] arrive oldest first by
- * `reactions.created_at`, optimistic ones appended — the list reverses them). Empty: `chat.reactions.empty` (C-27 title only).
+ * `reactions.created_at`, optimistic ones appended — the list reverses them). [others] (selfie reactions) sit among them by
+ * time. Empty: `chat.reactions.empty` (C-27 title only).
  */
 @Composable
 fun ReactionsSheet(
@@ -330,8 +356,22 @@ fun ReactionsSheet(
     onUnreact: (String) -> Unit,
     onDismiss: () -> Unit,
     loading: Boolean = false,
+    others: List<ReactionsSheetRow> = emptyList(),
 ) {
-    val rows = entries.asReversed()
+    val emoji: List<SheetLine> = entries.asReversed().map { SheetLine.Emoji(it) }
+    val rows = if (others.isEmpty()) emoji else (emoji + others.asReversed().map { SheetLine.Other(it) }).sortedWith(
+        // Newest first; a row still being sent (no time yet) is the newest.
+        Comparator { a, b ->
+            val x = a.at
+            val y = b.at
+            when {
+                x == null && y == null -> 0
+                x == null -> -1
+                y == null -> 1
+                else -> y.compareTo(x)
+            }
+        },
+    )
     SystemAppearance {
         DsBottomSheet(onDismissRequest = onDismiss) {
             SheetHeader(stringRes(R.string.chat_reactions_activity_title))
@@ -342,7 +382,12 @@ fun ReactionsSheet(
                     EmptyState(stringRes(R.string.chat_reactions_empty), null)
                 }
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalListGap), contentPadding = PaddingValues(bottom = Tokens.Sizes.globalSectionGap)) {
-                    itemsIndexed(rows, key = { _, e -> e.userId + ":" + e.emoji }) { _, entry ->
+                    itemsIndexed(rows, key = { _, line -> line.key }) { _, line ->
+                        if (line is SheetLine.Other) {
+                            line.row.content()
+                            return@itemsIndexed
+                        }
+                        val entry = (line as SheetLine.Emoji).entry
                         val p = person(entry.userId)
                         val mine = entry.userId == me
                         val label = if (mine) stringRes(R.string.chat_reactions_activity_rowmine, entry.emoji)

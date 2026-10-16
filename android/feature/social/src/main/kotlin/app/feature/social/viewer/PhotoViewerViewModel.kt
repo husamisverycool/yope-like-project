@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -50,6 +51,8 @@ data class ViewerPhoto(
     val loaded: Boolean = false,
     val gone: Boolean = false,
     val loadFailed: Boolean = false,
+    /** Selfie reactions (`viewer.selfiereaction`), oldest first, one per person; yours while sending has no id yet. */
+    val selfies: List<SelfieEntry> = emptyList(),
 ) {
     /** ISO week of the photo in its group's time zone. */
     val weekNumber: Int? get() = post?.let { Formats.isoWeek(it.createdAt.atZone(zone ?: ZoneId.systemDefault()).toLocalDate()) }
@@ -71,6 +74,9 @@ data class ViewerState(
 
     val current: ViewerPhoto? get() = photos.getOrNull(index)
     val mine: Boolean get() = current?.post?.authorId != null && current?.post?.authorId == me
+
+    /** A selfie can be sent to the current photo: it is loaded and not yours ("You cannot react to your own BeReal"). */
+    val canReactWithSelfie: Boolean get() = me != null && current?.post != null && current?.gone != true && !mine
     val taggedByMe: Boolean get() = me != null && current?.tagged?.contains(me) == true
 }
 
@@ -78,6 +84,10 @@ sealed interface ViewerEffect {
     data object Sent : ViewerEffect
     data object SendFailed : ViewerEffect
     data object ReactionFailed : ViewerEffect
+    /** Your selfie reached the server: the `viewer.selfiereaction.a11y.sent` announcement. */
+    data object SelfieSent : ViewerEffect
+    /** Upload or `react_with_selfie` failed: your face left the stack (`viewer.selfiereaction.error`). */
+    data object SelfieFailed : ViewerEffect
     data object Deleted : ViewerEffect
     data object DeleteFailed : ViewerEffect
     data object Saved : ViewerEffect
@@ -86,8 +96,8 @@ sealed interface ViewerEffect {
 
 /**
  * `photo.viewer`: the opener's photo list ([PhotoContext]), each photo's post / media / author / group /
- * reactions / comments / tags, realtime deletions, reactions and new comments, and the viewer's actions
- * (advance, reply, react, tag, delete everywhere, save).
+ * reactions / selfie reactions / comments / tags, realtime deletions, reactions and new comments, and the viewer's actions
+ * (advance, reply, react, react with a selfie, tag, delete everywhere, save).
  */
 class PhotoViewerViewModel(
     private val data: SocialData,
@@ -103,6 +113,9 @@ class PhotoViewerViewModel(
     val effects: SharedFlow<ViewerEffect> = _effects.asSharedFlow()
 
     private val groups = HashMap<String, app.data.model.Group?>()
+    /** Your selfie being sent, per post (kept through reloads until the call returns). */
+    private val pending = HashMap<String, SelfieEntry>()
+    private val tempFiles = ArrayList<File>()
     private val subscriptions = HashMap<String, Job>()
     private val loading = HashSet<String>()
 
@@ -163,6 +176,7 @@ class PhotoViewerViewModel(
         }
         PhotoContext.Recap -> data.recap(contextId)?.items.orEmpty()
         PhotoContext.Album -> data.albumItems(contextId).sortedBy { it.position }.map { it.postId }
+        PhotoContext.Question -> data.questionAnswers(contextId)
     }
 
     /** Moves to [index] and loads that photo and its neighbours. */
@@ -204,13 +218,15 @@ class PhotoViewerViewModel(
             val reactions = data.reactions(listOf(id))[id].orEmpty()
             val comments = runCatching { data.replies(post.groupId, id) }.getOrDefault(emptyList())
             val tags = runCatching { data.tags(id) }.getOrDefault(emptyList()).map { it.userId }
-            val ids = (listOf(post.authorId) + comments.map { it.authorId } + reactions.map { it.userId } + tags).distinct()
+            val selfies = runCatching { data.selfieReactions(listOf(id))[id] }.getOrNull().orEmpty().map(SelfieEntry::of)
+            val ids = (listOf(post.authorId) + comments.map { it.authorId } + reactions.map { it.userId } + tags + selfies.map { it.userId }).distinct()
             val people = data.profiles(ids).associateBy { it.id }
             val zone = group?.timeZone?.let { runCatching { ZoneId.of(it) }.getOrNull() }
             update(id) {
                 it.copy(
                     post = post, media = media, author = people[post.authorId], groupName = group?.name, zone = zone, reactions = reactions,
                     comments = comments, tagged = tags, people = people, loaded = true, loadFailed = false,
+                    selfies = withPending(id, selfies),
                 )
             }
         } catch (e: CancellationException) {
@@ -243,11 +259,27 @@ class PhotoViewerViewModel(
             }
             is GroupEvent.ReactionAdded -> {
                 val r = event.reaction
-                update(r.postId) { p -> if (p.reactions.any { it.userId == r.userId && it.emoji == r.emoji }) p else p.copy(reactions = p.reactions + ReactionEntry(r.userId, r.emoji)) }
+                update(r.postId) { p -> if (p.reactions.any { it.userId == r.userId && it.emoji == r.emoji }) p else p.copy(reactions = p.reactions + ReactionEntry(r.userId, r.emoji, r.createdAt)) }
             }
             is GroupEvent.ReactionsChanged -> {
                 if (_state.value.photos.none { it.postId == event.postId }) return
                 runCatching { data.reactions(listOf(event.postId)) }.getOrNull()?.let { rows -> update(event.postId) { it.copy(reactions = rows[event.postId].orEmpty()) } }
+                // Removed selfies arrive as this broadcast too (docs/API.md §14.1).
+                runCatching { data.selfieReactions(listOf(event.postId)) }.getOrNull()?.let { rows ->
+                    update(event.postId) { it.copy(selfies = withPending(event.postId, rows[event.postId].orEmpty().map(SelfieEntry::of), it.selfies)) }
+                }
+            }
+            is GroupEvent.SelfieReactionChanged -> {
+                val row = event.selfie
+                if (_state.value.photos.none { it.postId == row.postId }) return
+                val known = _state.value.photos.any { it.people.containsKey(row.userId) }
+                val profile = if (known) null else runCatching { data.profiles(listOf(row.userId)).firstOrNull() }.getOrNull()
+                update(row.postId) { p ->
+                    val previous = p.selfies.firstOrNull { it.userId == row.userId }
+                    // Your own row coming back keeps the still you just took on screen (no reload of the same face).
+                    val entry = SelfieEntry.of(row).copy(localFile = previous?.localFile?.takeIf { previous.imagePath == null || previous.imagePath == row.imagePath })
+                    p.copy(selfies = p.selfies.filterNot { it.userId == row.userId } + entry, people = profile?.let { p.people + (it.id to it) } ?: p.people)
+                }
             }
             is GroupEvent.MessageInserted -> {
                 val m = event.message
@@ -338,6 +370,83 @@ class PhotoViewerViewModel(
                 _effects.emit(ViewerEffect.ReactionFailed)
             }
         }
+    }
+
+    /**
+     * `react_with_selfie` with the still [file] just taken in the capture layer (`viewer.selfiereaction` → sending): your face
+     * joins the leading end of the stack at once, replacing an earlier one (one per person per post); if the upload or the
+     * call fails it leaves again ([ViewerEffect.SelfieFailed]).
+     */
+    fun sendSelfie(file: File) {
+        val me = data.currentUserId() ?: return
+        val s = _state.value
+        val post = s.current?.post ?: return
+        if (!s.canReactWithSelfie) return
+        val before = s.current?.selfies?.firstOrNull { it.userId == me }
+        val sending = SelfieEntry(id = null, userId = me, imagePath = null, createdAt = null, localFile = file)
+        tempFiles += file
+        pending[post.id] = sending
+        update(post.id) { p -> p.copy(selfies = p.selfies.filterNot { it.userId == me } + sending) }
+        viewModelScope.launch {
+            try {
+                val row = data.reactWithSelfie(post.id, file)
+                if (pending[post.id] === sending) pending.remove(post.id)
+                update(post.id) { p ->
+                    if (p.selfies.none { it === sending }) p
+                    else p.copy(selfies = p.selfies.map { if (it === sending) SelfieEntry.of(row).copy(localFile = file) else it })
+                }
+                _effects.emit(ViewerEffect.SelfieSent)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                if (pending[post.id] === sending) pending.remove(post.id)
+                update(post.id) { p ->
+                    if (p.selfies.none { it === sending }) p
+                    else p.copy(selfies = p.selfies.filterNot { it === sending } + listOfNotNull(before))
+                }
+                _effects.emit(ViewerEffect.SelfieFailed)
+            }
+        }
+    }
+
+    /**
+     * `remove_selfie_reaction`: yours (tap your row in the Reactions sheet), or — on your own photo, after the confirmation —
+     * [userId]'s. Gone at once (the face fades out); back if the call fails.
+     */
+    fun removeSelfie(userId: String) {
+        val me = data.currentUserId() ?: return
+        val s = _state.value
+        val post = s.current?.post ?: return
+        if (userId != me && !s.mine) return
+        val selfies = s.current?.selfies.orEmpty()
+        val at = selfies.indexOfFirst { it.userId == userId && it.id != null }
+        if (at < 0) return
+        val removed = selfies[at]
+        update(post.id) { p -> p.copy(selfies = p.selfies.filterNot { it.userId == userId }) }
+        viewModelScope.launch {
+            try {
+                data.removeSelfieReaction(post.id, userId.takeIf { it != me })
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                update(post.id) { p ->
+                    if (p.selfies.any { it.userId == userId }) p
+                    else p.copy(selfies = p.selfies.toMutableList().apply { add(at.coerceAtMost(size), removed) })
+                }
+                _effects.emit(ViewerEffect.ReactionFailed)
+            }
+        }
+    }
+
+    /** [rows] from the server plus your selfie still being sent to [postId] (it replaces your older row). */
+    private fun withPending(postId: String, rows: List<SelfieEntry>, current: List<SelfieEntry> = emptyList()): List<SelfieEntry> {
+        val sending = pending[postId] ?: return rows.map { row -> current.firstOrNull { it.id == row.id && it.imagePath == row.imagePath }?.let { row.copy(localFile = it.localFile) } ?: row }
+        return rows.filterNot { it.userId == sending.userId } + sending
+    }
+
+    override fun onCleared() {
+        // The stills taken here were uploaded (or failed): selfies are never kept on the device (owner decision 12).
+        tempFiles.forEach { it.delete() }
     }
 
     /** The photo was deleted meanwhile: it shows as gone, as for a realtime `post_deleted`. */

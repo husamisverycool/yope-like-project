@@ -92,6 +92,8 @@ interface AccountBackend {
     // Settings (§5.21) ----------------------------------------------------------------------------
     suspend fun notificationSettings(): NotificationSettings?
     suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings
+    /** §14.3 the reveal push of overnight photos (`set_overnight_alerts`; `notification_settings.overnight`, default on). */
+    suspend fun setOvernightAlerts(on: Boolean): NotificationSettings
 
     // Safety (§5.6, §6.3) -------------------------------------------------------------------------
     suspend fun blocked(): List<Block>

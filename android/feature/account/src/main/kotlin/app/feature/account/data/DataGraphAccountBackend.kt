@@ -113,6 +113,7 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
     override suspend fun notificationSettings(): NotificationSettings? = graph.settings.notificationSettings()
     override suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings =
         graph.settings.setQuietHours(start, end, timeZone)
+    override suspend fun setOvernightAlerts(on: Boolean): NotificationSettings = graph.settings.setOvernightAlerts(on)
 
     override suspend fun blocked(): List<Block> = graph.safety.blocked()
     override suspend fun block(userId: String) = graph.safety.block(userId)
@@ -178,6 +179,7 @@ class UnconfiguredAccountBackend : AccountBackend {
     override fun groupEvents(groupId: String): Flow<GroupEvent> = emptyFlow()
     override suspend fun notificationSettings(): NotificationSettings? = fail()
     override suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings = fail()
+    override suspend fun setOvernightAlerts(on: Boolean): NotificationSettings = fail()
     override suspend fun blocked(): List<Block> = fail()
     override suspend fun block(userId: String) = fail()
     override suspend fun unblock(userId: String) = fail()

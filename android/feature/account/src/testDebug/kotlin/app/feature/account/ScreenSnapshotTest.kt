@@ -523,6 +523,8 @@ class ScreenSnapshotTest {
     @Test fun notificationsSystemOff() = snap("settings.notifications", "permissionOff", content = notifications(notif.copy(quietOn = false, quietStart = null, quietEnd = null), off = true))
     @Test fun notificationsNoGroups() = snap("settings.notifications", "noGroups", content = notifications(notif.copy(groups = emptyList())))
     @Test fun notificationsError() = snap("settings.notifications", "changeFailed", content = notifications(notif.copy(error = true)))
+    /** camera.overnight's switch ("Developed Photos") turned off, scrolled into view. */
+    @Test fun notificationsOvernightOff() = snap("settings.notifications", "overnightOff", act = { compose.onNodeWithText(context.getString(R.string.camera_overnight_settings_row)).performScrollTo() }, content = notifications(notif.copy(overnightOn = false)))
 
     // settings.account ------------------------------------------------------------------------------
     private val account = SettingsAccountUiState(name = "Ana Lima", avatar = photo("avatar-01"), hasPhoto = true, phone = "+1 415-555-0100", birthday = LocalDate.of(2001, 7, 5))

@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -79,6 +81,7 @@ import app.ui.components.EmptyStateAction
 import app.ui.components.MediaPill
 import app.ui.components.MediaPillStyle
 import app.ui.components.ScreenHeader
+import app.ui.copy.WeeklyQuestions
 import app.ui.foundation.DsMotion
 import app.ui.foundation.FadeVisibility
 import app.ui.foundation.GlyphInk
@@ -100,10 +103,13 @@ fun CameraRoute(
     replyToPostId: String?,
     onOpenSendTo: () -> Unit,
     onOpenPaywall: () -> Unit,
+    question: CameraQuestion? = null,
+    /** The destination sheet's empty state (`camera.sendto.empty.button`). */
+    onCreateGroup: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val vm: CameraViewModel = viewModel(key = "camera:$groupId:$replyToPostId") {
+    val vm: CameraViewModel = viewModel(key = "camera:$groupId:$replyToPostId:${question?.id}") {
         CameraViewModel(
             data = CaptureDataProvider.get(context),
             handoff = CaptureHandoff.process,
@@ -112,6 +118,7 @@ fun CameraRoute(
             captureDir = CaptureHandoff.dir(context),
             contextGroupId = groupId,
             replyToPostId = replyToPostId,
+            questionId = question?.id,
             durationOf = ::mediaDurationMs,
             sizeOf = ::photoSize,
         )
@@ -122,6 +129,7 @@ fun CameraRoute(
     val scope = rememberCoroutineScope()
     val view = LocalView.current
     val recordingLabel = stringResource(R.string.camera_capture_a11y_recording)
+    val sendFailed = stringResource(R.string.camera_sendto_error_sendfailed)
 
     val cameraPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         MediaPermissions.markRequested(context, MediaPermission.Camera)
@@ -155,6 +163,10 @@ fun CameraRoute(
                 CameraViewModel.Event.AskMicrophone -> microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
                 @Suppress("DEPRECATION") // the spec asks for an announcement when recording starts
                 CameraViewModel.Event.RecordingStarted -> view.announceForAccessibility(recordingLabel)
+                // camera.overnight: no preview follows a 9 AM photo, so it is announced; a failure is a C-26 toast.
+                is CameraViewModel.Event.OvernightCaptured ->
+                    announce(view, context.getString(R.string.camera_overnight_a11y_captured, OvernightFormats.reveal(context, event.reveal)))
+                CameraViewModel.Event.OvernightFailed -> app.ui.components.PlatformToast.show(context, sendFailed)
             }
         }
     }
@@ -163,6 +175,25 @@ fun CameraRoute(
         onDispose { kotlinx.coroutines.MainScope().launch { runCatching { controller.unbind() } } }
     }
     val preview by controller.preview.collectAsStateWithLifecycle()
+    val groupIds = (state.groups as? app.feature.capture.sendto.SendToViewModel.Groups.Loaded)?.groups.orEmpty()
+    val covers by produceState<Map<String, Any?>>(initialValue = emptyMap(), groupIds.map { it.id }, state.destinationSheet) {
+        val paths = groupIds.mapNotNull { g -> g.coverPath?.let { g.id to it } }
+        if (state.destinationSheet && paths.isNotEmpty()) {
+            val urls = runCatching { CaptureDataProvider.get(context).signedUrls(paths.map { it.second }) }.getOrDefault(emptyMap())
+            value = paths.mapNotNull { (id, path) -> urls[path]?.let { id to it } }.toMap()
+        }
+    }
+    val overnight = OvernightChrome(
+        time = remember(context) { OvernightFormats.time(context) },
+        reveal = if (state.destinationSheet) OvernightFormats.reveal(context, OvernightReveal.earliest(java.time.Instant.now(), state.destinationGroups)) else "",
+        covers = covers,
+        onMode = vm::selectMode,
+        onPill = vm::openDestinations,
+        onToggle = vm::toggleDestination,
+        onDone = vm::confirmDestinations,
+        onCreateGroup = onCreateGroup,
+        onRetryGroups = vm::loadGroups,
+    )
 
     CameraScreen(
         state = state,
@@ -179,6 +210,8 @@ fun CameraRoute(
             context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         },
         onRetry = vm::startSession,
+        questionText = question?.let { q -> remember(q.key) { WeeklyQuestions.text(context, q.key) } },
+        overnight = overnight,
     )
     // Returning from Settings with access granted.
     LifecycleResumeEffect(state.permission) {
@@ -190,6 +223,10 @@ fun CameraRoute(
     }
 }
 
+/** Says [text] through TalkBack (a result the screen does not draw). */
+@Suppress("DEPRECATION")
+private fun announce(view: android.view.View, text: String) = view.announceForAccessibility(text)
+
 /** `camera.capture.title` {number}: the current ISO-8601 week, as `week.history` numbers weeks. */
 internal fun currentWeekNumber(today: LocalDate = LocalDate.now()): Int = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
 
@@ -198,7 +235,8 @@ internal fun currentWeekNumber(today: LocalDate = LocalDate.now()): Int = today.
  * safe-area top, the 3:4 viewfinder `size.global.titleToContent` below the title baseline (it shrinks, 3:4 kept,
  * when the control row would get less than `size.global.screenMargin` above and below the shutter), the control
  * row centred between the viewfinder and the tab bar (C-04, drawn by the app shell over the bottom
- * `size.global.tabBarHeight` + the navigation bar).
+ * `size.global.tabBarHeight` + the navigation bar). `camera.overnight` adds the 9 AM · Now mode control between the header
+ * and the viewfinder, and in 9 AM mode the destination pill on the viewfinder and its sheet ([overnight]).
  */
 @Composable
 fun CameraScreen(
@@ -215,6 +253,8 @@ fun CameraScreen(
     onOpenSettings: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    questionText: String? = null,
+    overnight: OvernightChrome = OvernightChrome(),
 ) {
     val tabBar = Tokens.Sizes.globalTabBarHeight + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val margin = Tokens.Sizes.globalScreenMargin
@@ -233,16 +273,26 @@ fun CameraScreen(
                 FlashGlyph(state.flashOn, onFlash, Modifier.align(Alignment.TopEnd))
             }
         }
+        // camera.overnight: the mode control `size.global.titleToContent` below the title baseline (the header's end), shown
+        // in both modes so the layout does not jump; the viewfinder `size.global.sectionHeaderToContent` below it.
+        if (state.overnightAvailable) {
+            ModeControl(state.mode, overnight.time, overnight.onMode)
+            Spacer(Modifier.height(Tokens.Sizes.globalSectionHeaderToContent))
+        }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             val fullWidth = maxWidth - margin * 2
             val vfHeight = minOf(fullWidth / Tokens.Layouts.CameraCaptureLayoutViewfinder.aspect, maxHeight - shutter - margin * 2).coerceAtLeast(0.dp)
             val vfWidth = vfHeight * Tokens.Layouts.CameraCaptureLayoutViewfinder.aspect
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Viewfinder(state, viewfinder, onCoachClose, onOpenSettings, onRetry, Modifier.size(vfWidth, vfHeight))
+                Viewfinder(state, viewfinder, onCoachClose, onOpenSettings, onRetry, Modifier.size(vfWidth, vfHeight), questionText, overnight, vfWidth - margin * 2)
                 ControlRow(
                     modifier = Modifier.weight(1f),
                     leading = {
-                        MediaControlCircle(Tokens.Icons.globalGallery, stringResource(R.string.camera_capture_a11y_library), onLibrary, Modifier.testTag("camera.library"))
+                        // 9 AM mode: the library circle fades out and the slot stays empty (the developing stack,
+                        // `camera.overnight.layout.stackCards`, is BLOCKED).
+                        FadeVisibility(visible = state.showLibrary) {
+                            MediaControlCircle(Tokens.Icons.globalGallery, stringResource(R.string.camera_capture_a11y_library), onLibrary, Modifier.testTag("camera.library"))
+                        }
                     },
                     trailing = if (state.showControls) {
                         { MediaControlCircle(Tokens.Icons.globalFlip, stringResource(R.string.camera_capture_a11y_flip), onFlip, Modifier.testTag("camera.flip")) }
@@ -251,12 +301,14 @@ fun CameraScreen(
                     },
                 ) {
                     if (state.showControls) {
+                        // 9 AM mode: tap = photo, hold = nothing (photos only).
+                        val now = state.mode == CaptureMode.Now
                         Shutter(
                             label = stringResource(R.string.camera_capture_a11y_shutter),
                             onTap = onShutterTap,
-                            onHoldStart = onShutterLongPress,
-                            onHoldEnd = onShutterRelease,
-                            holdActionLabel = if (state.videoAvailable) stringResource(R.string.camera_capture_a11y_recordvideo) else null,
+                            onHoldStart = if (now) onShutterLongPress else null,
+                            onHoldEnd = if (now) onShutterRelease else null,
+                            holdActionLabel = if (state.videoAvailable && now) stringResource(R.string.camera_capture_a11y_recordvideo) else null,
                             holding = state.recording,
                             modifier = Modifier.testTag("camera.shutter"),
                         )
@@ -267,6 +319,7 @@ fun CameraScreen(
             }
         }
     }
+    if (state.destinationSheet) DestinationSheet(state.groups, state.destinations, overnight)
 }
 
 /**
@@ -320,6 +373,9 @@ private fun Viewfinder(
     onOpenSettings: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier,
+    questionText: String? = null,
+    overnight: OvernightChrome = OvernightChrome(),
+    pillMaxWidth: Dp = Dp.Infinity,
 ) {
     Box(
         modifier
@@ -351,8 +407,13 @@ private fun Viewfinder(
                 icon = Tokens.Icons.globalCamera,
             )
         }
+        // The weekly question's pill takes the coach pill's slot (question.weekly B); dropped in 9 AM mode
+        // (`question.weekly.layout.cameraPill.nineAm`).
+        if (questionText != null && state.showControls && state.mode == CaptureMode.Now) {
+            QuestionPill(questionText, Modifier.align(Alignment.BottomCenter).padding(bottom = Dp(Tokens.Layouts.CameraSendtoLayoutMessageField.bottomInset)))
+        }
         FadeVisibility(
-            visible = state.coachVisible && !state.recording,
+            visible = state.coachVisible && !state.recording && questionText == null,
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = Dp(Tokens.Layouts.CameraSendtoLayoutMessageField.bottomInset)),
         ) {
             MediaPill(
@@ -362,6 +423,14 @@ private fun Viewfinder(
                 icon = Tokens.Icons.globalVideo,
                 modifier = Modifier.testTag("camera.coach"),
             )
+        }
+        // camera.overnight: the destination pill in the coach pill's slot (the coach is never shown in 9 AM mode).
+        FadeVisibility(
+            visible = state.mode == CaptureMode.Later && state.showControls,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = Dp(Tokens.Layouts.CameraSendtoLayoutMessageField.bottomInset)),
+        ) {
+            val groups = (state.groups as? app.feature.capture.sendto.SendToViewModel.Groups.Loaded)?.groups.orEmpty()
+            DestinationPill(destinationLabel(groups, state.destinations), pillMaxWidth, overnight.onPill)
         }
     }
 }

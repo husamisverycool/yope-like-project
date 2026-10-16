@@ -42,6 +42,13 @@ sealed interface DeepLink {
 
     /** `app://year-story?group=<id>&year=<yyyy>` */
     data class YearStory(val groupId: String, val year: Int) : DeepLink
+
+    /**
+     * `app://plan?plan=<id>&group=<id>` — a plan's page (`plans.page`): the plan pushes (`notifications.push.plan*`,
+     * type `plan` with `plan_id`) and the countdown widget (`widget.countdown`, iOS `DeepLink.plan(planID:)`).
+     * [groupId] is optional: with it, Back returns to that group's screen.
+     */
+    data class Plan(val planId: String, val groupId: String? = null) : DeepLink
 }
 
 /**
@@ -77,6 +84,7 @@ class DeepLinkCodec(private val domain: String?) {
         is DeepLink.BirthdayRequest -> app(HOST_BIRTHDAY_REQUEST, P_GROUP to link.groupId, P_REQUEST to link.requestId)
         is DeepLink.Tribute -> app(HOST_TRIBUTE, P_GROUP to link.groupId, P_TRIBUTE to link.tributeId)
         is DeepLink.YearStory -> app(HOST_YEAR_STORY, P_GROUP to link.groupId, P_YEAR to link.year.toString())
+        is DeepLink.Plan -> app(HOST_PLAN, *listOfNotNull(P_PLAN to link.planId, link.groupId?.let { P_GROUP to it }).toTypedArray())
     }
 
     private fun parseInvite(uri: URI): DeepLink? {
@@ -110,6 +118,8 @@ class DeepLinkCodec(private val domain: String?) {
                 val year = q[P_YEAR]?.takeIf { it.length == YEAR_DIGITS && it.all(Char::isDigit) }?.toInt()
                 both(id(P_GROUP), year, DeepLink::YearStory)
             }
+            // The group is optional (a malformed one is dropped, the plan still opens).
+            HOST_PLAN -> id(P_PLAN)?.let { DeepLink.Plan(it, id(P_GROUP)) }
             else -> null
         }
     }
@@ -147,6 +157,7 @@ class DeepLinkCodec(private val domain: String?) {
         const val HOST_BIRTHDAY_REQUEST = "birthday-request"
         const val HOST_TRIBUTE = "tribute"
         const val HOST_YEAR_STORY = "year-story"
+        const val HOST_PLAN = "plan"
 
         const val P_GROUP = "group"
         const val P_POST = "post"
@@ -156,6 +167,7 @@ class DeepLinkCodec(private val domain: String?) {
         const val P_REQUEST = "request"
         const val P_TRIBUTE = "tribute"
         const val P_YEAR = "year"
+        const val P_PLAN = "plan"
 
         private const val HTTPS = "https"
         private const val HTTPS_PORT = 443

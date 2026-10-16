@@ -42,6 +42,11 @@ data class PostDraft(
     val voiceLevels: List<Int>? = null,
     val invitationId: String? = null,
     val replyToPostId: String? = null,
+    /** Taken in 9 AM mode: `create_overnight_post` instead of `create_post` (§14.3; photos only, no caption or voice). */
+    val overnight: Boolean = false,
+    /** The weekly question this photo answers (§14.4): its post in [questionGroupId] is linked with `answer_question`. */
+    val questionId: String? = null,
+    val questionGroupId: String? = null,
     // Progress.
     val uploaded: Set<String> = emptySet(),
     val mediaInserted: Boolean = false,

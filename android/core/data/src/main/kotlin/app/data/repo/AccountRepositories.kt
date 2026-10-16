@@ -69,6 +69,10 @@ class SettingsRepository(private val api: Api) {
 
     suspend fun clearQuietHours(): NotificationSettings = setQuietHours(null, null, null)
 
+    /** §14.3 the reveal push of overnight photos on or off (`set_overnight_alerts`; `notification_settings.overnight`). */
+    suspend fun setOvernightAlerts(on: Boolean): NotificationSettings =
+        api.rpc(Rpc.SetOvernightAlerts, NotificationSettings.serializer()) { put("p_on", on) }.also(::publish)
+
     internal fun reset() {
         current.value = null
     }

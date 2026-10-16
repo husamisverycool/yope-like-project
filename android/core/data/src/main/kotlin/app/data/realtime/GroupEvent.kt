@@ -3,6 +3,7 @@ package app.data.realtime
 import app.data.model.Message
 import app.data.model.Post
 import app.data.model.Reaction
+import app.data.model.SelfieReaction
 
 /**
  * What happens in one group, live (docs/API.md §8). Inserts and updates come from Postgres changes
@@ -26,16 +27,18 @@ sealed interface GroupEvent {
     data class PostInserted(override val groupId: String, val post: Post) : GroupEvent
     data class PostUpdated(override val groupId: String, val post: Post) : GroupEvent
     data class ReactionAdded(override val groupId: String, val reaction: Reaction) : GroupEvent
+    /** A selfie reaction was added or replaced (§14.1; removals arrive as [ReactionsChanged]). */
+    data class SelfieReactionChanged(override val groupId: String, val selfie: SelfieReaction) : GroupEvent
 
     /** Remove the post and its chat photo message; drop it from walls, recaps, albums. */
     data class PostDeleted(override val groupId: String, val postId: String, val mediaId: String?) : GroupEvent
     data class MessageDeleted(override val groupId: String, val messageId: String) : GroupEvent
-    /** Refetch that post's reactions (no user or emoji in the payload, so a block is never revealed). */
+    /** Refetch that post's reactions and selfie reactions (no user or emoji in the payload, so a block is never revealed). */
     data class ReactionsChanged(override val groupId: String, val postId: String) : GroupEvent
 
     /** The two subscriptions per group. */
     enum class Stream {
-        /** Postgres changes on `messages`, `posts`, `reactions` filtered by `group_id`. */
+        /** Postgres changes on `messages`, `posts`, `reactions`, `selfie_reactions` filtered by `group_id`. */
         Changes,
         /** The private broadcast topic `group:<id>` (deletions). */
         Deletions,

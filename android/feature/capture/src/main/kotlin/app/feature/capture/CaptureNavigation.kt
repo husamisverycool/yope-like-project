@@ -13,6 +13,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import app.feature.capture.camera.CameraQuestion
 import app.feature.capture.camera.CameraRoute
 import app.feature.capture.collage.CollageRoute
 import app.feature.capture.daily.DailyCaptureRoute
@@ -21,6 +22,7 @@ import app.designsystem.generated.Tokens
 import app.feature.capture.sendto.SendToRoute
 import app.model.AppRoute
 import app.model.DeepLinkRouting
+import app.model.QuestionHandoff
 import app.model.SocialHandoff
 
 /**
@@ -38,9 +40,12 @@ fun NavGraphBuilder.captureDestinations(navController: NavHostController) {
         CameraRoute(
             groupId = route.groupId,
             replyToPostId = entry.savedStateHandle.get<String>(SocialHandoff.REPLY_TO_POST_ID),
+            question = CameraQuestion.from(entry.savedStateHandle.get<String>(QuestionHandoff.QUESTION_ID), entry.savedStateHandle.get<String>(QuestionHandoff.QUESTION_KEY)),
             onOpenSendTo = { navController.navigate(AppRoute.SendTo) { launchSingleTop = true } },
             // The view model already claimed the session's single prompt (SessionPromptGate).
             onOpenPaywall = { navController.navigate(AppRoute.Paywall) },
+            // camera.overnight's destination sheet with no groups: camera.sendto's empty state.
+            onCreateGroup = { navController.navigate(AppRoute.GroupCreate) },
         )
     }
     composable<AppRoute.SendTo>(

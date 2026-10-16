@@ -88,6 +88,8 @@ object DeepLinkRouting {
         is DeepLink.BirthdayRequest -> listOf(home, AppRoute.BirthdayContribute(link.groupId, link.requestId))
         is DeepLink.Tribute -> listOf(home, AppRoute.Tribute(link.groupId, link.tributeId))
         is DeepLink.YearStory -> listOf(home, AppRoute.YearStory(link.groupId, link.year))
+        is DeepLink.Plan -> link.groupId?.let { group -> listOf(home, AppRoute.Group(group), PlanRoute(link.planId, group)) }
+            ?: listOf(home, PlanRoute(link.planId))
     }
 
     /** The destination itself (top of [backStack]). */

@@ -4,6 +4,8 @@ import app.data.error.DataError
 import app.data.error.DataException
 import app.data.error.DbFailure
 import app.data.error.dataCall
+import app.data.model.Developing
+import app.data.model.DevelopingPost
 import app.data.model.Media
 import app.data.model.NewMedia
 import app.data.model.Post
@@ -118,6 +120,20 @@ class PostRepository(private val api: Api, private val cache: OfflineCache, priv
             opt("p_invitation_id", options.invitationId)
             opt("p_reply_to_post_id", options.replyToPostId)
         }
+
+    /**
+     * §14.3 a photo taken in 9 AM mode: held for each group until its first 09:00 (group time zone) after now, readable
+     * by nobody until then, the sender included. Photos only (`develop_photo_only`), once per group (`already_posted`).
+     */
+    suspend fun createOvernightPost(mediaId: String, groupIds: List<String>): List<DevelopingPost> =
+        api.rpcList(Rpc.CreateOvernightPost, DevelopingPost.serializer()) {
+            put("p_media_id", mediaId)
+            put("p_group_ids", groupIds.distinct())
+        }
+
+    /** §14.3 whether you have photos developing (any group) and the next reveal (`my_developing`); never a number. */
+    suspend fun myDeveloping(): Developing =
+        api.rpcList(Rpc.MyDeveloping, Developing.serializer()).firstOrNull() ?: Developing(developing = false, revealAt = null)
 
     /** Author only: removes the photo from one group (the media goes with its last post). */
     suspend fun deletePost(postId: String) = api.rpcUnit(Rpc.DeletePost) { put("p_post_id", postId) }

@@ -38,9 +38,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,7 +87,17 @@ import app.feature.memory.birthday.BirthdayRequestEntries
 import app.feature.memory.onthisday.OnThisDayEntry
 import app.feature.memory.openOnThisDay
 import app.feature.memory.yearstory.YearStoryEntry
+import app.feature.account.plans.PlanBlocked
+import app.feature.account.plans.PlanEntries
+import app.feature.account.plans.developingTile
+import app.feature.account.plans.rememberGroupDeveloping
+import app.feature.account.question.QuestionCardEntry
 import app.model.AppRoute
+import app.model.PhotoContext
+import app.model.PhotoViewerIn
+import app.model.PlanCreateRoute
+import app.model.PlanRoute
+import app.model.QuestionHandoff
 import app.ui.components.Avatar
 import app.ui.components.AvatarStack
 import app.ui.components.Capsule
@@ -309,10 +322,16 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             }
         }
     }
+    /** Whether a birthday request row is on screen (the plan row's placement). */
+    var birthdayRowShown by remember(groupId) { mutableStateOf(false) }
+    // A reveal inserts posts, so the newest post refetches the developing state (and the question card's newest answer).
+    val newestPost = state.photos?.firstOrNull()?.post?.id
+    val developing = rememberGroupDeveloping(groupId, newestPost)
     GroupFeedScreen(
         state = state,
         now = env.clock.instant(),
         fallbackZone = env.zone(),
+        developing = developingTile(developing),
         actions = GroupScreenActions(
             onBack = { nav.popBackStack() },
             onAlbums = { nav.navigate(AppRoute.AlbumsList(groupId)) },
@@ -332,11 +351,38 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
         ),
         // The memory pass's entries: copy and data are theirs; the row / card and its place are this screen's.
         birthdayRows = {
+            var shown = false
             BirthdayRequestEntries(groupId, onOpen = { requestId -> nav.navigate(AppRoute.BirthdayContribute(groupId, requestId)) }) { title, subtitle, onClick ->
+                shown = true
                 BirthdayRequestRow(title, subtitle, avatar = null, onClick = onClick)
             }
+            SideEffect { birthdayRowShown = shown }
+        },
+        // The plans pass's entry (the next plan with its "+", or "Make a Plan"). Its order next to a birthday request row
+        // is BLOCKED (plans.md §12 item 6): release builds show it only while no birthday row is on screen (iOS as well).
+        planRows = {
+            if (PlanBlocked.besideBirthdayRow || !birthdayRowShown) PlanEntries(
+                groupId,
+                refreshKey = newestPost,
+                onOpen = { planId -> nav.navigate(PlanRoute(planId, groupId)) },
+                onCreate = { nav.navigate(PlanCreateRoute(groupId)) },
+            )
         },
         feedCards = {
+            // question.weekly A: the first feed card, after the friend cards, before the memory cards.
+            QuestionCardEntry(
+                groupId,
+                refreshKey = newestPost,
+                onAnswer = { questionId, key ->
+                    nav.navigate(AppRoute.Camera(groupId))
+                    nav.currentBackStackEntry?.savedStateHandle?.let { handle ->
+                        handle[QuestionHandoff.QUESTION_ID] = questionId
+                        handle[QuestionHandoff.QUESTION_KEY] = key
+                    }
+                },
+                // The week's answers in this group, oldest first, in the viewer (question.weekly A, "See answers").
+                onOpenAnswers = { questionId, oldestPostId -> nav.navigate(PhotoViewerIn(groupId, oldestPostId, PhotoContext.Question, questionId)) },
+            )
             OnThisDayEntry(groupId, onOpen = { nav.openOnThisDay(groupId) }) { title, subtitle, button, onClick ->
                 FeedEntryCard(Tokens.Icons.globalRewind, title, subtitle, button = button, photo = null, onClick = onClick)
             }
@@ -386,10 +432,12 @@ internal fun createdInviteLabel(kind: GroupKind): String = when (kind) {
  * 3. the name (display serif `displayMedium`, centred, ≤ 2 lines), its cap top `groups.screen.size.coverToTitle` under the cover;
  * 4. the C-23 member stack `groups.screen.size.titleToMeta` under the name's baseline (as many as fit, no count) → members;
  * 5. `groups.screen.size.metaToActions` below: outline "Recaps", outline "Invite" (equal widths) and the gear capsule;
- * 6. the birthday request row(s) (`size.global.sectionGap` apart);
+ * 6. the birthday request row(s) (`size.global.sectionGap` apart), then the plan row (release builds: only without a
+ *    birthday row — order BLOCKED);
  * 7. this week: the C-20 header as one button (chevron → week.history), the C-17 strip (photos oldest → newest, add tile
  *    last; an empty week: add tile first, then empty-day tiles to the week's end) and, for an empty group, the C-27 block;
- * 8. the members' weeks (C-18 cards, newest first) and the memory feed cards in one pager, `size.global.cardGap` apart;
+ * 8. the members' weeks (C-18 cards, newest first), the weekly question card and the memory feed cards in one pager,
+ *    `size.global.cardGap` apart;
  * 9. earlier photos: dated C-20 headers over the 3-column C-21 grid, `size.global.sectionGap` apart, paged.
  */
 @Composable
@@ -400,6 +448,8 @@ fun GroupFeedScreen(
     actions: GroupScreenActions,
     birthdayRows: @Composable () -> Unit = {},
     feedCards: @Composable () -> Unit = {},
+    planRows: @Composable () -> Unit = {},
+    developing: DayTile? = null,
 ) {
     val zone = GroupWeek.zone(state.group, fallbackZone)
     val today = now.atZone(zone).toLocalDate()
@@ -439,7 +489,7 @@ fun GroupFeedScreen(
                     item(key = "actions") { ActionRow(actions) }
                     item(key = "error") { TapLine(stringResource(R.string.groups_screen_error_title), actions.onRetry, Modifier.padding(top = Tokens.Sizes.globalSectionGap)) }
                 }
-                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards)
+                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards, planRows, developing)
             }
         }
     }
@@ -453,6 +503,8 @@ private fun LazyListScope.loaded(
     actions: GroupScreenActions,
     birthdayRows: @Composable () -> Unit,
     feedCards: @Composable () -> Unit,
+    planRows: @Composable () -> Unit,
+    developing: DayTile?,
 ) {
     val weekStart = GroupWeek.start(today)
     val thisWeek = photos.filter { !it.post.createdAt.atZone(zone).toLocalDate().isBefore(weekStart) }
@@ -460,11 +512,12 @@ private fun LazyListScope.loaded(
     item(key = "members") { Members(state.memberAvatars, actions.onMembers) }
     item(key = "actions") { ActionRow(actions) }
     item(key = "birthday") { Column { birthdayRows() } }
+    item(key = "plans") { Column { planRows() } }
     item(key = "weekHeader") {
         val range = if (thisWeek.isEmpty()) null else Formats.weekRange(weekStart, GroupWeek.end(today), zone)
         WeekHeader(stringResource(R.string.groups_screen_week_title, GroupWeek.number(today).toString()), range, actions.onWeeks)
     }
-    item(key = "strip") { WeekStrip(stripTiles(thisWeek, today, zone, actions)) }
+    item(key = "strip") { WeekStrip(stripTiles(thisWeek, today, zone, actions, developing)) }
     if (photos.isEmpty()) {
         item(key = "emptyBlock") {
             Box(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalSectionGap), contentAlignment = Alignment.Center) {
@@ -618,9 +671,13 @@ private fun WeekHeader(title: String, range: String?, onClick: () -> Unit) {
     }
 }
 
-/** The week strip's tiles: photos oldest → newest with the add tile last; an empty week: the add tile first, then empty-day tiles from today to the week's end. */
+/**
+ * The week strip's tiles: photos oldest → newest with the add tile last; an empty week: the add tile first, then empty-day
+ * tiles from today to the week's end. While the group has photos developing, the one [developing] tile sits just before the
+ * add tile (`camera.overnight.layout.developingTile`: the newest position).
+ */
 @Composable
-private fun stripTiles(thisWeek: List<GroupPhoto>, today: LocalDate, zone: ZoneId, actions: GroupScreenActions): List<DayTile> {
+private fun stripTiles(thisWeek: List<GroupPhoto>, today: LocalDate, zone: ZoneId, actions: GroupScreenActions, developing: DayTile? = null): List<DayTile> {
     val locale = Locale.getDefault()
     val add = DayTile.Add(stringResource(R.string.groups_screen_week_add_accessibilitylabel), actions.onCamera)
     val days: List<DayTile> = if (thisWeek.isNotEmpty()) {
@@ -646,7 +703,10 @@ private fun stripTiles(thisWeek: List<GroupPhoto>, today: LocalDate, zone: ZoneI
             )
         }.toList()
     }
-    return WeekStripOrder.withAdd(days, add)
+    val tiles = WeekStripOrder.withAdd(days, add)
+    if (developing == null) return tiles
+    val at = tiles.indexOfFirst { it is DayTile.Add }.coerceAtLeast(0)
+    return tiles.subList(0, at) + developing + tiles.subList(at, tiles.size)
 }
 
 /** `groups.screen.photo.accessibilityLabel`: "{date}, photo by {first_name}". */

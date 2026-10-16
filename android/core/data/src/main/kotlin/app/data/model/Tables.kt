@@ -54,6 +54,8 @@ data class Group(
     @SerialName("created_by") val createdBy: String?,
     @SerialName("created_at") val createdAt: Instant,
     @SerialName("updated_at") val updatedAt: Instant,
+    /** §14.4 the weekly question is on for the group (`set_group_weekly_question`, admins; default off). Last, so positional calls keep working. */
+    @SerialName("weekly_question") val weeklyQuestion: Boolean = false,
 )
 
 /** §5.4 `group_members` */
@@ -146,6 +148,10 @@ data class Post(
     @SerialName("created_at") val createdAt: Instant,
     /** The voice note's waveform: 100 levels of 0…31 (§5.8 `voice_levels`); null when it has none. Last, so positional calls keep working. */
     @SerialName("voice_levels") val voiceLevels: List<Int>? = null,
+    /** §14.4: the group week's question this post answers (`answer_question`); null for every other post. */
+    @SerialName("question_id") val questionId: String? = null,
+    /** §14.3: the reveal time an overnight photo joined the group at (`created_at` stays when it was taken); null for every other post. */
+    @SerialName("revealed_at") val revealedAt: Instant? = null,
 )
 
 /** §5.9 `messages` (group chat). */
@@ -174,6 +180,21 @@ data class Reaction(
     val emoji: String,
     @SerialName("group_id") val groupId: String,
     @SerialName("created_at") val createdAt: Instant,
+)
+
+/**
+ * §14.1 `selfie_reactions`: one live front-camera selfie per person per post (a new one replaces yours); the image is the
+ * reacting member's own upload. Rows, never a number.
+ */
+@Serializable
+data class SelfieReaction(
+    @SerialName("post_id") val postId: String,
+    @SerialName("user_id") val userId: String,
+    @SerialName("group_id") val groupId: String,
+    @SerialName("image_path") val imagePath: String,
+    @SerialName("created_at") val createdAt: Instant,
+    /** The report target (`report('selfie', id, …)`); the row's key is `(post_id, user_id)`. */
+    val id: String,
 )
 
 /** §5.11 `post_tags` ("I'm in this" self-tags). */
@@ -338,6 +359,8 @@ data class NotificationSettings(
     @SerialName("quiet_end") val quietEnd: LocalTime?,
     @SerialName("time_zone") val timeZone: String?,
     @SerialName("updated_at") val updatedAt: Instant,
+    /** §14.3 the reveal push of overnight photos (`set_overnight_alerts`, default on). Last, so positional calls keep working. */
+    val overnight: Boolean = true,
 )
 
 /** §5.22 `entitlements` */
