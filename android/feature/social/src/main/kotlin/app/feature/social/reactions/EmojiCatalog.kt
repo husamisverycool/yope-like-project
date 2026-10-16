@@ -1,7 +1,9 @@
 package app.feature.social.reactions
 
 import android.content.Context
+import android.graphics.Paint
 import androidx.core.content.edit
+import androidx.core.graphics.PaintCompat
 import app.designsystem.generated.Tokens
 
 /**
@@ -27,13 +29,15 @@ object EmojiCatalog {
 
     @Volatile private var all: List<String>? = null
 
-    /** Every emoji, system order (empty when the data cannot be read). */
+    /** Every emoji the device's font can draw, system order (empty when the data cannot be read). */
     fun all(context: Context): List<String> = all ?: synchronized(this) {
         all ?: load(context).also { all = it }
     }
 
     private fun load(context: Context): List<String> = runCatching {
         val res = context.resources
+        // Emoji newer than the system font would draw as tofu: left out, as the platform emoji picker does.
+        val paint = Paint()
         val ids = res.obtainTypedArray(androidx.emoji2.emojipicker.R.array.emoji_by_category_raw_resources)
         try {
             (0 until ids.length()).flatMap { i ->
@@ -42,7 +46,7 @@ object EmojiCatalog {
                 else res.openRawResource(id).bufferedReader(Charsets.UTF_8).useLines { lines ->
                     lines.mapNotNull { line -> line.split(',').firstOrNull()?.trim()?.takeIf { it.isNotEmpty() } }.toList()
                 }
-            }.distinct()
+            }.distinct().filter { PaintCompat.hasGlyph(paint, it) }
         } finally {
             ids.recycle()
         }

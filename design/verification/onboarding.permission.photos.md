@@ -1,27 +1,29 @@
-# Verification — `onboarding.permission.photos` (iOS)
+# Verification — `onboarding.permission.photos` (iOS, Pass 4 — Retro redesign)
 
-Photos: picker without permission everywhere, add-only denied card — `Components/PermissionCard.swift` (`.photosDenied`).
+Photos (add-only) denied card — C-27 `PermissionCard.photosDenied` (Components) placed by the save actions.
 
-Checklist written from the spec (`design/surfaces/onboarding.permission.photos.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/onboarding.permission.photos.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/onboarding.permission.photos.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/onboarding.permission.photos.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-yrrah-7454430216123862280-t21.23-photos-permission-alert-2024.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png`
+Reference image(s): `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`
 
-Snapshots (CI): `onboarding.permission.photos-denied.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `onboarding.permission.photos-denied-light.png`, `onboarding.permission.photos-denied-dark.png`
 
-**Summary: 13 matched · 0 approximated · 0 not matched (BLOCKED or not buildable) · 0 not applicable on iOS / placed by another pass.**
+**Summary: 4 matched · 0 approximated · 0 not matched · 3 not applicable on iOS / owner / another pass.**
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | token | `onboarding.permission.photos.layout.request` | ios: no screen: PhotosPicker / PHPickerViewController need no permission; saving asks add-only access (PHPhotoLibrary.requestAuthorization(for: .addOnly)) at… (VERIFIED) | photo library access | PhotosPicker everywhere a photo is picked (no permission); add-only access is asked by the save action (photo.viewer, social pass) |
-| matched | copy | `system.permissions.photosAdd.purpose` | “The app saves photos from your groups to your library when you tap Save.” (VERIFIED) |  | Info.plist NSPhotoLibraryAddUsageDescription (InfoPlist.generated.xcconfig) |
-| matched | copy | `system.permissions.photosRead.purpose` | “The app shows the photos you select so you can send them to your groups.” (VERIFIED) |  | Info.plist NSPhotoLibraryUsageDescription (InfoPlist.generated.xcconfig) |
-| matched | token | `onboarding.permission.contacts.layout.card` | leading: none (Yope's contacts-app-like illustration with a red '!' is do-not-copy); text: title then detail, left-aligned, 16 pt from the card's leading edg… (SOURCED) | inline permission card structure | `PermissionCard` (Components): text block left at avatarInset, white pill trailing, ✕ top-trailing when dismissible |
-| matched | token | `onboarding.permission.contacts.color.card` | #131313 (SOURCED) | inline permission card fill (contacts card; reused for every permission-denied card) | `Tokens.…onboardingPermissionContactsColorCard` in PermissionCard.swift |
-| matched | token | `onboarding.permission.contacts.size.cardHeight` | 101 pt (SOURCED) | inline permission card height | `Tokens.…onboardingPermissionContactsSizeCardHeight` in PermissionCard.swift |
-| matched | token | `onboarding.permission.contacts.size.cardMarginH` | 18 pt (SOURCED) | inline permission card side margin | `PermissionCard` horizontal padding (Components/PermissionCard.swift) |
-| matched | token | `radius.global.card` | 17 pt (SOURCED) | list card corners (home conversation / group cards, inline permission card) | `Tokens.…globalCard` in PermissionCard.swift |
-| matched | token | `color.global.surfaceLight` | #FFFFFF (SOURCED) | light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, '… | `Tokens.…globalSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | copy | `onboarding.permission.photos.denied.title` | “can’t save pics?” (SOURCED) |  | `Copy.…onboardingPermissionPhotosDeniedTitle` in PermissionCard.swift |
-| matched | copy | `onboarding.permission.photos.denied.detail` | “enable photos” (SOURCED) |  | `Copy.…onboardingPermissionPhotosDeniedDetail` in PermissionCard.swift |
-| matched | copy | `onboarding.permission.photos.denied.button` | “enable” (SOURCED) |  | `Copy.…onboardingPermissionPhotosDeniedButton` in PermissionCard.swift |
-| matched | copy | `onboarding.permission.contacts.card.dismissAccessibilityLabel` | “dismiss” (SOURCED) |  | `Copy.…onboardingPermissionContactsCardDismissAccessibilityLabel` in PermissionCard.swift |
+
+## Structure
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `onboarding.permission.photos.layout.request` | ios: no page: PhotosPicker / PHPickerViewController need no permission; saving asks add-only access (PHPhotoLibrary.requestAuthorization(for: .addOnly)) at t… (VERIFIED) | the save action of photo.viewer / collage (social, capture passes) asks add-only |
+| matched | `system.permissions.photosAdd.purpose` | “The app saves photos from your groups to your library when you tap Save.” (VERIFIED) | Info.plist `INFOPLIST_KEY_*UsageDescription` generated by tools/designgen.mjs (ios/Config/InfoPlist.generated.xcconfig) |
+| matched | `system.permissions.photosRead.purpose` | “The app shows the photos you select so you can share them with your groups.” (VERIFIED) | Info.plist `INFOPLIST_KEY_*UsageDescription` generated by tools/designgen.mjs (ios/Config/InfoPlist.generated.xcconfig) |
+| n/a | `icon.global.download` | ios: arrow.down.to.line; android: Rounded.Download (PLATFORM) | the save control of the hosting surface (social / capture passes) |
+| matched | `onboarding.permission.photos.denied.title` | “Allow Access to Photos” (SOURCED) | `Copy.onboardingPermissionPhotosDeniedTitle` in PermissionCard.swift |
+
+## Motion · Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `duration.global.fade` | 150 ms (SOURCED) | `Tokens.Durations.globalFade` in ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, PaywallScreen.swift … |
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |

@@ -1,117 +1,121 @@
-# Verification — `groups.screen` (iOS)
+# Verification — `groups.screen` (iOS, Pass 4 — Retro redesign)
 
-Group feed (view A) and profile page (view B) — `Screens/GroupScreen.swift`, `Features/Account/Groups/GroupProfileScreen.swift`.
+Group page — `Screens/GroupScreen.swift` (`GroupFeedView`, `GroupWeekStrip`, `GroupPhotoGrid`, `MemoryFeedCard`), `Features/Account/Groups/GroupFeedModel.swift`.
 
-Checklist written from the spec (`design/surfaces/groups.screen.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/groups.screen.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/groups.screen.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/groups.screen.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t43.73-group-screen-hourly.png`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png`, `references/auto/yope/store/yope-store-01.png`, `references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png`, `references/auto/yope/web/a-bi-2025-create-group-composite.jpg`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t8.73-group-wall-header.png`
+Reference image(s): `references/auto/retro/press/tc-2024-04-journals-1.webp`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`, `references/auto/retro/store/retro-store-01.png`, `references/auto/retro/store/editorial/retro-appstore-story-1840659619-albums.png`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`
 
-Snapshots (CI): `groups.screen-loading.png`, `groups.screen-loaded.png`, `groups.screen-profile.png`, `groups.screen-created.png`, `groups.screen-empty.png`, `groups.screen-error.png`, `groups.screen-offline.png`, `groups.screen-removed.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `groups.screen-loading-light.png`, `groups.screen-default-light.png`, `groups.screen-default-dark.png`, `groups.screen-created-light.png`, `groups.screen-empty-light.png`, `groups.screen-quiet-week-light.png`, `groups.screen-error-light.png`, `groups.screen-offline-light.png`, `groups.screen-removed-light.png`
 
-**Summary: 93 matched · 6 approximated · 0 not matched (BLOCKED or not buildable) · 1 not applicable on iOS / placed by another pass.**
+**Summary: 77 matched · 0 approximated · 0 not matched · 1 not applicable on iOS / owner / another pass.**
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | token | `groups.screen.layout.background` | feed: color.global.background (#171717); profile: color.global.backgroundDeep (#000000) (SOURCED) | screen background of the group feed and of the group profile page | feed `color.global.background`, profile page `color.global.backgroundDeep` |
-| matched | token | `size.global.headerButton` | 44 pt (SOURCED) | circle icon buttons in headers (back, close, download, film-strip, search) | `Tokens.…globalHeaderButton` in GroupScreen.swift, HeaderCircleButton.swift |
-| matched | token | `color.global.control` | #2E2E2E (SOURCED) | control fill on #171717: header circle buttons, header title capsule, floating tab-bar capsule, composer te… | `Tokens.…globalControl` in FloatingTabBar.swift, GroupProfileScreen.swift, GroupScreen.swift |
-| matched | token | `icon.global.back` | ios: chevron.left; android: AutoMirrored.Rounded.KeyboardArrowLeft (PLATFORM) | back (‹ in a header circle) | `Tokens.…globalBack` in GroupProfileScreen.swift, GroupScreen.swift |
-| matched | token | `size.global.headerInset` | 11.5 pt (SOURCED) | screen edge to the first / last header circle | `Tokens.…globalHeaderInset` in GroupProfileScreen.swift, GroupScreen.swift |
-| matched | token | `size.global.headerGap` | 7.3 pt (SOURCED) | gap between the back circle and the header title capsule | `Tokens.…globalHeaderGap` in GroupScreen.swift |
-| matched | token | `radius.global.capsule` | shape: capsule; radius: height / 2 (SOURCED) | full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white se… | Capsule() shape |
-| matched | token | `size.global.avatarHeader` | 28 pt (SOURCED) | group avatar inside the header capsule | `Tokens.…globalAvatarHeader` in GroupScreen.swift |
-| matched | token | `fontSize.global.headerTitle` | 15 pt (SOURCED) | group name in the header capsule | `Tokens.…globalHeaderTitle` in TextRoles.swift |
-| matched | token | `fontWeight.global.headerTitle` | bold (SOURCED) | group name in the header capsule | `Tokens.…fontWeightGlobalHeaderTitle` in TextRoles.swift |
-| matched | token | `color.global.textPrimary` | #FFFFFF (SOURCED) | primary text and glyphs | `Tokens.…globalTextPrimary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | token | `icon.global.chevron` | ios: chevron.right; android: AutoMirrored.Rounded.KeyboardArrowRight (PLATFORM) | disclosure / forward (› at the end of the header capsule) | `Tokens.…globalChevron` in GroupScreen.swift |
-| matched | token | `color.global.textSecondary` | #969696 (SOURCED) | secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules | `Tokens.…globalTextSecondary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | token | `icon.global.calendar` | ios: calendar; android: Rounded.CalendarMonth (PLATFORM) | calendar circle in the group header | `Tokens.…globalCalendar` in GroupScreen.swift |
-| matched | token | `icon.global.recap` | ios: film.stack; android: Rounded.VideoLibrary (PLATFORM) | recap entry in a header circle (film frame with stacked lines, outline) | `Tokens.…globalRecap` in GroupScreen.swift |
-| matched | token | `groups.screen.size.cardMarginH` | 7.6 pt (SOURCED) | photo card side margin | `Tokens.…groupsScreenSizeCardMarginH` in GroupScreen.swift |
-| matched | token | `groups.screen.size.cardHeight` | 152 pt (SOURCED) | photo card height on the group screen (one card per post, photo cropped to fill) | `Tokens.…groupsScreenSizeCardHeight` in GroupScreen.swift |
-| matched | token | `groups.screen.radius.card` | 20 pt (SOURCED) | photo card corner radius | `Tokens.…groupsScreenRadiusCard` in GroupScreen.swift |
-| matched | token | `groups.screen.size.cardGap` | 8.5 pt (SOURCED) | vertical gap between photo cards | `Tokens.…groupsScreenSizeCardGap` in GroupScreen.swift |
-| matched | token | `fontSize.global.overlayTime` | 21 pt (SOURCED) | hour / time overlay centred on a photo in the chat ('10:00 PM') | `Tokens.…globalOverlayTime` in TextRoles.swift |
-| matched | token | `fontWeight.global.overlayTime` | heavy (SOURCED) | time overlay on a photo | `Tokens.…fontWeightGlobalOverlayTime` in TextRoles.swift |
-| matched | token | `fontSize.global.listSubtitle` | 14 pt (SOURCED) | row subtitle ('new pic added · 9:43 AM'), secondary color | `Tokens.…globalListSubtitle` in TextRoles.swift |
-| matched | token | `fontWeight.global.listSubtitle` | regular (SOURCED) | row subtitle | `Tokens.…fontWeightGlobalListSubtitle` in TextRoles.swift |
-| matched | copy | `groups.screen.memberJoined` | “{first_name} joined” (SOURCED) |  | `Copy.…groupsScreenMemberJoined` in GroupScreen.swift |
-| matched | token | `size.global.avatarSmall` | 32.6 pt (SOURCED) | small avatar: chat sender, send-to recipient row | `Tokens.…globalAvatarSmall` in GroupScreen.swift, StorageImage.swift |
-| matched | token | `groups.screen.size.chatPillWidth` | 88 pt (SOURCED) | floating 'chat' pill width (bottom centre) | `Tokens.…groupsScreenSizeChatPillWidth` in GroupScreen.swift |
-| matched | token | `groups.screen.size.chatPillHeight` | 51 pt (SOURCED) | floating 'chat' pill height | `Tokens.…groupsScreenSizeChatPillHeight` in GroupScreen.swift |
-| matched | token | `groups.screen.color.chatPill` | #080808 (SOURCED) | floating 'chat' pill fill | `Tokens.…groupsScreenColorChatPill` in GroupScreen.swift |
-| matched | token | `radius.global.button` | 14 pt (SOURCED) | primary (lime) button corners — not a full pill | `Tokens.…globalButton` in GroupScreen.swift, PrimaryButton.swift, TextRoles.swift |
-| matched | token | `icon.global.chats` | ios: bubble.left.and.bubble.right.fill; android: Rounded.Forum (PLATFORM) | chats tab (two overlapping bubbles) | `Tokens.…globalChats` in FloatingTabBar.swift, GroupScreen.swift |
-| matched | copy | `groups.screen.chat` | “chat” (SOURCED) |  | `Copy.…groupsScreenChat` in GroupScreen.swift |
-| matched | token | `groups.screen.fontSize.chatPill` | 15 pt (SOURCED) | 'chat' label in the pill (bold, white, after icon.global.chats) | `Tokens.…groupsScreenFontSizeChatPill` in GroupScreen.swift |
-| matched | token | `color.global.controlOnDeep` | #101010 (SOURCED) | header circle icon buttons on black screens and sheets (✕, download) | `Tokens.…globalControlOnDeep` in HeaderCircleButton.swift |
-| matched | token | `icon.global.more` | ios: ellipsis; android: Rounded.MoreHoriz (PLATFORM) | more (•••) | `Tokens.…globalMore` in GroupProfileScreen.swift, GroupScreen.swift |
-| matched | token | `groups.screen.size.profileAvatar` | 92 pt (SOURCED) | group avatar on the group profile page | `Tokens.…groupsScreenSizeProfileAvatar` in GroupProfileScreen.swift |
-| matched | token | `icon.global.group` | ios: person.2.fill; android: Rounded.Group (PLATFORM) | group / people | `Tokens.…globalGroup` in GroupProfileScreen.swift, GroupScreen.swift |
-| matched | token | `groups.screen.fontSize.profileName` | 25 pt (SOURCED) | group name on the group profile page (bold, white, centred) | `Tokens.…groupsScreenFontSizeProfileName` in GroupScreen.swift |
-| matched | token | `groups.screen.fontWeight.profileName` | bold (SOURCED) | group name weight on the profile page | `Tokens.…groupsScreenFontWeightProfileName` in GroupScreen.swift |
-| matched | token | `groups.screen.size.segmentHeight` | 41.5 pt (SOURCED) | segmented control track height ('pics / wall / recaps'); also the group-type picker in groups.create | `Tokens.…groupsScreenSizeSegmentHeight` in SegmentedPills.swift |
-| matched | token | `groups.screen.size.segmentMarginH` | 6 pt (SOURCED) | segmented control side margin | `Tokens.…groupsScreenSizeSegmentMarginH` in GroupProfileScreen.swift |
-| matched | token | `groups.screen.size.segmentInset` | 4 pt (SOURCED) | inset of the selected pill inside the track (selected pill height 33.5 pt) | `Tokens.…groupsScreenSizeSegmentInset` in SegmentedPills.swift |
-| matched | token | `groups.screen.color.segmentTrack` | #111111 (SOURCED) | segmented control track fill (on black) | `Tokens.…groupsScreenColorSegmentTrack` in SegmentedPills.swift |
-| matched | token | `color.global.surfaceLight` | #FFFFFF (SOURCED) | light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, '… | `Tokens.…globalSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | token | `color.global.onSurfaceLight` | #000000 (SOURCED) | label on the light pill (secondary buttons, selected segment, 'today') | `Tokens.…globalOnSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | token | `groups.screen.fontSize.segmentLabel` | 14.5 pt (SOURCED) | segment labels ('pics', 'wall', 'recaps'): bold, white unselected / black selected | `Tokens.…groupsScreenFontSizeSegmentLabel` in SegmentedPills.swift |
-| matched | token | `groups.screen.fontWeight.segmentLabel` | bold (SOURCED) | segment label weight | `Tokens.…groupsScreenFontWeightSegmentLabel` in SegmentedPills.swift |
-| matched | token | `radius.global.photo` | 15 pt (SOURCED) | photo corners in the thread and in grids of walls | `Tokens.…globalPhoto` in GroupProfileScreen.swift |
-| matched | token | `groups.screen.layout.menu` | ios: Menu (UIMenu) from the ••• circle; items with trailing SF Symbols; destructive items role .destructive (red); android: DropdownMenu anchored to the ••• … (PLATFORM) | group profile ••• menu (share invite, group settings, leave group, report) | Menu from the ••• circle; destructive items role .destructive |
-| matched | copy | `groups.screen.menu.shareInvite` | “share invite” (SOURCED) |  | `Copy.…groupsScreenMenuShareInvite` in GroupProfileScreen.swift |
-| matched | token | `icon.global.share` | ios: square.and.arrow.up; android: Rounded.IosShare (PLATFORM) | share (square + up arrow) | `Tokens.…globalShare` in GroupProfileScreen.swift |
-| matched | copy | `groups.screen.menu.settings` | “group settings” (SOURCED) |  | `Copy.…groupsScreenMenuSettings` in GroupProfileScreen.swift |
-| matched | token | `icon.global.settings` | ios: gearshape; android: Rounded.Settings (PLATFORM) | settings entry | `Tokens.…globalSettings` in GroupProfileScreen.swift |
-| matched | copy | `groups.screen.menu.leave` | “leave group” (SOURCED) |  | `Copy.…groupsScreenMenuLeave` in GroupProfileScreen.swift |
-| matched | token | `icon.global.leave` | ios: rectangle.portrait.and.arrow.right; android: AutoMirrored.Rounded.Logout (PLATFORM) | leave group (menu item, destructive color) | `Tokens.…globalLeave` in GroupProfileScreen.swift |
-| matched | copy | `groups.screen.menu.report` | “report” (SOURCED) |  | `Copy.…groupsScreenMenuReport` in GroupProfileScreen.swift |
-| matched | token | `icon.global.report` | ios: flag.fill; android: Rounded.Flag (PLATFORM) | report (menu item, destructive color) | `Tokens.…globalReport` in GroupProfileScreen.swift, GroupScreen.swift |
-| matched | copy | `groups.screen.back.accessibilityLabel` | “back” (SOURCED) |  | `Copy.…groupsScreenBackAccessibilityLabel` in GroupProfileScreen.swift, GroupScreen.swift |
-| matched | copy | `groups.screen.header.accessibilityLabel` | “{group_name}, group info” (SOURCED) |  | `Copy.…groupsScreenHeaderAccessibilityLabel` in GroupScreen.swift |
-| matched | copy | `groups.screen.weeks.accessibilityLabel` | “past weeks” (SOURCED) |  | `Copy.…groupsScreenWeeksAccessibilityLabel` in GroupScreen.swift |
-| matched | copy | `groups.screen.recap.accessibilityLabel` | “recaps” (SOURCED) |  | `Copy.…groupsScreenRecapAccessibilityLabel` in GroupScreen.swift |
-| matched | copy | `groups.screen.photo.accessibilityLabel` | “pic from {first_name}, {time}” (SOURCED) |  | `Copy.…groupsScreenPhotoAccessibilityLabel` in GroupProfileScreen.swift, GroupScreen.swift |
-| matched | token | `color.global.controlRaised` | #434343 (SOURCED) | raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots | `Tokens.…globalControlRaised` in FloatingTabBar.swift, GroupScreen.swift, StorageImage.swift |
-| matched | copy | `groups.screen.photo.more.accessibilityLabel` | “more” (SOURCED) |  | `Copy.…groupsScreenPhotoMoreAccessibilityLabel` in GroupScreen.swift |
-| matched | copy | `groups.screen.photo.menu.report` | “Report…” (VERIFIED) |  | `Copy.…groupsScreenPhotoMenuReport` in GroupScreen.swift |
-| matched | copy | `groups.screen.photo.menu.block` | “Block {first_name}” (VERIFIED) |  | `Copy.…groupsScreenPhotoMenuBlock` in GroupScreen.swift |
-| matched | copy | `groups.screen.photo.menu.open` | “Open” (VERIFIED) |  | `Copy.…groupsScreenPhotoMenuOpen` in GroupScreen.swift |
-| matched | token | `safety.block.layout.menu` | ios: Menu (UIMenu) item with role .destructive; android: DropdownMenu item (M3 baseline: 48 dp items, 4 dp container corner, labelLarge) in color.global.syst… (VERIFIED) | 'Block' / 'Report…' items in overflow menus | Menu item with role .destructive |
-| matched | token | `fontSize.global.emptyTitle` | 16 pt (SOURCED) | empty-state title ('you created group') | `Tokens.…globalEmptyTitle` in TextRoles.swift |
-| matched | token | `fontWeight.global.emptyTitle` | bold (SOURCED) | empty-state title | `Tokens.…fontWeightGlobalEmptyTitle` in TextRoles.swift |
-| matched | token | `fontSize.global.emptyDetail` | 14 pt (SOURCED) | empty-state detail line ('and added mẹ, Anh'), italic | `Tokens.…globalEmptyDetail` in TextRoles.swift |
-| matched | token | `groups.screen.size.lightPillHeight` | 45 pt (SOURCED) | white secondary pill height ('invite more friends', 205 pt wide = hug + leading icon.global.link) | `Tokens.…groupsScreenSizeLightPillHeight` in LightPill.swift |
-| matched | token | `groups.screen.radius.lightPill` | 11 pt (SOURCED) | white secondary pill ('invite more friends') corner radius | `Tokens.…groupsScreenRadiusLightPill` in LightPill.swift |
-| matched | token | `icon.global.link` | ios: link; android: Rounded.Link (PLATFORM) | invite link | `Tokens.…globalLink` in GroupScreen.swift |
-| matched | copy | `groups.screen.created.title` | “you created group” (SOURCED) |  | `Copy.…groupsScreenCreatedTitle` in GroupScreen.swift |
-| matched | copy | `groups.screen.created.detail` | “and added {names}” (SOURCED) |  | `Copy.…groupsScreenCreatedDetail` in GroupScreen.swift |
-| matched | copy | `groups.screen.created.invite.friends` | “invite more friends” (SOURCED) |  | `Copy.…groupsScreenCreatedInviteFriends` in GroupScreen.swift |
-| matched | copy | `groups.screen.created.invite.family` | “invite more family” (SOURCED) |  | `Copy.…groupsScreenCreatedInviteFamily` in GroupScreen.swift |
-| matched | copy | `groups.screen.created.invite.roommates` | “invite more roommates” (SOURCED) |  | `Copy.…groupsScreenCreatedInviteRoommates` in GroupScreen.swift |
-| matched | copy | `groups.screen.created.invite.custom` | “invite more people” (SOURCED) |  | `Copy.…groupsScreenCreatedInviteCustom` in GroupScreen.swift |
-| matched | copy | `groups.screen.profile.segment.pics` | “pics” (SOURCED) |  | `Copy.…groupsScreenProfileSegmentPics` in GroupProfileScreen.swift |
-| matched | copy | `groups.screen.profile.segment.wall` | “wall” (SOURCED) |  | `Copy.…groupsScreenProfileSegmentWall` in GroupProfileScreen.swift |
-| matched | copy | `groups.screen.profile.segment.recaps` | “recaps” (SOURCED) |  | `Copy.…groupsScreenProfileSegmentRecaps` in GroupProfileScreen.swift |
-| matched | copy | `groups.screen.profile.more.accessibilityLabel` | “group options” (SOURCED) |  | `Copy.…groupsScreenProfileMoreAccessibilityLabel` in GroupProfileScreen.swift |
-| matched | copy | `groups.create.hud.loading` | “Loading” (SOURCED) |  | `Copy.…groupsCreateHudLoading` in LoadingHUD.swift |
-| matched | token | `icon.global.camera` | ios: camera.fill; android: Rounded.PhotoCamera (PLATFORM) | camera (composer button, row quick-camera, camera tab) | `Tokens.…globalCamera` in FloatingTabBar.swift, GroupScreen.swift |
-| matched | copy | `groups.screen.empty.title` | “no pics yet” (SOURCED) |  | `Copy.…groupsScreenEmptyTitle` in GroupScreen.swift |
-| matched | copy | `groups.screen.empty.detail` | “share the first one” (SOURCED) |  | `Copy.…groupsScreenEmptyDetail` in GroupScreen.swift |
-| matched | copy | `groups.screen.empty.button` | “take a pic” (SOURCED) |  | `Copy.…groupsScreenEmptyButton` in GroupScreen.swift |
-| matched | copy | `groups.screen.removed.title` | “you’re not in this group anymore” (SOURCED) |  | `Copy.…groupsScreenRemovedTitle` in GroupScreen.swift |
-| matched | copy | `groups.screen.removed.detail` | “ask someone in it to send you a new link” (SOURCED) |  | `Copy.…groupsScreenRemovedDetail` in GroupScreen.swift |
-| matched | token | `haptic.global.longPressStart` | ios: system (context menu plays its own haptic; no custom generator); android: LONG_PRESS (PLATFORM) | a long press starts (context menu) | system Menu haptic |
-| matched | token | `haptic.global.select` | ios: selection; android: SEGMENT_TICK (PLATFORM) | a recipient / group toggled, a segmented choice, picker scrubbing | `Tokens.…globalSelect` in CheckRow.swift, SegmentedPills.swift |
-| n/a | token | `color.global.scrim` | #00000080 (SOURCED) | dimming layer behind sheets / over photos under text on app surfaces | the spec places no scrim (time overlay on photos is photo-dependent); none drawn |
-| matched | token | `color.global.background` | #171717 (SOURCED) | screen background of group, chat and profile-grid screens (dark gray, not black) | `Tokens.…globalBackground` in GroupScreen.swift |
 
-## Approximations
+## Structure
 
-- Header capsule inner insets = (headerButton − avatarHeader) / 2 (not measured).
-- Photo card ••• circle: icon.global.more on controlRaised, insets = cardGap (spec Gaps).
-- Chat pill corners `radius.global.button` (not measured).
-- "joined" pill: hugs the avatar, trailing padding = avatarSmall / 2 (not measured).
-- Memory entry rows (onthisday / year.story / birthday.request, placed here per their specs): the groups.list card look (no Yope entry row was observed).
-- Profile pics grid reuses the walls.mine grid tokens; cover ⌄ gap = listGap (not measured).
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `color.global.background` | light: #FFFFFF; dark: #000000 (SOURCED) | `Tokens.Colors.globalBackground` in AccountGroupedRows.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, GroupScreen.swift … |
+| matched | `icon.global.back` | ios: chevron.left; android: AutoMirrored.Rounded.ArrowBackIos (PLATFORM) | `Tokens.Icons.globalBack` in ScreenHeader.swift, SignUpLayout.swift |
+| matched | `size.global.backInset` | 21.1 pt (SOURCED) | `Tokens.Sizes.globalBackInset` in ScreenHeader.swift, SignUpLayout.swift |
+| matched | `size.global.icon` | 24 pt (SOURCED) | `Tokens.Sizes.globalIcon` in CircleButton.swift, ComponentSupport.swift, GroupScreen.swift, GroupSettingsScreen.swift … |
+| matched | `size.global.headerIconPitch` | 48 pt (SOURCED) | `Tokens.Sizes.globalHeaderIconPitch` in GroupScreen.swift, ScreenHeader.swift |
+| matched | `size.global.headerInset` | 16 pt (SOURCED) | `Tokens.Sizes.globalHeaderInset` in GroupScreen.swift, ScreenHeader.swift |
+| matched | `icon.global.albums` | ios: book; android: AutoMirrored.Outlined.MenuBook (PLATFORM) | `Tokens.Icons.globalAlbums` in GroupScreen.swift, GroupsHomeScreen.swift |
+| matched | `icon.global.chats` | ios: bubble.left; android: Outlined.ChatBubbleOutline (PLATFORM) | `Tokens.Icons.globalChats` in GroupInviteScreen.swift, GroupScreen.swift |
+| matched | `size.global.titleTop` | 64 pt (SOURCED) | `Tokens.Sizes.globalTitleTop` in FullBleedMediaPage.swift, GroupScreen.swift, ScreenHeader.swift, SignUpLayout.swift |
+| matched | `size.global.titleToContent` | 30 pt (SOURCED) | `Tokens.Sizes.globalTitleToContent` in AccountGroupedRows.swift, AgeGateForm.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `groups.screen.size.coverWidth` | 173.5 pt (SOURCED) | `Tokens.Sizes.groupsScreenSizeCoverWidth` in GroupCreateScreen.swift, GroupScreen.swift |
+| matched | `radius.global.thumbnail` | 4 pt (SOURCED) | `Tokens.Radii.globalThumbnail` in GroupCreateScreen.swift, GroupsHomeScreen.swift, ThumbnailRow.swift |
+| matched | `groups.screen.shadow.cover` | color: #000000; blur: 8.5; x: 3; y: 10; opacity: 0.25 (SOURCED) | `Tokens.Shadows.groupsScreenShadowCover` in GroupCreateScreen.swift |
+| matched | `color.global.control` | light: #F1F1F1; dark: #262626 (SOURCED) | `Tokens.Colors.globalControl` in AccountGroupedRows.swift, Avatar.swift, CapsuleButton.swift, CircleButton.swift … |
+| matched | `icon.global.group` | ios: person.2; android: Outlined.Group (PLATFORM) | `Tokens.Icons.globalGroup` in GroupCreateScreen.swift, SettingsNotificationsScreen.swift, TabBar.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `groups.screen.size.coverToTitle` | 36.7 pt (SOURCED) | `Tokens.Sizes.groupsScreenSizeCoverToTitle` in GroupCreateScreen.swift, GroupScreen.swift |
+| matched | `font.global.display` | ios: system-serif; android: serif (PLATFORM) | `Tokens.Fonts.globalDisplay` in InvitePreviewView.swift, PhoneScreen.swift, TextRoles.swift |
+| matched | `color.global.textPrimary` | light: #000000; dark: #FFFFFF (SOURCED) | `Tokens.Colors.globalTextPrimary` in AccountGroupedRows.swift, CapsuleButton.swift, CheckRow.swift, CircleButton.swift … |
+| matched | `groups.screen.size.titleToMeta` | 16 pt (SOURCED) | `Tokens.Sizes.groupsScreenSizeTitleToMeta` in GroupScreen.swift |
+| matched | `size.global.avatarSmall` | 22.6 pt (SOURCED) | `Tokens.Sizes.globalAvatarSmall` in Avatar.swift, GroupScreen.swift, GroupsHomeScreen.swift |
+| matched | `size.global.avatarStackOverlap` | 3 pt (SOURCED) | `Tokens.Sizes.globalAvatarStackOverlap` in Avatar.swift, GroupsHomeScreen.swift |
+| matched | `size.global.screenMargin` | 16 pt (SOURCED) | `Tokens.Sizes.globalScreenMargin` in AccountGroupedRows.swift, AgeGateForm.swift, CodeScreen.swift, EmptyStateView.swift … |
+| matched | `groups.screen.size.metaToActions` | 26.6 pt (SOURCED) | `Tokens.Sizes.groupsScreenSizeMetaToActions` in GroupScreen.swift |
+| matched | `groups.screen.recap.accessibilityLabel` | “Recaps” (SOURCED) | `Copy.groupsScreenRecapAccessibilityLabel` in GroupScreen.swift |
+| matched | `groups.screen.invite` | “Invite” (SOURCED) | `Copy.groupsScreenInvite` in GroupScreen.swift |
+| matched | `size.global.iconPillWidth` | 49 pt (SOURCED) | `Tokens.Sizes.globalIconPillWidth` in CapsuleButton.swift |
+| matched | `icon.global.settings` | ios: gearshape; android: Outlined.Settings (PLATFORM) | `Tokens.Icons.globalSettings` in GroupScreen.swift |
+| matched | `size.global.iconSmall` | 14.7 pt (SOURCED) | `Tokens.Sizes.globalIconSmall` in CapsuleButton.swift, GroupInviteScreen.swift, LightPill.swift, MediaPills.swift … |
+| matched | `size.global.pillHeight` | 37 pt (SOURCED) | `Tokens.Sizes.globalPillHeight` in CapsuleButton.swift, LightPill.swift, OutlineCTA.swift |
+| matched | `size.global.pillGap` | 8.8 pt (SOURCED) | `Tokens.Sizes.globalPillGap` in CapsuleButton.swift |
+| matched | `size.global.sectionGap` | 36.4 pt (SOURCED) | `Tokens.Sizes.globalSectionGap` in AccountGroupedRows.swift, GroupInviteScreen.swift, GroupScreen.swift, GroupsHomeScreen.swift … |
+| matched | `size.global.avatarPicker` | 37 pt (SOURCED) | `Tokens.Sizes.globalAvatarPicker` in GroupScreen.swift, GroupSettingsScreen.swift, PeopleRow.swift, SettingsBlockedScreen.swift |
+| matched | `birthday.request.title` | “{name}'s birthday video” (SOURCED) | memory pass supplies the copy (`MemoryEntryContent`); GroupScreen.swift hosts `BirthdayRequestsEntry` / `OnThisDayEntry` / `YearStoryEntry` |
+| matched | `birthday.request.due` | “Add yours by {date}” (SOURCED) | memory pass supplies the copy (`MemoryEntryContent`); GroupScreen.swift hosts `BirthdayRequestsEntry` / `OnThisDayEntry` / `YearStoryEntry` |
+| matched | `icon.global.chevron` | ios: chevron.right; android: AutoMirrored.Rounded.KeyboardArrowRight (PLATFORM) | `Tokens.Icons.globalChevron` in AccountGroupedRows.swift, GroupScreen.swift, GroupedSection.swift, SettingsAccountScreen.swift |
+| matched | `groups.screen.week.title` | “Week {number}” (SOURCED) | `Copy.groupsScreenWeekTitle` in GroupScreen.swift |
+| matched | `size.global.sectionHeaderToContent` | 11.7 pt (SOURCED) | `Tokens.Sizes.globalSectionHeaderToContent` in CodeScreen.swift, GroupInviteScreen.swift, GroupScreen.swift, GroupsHomeScreen.swift … |
+| matched | `size.global.friendCardWidth` | 240 pt (SOURCED) | `Tokens.Sizes.globalFriendCardWidth` in FriendCard.swift, GroupScreen.swift |
+| matched | `radius.global.card` | 18 pt (SOURCED) | `Tokens.Radii.globalCard` in FriendCard.swift, GroupScreen.swift, WeekStrip.swift |
+| matched | `size.global.cardGap` | 16 pt (SOURCED) | `Tokens.Sizes.globalCardGap` in FriendCard.swift |
+| matched | `size.global.avatarList` | 26.5 pt (SOURCED) | `Tokens.Sizes.globalAvatarList` in FriendCard.swift, GroupScreen.swift |
+| matched | `layout.global.photoScrim` | color: #000000; startAt: 0.55; startOpacity: 0; endOpacity: 0.6; direction: top → bottom (SOURCED) | `Tokens.Layouts.GlobalPhotoScrim` in ComponentSupport.swift |
+| matched | `color.global.textOnMedia` | #FFFFFF (SOURCED) | `Tokens.Colors.globalTextOnMedia` in CircleButton.swift, FullBleedMediaPage.swift, GroupScreen.swift, InvitePreviewView.swift … |
+| matched | `icon.global.rewind` | ios: clock.arrow.circlepath; android: Outlined.History (PLATFORM) | `Tokens.Icons.globalRewind` in GroupScreen.swift |
+| matched | `icon.global.recap` | ios: film.stack; android: Outlined.VideoLibrary (PLATFORM) | `Tokens.Icons.globalRecap` in GroupScreen.swift |
+| matched | `onthisday.entry.title` | “On this day” (SOURCED) | memory pass supplies the copy (`MemoryEntryContent`); GroupScreen.swift hosts `BirthdayRequestsEntry` / `OnThisDayEntry` / `YearStoryEntry` |
+| matched | `year.story.entry.title` | “Year in Photos” (SOURCED) | memory pass supplies the copy (`MemoryEntryContent`); GroupScreen.swift hosts `BirthdayRequestsEntry` / `OnThisDayEntry` / `YearStoryEntry` |
+| matched | `radius.global.photo` | 0 pt (SOURCED) | 0: grid cells and tiles are square-cornered (no clip) |
+| matched | `size.global.stripGap` | 2 pt (SOURCED) | `Tokens.Sizes.globalStripGap` in GroupScreen.swift, PhotoGrid.swift, WeekStrip.swift |
+
+## Elements
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `groups.screen.back.accessibilityLabel` | “Back” (VERIFIED) | `Copy.groupsScreenBackAccessibilityLabel` in GroupScreen.swift |
+| matched | `groups.screen.albums.accessibilityLabel` | “Albums” (SOURCED) | `Copy.groupsScreenAlbumsAccessibilityLabel` in GroupScreen.swift |
+| matched | `groups.screen.chat` | “Messages” (SOURCED) | `Copy.groupsScreenChat` in GroupScreen.swift |
+| matched | `groups.screen.cover.accessibilityLabel` | “{group_name} cover” (VERIFIED) | `Copy.groupsScreenCoverAccessibilityLabel` in GroupScreen.swift |
+| matched | `groups.screen.members.accessibilityLabel` | “Members” (SOURCED) | `Copy.groupsScreenMembersAccessibilityLabel` in GroupScreen.swift |
+| matched | `groups.screen.settings.accessibilityLabel` | “Settings” (SOURCED) | `Copy.groupsScreenSettingsAccessibilityLabel` in GroupScreen.swift |
+| matched | `groups.screen.weeks.accessibilityLabel` | “Past Weeks” (VERIFIED) | `Copy.groupsScreenWeeksAccessibilityLabel` in GroupScreen.swift |
+| matched | `size.global.stripTileWidth` | 84 pt (SOURCED) | `Tokens.Sizes.globalStripTileWidth` in WeekStrip.swift |
+| matched | `color.global.emptyTileText` | light: #D9D9D9; dark: #515151 (SOURCED) | `Tokens.Colors.globalEmptyTileText` in WeekStrip.swift |
+| matched | `groups.screen.photo.accessibilityLabel` | “{date}, photo by {first_name}” (VERIFIED) | `Copy.groupsScreenPhotoAccessibilityLabel` in GroupScreen.swift |
+| matched | `groups.screen.week.add.accessibilityLabel` | “Add a photo” (VERIFIED) | `Copy.groupsScreenWeekAddAccessibilityLabel` in GroupScreen.swift |
+| matched | `groups.screen.layout.menu` | ios: contextMenu on a grid cell / strip tile (UIMenu with a preview); destructive items role .destructive (red); android: DropdownMenu on long press of a gri… (PLATFORM) | `.contextMenu` on strip tiles, grid cells and friend cards: Report Post / Block {first_name} (destructive), none on own photos |
+| matched | `groups.screen.photo.menu.report` | “Report Post” (SOURCED) | `Copy.groupsScreenPhotoMenuReport` in GroupScreen.swift |
+
+## States
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `icon.global.calendar` | ios: calendar; android: Outlined.CalendarMonth (PLATFORM) | `Tokens.Icons.globalCalendar` in GroupScreen.swift |
+| matched | `icon.global.add` | ios: plus; android: Rounded.Add (PLATFORM) | `Tokens.Icons.globalAdd` in GroupScreen.swift, GroupsHomeScreen.swift, OutlineCTA.swift, ThumbnailRow.swift … |
+| matched | `groups.screen.created.title` | “Let's get started” (SOURCED) | `Copy.groupsScreenCreatedTitle` in GroupScreen.swift |
+| matched | `groups.screen.empty.title` | “Nothing has been added to this group” (SOURCED) | `Copy.groupsScreenEmptyTitle` in GroupScreen.swift |
+| matched | `groups.screen.error.title` | “Error retrieving your group. Tap here to try again” (SOURCED) | `Copy.groupsScreenErrorTitle` in GroupScreen.swift |
+| matched | `groups.screen.offline.title` | “You're offline” (SOURCED) | `Copy.groupsScreenOfflineTitle` in GroupScreen.swift |
+| matched | `groups.screen.removed.title` | “Not a member” (SOURCED) | `Copy.groupsScreenRemovedTitle` in GroupScreen.swift |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `spring.global.sheetPresent` | response: 0.347; dampingFraction: 1 (SOURCED) | system sheet presentation (`.sheet`) |
+| matched | `duration.global.photoOpen` | 250 ms (SOURCED) | `Tokens.Durations.globalPhotoOpen` in ComponentSupport.swift |
+| matched | `easing.global.standard` | x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | `Tokens.Easings.globalStandard` in AgeGateForm.swift, ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `duration.global.stripInsert` | 250 ms (SOURCED) | `Tokens.Durations.globalStripInsert` in ComponentSupport.swift |
+| matched | `duration.global.fade` | 150 ms (SOURCED) | `Tokens.Durations.globalFade` in ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, PaywallScreen.swift … |
+| matched | `duration.global.crossfade` | 100 ms (SOURCED) | `Tokens.Durations.globalCrossfade` in AgeGateForm.swift, ComponentSupport.swift |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+| matched | `haptic.global.longPressStart` | ios: system (context menu plays its own haptic; no custom generator); android: LONG_PRESS (PLATFORM) | the system context menu's own haptic (`.contextMenu`) |
+
+## Notes
+
+- The week strip and photo grid are local variants (`GroupWeekStrip`, `GroupPhotoGrid`) because C-17 / C-21 have no per-cell context menu (component gap).
+- Memory feed cards are `MemoryFeedCard` (C-18 geometry) fed by the memory pass's `MemoryEntryContent` (photo, glyph, copy).
+- "Recaps" opens the recap list sheet (`AppModal.social(.recaps)`), or week.history while the group has no recap.

@@ -202,17 +202,20 @@ private fun PickerCell(photo: EligiblePhoto, selected: Boolean, onClick: () -> U
     ) {
         MemoryImage(photo.thumbUrl, null, Modifier.fillMaxSize(), placeholder = Tokens.Colors.globalControl)
         if (selected) {
-            FadeInItem(photo.postId) {
-                Icon(
-                    Tokens.Icons.globalCheck,
-                    contentDescription = null,
-                    tint = Tokens.Colors.globalSelection,
-                    modifier = Modifier
-                        .padding(Tokens.Sizes.globalBadgeInset)
-                        .size(Tokens.Sizes.globalCheckCircle)
-                        // Material Symbols draw the circle in the 20-unit live area of a 24-unit grid: the visible circle is the token.
-                        .graphicsLayer { scaleX = GLYPH_TO_LIVE_AREA; scaleY = GLYPH_TO_LIVE_AREA },
-                )
+            // Top-right corner, inset `size.global.badgeInset` (spec: where Retro places a marker on a photo, C-24).
+            Box(Modifier.align(Alignment.TopEnd)) {
+                FadeInItem(photo.postId) {
+                    Icon(
+                        Tokens.Icons.globalCheck,
+                        contentDescription = null,
+                        tint = Tokens.Colors.globalSelection,
+                        modifier = Modifier
+                            .padding(Tokens.Sizes.globalBadgeInset)
+                            .size(Tokens.Sizes.globalCheckCircle)
+                            // Material Symbols draw the circle in the 20-unit live area of a 24-unit grid: the visible circle is the token.
+                            .graphicsLayer { scaleX = GLYPH_TO_LIVE_AREA; scaleY = GLYPH_TO_LIVE_AREA },
+                    )
+                }
             }
         }
     }

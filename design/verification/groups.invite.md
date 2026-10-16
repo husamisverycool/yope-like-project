@@ -1,85 +1,95 @@
-# Verification — `groups.invite` (iOS)
+# Verification — `groups.invite` (iOS, Pass 4 — Retro redesign)
 
-Invite by link or contacts — `Features/Account/Groups/GroupInviteScreen.swift`.
+Invite sheet — `Features/Account/Groups/GroupInviteScreen.swift`, `GroupInviteModel.swift`, `InviteSystemControllers.swift`.
 
-Checklist written from the spec (`design/surfaces/groups.invite.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/groups.invite.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/groups.invite.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/groups.invite.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-yrrah-7452976839846382855-t10.73-add-friends-share-link-2024.png`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.23-group-created-empty-state.png`, `references/auto/yope/frames/a-yrrah-7434441926000037121-t33.73-group-menu-leave-report-2024.png`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png`, `references/auto/yope/frames/a-virgi-7686278541255642390-t44.23-suggested-friends-es.png`
+Reference image(s): `references/auto/retro/press/tc-2024-04-retro-journals-5.png`, `references/auto/retro/press/tc-2024-04-journals-1.webp`, `references/auto/retro/press/tc-2023-07-retro-1b.webp`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`
 
-Snapshots (CI): `groups.invite-ready.png`, `groups.invite-error.png`, `groups.invite-full.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `groups.invite-loading-light.png`, `groups.invite-link-off-light.png`, `groups.invite-link-on-light.png`, `groups.invite-link-on-dark.png`, `groups.invite-error-light.png`, `groups.invite-full-light.png`
 
-**Summary: 61 matched · 2 approximated · 1 not matched (BLOCKED or not buildable) · 0 not applicable on iOS / placed by another pass.**
+**Summary: 57 matched · 0 approximated · 0 not matched · 1 not applicable on iOS / owner / another pass.**
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | token | `color.global.backgroundDeep` | #000000 (SOURCED) | screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' gri… | `Tokens.…globalBackgroundDeep` in GroupInviteScreen.swift |
-| matched | token | `size.global.headerButton` | 44 pt (SOURCED) | circle icon buttons in headers (back, close, download, film-strip, search) | `Tokens.…globalHeaderButton` in HeaderCircleButton.swift |
-| matched | token | `color.global.controlOnDeep` | #101010 (SOURCED) | header circle icon buttons on black screens and sheets (✕, download) | `Tokens.…globalControlOnDeep` in HeaderCircleButton.swift |
-| matched | token | `icon.global.close` | ios: xmark; android: Rounded.Close (PLATFORM) | close / dismiss (✕ in a header circle on sheets) | `Tokens.…globalClose` in GroupInviteScreen.swift, PermissionCard.swift |
-| matched | token | `groups.create.layout.titleAccent` | line1: color.global.textPrimary; line2: color.global.accent; rule: a two-line onboarding or sheet title draws its second part in lime; font: fontSize.global.… (SOURCED) | two-tone title ('create **new group**', 'create your / **first group**', 'Add friends to / **2025 dumps**') | `TwoToneTitle` (Components/OnboardingTitle.swift): second part in color.global.accent |
-| matched | token | `groups.create.size.titleToContent` | 34 pt (SOURCED) | title text bottom (descender) to the first content element | `Tokens.…groupsCreateSizeTitleToContent` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.link.label` | “share this group link to invite” (SOURCED) |  | `Copy.…groupsInviteLinkLabel` in GroupInviteScreen.swift |
-| matched | token | `icon.global.link` | ios: link; android: Rounded.Link (PLATFORM) | invite link | `Tokens.…globalLink` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.link.share` | “share invite” (SOURCED) |  | `Copy.…groupsInviteLinkShare` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.link.expiry` | “this link works until {date}” (SOURCED) |  | `Copy.…groupsInviteLinkExpiry` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.link.turnOff` | “turn off link” (SOURCED) |  | `Copy.…groupsInviteLinkTurnOff` in GroupInviteScreen.swift |
-| matched | token | `groups.invite.layout.contacts` | ios18: ContactAccessButton(queryString:) under a search field: the person grants access per contact (limited access); granted contacts list below; ios17: but… (PLATFORM) | invite from contacts | iOS 18 search field + ContactAccessButton; iOS 17 white pill → CNContactPickerViewController; invite via MFMessageComposeViewController |
-| matched | copy | `groups.invite.contacts.label` | “from your contacts” (SOURCED) |  | `Copy.…groupsInviteContactsLabel` in GroupInviteScreen.swift |
-| matched | copy | `onboarding.permission.contacts.choose` | “choose contacts” (SOURCED) |  | `Copy.…onboardingPermissionContactsChoose` in GroupInviteScreen.swift |
-| matched | token | `groups.invite.size.pickerRowPitch` | 54.5 pt (SOURCED) | contact row pitch (avatar 40, bold name, trailing action) | `Tokens.…groupsInviteSizePickerRowPitch` in GroupInviteScreen.swift |
-| matched | token | `size.global.screenMargin` | 12 pt (SOURCED) | side margin of full-width content (home list cards); edge elements sit at the same inset | `Tokens.…globalScreenMargin` in EmptyStateView.swift, GroupInviteScreen.swift, Toast.swift |
-| matched | token | `size.global.avatarPicker` | 40 pt (SOURCED) | avatar in a people-picker row | `Tokens.…globalAvatarPicker` in GroupInviteScreen.swift |
-| matched | token | `color.global.controlRaised` | #434343 (SOURCED) | raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots | `Tokens.…globalControlRaised` in FloatingTabBar.swift, StorageImage.swift |
-| matched | token | `icon.global.person` | ios: person.fill; android: Rounded.Person (PLATFORM) | default avatar silhouette | `Tokens.…globalPerson` in FloatingTabBar.swift, StorageImage.swift |
-| matched | copy | `groups.invite.contacts.invite` | “invite” (SOURCED) |  | `Copy.…groupsInviteContactsInvite` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.close.accessibilityLabel` | “close” (SOURCED) |  | `Copy.…groupsInviteCloseAccessibilityLabel` in GroupInviteScreen.swift |
-| matched | token | `fontSize.global.onboardingTitle` | 40 pt (SOURCED) | onboarding / sign-up big title ('registrarse') | `Tokens.…globalOnboardingTitle` in TextRoles.swift |
-| matched | token | `fontWeight.global.onboardingTitle` | heavy (SOURCED) | onboarding / sign-up big title | `Tokens.…fontWeightGlobalOnboardingTitle` in TextRoles.swift |
-| matched | copy | `groups.invite.title.friends` | “add friends to {group_name}” (SOURCED) |  | `Copy.…groupsInviteTitleFriends` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.title.family` | “add family to {group_name}” (SOURCED) |  | `Copy.…groupsInviteTitleFamily` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.title.roommates` | “add roommates to {group_name}” (SOURCED) |  | `Copy.…groupsInviteTitleRoommates` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.title.custom` | “add people to {group_name}” (SOURCED) |  | `Copy.…groupsInviteTitleCustom` in GroupInviteScreen.swift |
-| matched | token | `fontSize.global.sectionLabel` | 16 pt (SOURCED) | section label ('suggested friends'), secondary color | `Tokens.…globalSectionLabel` in TextRoles.swift |
-| matched | token | `fontWeight.global.sectionLabel` | semibold (SOURCED) | section label | `Tokens.…fontWeightGlobalSectionLabel` in TextRoles.swift |
-| matched | token | `color.global.textSecondary` | #969696 (SOURCED) | secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules | `Tokens.…globalTextSecondary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | token | `color.global.surfaceLight` | #FFFFFF (SOURCED) | light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, '… | `Tokens.…globalSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | token | `color.global.onSurfaceLight` | #000000 (SOURCED) | label on the light pill (secondary buttons, selected segment, 'today') | `Tokens.…globalOnSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | token | `groups.screen.size.lightPillHeight` | 45 pt (SOURCED) | white secondary pill height ('invite more friends', 205 pt wide = hug + leading icon.global.link) | `Tokens.…groupsScreenSizeLightPillHeight` in LightPill.swift |
-| matched | token | `groups.screen.radius.lightPill` | 11 pt (SOURCED) | white secondary pill ('invite more friends') corner radius | `Tokens.…groupsScreenRadiusLightPill` in LightPill.swift |
-| not matched | copy | `groups.invite.link.message` | “join {group_name} on {app_name} {link}” (SOURCED) |  | uses {app_name}: DEBUG builds only via `AccountBlockedCopy` (AccountBlockedCopy.swift); omitted in release |
-| matched | token | `groups.invite.layout.share` | ios: ShareLink / UIActivityViewController with the invite text and URL; android: Intent.createChooser(ACTION_SEND text/plain) (Sharesheet) (PLATFORM) | system share sheet opened by 'share invite' | `ActivityView` (UIActivityViewController) with the invite text (when unblocked) and the URL |
-| matched | token | `fontSize.global.caption` | 12 pt (SOURCED) | small meta text: voice-message duration ('00:38'), legal footer under sign-up | `Tokens.…globalCaption` in TextRoles.swift |
-| matched | token | `auth.code.fontSize.textLink` | 14.5 pt (SOURCED) | lime text link ('send new code'; Yope's sign-in link 'probar otras opciones' = 'try other options') | `Tokens.…authCodeFontSizeTextLink` in TextRoles.swift |
-| matched | token | `auth.code.fontWeight.textLink` | bold (SOURCED) | lime text link weight | `Tokens.…authCodeFontWeightTextLink` in TextRoles.swift |
-| matched | token | `color.global.accent` | #CDFD07 (SOURCED) | brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar | `Tokens.…globalAccent` in GroupInviteScreen.swift, OnboardingTitle.swift, PrimaryButton.swift |
-| matched | copy | `groups.invite.link.turnOff.title` | “Turn off this link?” (VERIFIED) |  | `Copy.…groupsInviteLinkTurnOffTitle` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.link.turnOff.message` | “People who have it won’t be able to join with it. You can share a new link anytime.” (VERIFIED) |  | `Copy.…groupsInviteLinkTurnOffMessage` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.link.turnOff.confirm` | “Turn Off” (VERIFIED) |  | `Copy.…groupsInviteLinkTurnOffConfirm` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.link.turnOff.cancel` | “Cancel” (VERIFIED) |  | `Copy.…groupsInviteLinkTurnOffCancel` in GroupInviteScreen.swift |
-| matched | token | `settings.account.layout.alert` | ios: alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; Cancel on the leading side; and… (VERIFIED) | confirmation alerts / dialogs (delete account; also leave group, remove member, block, turn off link) | iOS .alert / .confirmationDialog (system); the M3 dialog half is Android |
-| matched | copy | `groups.invite.link.turnedOff` | “link turned off” (SOURCED) |  | `Copy.…groupsInviteLinkTurnedOff` in GroupInviteScreen.swift |
-| matched | token | `groups.invite.fontSize.pickerName` | 13.5 pt (SOURCED) | name on a picker row (bold, white) | `Tokens.…groupsInviteFontSizePickerName` in GroupInviteScreen.swift |
-| matched | token | `groups.invite.fontWeight.pickerName` | bold (SOURCED) | picker row name weight | `Tokens.…groupsInviteFontWeightPickerName` in GroupInviteScreen.swift |
-| matched | token | `color.global.textPrimary` | #FFFFFF (SOURCED) | primary text and glyphs | `Tokens.…globalTextPrimary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | token | `onboarding.permission.contacts.size.cardButtonWidth` | 91 pt (SOURCED) | white 'enable' button width (color.global.surfaceLight, label color.global.onSurfaceLight) | `Tokens.…onboardingPermissionContactsSizeCardButtonWidth` in LightPill.swift |
-| matched | token | `onboarding.permission.contacts.size.cardButtonHeight` | 37 pt (SOURCED) | white 'enable' button height | `Tokens.…onboardingPermissionContactsSizeCardButtonHeight` in LightPill.swift |
-| matched | copy | `groups.invite.contacts.invited` | “invited” (SOURCED) |  | `Copy.…groupsInviteContactsInvited` in GroupInviteScreen.swift |
-| matched | copy | `groups.create.hud.loading` | “Loading” (SOURCED) |  | `Copy.…groupsCreateHudLoading` in LoadingHUD.swift |
-| matched | token | `fontSize.global.emptyTitle` | 16 pt (SOURCED) | empty-state title ('you created group') | `Tokens.…globalEmptyTitle` in TextRoles.swift |
-| matched | token | `fontSize.global.emptyDetail` | 14 pt (SOURCED) | empty-state detail line ('and added mẹ, Anh'), italic | `Tokens.…globalEmptyDetail` in TextRoles.swift |
-| matched | copy | `groups.invite.full.title` | “{group_name} is full” (SOURCED) |  | `Copy.…groupsInviteFullTitle` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.full.detail` | “groups can have up to {max_members} people” (SOURCED) |  | `Copy.…groupsInviteFullDetail` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.error.title` | “the invite link didn’t load” (SOURCED) |  | `Copy.…groupsInviteErrorTitle` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.error.detail` | “check your connection and try again” (SOURCED) |  | `Copy.…groupsInviteErrorDetail` in GroupInviteScreen.swift |
-| matched | copy | `groups.invite.error.retry` | “try again” (SOURCED) |  | `Copy.…groupsInviteErrorRetry` in GroupInviteScreen.swift |
-| matched | token | `haptic.global.warning` | ios: notification.warning; android: CONFIRM (PLATFORM) | a destructive action was confirmed (delete account, block, leave) | `Tokens.…globalWarning` in BlockConfirmation.swift, GroupInviteScreen.swift |
-| matched | token | `haptic.global.send` | ios: notification.success; android: CONFIRM (PLATFORM) | confirm / send: a photo or message was sent | `Tokens.…globalSend` in GroupInviteScreen.swift |
 
-## Approximations
+## Structure
 
-- White pill inner padding = `groups.list.size.avatarInset` (LightPill; not measured).
-- Member avatar stack overlap = a quarter of the diameter (AvatarStack; not measured).
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `groups.screen.shadow.cover` | color: #000000; blur: 8.5; x: 3; y: 10; opacity: 0.25 (SOURCED) | `Tokens.Shadows.groupsScreenShadowCover` in GroupCreateScreen.swift |
+| matched | `color.global.background` | light: #FFFFFF; dark: #000000 (SOURCED) | `Tokens.Colors.globalBackground` in AccountGroupedRows.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, GroupScreen.swift … |
+| matched | `groups.invite.title` | “Invite to {group_name}” (SOURCED) | `Copy.groupsInviteTitle` in GroupInviteScreen.swift |
+| matched | `groups.invite.size.coverWidth` | 281.8 pt (SOURCED) | `Tokens.Sizes.groupsInviteSizeCoverWidth` in GroupInviteScreen.swift |
+| matched | `radius.global.thumbnail` | 4 pt (SOURCED) | `Tokens.Radii.globalThumbnail` in GroupCreateScreen.swift, GroupsHomeScreen.swift, ThumbnailRow.swift |
+| matched | `color.global.control` | light: #F1F1F1; dark: #262626 (SOURCED) | `Tokens.Colors.globalControl` in AccountGroupedRows.swift, Avatar.swift, CapsuleButton.swift, CircleButton.swift … |
+| matched | `groups.invite.size.coverToNote` | 29 pt (SOURCED) | `Tokens.Sizes.groupsInviteSizeCoverToNote` in GroupInviteScreen.swift |
+| matched | `groups.invite.icon.note` | ios: eye; android: Outlined.Visibility (PLATFORM) | `Tokens.Icons.groupsInviteIconNote` in GroupInviteScreen.swift |
+| matched | `size.global.iconSmall` | 14.7 pt (SOURCED) | `Tokens.Sizes.globalIconSmall` in CapsuleButton.swift, GroupInviteScreen.swift, LightPill.swift, MediaPills.swift … |
+| matched | `groups.invite.size.noteGlyphGap` | 6.3 pt (SOURCED) | `Tokens.Sizes.groupsInviteSizeNoteGlyphGap` in GroupInviteScreen.swift |
+| matched | `groups.invite.link.label` | “Anyone with this link can join {group_name}” (SOURCED) | `Copy.groupsInviteLinkLabel` in GroupInviteScreen.swift |
+| matched | `groups.invite.color.note` | #767676 (SOURCED) | `Tokens.Colors.groupsInviteColorNote` in GroupInviteScreen.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `groups.invite.link.expiry` | “This link works until {date}.” (SOURCED) | `Copy.groupsInviteLinkExpiry` in GroupInviteScreen.swift |
+| matched | `groups.invite.link.turnOn` | “Turn on link sharing” (SOURCED) | `Copy.groupsInviteLinkTurnOn` in GroupInviteScreen.swift |
+| matched | `size.global.buttonMarginH` | 20 pt (SOURCED) | `Tokens.Sizes.globalButtonMarginH` in BackdropCard.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, OnboardingTitle.swift … |
+| matched | `size.global.titleToContent` | 30 pt (SOURCED) | `Tokens.Sizes.globalTitleToContent` in AccountGroupedRows.swift, AgeGateForm.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `radius.global.groupedRow` | 12 pt (SOURCED) | `Tokens.Radii.globalGroupedRow` in AccountGroupedRows.swift, GroupInviteScreen.swift, GroupedSection.swift |
+| matched | `groups.invite.size.menuRowHeight` | 58.7 pt (SOURCED) | `Tokens.Sizes.groupsInviteSizeMenuRowHeight` in GroupInviteScreen.swift |
+| matched | `groups.invite.link.reset` | “Reset link” (SOURCED) | `Copy.groupsInviteLinkReset` in GroupInviteScreen.swift |
+| matched | `groups.invite.icon.reset` | ios: arrow.clockwise; android: Rounded.Refresh (PLATFORM) | `Tokens.Icons.groupsInviteIconReset` in GroupInviteScreen.swift |
+| matched | `groups.invite.size.menuGlyphInset` | 17.9 pt (SOURCED) | `Tokens.Sizes.groupsInviteSizeMenuGlyphInset` in GroupInviteScreen.swift |
+| matched | `groups.invite.size.menuTextInset` | 52.7 pt (SOURCED) | `Tokens.Sizes.groupsInviteSizeMenuTextInset` in GroupInviteScreen.swift |
+| matched | `color.global.textPrimary` | light: #000000; dark: #FFFFFF (SOURCED) | `Tokens.Colors.globalTextPrimary` in AccountGroupedRows.swift, CapsuleButton.swift, CheckRow.swift, CircleButton.swift … |
+| matched | `groups.invite.link.turnOff` | “Turn off link sharing” (SOURCED) | `Copy.groupsInviteLinkTurnOff` in GroupInviteScreen.swift |
+| matched | `icon.global.lock` | ios: lock.fill; android: Rounded.Lock (PLATFORM) | `Tokens.Icons.globalLock` in GroupInviteScreen.swift |
+| matched | `color.global.destructive` | #EA3337 (SOURCED) | `Tokens.Colors.globalDestructive` in AccountGroupedRows.swift, DestructiveButton.swift, FormField.swift, GroupInviteScreen.swift … |
+| matched | `size.global.circleButtonLarge` | 64 pt (SOURCED) | `Tokens.Sizes.globalCircleButtonLarge` in CircleButton.swift, GroupInviteScreen.swift |
+| matched | `size.global.icon` | 24 pt (SOURCED) | `Tokens.Sizes.globalIcon` in CircleButton.swift, ComponentSupport.swift, GroupScreen.swift, GroupSettingsScreen.swift … |
+| matched | `groups.invite.size.targetPitch` | 90.4 pt (SOURCED) | `Tokens.Sizes.groupsInviteSizeTargetPitch` in GroupInviteScreen.swift |
+| matched | `icon.global.chats` | ios: bubble.left; android: Outlined.ChatBubbleOutline (PLATFORM) | `Tokens.Icons.globalChats` in GroupInviteScreen.swift, GroupScreen.swift |
+| matched | `icon.global.link` | ios: link; android: Rounded.Link (PLATFORM) | `Tokens.Icons.globalLink` in GroupInviteScreen.swift |
+| matched | `icon.global.share` | ios: square.and.arrow.up; android: Rounded.IosShare (PLATFORM) | `Tokens.Icons.globalShare` in GroupInviteScreen.swift |
+| matched | `groups.invite.size.targetLabelGap` | 11.6 pt (SOURCED) | `Tokens.Sizes.groupsInviteSizeTargetLabelGap` in GroupInviteScreen.swift |
+| matched | `size.global.sectionGap` | 36.4 pt (SOURCED) | `Tokens.Sizes.globalSectionGap` in AccountGroupedRows.swift, GroupInviteScreen.swift, GroupScreen.swift, GroupsHomeScreen.swift … |
+| matched | `groups.invite.contacts.label` | “Contacts” (SOURCED) | `Copy.groupsInviteContactsLabel` in GroupInviteScreen.swift |
+| matched | `groups.invite.layout.contacts` | ios18: ContactAccessButton(queryString:) under the search field (C-12): the person grants access per contact (limited access); granted contacts listed as peo… (PLATFORM) | Contacts section in groups.invite: iOS 18 search field + `ContactAccessButton`, iOS 17 "Choose Contacts" → `CNContactPickerViewController` (InviteSystemControllers.swift) |
+| matched | `size.global.avatarPicker` | 37 pt (SOURCED) | `Tokens.Sizes.globalAvatarPicker` in GroupScreen.swift, GroupSettingsScreen.swift, PeopleRow.swift, SettingsBlockedScreen.swift |
+| matched | `groups.invite.contacts.invite` | “Invite” (SOURCED) | `Copy.groupsInviteContactsInvite` in GroupInviteScreen.swift |
+| matched | `groups.invite.contacts.invited` | “Invited” (SOURCED) | `Copy.groupsInviteContactsInvited` in GroupInviteScreen.swift |
 
-## Not matched
+## Elements
 
-- `groups.invite.link.message` — uses {app_name}: DEBUG builds only via `AccountBlockedCopy` (AccountBlockedCopy.swift); omitted in release
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `groups.invite.close.accessibilityLabel` | “Close” (VERIFIED) | `Copy.groupsInviteCloseAccessibilityLabel` in GroupInviteScreen.swift |
+| matched | `groups.invite.cover.accessibilityLabel` | “{group_name} cover” (VERIFIED) | `Copy.groupsInviteCoverAccessibilityLabel` in GroupInviteScreen.swift |
+| matched | `settings.account.layout.alert` | ios: alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; android: M3 AlertDialog: contai… (VERIFIED) | native `.alert` / `.confirmationDialog` (C-29) |
+| matched | `groups.invite.link.turnedOff` | “Link off” (SOURCED) | `Copy.groupsInviteLinkTurnedOff` in GroupInviteScreen.swift |
+| matched | `groups.invite.link.messageTarget` | “Message” (SOURCED) | `Copy.groupsInviteLinkMessageTarget` in GroupInviteScreen.swift |
+| matched | `groups.invite.link.message` | “Check out {group_name} on {app_name}: {link}” (SOURCED) | `AccountBlockedCopy.inviteLinkMessage` (BLOCKED {app_name}: DEBUG shows the placeholder; release shares the link alone) |
+| matched | `groups.invite.link.copy` | “Copy Link” (SOURCED) | `Copy.groupsInviteLinkCopy` in GroupInviteScreen.swift |
+| matched | `groups.invite.link.copied` | “Invite link copied to clipboard” (SOURCED) | `Copy.groupsInviteLinkCopied` in GroupInviteScreen.swift |
+| matched | `groups.invite.link.share` | “Share to…” (SOURCED) | `Copy.groupsInviteLinkShare` in GroupInviteScreen.swift |
+
+## States
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `groups.invite.full.title` | “{group_name} is full” (SOURCED) | `Copy.groupsInviteFullTitle` in GroupInviteScreen.swift |
+| matched | `groups.invite.error.title` | “Something went wrong” (SOURCED) | `Copy.groupsInviteErrorTitle` in GroupInviteScreen.swift |
+| matched | `groups.invite.contacts.empty` | “No Contacts” (SOURCED) | `Copy.groupsInviteContactsEmpty` in GroupInviteScreen.swift |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `spring.global.sheetPresent` | response: 0.347; dampingFraction: 1 (SOURCED) | system sheet presentation (`.sheet`) |
+| matched | `duration.global.fade` | 150 ms (SOURCED) | `Tokens.Durations.globalFade` in ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, PaywallScreen.swift … |
+| matched | `easing.global.standard` | x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | `Tokens.Easings.globalStandard` in AgeGateForm.swift, ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+| matched | `haptic.global.warning` | ios: notification.warning; android: CONFIRM (PLATFORM) | `Tokens.Haptics.globalWarning` in BlockConfirmation.swift, GroupInviteScreen.swift, GroupSettingsScreen.swift, ReportFlow.swift … |
+| matched | `haptic.global.send` | ios: notification.success; android: CONFIRM (PLATFORM) | `Tokens.Haptics.globalSend` in GroupInviteScreen.swift, ReplyBar.swift |

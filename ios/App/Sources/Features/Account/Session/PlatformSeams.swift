@@ -91,6 +91,20 @@ final class RevenueCatPurchases: PurchasesProviding {
         }
     }
 
+    /// The active auto-renewable subscription's period from StoreKit's current entitlements (the store, not RevenueCat's
+    /// cache), or nil when there is none.
+    func activePeriod() async -> PlanOption.Period? {
+        for await result in StoreKit.Transaction.currentEntitlements {
+            guard case let .verified(transaction) = result,
+                  transaction.productType == .autoRenewable,
+                  transaction.revocationDate == nil,
+                  let product = try? await StoreKit.Product.products(for: [transaction.productID]).first,
+                  let unit = product.subscription?.subscriptionPeriod.unit else { continue }
+            return unit == .year ? .year : .month
+        }
+        return nil
+    }
+
     /// The introductory free trial's length ("1 week", the locale's full units), or nil when the product has none.
     private static func trialDuration(of product: StoreProduct) -> String? {
         guard let intro = product.introductoryDiscount, intro.paymentMode == .freeTrial else { return nil }

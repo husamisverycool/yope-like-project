@@ -1,39 +1,61 @@
-# Verification — `onboarding.permission.notifications` (iOS)
+# Verification — `onboarding.permission.notifications` (iOS, Pass 4 — Retro redesign)
 
-Notifications pre-alert step — `Features/Account/Onboarding/NotificationsPermissionScreen.swift`.
+Notifications pre-alert — `Features/Account/Onboarding/NotificationsPermissionScreen.swift`.
 
-Checklist written from the spec (`design/surfaces/onboarding.permission.notifications.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/onboarding.permission.notifications.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/onboarding.permission.notifications.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/onboarding.permission.notifications.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-virgi-7686278541255642390-t7.23-notif-preprompt-es.png`, `references/auto/yope/frames/a-virgi-7686278541255642390-t9.23-notif-system-alert-es.png`, `references/auto/yope/frames/a-virgi-7686278541255642390-t11.23-widget-preprompt-es.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png`, `references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png`
+Reference image(s): `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png`
 
-Snapshots (CI): `onboarding.permission.notifications-default.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `onboarding.permission.notifications-default-light.png`, `onboarding.permission.notifications-default-dark.png`
 
-**Summary: 17 matched · 0 approximated · 1 not matched (BLOCKED or not buildable) · 3 not applicable on iOS / placed by another pass.**
+**Summary: 14 matched · 0 approximated · 0 not matched · 5 not applicable on iOS / owner / another pass.**
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | token | `color.global.backgroundDeep` | #000000 (SOURCED) | screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' gri… | `Tokens.…globalBackgroundDeep` in NotificationsPermissionScreen.swift, SignUpLayout.swift |
-| matched | token | `onboarding.permission.notifications.layout.preAlert` | ios: one button ('continue') that triggers UNUserNotificationCenter.requestAuthorization; no close, skip or back on this screen; android: API 33+: same scree… (VERIFIED) | notifications pre-alert screen | one lime button → UNUserNotificationCenter.requestAuthorization (via PushService); no close / skip / back |
-| matched | copy | `onboarding.permission.notifications.title` | “want to know when your groups post?” (SOURCED) |  | `Copy.…onboardingPermissionNotificationsTitle` in NotificationsPermissionScreen.swift |
-| matched | token | `groups.create.size.sheetTopToTitle` | 71 pt (SOURCED) | sheet top edge to the title's cap top (also the safe-area top to the title on full-screen onboarding steps) | `Tokens.…groupsCreateSizeSheetTopToTitle` in NotificationsPermissionScreen.swift, SignUpLayout.swift |
-| matched | copy | `onboarding.permission.notifications.detail` | “enable notifications” (SOURCED) |  | `Copy.…onboardingPermissionNotificationsDetail` in NotificationsPermissionScreen.swift |
-| n/a | copy | `onboarding.permission.notifications.skip` | “maybe later” (SOURCED) |  | Android only |
-| matched | token | `size.global.buttonMarginHSheet` | 27 pt (SOURCED) | side margin of the sheet-bottom primary button | `Tokens.…globalButtonMarginHSheet` in NotificationsPermissionScreen.swift |
-| matched | token | `size.global.buttonHeightSheet` | 47 pt (SOURCED) | primary action button at the bottom of a sheet ('send ⓝ') | `Tokens.…globalButtonHeightSheet` in PrimaryButton.swift |
-| n/a | token | `onboarding.permission.notifications.size.buttonGap` | 8 pt (SOURCED) | vertical gap between the stacked dark and lime buttons (Android) | Android only |
-| matched | copy | `onboarding.permission.notifications.continue` | “continue” (SOURCED) |  | `Copy.…onboardingPermissionNotificationsContinue` in NotificationsPermissionScreen.swift |
-| matched | token | `fontSize.global.onboardingTitle` | 40 pt (SOURCED) | onboarding / sign-up big title ('registrarse') | `Tokens.…globalOnboardingTitle` in TextRoles.swift |
-| matched | token | `fontWeight.global.onboardingTitle` | heavy (SOURCED) | onboarding / sign-up big title | `Tokens.…fontWeightGlobalOnboardingTitle` in TextRoles.swift |
-| matched | token | `color.global.textPrimary` | #FFFFFF (SOURCED) | primary text and glyphs | `Tokens.…globalTextPrimary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | token | `auth.phone.fontSize.subtitle` | 14 pt (SOURCED) | italic subtitle under the sign-up title ('to join or create your friends groups') | `Tokens.…authPhoneFontSizeSubtitle` in TextRoles.swift |
-| matched | token | `auth.phone.layout.subtitle` | style: italic; weight: regular; color: color.global.textPrimary; align: center (SOURCED) | subtitle text style under the sign-up title | OnboardingTitleBlock subtitle: italic, regular, textPrimary, centred |
-| matched | token | `color.global.accent` | #CDFD07 (SOURCED) | brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar | `Tokens.…globalAccent` in OnboardingTitle.swift, PrimaryButton.swift, Toast.swift |
-| matched | token | `color.global.onAccent` | #000000 (SOURCED) | text and glyphs on lime: camera glyph on the composer button, primary button labels, tooltip text | `Tokens.…globalOnAccent` in PrimaryButton.swift, Toast.swift |
-| matched | token | `radius.global.button` | 14 pt (SOURCED) | primary (lime) button corners — not a full pill | `Tokens.…globalButton` in PrimaryButton.swift, TextRoles.swift |
-| n/a | token | `onboarding.permission.notifications.color.secondaryButton` | #171717 (SOURCED) | dark secondary button fill on black ('maybe later', Android only) | Android only |
-| not matched | copy | `settings.notifications.off.footer` | “Notifications are off for {app_name}. You can turn them on in Settings.” (VERIFIED) |  | BLOCKED copy (uses {app_name}): DEBUG builds only (`AccountBlockedCopy.notificationsOffFooter`) |
-| matched | copy | `settings.notifications.openSettings` | “Open Settings” (VERIFIED) |  | groups.settings / settings.notifications "open settings" row |
 
-## Not matched
+## Structure
 
-- `settings.notifications.off.footer` — BLOCKED copy (uses {app_name}): DEBUG builds only (`AccountBlockedCopy.notificationsOffFooter`)
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `onboarding.permission.notifications.layout.preAlert` | structure: onboarding page (C-33 variant): display title (text role displayMedium) + explanation (text role body, color.global.textSecondary) leading-aligned… (VERIFIED) | this page, then `requestAuthorization` on Continue (HIG pre-alert, no skip on iOS) |
+
+## References
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.phone.size.capsuleToLink` | 20.7 pt (SOURCED) | `Tokens.Sizes.authPhoneSizeCapsuleToLink` in PhoneScreen.swift, ProfileScreen.swift |
+
+## Structure
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `color.global.background` | light: #FFFFFF; dark: #000000 (SOURCED) | `Tokens.Colors.globalBackground` in AccountGroupedRows.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, GroupScreen.swift … |
+| matched | `onboarding.permission.notifications.title` | “Never miss a moment” (SOURCED) | `Copy.onboardingPermissionNotificationsTitle` in NotificationsPermissionScreen.swift |
+| matched | `font.global.display` | ios: system-serif; android: serif (PLATFORM) | `Tokens.Fonts.globalDisplay` in InvitePreviewView.swift, PhoneScreen.swift, TextRoles.swift |
+| matched | `color.global.textPrimary` | light: #000000; dark: #FFFFFF (SOURCED) | `Tokens.Colors.globalTextPrimary` in AccountGroupedRows.swift, CapsuleButton.swift, CheckRow.swift, CircleButton.swift … |
+| matched | `size.global.screenMargin` | 16 pt (SOURCED) | `Tokens.Sizes.globalScreenMargin` in AccountGroupedRows.swift, AgeGateForm.swift, CodeScreen.swift, EmptyStateView.swift … |
+| matched | `size.global.titleTop` | 64 pt (SOURCED) | `Tokens.Sizes.globalTitleTop` in FullBleedMediaPage.swift, GroupScreen.swift, ScreenHeader.swift, SignUpLayout.swift |
+| matched | `onboarding.permission.notifications.detail` | “Do you want to get notifications for new photos, messages, and other activity in your groups?” (SOURCED) | `Copy.onboardingPermissionNotificationsDetail` in NotificationsPermissionScreen.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `onboarding.permission.notifications.continue` | “Enable notifications” (SOURCED) | `Copy.onboardingPermissionNotificationsContinue` in NotificationsPermissionScreen.swift |
+| matched | `size.global.buttonMarginH` | 20 pt (SOURCED) | `Tokens.Sizes.globalButtonMarginH` in BackdropCard.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, OnboardingTitle.swift … |
+| n/a | `onboarding.permission.notifications.skip` | “Maybe later” (SOURCED) | Android only (iOS: no skip, spec Platform notes) |
+
+## Elements
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `settings.account.layout.alert` | ios: alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; android: M3 AlertDialog: contai… (VERIFIED) | native `.alert` / `.confirmationDialog` (C-29) |
+| n/a | `system.permissions.rationale.notifications.title` | “Never miss a moment” (SOURCED) | Android rationale dialog only |
+| n/a | `system.permissions.rationale.notNow` | “Not now” (SOURCED) | Android rationale dialog only |
+| n/a | `system.permissions.rationale.continue` | “Give Permission” (SOURCED) | Android rationale dialog only |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `duration.global.pageTransition` | 500 ms (SOURCED) | `Tokens.Durations.globalPageTransition` in PaywallScreen.swift, PhoneScreen.swift, ProfileScreen.swift |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |

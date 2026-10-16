@@ -61,8 +61,12 @@ class ChatSnapshotTest : SnapshotBase() {
     /** A post with a front photo in the thread: core:ui daily.dualimage in the card's corners. */
     @Test fun dualPhoto() {
         val data = FakeSocialData().apply {
-            seedThread()
-            makeDual("p-1")
+            seedGroup()
+            val photo = addPhoto("p-1", FakeSocialData.ANA, BASE, caption = "face masks night")
+            makeDual(photo.id)
+            reactions[photo.id] = mutableListOf(app.data.repo.ReactionEntry(BEN, "😍"), app.data.repo.ReactionEntry(ME, "🔥"))
+            messages += FakeSocialData.message("m-1", GROUP, FakeSocialData.ANA, MessageKind.Photo, postId = photo.id, at = BASE)
+            messages += FakeSocialData.message("m-2", GROUP, BEN, MessageKind.Text, body = "the selfie in the corner 😂", at = BASE.plusSeconds(120))
         }
         chat(ChatViewModel(data, GROUP).state.value, data = data)
     }

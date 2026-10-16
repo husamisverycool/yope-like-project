@@ -372,48 +372,46 @@ def settings_rows_height(surface, state):
 
 def safety_report():
     im = snap("safety.report/reasons-post-light")
-    sheet = wide_fill_up(im, t("color.global.system.surfaceContainerLow")["light"], min_w=380, tol=3)
+    fill = t("color.global.system.surfaceContainerLow")["light"]
+    sheet = wide_fill_up(im, fill, min_w=380, tol=3)
     rows = []
     if sheet:
-        rows += [("sheet container", "color.global.system.surfaceContainerLow", t("color.global.system.surfaceContainerLow")["light"], sheet["color"])]
-        top = M.col_runs(im, 196, near(t("color.global.system.surfaceContainerLow")["light"], 3), 300, 852)
-        rows.append(("sheet top corner radius", "radius.global.sheet", t("radius.global.sheet")["android"], corner_radius(im, {"left": 0, "top": top[0][0] if top else sheet["top"], "color": sheet["color"]}, "#7F7F7F") if False else None, {"status": "approx", "note": "M3 ModalBottomSheet shape RoundedCornerShape(topStart/End = 28); not measured over the scrimmed page"}))
+        rows.append(("sheet container", "color.global.system.surfaceContainerLow", fill, sheet["color"]))
+        rows.append(("sheet full width", "layout.global.materials", M.W, sheet["width"], {"tol": 1.0, "note": "M3 ModalBottomSheet at full width on a phone"}))
+        reason = line_box(im, (0, sheet["top"] + 60, 393, sheet["top"] + 140), dark_ink)
+        if reason:
+            rows.append(("reason text inset", "size.global.screenMargin", t("size.global.screenMargin"), reason[0], {"tol": 2.0}))
     return [("Reasons sheet (safety.report/reasons-post-light)", rows)]
 
 
 def paywall():
-    im = snap("paywall/default-light")
     rows = []
-    card = M.extent(im, lambda p: True, (0, 0, 1, 1))
-    _ = card
-    plan = wide_fill(im, t("color.global.surfaceLight"), 300, 800, min_w=300, tol=2)
-    if plan:
-        rows += [("plan card leading inset", "size.global.buttonMarginH", t("size.global.buttonMarginH"), plan["left"], {"tol": 1.0}),
-                 ("plan card fill (light in both appearances)", "paywall.layout.planCard", t("color.global.surfaceLight"), plan["color"])]
-        cap = wide_fill(im, t("color.global.onSurfaceLight"), plan["top"], plan["bottom"] + 120, min_w=250)
+    for mode in ("light", "dark"):
+        im = snap(f"paywall/default-{mode}")
+        plan = wide_fill(im, t("color.global.surfaceLight"), 300, 800, min_w=300, tol=2)
+        if not plan:
+            rows.append((f"plan card ({mode})", "paywall.layout.planCard", t("color.global.surfaceLight"), None))
+            continue
+        rows += [(f"plan card leading inset ({mode})", "size.global.buttonMarginH", t("size.global.buttonMarginH"), plan["left"], {"tol": 1.0}),
+                 (f"plan card fill ({mode}; light in both appearances)", "paywall.layout.planCard", t("color.global.surfaceLight"), plan["color"])]
+        cap = wide_fill(im, t("color.global.onSurfaceLight"), plan["top"] + 40, plan["bottom"] + 1, min_w=250)
         if cap:
-            rows += [("Continue height", "size.global.buttonHeight", t("size.global.buttonHeight"), cap["height"]),
-                     ("Continue fill", "color.global.onSurfaceLight", t("color.global.onSurfaceLight"), cap["color"])]
-    dark = snap("paywall/default-dark")
-    dplan = wide_fill(dark, t("color.global.surfaceLight"), 300, 800, min_w=300, tol=2)
-    rows.append(("plan card fill in dark", "paywall.layout.planCard", t("color.global.surfaceLight"), dplan["color"] if dplan else None))
+            rows += [(f"Continue height ({mode})", "size.global.buttonHeight", t("size.global.buttonHeight"), cap["height"]),
+                     (f"Continue fill ({mode})", "color.global.onSurfaceLight", t("color.global.onSurfaceLight"), cap["color"])]
     return [("Default (paywall/default-light, -dark)", rows)]
 
 
 def invite_web():
-    im = snap("invite.web/android-valid-light")
-    rows = [("page around the card", "color.global.background", t("color.global.background")["light"], color_at(im, 1, 400))]
-    edge = M.row_runs(im, 400, lambda p: max(p[:3]) < 250)
-    if edge:
-        rows.append(("card inset", "invite.web.size.cardInset", t("invite.web.size.cardInset"), edge[0][0], {"tol": 1.0}))
-    pill = None
-    for y in [700 - i * 0.5 for i in range(500)]:
-        runs = [r for r in M.row_runs(im, y, lambda p: True) ]
-        _ = runs
-        break
-    dark = snap("invite.web/android-valid-dark")
-    rows.append(("page in dark (Retro's white web page in both)", "color.global.background", t("color.global.background")["light"], color_at(dark, 1, 400)))
-    _ = pill
+    rows = []
+    for mode in ("light", "dark"):
+        im = snap(f"invite.web/android-valid-{mode}")
+        rows.append((f"page around the card ({mode}; Retro's white web page in both)", "color.global.background", t("color.global.background")["light"], color_at(im, 1, 400)))
+        edge = M.row_runs(im, 400, lambda p: max(p[:3]) < 250)
+        if edge:
+            rows.append((f"card inset ({mode})", "invite.web.size.cardInset", t("invite.web.size.cardInset"), edge[0][0], {"tol": 1.0}))
+        top = M.col_runs(im, 196, lambda p: max(p[:3]) < 250, 0, 60)
+        if top:
+            rows.append((f"card top inset ({mode})", "invite.web.size.cardInset", t("invite.web.size.cardInset"), top[0][0], {"tol": 1.0}))
     return [("Valid (invite.web/android-valid-light, -dark)", rows)]
 
 

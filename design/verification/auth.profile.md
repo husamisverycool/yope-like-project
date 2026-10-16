@@ -1,53 +1,83 @@
-# Verification — `auth.profile` (iOS)
+# Verification — `auth.profile` (iOS, Pass 4 — Retro redesign)
 
-First name and photo — `Features/Account/Auth/ProfileScreen.swift`.
+Name (step 1) and profile photo (step 2) — `Features/Account/Shared/ProfileNameForm.swift`, `Auth/ProfileScreen.swift` (`ProfilePhotoStep`), `Shared/ProfileModel.swift`.
 
-Checklist written from the spec (`design/surfaces/auth.profile.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/auth.profile.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/auth.profile.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/auth.profile.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t51.73-group-profile-add-20-pics.png`, `references/auto/yope/frames/a-yrrah-7434441926000037121-t43.23-members-list-2024.png`
+Reference image(s): `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css`, `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png`
 
-Snapshots (CI): `auth.profile-default.png`, `auth.profile-filled.png`, `auth.profile-saving.png`, `auth.profile-offline.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `auth.profile-name-light.png`, `auth.profile-name-dark.png`, `auth.profile-name-filled-light.png`, `auth.profile-name-too-long-light.png`, `auth.profile-saving-name-light.png`, `auth.profile-offline-light.png`, `auth.profile-photo-empty-light.png`, `auth.profile-photo-empty-dark.png`, `auth.profile-photo-chosen-light.png`, `auth.profile-uploading-light.png`
 
-**Summary: 34 matched · 2 approximated · 0 not matched (BLOCKED or not buildable) · 0 not applicable on iOS / placed by another pass.**
+**Summary: 36 matched · 0 approximated · 0 not matched · 1 not applicable on iOS / owner / another pass.**
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | copy | `auth.profile.title` | “what’s your name?” (SOURCED) |  | `Copy.…authProfileTitle` in ProfileScreen.swift |
-| matched | copy | `auth.profile.subtitle` | “people in your groups see your name & photo” (SOURCED) |  | `Copy.…authProfileSubtitle` in ProfileScreen.swift |
-| matched | token | `groups.create.size.titleToContent` | 34 pt (SOURCED) | title text bottom (descender) to the first content element | `Tokens.…groupsCreateSizeTitleToContent` in ProfileScreen.swift |
-| matched | token | `auth.profile.size.avatar` | 92 pt (SOURCED) | large avatar circle (name + avatar step) | `Tokens.…authProfileSizeAvatar` in ProfileScreen.swift |
-| matched | copy | `auth.profile.avatar.add` | “add a photo (optional)” (SOURCED) |  | `Copy.…authProfileAvatarAdd` in ProfileScreen.swift |
-| matched | token | `groups.create.size.fieldToButton` | 18 pt (SOURCED) | form field bottom to the primary button top | `Tokens.…groupsCreateSizeFieldToButton` in ProfileScreen.swift |
-| matched | token | `groups.create.size.mediaToField` | 23 pt (SOURCED) | cover placeholder bottom to the name field top | `Tokens.…groupsCreateSizeMediaToField` in ProfileScreen.swift |
-| matched | copy | `auth.profile.field.note` | “your first name shows on the invite links you share” (SOURCED) |  | `Copy.…authProfileFieldNote` in ProfileScreen.swift |
-| matched | copy | `auth.profile.continue` | “continue” (SOURCED) |  | `Copy.…authProfileContinue` in ProfileScreen.swift |
-| matched | token | `auth.phone.fontSize.subtitle` | 14 pt (SOURCED) | italic subtitle under the sign-up title ('to join or create your friends groups') | `Tokens.…authPhoneFontSizeSubtitle` in TextRoles.swift |
-| matched | token | `auth.phone.layout.subtitle` | style: italic; weight: regular; color: color.global.textPrimary; align: center (SOURCED) | subtitle text style under the sign-up title | OnboardingTitleBlock subtitle: italic, regular, textPrimary, centred |
-| matched | token | `auth.profile.layout.avatarPicker` | ios: PhotosPicker (SwiftUI) / PHPickerViewController, single image, no library permission; android: ActivityResultContracts.PickVisualMedia(ImageOnly), no RE… (PLATFORM) | avatar picker | PhotosPicker (single image, no library permission); empty circle controlRaised + person glyph |
-| matched | token | `color.global.controlRaised` | #434343 (SOURCED) | raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots | `Tokens.…globalControlRaised` in FloatingTabBar.swift, StorageImage.swift |
-| matched | token | `icon.global.person` | ios: person.fill; android: Rounded.Person (PLATFORM) | default avatar silhouette | `Tokens.…globalPerson` in FloatingTabBar.swift, StorageImage.swift |
-| matched | token | `color.global.textSecondary` | #969696 (SOURCED) | secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules | `Tokens.…globalTextSecondary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | copy | `auth.profile.avatar.accessibilityLabel` | “add a photo” (SOURCED) |  | `Copy.…authProfileAvatarAccessibilityLabel` in ProfileScreen.swift |
-| matched | copy | `auth.profile.avatar.changeAccessibilityLabel` | “change photo” (SOURCED) |  | `Copy.…authProfileAvatarChangeAccessibilityLabel` in ProfileScreen.swift |
-| matched | token | `fontSize.global.listSubtitle` | 14 pt (SOURCED) | row subtitle ('new pic added · 9:43 AM'), secondary color | `Tokens.…globalListSubtitle` in TextRoles.swift |
-| matched | token | `groups.create.color.field` | #141414 (SOURCED) | single-line text field fill on black ('name group (optional)'); reused by every form field on black (auth.*… | `Tokens.…groupsCreateColorField` in FormField.swift |
-| matched | token | `size.global.fieldHeight` | 44 pt (SOURCED) | single-line form text field height | `Tokens.…globalFieldHeight` in FormField.swift |
-| matched | token | `radius.global.field` | 12 pt (SOURCED) | single-line form text field corners ('name group (optional)') | `Tokens.…globalField` in FormField.swift |
-| matched | token | `groups.create.fontSize.fieldText` | 15 pt (SOURCED) | typed text in the form field (centred) | `Tokens.…groupsCreateFontSizeFieldText` in TextRoles.swift |
-| matched | copy | `auth.profile.field.placeholder` | “your name” (SOURCED) |  | `Copy.…authProfileFieldPlaceholder` in ProfileScreen.swift |
-| matched | copy | `auth.profile.field.accessibilityLabel` | “your name” (SOURCED) |  | `Copy.…authProfileFieldAccessibilityLabel` in ProfileScreen.swift |
-| matched | token | `fontSize.global.caption` | 12 pt (SOURCED) | small meta text: voice-message duration ('00:38'), legal footer under sign-up | `Tokens.…globalCaption` in TextRoles.swift |
-| matched | copy | `groups.create.hud.loading` | “Loading” (SOURCED) |  | `Copy.…groupsCreateHudLoading` in LoadingHUD.swift |
-| matched | token | `auth.phone.layout.inlineError` | presentation: system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside; title: none: the auth.… (SOURCED) | how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up scr… | `formErrorAlert` (Components/FormErrorAlert.swift): system alert, no title, the error sentence as its message, one `auth.phone.error.dismiss` button (+ haptic.global.error) |
-| matched | copy | `auth.profile.error.upload` | “your photo didn’t upload. try again, or keep going without it.” (SOURCED) |  | `Copy.…authProfileErrorUpload` in ProfileModel.swift |
-| matched | copy | `auth.profile.error.save` | “your name didn’t save. try again in a moment.” (SOURCED) |  | `Copy.…authProfileErrorSave` in ProfileModel.swift |
-| matched | copy | `auth.phone.offline.title` | “you’re offline” (SOURCED) |  | `Copy.…authPhoneOfflineTitle` in ProfileScreen.swift |
-| matched | copy | `auth.profile.offline.detail` | “connect to the internet to finish. your next memories are waiting.” (SOURCED) |  | `Copy.…authProfileOfflineDetail` in ProfileScreen.swift |
-| matched | copy | `auth.phone.offline.retry` | “try again” (SOURCED) |  | `Copy.…authPhoneOfflineRetry` in ProfileScreen.swift |
-| matched | token | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | any task completed successfully (same generator as send) | `Tokens.…globalSuccess` in ProfileScreen.swift |
-| matched | token | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | a task failed (send failed) | `Tokens.…globalError` in BlockConfirmation.swift, ProfileScreen.swift |
 
-## Approximations
+## References
 
-- Same sign-up layout approximations as auth.phone.
-- Empty-avatar glyph at the platform default symbol size (not measured).
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.profile.size.avatar` | 112 pt (SOURCED) | `Tokens.Sizes.authProfileSizeAvatar` in ProfileScreen.swift |
+
+## Structure
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.profile.title` | “What's your name?” (SOURCED) | `Copy.authProfileTitle` in ProfileNameForm.swift |
+| matched | `font.global.display` | ios: system-serif; android: serif (PLATFORM) | `Tokens.Fonts.globalDisplay` in InvitePreviewView.swift, PhoneScreen.swift, TextRoles.swift |
+| matched | `size.global.titleTop` | 64 pt (SOURCED) | `Tokens.Sizes.globalTitleTop` in FullBleedMediaPage.swift, GroupScreen.swift, ScreenHeader.swift, SignUpLayout.swift |
+| matched | `auth.profile.subtitle` | “This is how you'll show up in your groups.” (SOURCED) | `Copy.authProfileSubtitle` in ProfileNameForm.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `size.global.titleToContent` | 30 pt (SOURCED) | `Tokens.Sizes.globalTitleToContent` in AccountGroupedRows.swift, AgeGateForm.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `auth.profile.field.placeholder` | “Enter your full name…” (SOURCED) | `Copy.authProfileFieldPlaceholder` in ProfileNameForm.swift |
+| matched | `size.global.sectionHeaderToContent` | 11.7 pt (SOURCED) | `Tokens.Sizes.globalSectionHeaderToContent` in CodeScreen.swift, GroupInviteScreen.swift, GroupScreen.swift, GroupsHomeScreen.swift … |
+| matched | `auth.profile.field.note` | “Your first name shows on invite links you share.” (SOURCED) | `Copy.authProfileFieldNote` in ProfileNameForm.swift |
+| matched | `auth.profile.continue` | “Next” (SOURCED) | `Copy.authProfileContinue` in ProfileNameForm.swift, ProfileScreen.swift |
+| matched | `size.global.buttonMarginH` | 20 pt (SOURCED) | `Tokens.Sizes.globalButtonMarginH` in BackdropCard.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, OnboardingTitle.swift … |
+| matched | `auth.profile.photo.title` | “Add a profile photo” (SOURCED) | `Copy.authProfilePhotoTitle` in ProfileScreen.swift |
+| matched | `auth.profile.photo.subtitle` | “Add a profile photo to help your groups recognize you.” (SOURCED) | `Copy.authProfilePhotoSubtitle` in ProfileScreen.swift |
+| matched | `color.global.control` | light: #F1F1F1; dark: #262626 (SOURCED) | `Tokens.Colors.globalControl` in AccountGroupedRows.swift, Avatar.swift, CapsuleButton.swift, CircleButton.swift … |
+| matched | `icon.global.person` | ios: person.fill; android: Rounded.Person (PLATFORM) | `Tokens.Icons.globalPerson` in Avatar.swift, SettingsBlockedScreen.swift |
+| matched | `auth.profile.avatar.add` | “Choose photo” (SOURCED) | `Copy.authProfileAvatarAdd` in ProfileScreen.swift |
+| matched | `auth.phone.size.capsuleToLink` | 20.7 pt (SOURCED) | `Tokens.Sizes.authPhoneSizeCapsuleToLink` in PhoneScreen.swift, ProfileScreen.swift |
+| matched | `auth.profile.photo.skip` | “Maybe Later” (SOURCED) | `Copy.authProfilePhotoSkip` in ProfileScreen.swift |
+| matched | `auth.profile.avatar.edit` | “Edit photo” (SOURCED) | `Copy.authProfileAvatarEdit` in ProfileScreen.swift |
+
+## Elements
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.profile.field.accessibilityLabel` | “Full name” (VERIFIED) | `Copy.authProfileFieldAccessibilityLabel` in ProfileNameForm.swift |
+| matched | `color.global.destructive` | #EA3337 (SOURCED) | `Tokens.Colors.globalDestructive` in AccountGroupedRows.swift, DestructiveButton.swift, FormField.swift, GroupInviteScreen.swift … |
+| matched | `auth.profile.error.tooLong` | “Name too long” (SOURCED) | `Copy.authProfileErrorTooLong` in ProfileNameForm.swift |
+| matched | `radius.global.capsule` | shape: capsule; radius: height / 2 (SOURCED) | `Capsule()` shapes of C-05 / C-06 / C-09 |
+| matched | `auth.profile.layout.avatarPicker` | ios: PhotosPicker (SwiftUI) / PHPickerViewController, single image, no library permission; android: ActivityResultContracts.PickVisualMedia(ImageOnly), no RE… (PLATFORM) | `.photosPicker(matching: .images)` (system picker, no library permission) |
+| matched | `auth.profile.avatar.accessibilityLabel` | “Profile photo” (VERIFIED) | `Copy.authProfileAvatarAccessibilityLabel` in ProfileScreen.swift |
+| matched | `auth.profile.avatar.changeAccessibilityLabel` | “Edit photo” (VERIFIED) | `Copy.authProfileAvatarChangeAccessibilityLabel` in ProfileScreen.swift |
+
+## States
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.phone.layout.inlineError` | presentation: native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account.layout.alert); not dismissed by tapping outside; titled: code error… (SOURCED) | `formErrorAlert(_:trigger:)` (C-29 native message-only alert); code errors: titled alert with Retro's two recoveries |
+| matched | `auth.profile.error.save` | “There was a problem. Please try again.” (SOURCED) | `Copy.authProfileErrorSave` in ProfileModel.swift |
+| matched | `auth.phone.error.dismiss` | “OK” (VERIFIED) | `Copy.authPhoneErrorDismiss` in CodeScreen.swift, FormErrorAlert.swift, ReportFlow.swift |
+| matched | `auth.profile.error.upload` | “Your photo didn't upload. Please try again.” (SOURCED) | `Copy.authProfileErrorUpload` in ProfileModel.swift |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `duration.global.pageTransition` | 500 ms (SOURCED) | `Tokens.Durations.globalPageTransition` in PaywallScreen.swift, PhoneScreen.swift, ProfileScreen.swift |
+| matched | `easing.global.standard` | x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | `Tokens.Easings.globalStandard` in AgeGateForm.swift, ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `duration.global.fade` | 150 ms (SOURCED) | `Tokens.Durations.globalFade` in ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, PaywallScreen.swift … |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+| matched | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | `Tokens.Haptics.globalSuccess` in AgeGateForm.swift, CodeScreen.swift, GroupCreateScreen.swift, InviteClipApp.swift … |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | `Tokens.Haptics.globalError` in AgeGateForm.swift, BlockConfirmation.swift, CodeScreen.swift, GroupCreateScreen.swift … |
+
+## Notes
+
+- Step 2 is skipped in the App Clip (the full app finishes onboarding).

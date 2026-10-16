@@ -443,7 +443,7 @@ final class AccountSnapshotTests: XCTestCase {
         let me = try XCTUnwrap(fixture.data.profilesByID[fixture.me.id])
         record(SettingsRootScreen(profile: me, isPremium: false, statuses: [:]), "settings.root", "default", appearances: AccountSnapshot.both)
         record(SettingsRootScreen(profile: me, isPremium: nil), "settings.root", "subscription-loading")
-        record(SettingsRootScreen(profile: me, isPremium: true), "settings.root", "subscriber")
+        record(SettingsRootScreen(profile: me, isPremium: true, activePeriod: .year), "settings.root", "subscriber")
         record(
             SettingsRootScreen(profile: me, isPremium: false, statuses: [.camera: .denied, .photos: .denied, .contacts: .denied]),
             "settings.root", "permissions-denied"

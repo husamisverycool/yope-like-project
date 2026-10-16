@@ -1,41 +1,59 @@
-# Verification — `safety.block` (iOS)
+# Verification — `safety.block` (iOS, Pass 4 — Retro redesign)
 
-Block confirmation and toast — `Components/BlockConfirmation.swift`, `Components/Toast.swift`.
+Block confirmation — C-29 `blockConfirmation` (Components/BlockConfirmation.swift) used by ReportFlow.swift and the hosting surfaces.
 
-Checklist written from the spec (`design/surfaces/safety.block.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/safety.block.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/safety.block.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/safety.block.png` next to the reference image(s) below.
 
-Snapshots (CI): `safety.block-toast.png`
+Reference image(s): `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/press/tc-2025-12-rewind-panels.png`
 
-**Summary: 23 matched · 1 approximated · 0 not matched (BLOCKED or not buildable) · 2 not applicable on iOS / placed by another pass.**
+Snapshots (CI, `ios/build/snapshots/account/`): none (system UI)
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | token | `safety.block.layout.menu` | ios: Menu (UIMenu) item with role .destructive; android: DropdownMenu item (M3 baseline: 48 dp items, 4 dp container corner, labelLarge) in color.global.syst… (VERIFIED) | 'Block' / 'Report…' items in overflow menus | Menu item with role .destructive |
-| matched | token | `safety.block.layout.confirm` | ios: confirmationDialog(titleVisibility: .visible) with message; 'Block' role .destructive at the top, Cancel at the bottom; android: M3 AlertDialog (setting… (VERIFIED) | block confirmation | `.blockConfirmation` → confirmationDialog(titleVisibility: .visible), destructive Block, Cancel |
-| matched | token | `safety.block.layout.toast` | fill: color.global.accent; content: icon.global.checkmark + label in color.global.onAccent, text role button; shape: radius.global.capsule, full width minus … (SOURCED) | confirmation toast after block / unblock / report (Yope lime toast) | `ToastView` / `.toastHost` (Components/Toast.swift): accent fill, checkmark + label onAccent, capsule, screenMargin, top |
-| matched | token | `safety.block.duration.toast` | 2000 ms (SOURCED) | how long the lime toast stays before it leaves | `Tokens.…safetyBlockDurationToast` in Toast.swift |
-| matched | token | `settings.account.layout.alert` | ios: alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; Cancel on the leading side; and… (VERIFIED) | confirmation alerts / dialogs (delete account; also leave group, remove member, block, turn off link) | iOS .alert / .confirmationDialog (system); the M3 dialog half is Android |
-| matched | copy | `groups.screen.photo.menu.block` | “Block {first_name}” (VERIFIED) |  | `Copy.…groupsScreenPhotoMenuBlock` in GroupScreen.swift |
-| matched | copy | `groups.settings.members.menu.block` | “Block” (VERIFIED) |  | `Copy.…groupsSettingsMembersMenuBlock` in GroupSettingsScreen.swift |
-| matched | copy | `safety.report.sent.block` | “Block” (VERIFIED) |  | `Copy.…safetyReportSentBlock` in ReportSheet.swift |
-| n/a | copy | `safety.block.menuItemNamed` | “Block {first_name}” (VERIFIED) |  | placed by photo.viewer / chat.thread / walls.member (other passes) |
-| n/a | copy | `safety.block.menuItem` | “Block” (VERIFIED) |  | placed by photo.viewer / chat.thread / walls.member (other passes) |
-| matched | copy | `settings.blocked.unblock` | “Unblock” (VERIFIED) |  | `Copy.…settingsBlockedUnblock` in SettingsBlockedScreen.swift |
-| matched | copy | `safety.block.title` | “block {first_name}?” (SOURCED) |  | `Copy.…safetyBlockTitle` in BlockConfirmation.swift |
-| matched | copy | `safety.block.message` | “you won’t see each other’s pics, messages or reactions in any group you share. {first_name} won’t be notified.” (SOURCED) |  | `Copy.…safetyBlockMessage` in BlockConfirmation.swift |
-| matched | copy | `safety.block.confirm` | “Block” (VERIFIED) |  | `Copy.…safetyBlockConfirm` in BlockConfirmation.swift |
-| matched | copy | `safety.block.cancel` | “Cancel” (VERIFIED) |  | `Copy.…safetyBlockCancel` in BlockConfirmation.swift |
-| matched | copy | `safety.block.done` | “you blocked {first_name}” (SOURCED) |  | `Copy.…safetyBlockDone` in BlockConfirmation.swift |
-| matched | token | `color.global.accent` | #CDFD07 (SOURCED) | brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar | `Tokens.…globalAccent` in OnboardingTitle.swift, PrimaryButton.swift, Toast.swift |
-| matched | token | `icon.global.checkmark` | ios: checkmark; android: Rounded.Check (PLATFORM) | done / posted (bare check, e.g. in the 'posted in the wall' toast) | `Tokens.…globalCheckmark` in Toast.swift |
-| matched | token | `color.global.onAccent` | #000000 (SOURCED) | text and glyphs on lime: camera glyph on the composer button, primary button labels, tooltip text | `Tokens.…globalOnAccent` in PrimaryButton.swift, Toast.swift |
-| matched | token | `radius.global.capsule` | shape: capsule; radius: height / 2 (SOURCED) | full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white se… | Capsule() shape |
-| matched | token | `size.global.screenMargin` | 12 pt (SOURCED) | side margin of full-width content (home list cards); edge elements sit at the same inset | `Tokens.…globalScreenMargin` in EmptyStateView.swift, Toast.swift |
-| matched | copy | `safety.block.undone` | “you unblocked {first_name}” (SOURCED) |  | `Copy.…safetyBlockUndone` in SettingsBlockedScreen.swift |
-| matched | copy | `safety.block.error` | “that didn’t work. check your connection and try again.” (SOURCED) |  | `Copy.…safetyBlockError` in BlockConfirmation.swift |
-| matched | token | `haptic.global.warning` | ios: notification.warning; android: CONFIRM (PLATFORM) | a destructive action was confirmed (delete account, block, leave) | `Tokens.…globalWarning` in BlockConfirmation.swift, GroupSettingsScreen.swift |
-| matched | token | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | a task failed (send failed) | `Tokens.…globalError` in BlockConfirmation.swift, GroupSettingsScreen.swift, ReportSheet.swift |
+**Summary: 13 matched · 0 approximated · 0 not matched · 5 not applicable on iOS / owner / another pass.**
 
-## Approximations
 
-- Toast entrance: `spring.global.platformDefault.ios` (the measured ≈117 ms entrance has no curve); exit not observed → same spring.
+## Structure
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `safety.block.layout.menu` | ios: Menu (UIMenu) item with role .destructive; android: DropdownMenu item (M3 baseline: 48 dp items, labelLarge) in color.global.destructive (VERIFIED) | menu item placed by the hosting surface (photo.viewer, chat.thread, walls.member — social pass); groups.screen's own context menu uses `safety.report.title` items |
+| matched | `safety.block.layout.confirm` | ios: confirmationDialog(titleVisibility: .visible) with message; 'Yes, block' role .destructive at the top, Cancel at the bottom; android: M3 AlertDialog (se… (VERIFIED) | `blockConfirmation(target:toasts:perform:)` (C-29 alert with the destructive Block) |
+| matched | `settings.account.layout.alert` | ios: alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; android: M3 AlertDialog: contai… (VERIFIED) | native `.alert` / `.confirmationDialog` (C-29) |
+| n/a | `safety.block.menuItem` | “Block Profile” (SOURCED) | menu item placed by the hosting surface (photo.viewer, chat.thread, walls.member — social pass); groups.screen's own context menu uses `safety.report.title` items |
+| n/a | `safety.block.menuItemNamed` | “Block {first_name}” (SOURCED) | menu item placed by the hosting surface (photo.viewer, chat.thread, walls.member — social pass); groups.screen's own context menu uses `safety.report.title` items |
+| matched | `safety.block.title` | “Block {first_name}?” (SOURCED) | `Copy.safetyBlockTitle` in BlockConfirmation.swift |
+| matched | `safety.block.message` | “Blocking {first_name} hides your photos, messages and reactions from each other in every group you share. They will not be notified.” (SOURCED) | `Copy.safetyBlockMessage` in BlockConfirmation.swift |
+| matched | `safety.block.confirm` | “Yes, block” (SOURCED) | `Copy.safetyBlockConfirm` in BlockConfirmation.swift |
+| matched | `safety.block.cancel` | “Cancel” (VERIFIED) | `Copy.safetyBlockCancel` in BlockConfirmation.swift |
+| matched | `safety.block.done` | “Blocked {first_name}” (SOURCED) | `Copy.safetyBlockDone` in BlockConfirmation.swift |
+
+## Elements
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `safety.block.undone` | “Unblocked {first_name}” (SOURCED) | `Copy.safetyBlockUndone` in SettingsBlockedScreen.swift |
+
+## States
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.phone.layout.inlineError` | presentation: native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account.layout.alert); not dismissed by tapping outside; titled: code error… (SOURCED) | `formErrorAlert(_:trigger:)` (C-29 native message-only alert); code errors: titled alert with Retro's two recoveries |
+| matched | `safety.block.error` | “There was a problem. Please try again.” (SOURCED) | `Copy.safetyBlockError` in BlockConfirmation.swift, SettingsBlockedScreen.swift |
+| matched | `auth.phone.error.dismiss` | “OK” (VERIFIED) | `Copy.authPhoneErrorDismiss` in CodeScreen.swift, FormErrorAlert.swift, ReportFlow.swift |
+
+## Motion · Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `haptic.global.warning` | ios: notification.warning; android: CONFIRM (PLATFORM) | `Tokens.Haptics.globalWarning` in BlockConfirmation.swift, GroupInviteScreen.swift, GroupSettingsScreen.swift, ReportFlow.swift … |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | `Tokens.Haptics.globalError` in AgeGateForm.swift, BlockConfirmation.swift, CodeScreen.swift, GroupCreateScreen.swift … |
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+
+## Accessibility
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `color.global.system.surfaceContainerHigh` | light: #ECE6F0; dark: #2B2930 (PLATFORM) | Android M3 dialog container; iOS uses system alerts |
+
+## Notes
+
+- System alert: no snapshot. The confirmation is announced (C-26 iOS: no drawn toast).

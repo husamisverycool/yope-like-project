@@ -52,6 +52,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -492,51 +493,70 @@ private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, vo
     // The memory group's tag run (tagging.md A) gets the tags of the viewer's `post_tags` read, in tag order.
     val tagged = if (photo.loaded) photo.tagged.map { id -> TaggedPerson(id, photo.people[id]?.firstName.orEmpty(), photoModel(photo.people[id]?.avatarPath)) } else null
     val me = state.me?.let { id -> TaggedPerson(id, photo.people[id]?.firstName.orEmpty(), photoModel(photo.people[id]?.avatarPath)) }
-    Row(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.Top) {
-        Column(Modifier.weight(1f)) {
-            if (caption != null) {
-                Text(
-                    caption,
-                    style = TextRoles.listTitle,
-                    color = Tokens.Colors.globalTextOnMedia,
-                    modifier = Modifier.paddingFromBaseline(top = Tokens.Sizes.photoViewerDimensionFooterFirstBaseline).endAtLastBaseline().clearAndSetSemantics { },
-                )
-            }
+    // The trailing reaction slot is centred on the first line: that line stops at the slot. The date line under a
+    // caption runs the full width unless the chip (taller than a line) reaches down into it; the add glyph's ink does not.
+    val chipShown = photo.reactions.isNotEmpty()
+    SubcomposeLayout(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin)) { constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val slot = subcompose(FooterPart.Slot) {
+            // Trailing reaction slot, centred on the first line (its baseline less half the cap height).
+            val firstLine = if (caption != null) TextRoles.listTitle else TextRoles.listSubtitle
             Row(
-                Modifier.paddingFromBaseline(top = if (caption != null) pitch else Tokens.Sizes.photoViewerDimensionFooterFirstBaseline).endAtLastBaseline(),
+                Modifier.centredAt(Tokens.Sizes.photoViewerDimensionFooterFirstBaseline - CapTop.height(firstLine) / 2),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(date, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1)
-                Text(SEPARATOR, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1, modifier = Modifier.clearAndSetSemantics { })
-                TagRun(post.id, people = tagged, me = me, onPhotoGone = { onPhotoGone(post.id) })
+                ReactionChip(photo.reactions, onClick = { ui.reactions = true }, onMedia = true)
+                AddReactionGlyph { ui.picker = true }
             }
-            val notePath = post.voicePath
-            if (notePath != null) {
-                val duration = (post.voiceDurationMs ?: 0).toLong()
-                val voiceLabel = if (state.mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(duration))
-                else stringRes(R.string.chat_voice_a11y_message, photo.author?.firstName.orEmpty(), Formats.spokenDuration(duration))
-                Spacer(Modifier.height(pitch))
-                VoiceCapsule(
-                    duration,
-                    voice.elapsedOf(notePath, duration),
-                    voice.stateOf(notePath),
-                    voiceLabel,
-                    onClick = { voice.onPlay(notePath) },
-                    onMedia = true,
-                )
+        }.map { it.measure(loose) }
+        val slotWidth = slot.maxOfOrNull { it.width } ?: 0
+        val firstLineEnd = Modifier.padding(end = slotWidth.toDp())
+        val text = subcompose(FooterPart.Text) {
+            Column(Modifier.fillMaxWidth()) {
+                if (caption != null) {
+                    Text(
+                        caption,
+                        style = TextRoles.listTitle,
+                        color = Tokens.Colors.globalTextOnMedia,
+                        modifier = firstLineEnd.paddingFromBaseline(top = Tokens.Sizes.photoViewerDimensionFooterFirstBaseline).endAtLastBaseline().clearAndSetSemantics { },
+                    )
+                }
+                Row(
+                    (if (caption == null || chipShown) firstLineEnd else Modifier)
+                        .paddingFromBaseline(top = if (caption != null) pitch else Tokens.Sizes.photoViewerDimensionFooterFirstBaseline)
+                        .endAtLastBaseline(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(date, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1)
+                    Text(SEPARATOR, style = TextRoles.listSubtitle, color = Tokens.Colors.globalTextSecondary, maxLines = 1, modifier = Modifier.clearAndSetSemantics { })
+                    TagRun(post.id, people = tagged, me = me, onPhotoGone = { onPhotoGone(post.id) })
+                }
+                val notePath = post.voicePath
+                if (notePath != null) {
+                    val duration = (post.voiceDurationMs ?: 0).toLong()
+                    val voiceLabel = if (state.mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(duration))
+                    else stringRes(R.string.chat_voice_a11y_message, photo.author?.firstName.orEmpty(), Formats.spokenDuration(duration))
+                    Spacer(Modifier.height(pitch))
+                    VoiceCapsule(
+                        duration,
+                        voice.elapsedOf(notePath, duration),
+                        voice.stateOf(notePath),
+                        voiceLabel,
+                        onClick = { voice.onPlay(notePath) },
+                        onMedia = true,
+                    )
+                }
             }
-        }
-        // Trailing reaction slot, centred on the first line (its baseline less half the cap height).
-        val firstLine = if (caption != null) TextRoles.listTitle else TextRoles.listSubtitle
-        Row(
-            Modifier.centredAt(Tokens.Sizes.photoViewerDimensionFooterFirstBaseline - CapTop.height(firstLine) / 2),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ReactionChip(photo.reactions, onClick = { ui.reactions = true }, onMedia = true)
-            AddReactionGlyph { ui.picker = true }
+        }.map { it.measure(loose) }
+        val height = maxOf(text.maxOfOrNull { it.height } ?: 0, slot.maxOfOrNull { it.height } ?: 0)
+        layout(constraints.maxWidth, height) {
+            text.forEach { it.place(0, 0) }
+            slot.forEach { it.place(constraints.maxWidth - it.width, 0) }
         }
     }
 }
+
+private enum class FooterPart { Slot, Text }
 
 /** Places the element with its vertical centre [y] below the top of its slot (may start above the slot). */
 private fun Modifier.centredAt(y: Dp): Modifier = layout { measurable, constraints ->

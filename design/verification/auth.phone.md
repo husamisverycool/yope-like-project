@@ -1,87 +1,121 @@
-# Verification — `auth.phone` (iOS)
+# Verification — `auth.phone` (iOS, Pass 4 — Retro redesign)
 
-Sign up / log in with a phone number — `Features/Account/Auth/PhoneScreen.swift`.
+Landing (state A) and phone form (state B) — `Features/Account/Auth/PhoneScreen.swift` (`PhoneScreen`, `PhoneLanding`), `Shared/PhoneForm.swift`, `Shared/PhoneModel.swift`, `Shared/SignUpLayout.swift`.
 
-Checklist written from the spec (`design/surfaces/auth.phone.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/auth.phone.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/auth.phone.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/auth.phone.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-yrrah-7454430216123862280-t6.73-signup-2024.png`, `references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png`, `references/auto/yope/frames/a-yrrah-7452976839846382855-t3.73-create-new-group-empty-2024.png`, `references/auto/yope/web/a-bi-2025-create-group-composite.jpg`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t49.23-new-group-selected-create.png`, `references/auto/yope/frames/a-itsmthuyope-7644974799302823175-t50.60-loading-hud.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png`
+Reference image(s): `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png`, `references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`, `references/auto/locket/apk/locket-1.243.0-hermes-excerpts.txt`
 
-Snapshots (CI): `auth.phone-default.png`, `auth.phone-filled.png`, `auth.phone-sending.png`, `auth.phone-offline.png`, `auth.phone-country-list.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `auth.phone-landing-light.png`, `auth.phone-landing-dark.png`, `auth.phone-form-light.png`, `auth.phone-form-filled-light.png`, `auth.phone-form-filled-dark.png`, `auth.phone-sending-light.png`, `auth.phone-offline-light.png`, `auth.phone-country-list-light.png`
 
-**Summary: 66 matched · 3 approximated · 0 not matched (BLOCKED or not buildable) · 1 not applicable on iOS / placed by another pass.**
+**Summary: 56 matched · 1 approximated · 0 not matched · 2 not applicable on iOS / owner / another pass.**
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | token | `color.global.backgroundDeep` | #000000 (SOURCED) | screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' gri… | `Tokens.…globalBackgroundDeep` in SignUpLayout.swift |
-| matched | copy | `auth.phone.title` | “sign up or log in” (SOURCED) |  | `Copy.…authPhoneTitle` in PhoneScreen.swift |
-| matched | token | `groups.create.size.sheetTopToTitle` | 71 pt (SOURCED) | sheet top edge to the title's cap top (also the safe-area top to the title on full-screen onboarding steps) | `Tokens.…groupsCreateSizeSheetTopToTitle` in SignUpLayout.swift |
-| matched | copy | `auth.phone.subtitle` | “to join or create your groups” (SOURCED) |  | `Copy.…authPhoneSubtitle` in PhoneScreen.swift |
-| matched | token | `groups.create.size.titleToContent` | 34 pt (SOURCED) | title text bottom (descender) to the first content element | `Tokens.…groupsCreateSizeTitleToContent` in PhoneScreen.swift |
-| matched | token | `size.global.buttonMarginH` | 19 pt (SOURCED) | side margin of the form primary button | `Tokens.…globalButtonMarginH` in PhoneScreen.swift |
-| matched | token | `groups.create.size.fieldToButton` | 18 pt (SOURCED) | form field bottom to the primary button top | `Tokens.…groupsCreateSizeFieldToButton` in PhoneScreen.swift |
-| matched | copy | `auth.phone.continue` | “continue” (SOURCED) |  | `Copy.…authPhoneContinue` in PhoneScreen.swift |
-| matched | copy | `auth.phone.legal.text` | “by continuing you agree to our Terms of Use and Privacy Policy” (SOURCED) |  | `Copy.…authPhoneLegalText` in PhoneModel.swift |
-| matched | token | `size.global.screenMargin` | 12 pt (SOURCED) | side margin of full-width content (home list cards); edge elements sit at the same inset | `Tokens.…globalScreenMargin` in EmptyStateView.swift, PhoneScreen.swift, Toast.swift |
-| matched | token | `auth.phone.layout.keyboard` | ios: UITextField/TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill); android: TextField KeyboardOptions(keyboardType = Keyb… (PLATFORM) | keyboard and AutoFill of the phone-number field | FormField .phonePad / .telephoneNumber (AutoFill) |
-| matched | token | `fontSize.global.onboardingTitle` | 40 pt (SOURCED) | onboarding / sign-up big title ('registrarse') | `Tokens.…globalOnboardingTitle` in TextRoles.swift |
-| matched | token | `fontWeight.global.onboardingTitle` | heavy (SOURCED) | onboarding / sign-up big title | `Tokens.…fontWeightGlobalOnboardingTitle` in TextRoles.swift |
-| matched | token | `color.global.textPrimary` | #FFFFFF (SOURCED) | primary text and glyphs | `Tokens.…globalTextPrimary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | token | `font.global.family` | ios: system; android: system (PLATFORM) | typeface of all text (SF Pro on iOS, Roboto on Android) | `Tokens.…globalFamily` in PermissionCard.swift, SegmentedPills.swift, TextRoles.swift |
-| matched | token | `auth.phone.fontSize.subtitle` | 14 pt (SOURCED) | italic subtitle under the sign-up title ('to join or create your friends groups') | `Tokens.…authPhoneFontSizeSubtitle` in TextRoles.swift |
-| matched | token | `auth.phone.layout.subtitle` | style: italic; weight: regular; color: color.global.textPrimary; align: center (SOURCED) | subtitle text style under the sign-up title | OnboardingTitleBlock subtitle: italic, regular, textPrimary, centred |
-| matched | token | `groups.create.color.field` | #141414 (SOURCED) | single-line text field fill on black ('name group (optional)'); reused by every form field on black (auth.*… | `Tokens.…groupsCreateColorField` in FormField.swift |
-| matched | token | `size.global.fieldHeight` | 44 pt (SOURCED) | single-line form text field height | `Tokens.…globalFieldHeight` in FormField.swift |
-| matched | token | `radius.global.field` | 12 pt (SOURCED) | single-line form text field corners ('name group (optional)') | `Tokens.…globalField` in FormField.swift |
-| matched | token | `groups.create.fontSize.fieldText` | 15 pt (SOURCED) | typed text in the form field (centred) | `Tokens.…groupsCreateFontSizeFieldText` in TextRoles.swift |
-| matched | token | `groups.create.fontWeight.fieldText` | bold (SOURCED) | typed text weight in the form field | `Tokens.…groupsCreateFontWeightFieldText` in TextRoles.swift |
-| matched | token | `color.global.textSecondary` | #969696 (SOURCED) | secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules | `Tokens.…globalTextSecondary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| approximated | token | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number ('+1 555 ...'); no separate code button; flagWidth: 20; flagHeight:… (SOURCED) | country calling-code selector of the phone field | `CountryFlagButton`: regional-indicator flag in the flagWidth × flagHeight slot at flagLeading, text leading-aligned flagToText after it; tap → searchable country list sheet (`CountryCodeList`), choosing replaces the calling code; prefill "+" + region code. Not done: autoFormat (no phone-number formatting library; the number stays as typed) |
-| matched | copy | `auth.phone.field.placeholder` | “phone number” (SOURCED) |  | `Copy.…authPhoneFieldPlaceholder` in PhoneScreen.swift |
-| matched | copy | `auth.phone.field.accessibilityLabel` | “phone number” (SOURCED) |  | `Copy.…authPhoneFieldAccessibilityLabel` in PhoneScreen.swift |
-| matched | token | `color.global.accent` | #CDFD07 (SOURCED) | brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar | `Tokens.…globalAccent` in OnboardingTitle.swift, PrimaryButton.swift, Toast.swift |
-| matched | token | `color.global.onAccent` | #000000 (SOURCED) | text and glyphs on lime: camera glyph on the composer button, primary button labels, tooltip text | `Tokens.…globalOnAccent` in PrimaryButton.swift, Toast.swift |
-| matched | token | `size.global.buttonHeight` | 45 pt (SOURCED) | full-width primary button in a form ('create group') | `Tokens.…globalButtonHeight` in PrimaryButton.swift |
-| matched | token | `radius.global.button` | 14 pt (SOURCED) | primary (lime) button corners — not a full pill | `Tokens.…globalButton` in PrimaryButton.swift, TextRoles.swift |
-| matched | token | `fontSize.global.button` | 15 pt (SOURCED) | primary button label ('create group', 'send') | `Tokens.…globalButton` in PrimaryButton.swift, TextRoles.swift |
-| matched | token | `fontWeight.global.button` | semibold (SOURCED) | primary button label | `Tokens.…fontWeightGlobalButton` in TextRoles.swift |
-| matched | token | `groups.create.color.buttonDisabledFill` | #201D21 (SOURCED) | primary button while its form is incomplete ('continue' with an empty name) | `Tokens.…groupsCreateColorButtonDisabledFill` in PrimaryButton.swift |
-| matched | token | `groups.create.color.buttonDisabledLabel` | #49464A (SOURCED) | label of the disabled primary button | `Tokens.…groupsCreateColorButtonDisabledLabel` in PrimaryButton.swift |
-| matched | token | `auth.phone.layout.legalFooter` | text: color.global.textSecondary; links: same colour, bold weight (2026 build: bold 'Términos de uso' / 'Política de privacidad'); the 2024 build drew the li… (SOURCED) | legal footer under the sign-up controls | `PhoneModel.legalText`: caption, textSecondary, centred at the bottom; terms / privacy bold, linked when config/app.json has the URLs (opened in SFSafariViewController) |
-| matched | token | `fontSize.global.caption` | 12 pt (SOURCED) | small meta text: voice-message duration ('00:38'), legal footer under sign-up | `Tokens.…globalCaption` in TextRoles.swift |
-| matched | token | `lineHeight.global.caption` | 15.2 pt (SOURCED) | line pitch of the 3-line legal footer under sign-up (12 pt text) | `Tokens.…globalCaption` in TextRoles.swift |
-| matched | copy | `auth.phone.legal.terms` | “Terms of Use” (SOURCED) |  | `Copy.…authPhoneLegalTerms` in PhoneModel.swift |
-| matched | copy | `auth.phone.legal.privacy` | “Privacy Policy” (SOURCED) |  | `Copy.…authPhoneLegalPrivacy` in PhoneModel.swift |
-| matched | token | `groups.create.color.hud` | #0C0C0C (SOURCED) | Loading HUD square fill (on black) | `Tokens.…groupsCreateColorHud` in LoadingHUD.swift |
-| matched | token | `groups.create.size.hud` | 100 pt (SOURCED) | Loading HUD square side | `Tokens.…groupsCreateSizeHud` in LoadingHUD.swift |
-| matched | token | `groups.create.fontSize.hudLabel` | 15 pt (SOURCED) | 'Loading' label under the spinner in the HUD | `Tokens.…groupsCreateFontSizeHudLabel` in TextRoles.swift |
-| matched | token | `easing.global.native` | keyboard: system; alert: system; activityIndicator: system (ProgressView / CircularProgressIndicator); scrollIndicator: system; navigationPush: system (Navig… (PLATFORM) | motion of native components Yope uses; their curves and durations are the platform's | system push / sheet / alert animations |
-| matched | copy | `groups.create.hud.loading` | “Loading” (SOURCED) |  | `Copy.…groupsCreateHudLoading` in LoadingHUD.swift |
-| matched | token | `safety.block.layout.toast` | fill: color.global.accent; content: icon.global.checkmark + label in color.global.onAccent, text role button; shape: radius.global.capsule, full width minus … (SOURCED) | confirmation toast after block / unblock / report (Yope lime toast) | `ToastView` / `.toastHost` (Components/Toast.swift): accent fill, checkmark + label onAccent, capsule, screenMargin, top |
-| matched | token | `safety.block.duration.toast` | 2000 ms (SOURCED) | how long the lime toast stays before it leaves | `Tokens.…safetyBlockDurationToast` in Toast.swift |
-| matched | copy | `auth.phone.toast.codeSent` | “code sent” (SOURCED) |  | `Copy.…authPhoneToastCodeSent` in PhoneScreen.swift |
-| matched | copy | `settings.account.deleted.toast` | “your account was deleted” (SOURCED) |  | `AccountSession.accountDeleted()` → toast on auth.phone |
-| matched | token | `auth.phone.layout.inlineError` | presentation: system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside; title: none: the auth.… (SOURCED) | how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up scr… | `formErrorAlert` (Components/FormErrorAlert.swift): system alert, no title, the error sentence as its message, one `auth.phone.error.dismiss` button (+ haptic.global.error) |
-| matched | copy | `auth.phone.error.invalidNumber` | “check your number and try again” (SOURCED) |  | `Copy.…authPhoneErrorInvalidNumber` in AuthFailure.swift |
-| matched | copy | `auth.phone.error.dismiss` | “OK” (SOURCED) |  | `Copy.…authPhoneErrorDismiss` in FormErrorAlert.swift |
-| matched | copy | `auth.phone.error.rateLimited` | “you can ask for a new code in a minute” (SOURCED) |  | `Copy.…authPhoneErrorRateLimited` in AuthFailure.swift |
-| matched | copy | `auth.phone.error.sendFailed` | “we couldn’t send your code. try again in a moment.” (SOURCED) |  | `Copy.…authPhoneErrorSendFailed` in AuthFailure.swift |
-| matched | token | `fontSize.global.emptyTitle` | 16 pt (SOURCED) | empty-state title ('you created group') | `Tokens.…globalEmptyTitle` in TextRoles.swift |
-| matched | token | `fontSize.global.emptyDetail` | 14 pt (SOURCED) | empty-state detail line ('and added mẹ, Anh'), italic | `Tokens.…globalEmptyDetail` in TextRoles.swift |
-| matched | token | `color.global.surfaceLight` | #FFFFFF (SOURCED) | light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, '… | `Tokens.…globalSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | token | `groups.screen.radius.lightPill` | 11 pt (SOURCED) | white secondary pill ('invite more friends') corner radius | `Tokens.…groupsScreenRadiusLightPill` in LightPill.swift |
-| matched | token | `groups.screen.size.lightPillHeight` | 45 pt (SOURCED) | white secondary pill height ('invite more friends', 205 pt wide = hug + leading icon.global.link) | `Tokens.…groupsScreenSizeLightPillHeight` in LightPill.swift |
-| matched | copy | `auth.phone.offline.title` | “you’re offline” (SOURCED) |  | `Copy.…authPhoneOfflineTitle` in AuthFlowView.swift, PhoneScreen.swift |
-| matched | copy | `auth.phone.offline.detail` | “connect to the internet to sign up. your next memories are waiting.” (SOURCED) |  | `Copy.…authPhoneOfflineDetail` in AuthFlowView.swift, PhoneScreen.swift |
-| matched | copy | `auth.phone.offline.retry` | “try again” (SOURCED) |  | `Copy.…authPhoneOfflineRetry` in AuthFlowView.swift, PhoneScreen.swift |
-| matched | token | `duration.global.navigationPush` | 100 ms (SOURCED) | horizontal push to the next screen ('new group' → new group chat after create) | system NavigationStack push |
-| matched | token | `spring.global.platformDefault.ios` | response: 0.55; dampingFraction: 1 (PLATFORM) | iOS default animation (SwiftUI Animation.default) for custom motion whose Yope curve was not measurable | `Tokens.…globalPlatformDefaultIos` in SegmentedPills.swift, Toast.swift |
-| n/a | token | `spring.global.platformDefault.android` | response: 0.16223; dampingFraction: 1 (PLATFORM) | Android default spring (Compose spring() defaults) for custom motion whose Yope curve was not measurable | Android only |
-| matched | token | `layout.global.reduceMotion` | ios: UIAccessibility.isReduceMotionEnabled / @Environment(\.accessibilityReduceMotion); android: Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimato… (PLATFORM) | Reduce Motion substitution rule for every token animation (implemented by DSAnimation.reducedMotion / dsMot… | system transitions follow Reduce Motion; custom motion through dsAnimation / dsTransition (cross-fade substitutes) |
-| matched | token | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | any task completed successfully (same generator as send) | `Tokens.…globalSuccess` in PhoneScreen.swift |
-| matched | token | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | a task failed (send failed) | `Tokens.…globalError` in BlockConfirmation.swift, PhoneScreen.swift |
-| matched | token | `layout.global.textStyleMap` | onboardingTitle: largeTitle; sheetTitle: title3; headerTitle: subheadline; listTitle: headline; listSubtitle: subheadline; body: body; button: subheadline; c… (PLATFORM) | iOS Dynamic Type text style each fontSize.global.<role> scales with (SwiftUI Font.TextStyle case; DSTextSty… | `Tokens.…GlobalTextStyleMap` in TextRoles.swift |
 
-## Approximations
+## References
 
-- Title–subtitle gap: platform leading (not measured, auth.phone Gaps); the title top stands in for the cap top (SignUpLayout).
-- Phone field with the flag: text trailing inset = flagLeading (not specified); the flag emoji is sized to flagHeight and scaled to the slot width.
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.phone.fontSize.wordmark` | 64 pt (SOURCED) | `Tokens.FontSizes.authPhoneFontSizeWordmark` in PhoneScreen.swift |
+| approximated | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button; flagWidth: 20; flagHeight: 1… (SOURCED) | `Tokens.Layouts.AuthPhoneLayoutCountryCode` in PhoneForm.swift — flag, prefill, inline code, country list done; `autoFormat` not done (no phone-number formatting library: the number stays as typed) |
+
+## Structure
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `color.global.background` | light: #FFFFFF; dark: #000000 (SOURCED) | `Tokens.Colors.globalBackground` in AccountGroupedRows.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, GroupScreen.swift … |
+| n/a | `color.global.background.android` | light: #FFFFFF; dark: #1C1C1E (SOURCED) | Android only |
+| matched | `font.global.display` | ios: system-serif; android: serif (PLATFORM) | `Tokens.Fonts.globalDisplay` in InvitePreviewView.swift, PhoneScreen.swift, TextRoles.swift |
+| matched | `color.global.textPrimary` | light: #000000; dark: #FFFFFF (SOURCED) | `Tokens.Colors.globalTextPrimary` in AccountGroupedRows.swift, CapsuleButton.swift, CheckRow.swift, CircleButton.swift … |
+| matched | `auth.phone.size.wordmarkToTagline` | 19.3 pt (SOURCED) | `Tokens.Sizes.authPhoneSizeWordmarkToTagline` in PhoneScreen.swift |
+| matched | `auth.phone.tagline` | “Friends and Family Only” (SOURCED) | `Copy.authPhoneTagline` in PhoneScreen.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `auth.phone.getStarted` | “Get started” (SOURCED) | `Copy.authPhoneGetStarted` in PhoneScreen.swift |
+| matched | `size.global.buttonMarginH` | 20 pt (SOURCED) | `Tokens.Sizes.globalButtonMarginH` in BackdropCard.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, OnboardingTitle.swift … |
+| matched | `size.global.buttonHeight` | 60 pt (SOURCED) | `Tokens.Sizes.globalButtonHeight` in PrimaryButton.swift |
+| matched | `auth.phone.size.capsuleToLink` | 20.7 pt (SOURCED) | `Tokens.Sizes.authPhoneSizeCapsuleToLink` in PhoneScreen.swift, ProfileScreen.swift |
+| matched | `auth.phone.signIn` | “already have an account?” (SOURCED) | `Copy.authPhoneSignIn` in PhoneScreen.swift |
+| matched | `auth.phone.size.linkToLegal` | 28.4 pt (SOURCED) | `Tokens.Sizes.authPhoneSizeLinkToLegal` in PhoneScreen.swift |
+| matched | `auth.phone.legal.text` | “By continuing, I agree to the Terms and Privacy Policy.” (SOURCED) | `Copy.authPhoneLegalText` in PhoneModel.swift |
+| matched | `lineHeight.global.caption` | 21.7 pt (SOURCED) | `Tokens.LineHeights.globalCaption` in TextRoles.swift |
+| matched | `size.global.screenMargin` | 16 pt (SOURCED) | `Tokens.Sizes.globalScreenMargin` in AccountGroupedRows.swift, AgeGateForm.swift, CodeScreen.swift, EmptyStateView.swift … |
+| matched | `auth.phone.legal.terms` | “Terms” (SOURCED) | `Copy.authPhoneLegalTerms` in PhoneModel.swift |
+| matched | `auth.phone.legal.privacy` | “Privacy Policy” (SOURCED) | `Copy.authPhoneLegalPrivacy` in PhoneModel.swift |
+| matched | `auth.phone.size.legalToBottom` | 40 pt (SOURCED) | `Tokens.Sizes.authPhoneSizeLegalToBottom` in PhoneScreen.swift |
+| matched | `icon.global.back` | ios: chevron.left; android: AutoMirrored.Rounded.ArrowBackIos (PLATFORM) | `Tokens.Icons.globalBack` in ScreenHeader.swift, SignUpLayout.swift |
+| matched | `size.global.backInset` | 21.1 pt (SOURCED) | `Tokens.Sizes.globalBackInset` in ScreenHeader.swift, SignUpLayout.swift |
+| matched | `auth.phone.title` | “What's your phone number?” (SOURCED) | `Copy.authPhoneTitle` in PhoneForm.swift |
+| matched | `size.global.titleTop` | 64 pt (SOURCED) | `Tokens.Sizes.globalTitleTop` in FullBleedMediaPage.swift, GroupScreen.swift, ScreenHeader.swift, SignUpLayout.swift |
+| matched | `auth.phone.subtitle` | “We'll text you a code to sign up or log in.” (SOURCED) | `Copy.authPhoneSubtitle` in PhoneForm.swift |
+| matched | `size.global.titleToContent` | 30 pt (SOURCED) | `Tokens.Sizes.globalTitleToContent` in AccountGroupedRows.swift, AgeGateForm.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `auth.phone.field.placeholder` | “Enter your phone number…” (SOURCED) | `Copy.authPhoneFieldPlaceholder` in PhoneForm.swift |
+| matched | `auth.phone.layout.keyboard` | ios: TextField keyboardType .phonePad, textContentType .telephoneNumber (system AutoFill offers the person's own number); android: TextField KeyboardOptions(… (PLATFORM) | `FormField(keyboard: .phonePad, contentType: .telephoneNumber)` (system AutoFill) |
+| matched | `auth.phone.continue` | “Next” (SOURCED) | `Copy.authPhoneContinue` in PhoneForm.swift |
+
+## Elements
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.phone.layout.landingBlock` | centreY: 0.446; align: centre (horizontal); contents: wordmark (auth.phone.fontSize.wordmark) over the tagline (text role onboardingTitle, color.global.textS… (SOURCED) | `Tokens.Layouts.AuthPhoneLayoutLandingBlock` in PhoneScreen.swift |
+| matched | `color.global.accent` | light: #000000; dark: #FFFFFF (SOURCED) | `Tokens.Colors.globalAccent` in CapsuleButton.swift, PrimaryButton.swift |
+| matched | `color.global.onAccent` | light: #FFFFFF; dark: #000000 (SOURCED) | `Tokens.Colors.globalOnAccent` in CapsuleButton.swift, PrimaryButton.swift |
+| matched | `radius.global.button` | 30 pt (SOURCED) | `Tokens.Radii.globalButton` in TextRoles.swift |
+| matched | `size.global.headerButton` | 44 pt (PLATFORM) | `Tokens.Sizes.globalHeaderButton` in GroupScreen.swift, GroupSettingsScreen.swift, ScreenHeader.swift, SectionHeader.swift … |
+| matched | `auth.code.back.accessibilityLabel` | “Back” (VERIFIED) | `Copy.authCodeBackAccessibilityLabel` in CodeScreen.swift, PhoneForm.swift, ProfileScreen.swift, WidgetGuideScreen.swift |
+| matched | `color.global.control` | light: #F1F1F1; dark: #262626 (SOURCED) | `Tokens.Colors.globalControl` in AccountGroupedRows.swift, Avatar.swift, CapsuleButton.swift, CircleButton.swift … |
+| matched | `size.global.fieldHeight` | 52 pt (SOURCED) | `Tokens.Sizes.globalFieldHeight` in FormField.swift |
+| matched | `radius.global.field` | 19 pt (SOURCED) | `Tokens.Radii.globalField` in FormField.swift |
+| matched | `auth.phone.field.accessibilityLabel` | “Phone number” (VERIFIED) | `Copy.authPhoneFieldAccessibilityLabel` in PhoneForm.swift |
+| matched | `color.global.controlRaised` | light: #CCCCCC; dark: #4D4D4D (SOURCED) | `Tokens.Colors.globalControlRaised` in CapsuleButton.swift, PrimaryButton.swift |
+| matched | `auth.phone.layout.inlineError` | presentation: native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account.layout.alert); not dismissed by tapping outside; titled: code error… (SOURCED) | `formErrorAlert(_:trigger:)` (C-29 native message-only alert); code errors: titled alert with Retro's two recoveries |
+| matched | `auth.phone.error.invalidNumber` | “Unable to verify phone number. Please check the number and try again.” (SOURCED) | `Copy.authPhoneErrorInvalidNumber` in AuthFailure.swift |
+| matched | `auth.phone.error.dismiss` | “OK” (VERIFIED) | `Copy.authPhoneErrorDismiss` in CodeScreen.swift, FormErrorAlert.swift, ReportFlow.swift |
+
+## States
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.phone.error.rateLimited` | “Please wait a minute, then try again.” (SOURCED) | `Copy.authPhoneErrorRateLimited` in AuthFailure.swift |
+| matched | `auth.phone.error.sendFailed` | “There was a problem. Please try again.” (SOURCED) | `Copy.authPhoneErrorSendFailed` in AuthFailure.swift |
+| matched | `auth.phone.offline.title` | “You're offline” (SOURCED) | `Copy.authPhoneOfflineTitle` in AuthFlowView.swift, SignUpLayout.swift |
+| matched | `auth.phone.offline.detail` | “Could not connect. Check your connection and try again.” (SOURCED) | `Copy.authPhoneOfflineDetail` in AuthFlowView.swift, SignUpLayout.swift |
+| matched | `auth.phone.offline.retry` | “Try again” (SOURCED) | `Copy.authPhoneOfflineRetry` in AuthFlowView.swift, SignUpLayout.swift |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `duration.global.pageTransition` | 500 ms (SOURCED) | `Tokens.Durations.globalPageTransition` in PaywallScreen.swift, PhoneScreen.swift, ProfileScreen.swift |
+| matched | `easing.global.standard` | x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | `Tokens.Easings.globalStandard` in AgeGateForm.swift, ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `layout.global.reduceMotion` | ios: UIAccessibility.isReduceMotionEnabled / @Environment(\.accessibilityReduceMotion); android: Settings.Global.ANIMATOR_DURATION_SCALE == 0 or ValueAnimato… (PLATFORM) | `dsAnimation` / `dsTransition` (DesignSystem) drop movement under Reduce Motion, keep cross-fades |
+| matched | `easing.global.native` | sheet: system (.sheet / ModalBottomSheet) — measured on Retro: spring.global.sheetPresent; navigationPush: system (NavigationStack / Compose Navigation defau… (PLATFORM) | platform push / sheet animations (`NavigationStack`, `.sheet`, `.fullScreenCover`) |
+| matched | `spring.global.sheetPresent` | response: 0.347; dampingFraction: 1 (SOURCED) | system sheet presentation (`.sheet`) |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | `Tokens.Haptics.globalError` in AgeGateForm.swift, BlockConfirmation.swift, CodeScreen.swift, GroupCreateScreen.swift … |
+
+## Accessibility
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `layout.global.textStyleMap` | headerTitle: largeTitle; displayMedium: largeTitle; displaySmall: title2; onboardingTitle: title; sheetTitle: headline; listTitle: subheadline; listSubtitle:… (PLATFORM) | `Tokens.Layouts.GlobalTextStyleMap` in InvitePreviewView.swift, TextRoles.swift |
+
+## Data & actions
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `settings.account.deleted.toast` | “Account deleted” (SOURCED) | `Copy.settingsAccountDeletedToast` in AccountSession.swift |
+
+## Platform notes
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `font.global.family` | ios: system; android: Inter (SOURCED) | `Tokens.Fonts.globalFamily` in GroupInviteScreen.swift, InvitePreviewView.swift, PaywallScreen.swift, ScreenHeader.swift … |
+
+## Notes
+
+- Landing: the wordmark is the BLOCKED app name (DEBUG placeholder); its vertical position follows `auth.phone.layout.landingBlock.centreY` of the height.
+- Country flag + inline calling code; no phone-number formatting library (the number stays as typed).

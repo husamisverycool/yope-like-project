@@ -1,62 +1,84 @@
-# Verification — `auth.code` (iOS)
+# Verification — `auth.code` (iOS, Pass 4 — Retro redesign)
 
-SMS code entry — `Features/Account/Shared/CodeScreen.swift` (also used by the App Clip).
+SMS code — `Features/Account/Shared/CodeScreen.swift`, `Shared/CodeModel.swift`, `Shared/AuthFailure.swift`.
 
-Checklist written from the spec (`design/surfaces/auth.code.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/auth.code.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/auth.code.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/auth.code.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-virgi-7686278541255642390-t31.23-signup-es.png`
+Reference image(s): `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png`
 
-Snapshots (CI): `auth.code-default.png`, `auth.code-filled.png`, `auth.code-verifying.png`, `auth.code-offline.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `auth.code-default-light.png`, `auth.code-default-dark.png`, `auth.code-filled-light.png`, `auth.code-verifying-light.png`, `auth.code-offline-light.png`
 
-**Summary: 44 matched · 1 approximated · 0 not matched (BLOCKED or not buildable) · 0 not applicable on iOS / placed by another pass.**
+**Summary: 42 matched · 0 approximated · 0 not matched · 1 not applicable on iOS / owner / another pass.**
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | token | `color.global.backgroundDeep` | #000000 (SOURCED) | screen background of the home list, sheets ('new group', 'send to...'), camera, sign-up, profile 'pics' gri… | `Tokens.…globalBackgroundDeep` in SignUpLayout.swift |
-| matched | token | `size.global.headerButton` | 44 pt (SOURCED) | circle icon buttons in headers (back, close, download, film-strip, search) | `Tokens.…globalHeaderButton` in HeaderCircleButton.swift |
-| matched | token | `color.global.controlOnDeep` | #101010 (SOURCED) | header circle icon buttons on black screens and sheets (✕, download) | `Tokens.…globalControlOnDeep` in HeaderCircleButton.swift |
-| matched | token | `icon.global.back` | ios: chevron.left; android: AutoMirrored.Rounded.KeyboardArrowLeft (PLATFORM) | back (‹ in a header circle) | `Tokens.…globalBack` in CodeScreen.swift |
-| matched | token | `color.global.textPrimary` | #FFFFFF (SOURCED) | primary text and glyphs | `Tokens.…globalTextPrimary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | token | `size.global.headerInset` | 11.5 pt (SOURCED) | screen edge to the first / last header circle | `Tokens.…globalHeaderInset` in CodeScreen.swift, SignUpLayout.swift |
-| matched | copy | `auth.code.title` | “enter the code” (SOURCED) |  | `Copy.…authCodeTitle` in CodeScreen.swift |
-| matched | token | `groups.create.size.sheetTopToTitle` | 71 pt (SOURCED) | sheet top edge to the title's cap top (also the safe-area top to the title on full-screen onboarding steps) | `Tokens.…groupsCreateSizeSheetTopToTitle` in SignUpLayout.swift |
-| matched | copy | `auth.code.subtitle` | “we sent it to {phone}” (SOURCED) |  | `Copy.…authCodeSubtitle` in CodeScreen.swift |
-| matched | token | `groups.create.size.titleToContent` | 34 pt (SOURCED) | title text bottom (descender) to the first content element | `Tokens.…groupsCreateSizeTitleToContent` in CodeScreen.swift |
-| matched | token | `groups.create.size.fieldToButton` | 18 pt (SOURCED) | form field bottom to the primary button top | `Tokens.…groupsCreateSizeFieldToButton` in CodeScreen.swift |
-| matched | copy | `auth.code.continue` | “continue” (SOURCED) |  | `Copy.…authCodeContinue` in CodeScreen.swift |
-| matched | copy | `auth.code.resend` | “send new code” (SOURCED) |  | `Copy.…authCodeResend` in CodeScreen.swift |
-| matched | copy | `auth.code.back.accessibilityLabel` | “change number” (SOURCED) |  | `Copy.…authCodeBackAccessibilityLabel` in CodeScreen.swift |
-| matched | token | `auth.phone.fontSize.subtitle` | 14 pt (SOURCED) | italic subtitle under the sign-up title ('to join or create your friends groups') | `Tokens.…authPhoneFontSizeSubtitle` in TextRoles.swift |
-| matched | token | `auth.phone.layout.subtitle` | style: italic; weight: regular; color: color.global.textPrimary; align: center (SOURCED) | subtitle text style under the sign-up title | OnboardingTitleBlock subtitle: italic, regular, textPrimary, centred |
-| matched | token | `auth.code.layout.codeField` | ios: one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion); andr… (PLATFORM) | verification-code field and its autofill | one FormField, .oneTimeCode / .numberPad (AutoFill suggestion), no per-digit boxes |
-| matched | token | `groups.create.color.field` | #141414 (SOURCED) | single-line text field fill on black ('name group (optional)'); reused by every form field on black (auth.*… | `Tokens.…groupsCreateColorField` in FormField.swift |
-| matched | token | `size.global.fieldHeight` | 44 pt (SOURCED) | single-line form text field height | `Tokens.…globalFieldHeight` in FormField.swift |
-| matched | token | `radius.global.field` | 12 pt (SOURCED) | single-line form text field corners ('name group (optional)') | `Tokens.…globalField` in FormField.swift |
-| matched | token | `groups.create.fontSize.fieldText` | 15 pt (SOURCED) | typed text in the form field (centred) | `Tokens.…groupsCreateFontSizeFieldText` in TextRoles.swift |
-| matched | token | `groups.create.fontWeight.fieldText` | bold (SOURCED) | typed text weight in the form field | `Tokens.…groupsCreateFontWeightFieldText` in TextRoles.swift |
-| matched | token | `color.global.textSecondary` | #969696 (SOURCED) | secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules | `Tokens.…globalTextSecondary` in CheckRow.swift, CodeScreen.swift, EmptyStateView.swift |
-| matched | copy | `auth.code.field.placeholder` | “code” (SOURCED) |  | `Copy.…authCodeFieldPlaceholder` in CodeScreen.swift |
-| matched | copy | `auth.code.field.accessibilityLabel` | “verification code” (SOURCED) |  | `Copy.…authCodeFieldAccessibilityLabel` in CodeScreen.swift |
-| matched | token | `size.global.buttonHeight` | 45 pt (SOURCED) | full-width primary button in a form ('create group') | `Tokens.…globalButtonHeight` in PrimaryButton.swift |
-| matched | token | `radius.global.button` | 14 pt (SOURCED) | primary (lime) button corners — not a full pill | `Tokens.…globalButton` in PrimaryButton.swift, TextRoles.swift |
-| matched | token | `auth.code.fontSize.textLink` | 14.5 pt (SOURCED) | lime text link ('send new code'; Yope's sign-in link 'probar otras opciones' = 'try other options') | `Tokens.…authCodeFontSizeTextLink` in TextRoles.swift |
-| matched | token | `auth.code.fontWeight.textLink` | bold (SOURCED) | lime text link weight | `Tokens.…authCodeFontWeightTextLink` in TextRoles.swift |
-| matched | token | `color.global.accent` | #CDFD07 (SOURCED) | brand lime: composer camera button, primary buttons, coach tooltips, toasts, shutter ring, 'today' bar | `Tokens.…globalAccent` in CodeScreen.swift, OnboardingTitle.swift, PrimaryButton.swift |
-| matched | token | `auth.code.duration.resendLock` | 60000 ms (VERIFIED) | time after a code request before 'send new code' is enabled | `Tokens.…authCodeDurationResendLock` in CodeModel.swift |
-| matched | copy | `auth.code.toast.resent` | “new code sent” (SOURCED) |  | `Copy.…authCodeToastResent` in CodeScreen.swift |
-| matched | copy | `groups.create.hud.loading` | “Loading” (SOURCED) |  | `Copy.…groupsCreateHudLoading` in LoadingHUD.swift |
-| matched | token | `auth.phone.layout.inlineError` | presentation: system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside; title: none: the auth.… (SOURCED) | how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up scr… | `formErrorAlert` (Components/FormErrorAlert.swift): system alert, no title, the error sentence as its message, one `auth.phone.error.dismiss` button (+ haptic.global.error) |
-| matched | copy | `auth.code.error.wrong` | “that code didn’t work. check it and try again.” (SOURCED) |  | `Copy.…authCodeErrorWrong` in AuthFailure.swift |
-| matched | copy | `auth.phone.error.dismiss` | “OK” (SOURCED) |  | `Copy.…authPhoneErrorDismiss` in FormErrorAlert.swift |
-| matched | copy | `auth.code.error.expired` | “that code expired. send a new one and try again.” (SOURCED) |  | `Copy.…authCodeErrorExpired` in AuthFailure.swift |
-| matched | copy | `auth.code.error.tooMany` | “too many tries. wait a minute, then send a new code.” (SOURCED) |  | `Copy.…authCodeErrorTooMany` in AuthFailure.swift |
-| matched | copy | `auth.phone.offline.title` | “you’re offline” (SOURCED) |  | `Copy.…authPhoneOfflineTitle` in CodeScreen.swift |
-| matched | copy | `auth.code.offline.detail` | “connect to the internet to check your code. your next memories are waiting.” (SOURCED) |  | `Copy.…authCodeOfflineDetail` in CodeScreen.swift |
-| matched | copy | `auth.phone.offline.retry` | “try again” (SOURCED) |  | `Copy.…authPhoneOfflineRetry` in CodeScreen.swift |
-| matched | token | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | any task completed successfully (same generator as send) | `Tokens.…globalSuccess` in CodeScreen.swift |
-| matched | token | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | a task failed (send failed) | `Tokens.…globalError` in BlockConfirmation.swift, CodeScreen.swift |
-| matched | token | `safety.block.duration.toast` | 2000 ms (SOURCED) | how long the lime toast stays before it leaves | `Tokens.…safetyBlockDurationToast` in Toast.swift |
 
-## Approximations
+## Structure
 
-- Same sign-up layout approximations as auth.phone (title top, title–subtitle gap).
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.phone.layout.inlineError` | presentation: native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account.layout.alert); not dismissed by tapping outside; titled: code error… (SOURCED) | `formErrorAlert(_:trigger:)` (C-29 native message-only alert); code errors: titled alert with Retro's two recoveries |
+| matched | `color.global.background` | light: #FFFFFF; dark: #000000 (SOURCED) | `Tokens.Colors.globalBackground` in AccountGroupedRows.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, GroupScreen.swift … |
+| matched | `icon.global.back` | ios: chevron.left; android: AutoMirrored.Rounded.ArrowBackIos (PLATFORM) | `Tokens.Icons.globalBack` in ScreenHeader.swift, SignUpLayout.swift |
+| matched | `size.global.backInset` | 21.1 pt (SOURCED) | `Tokens.Sizes.globalBackInset` in ScreenHeader.swift, SignUpLayout.swift |
+| matched | `auth.code.title` | “Enter your code” (SOURCED) | `Copy.authCodeTitle` in CodeScreen.swift |
+| matched | `font.global.display` | ios: system-serif; android: serif (PLATFORM) | `Tokens.Fonts.globalDisplay` in InvitePreviewView.swift, PhoneScreen.swift, TextRoles.swift |
+| matched | `color.global.textPrimary` | light: #000000; dark: #FFFFFF (SOURCED) | `Tokens.Colors.globalTextPrimary` in AccountGroupedRows.swift, CapsuleButton.swift, CheckRow.swift, CircleButton.swift … |
+| matched | `size.global.screenMargin` | 16 pt (SOURCED) | `Tokens.Sizes.globalScreenMargin` in AccountGroupedRows.swift, AgeGateForm.swift, CodeScreen.swift, EmptyStateView.swift … |
+| matched | `size.global.titleTop` | 64 pt (SOURCED) | `Tokens.Sizes.globalTitleTop` in FullBleedMediaPage.swift, GroupScreen.swift, ScreenHeader.swift, SignUpLayout.swift |
+| matched | `auth.code.subtitle` | “We texted a code to {phone}.” (SOURCED) | `Copy.authCodeSubtitle` in CodeScreen.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `size.global.titleToContent` | 30 pt (SOURCED) | `Tokens.Sizes.globalTitleToContent` in AccountGroupedRows.swift, AgeGateForm.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `auth.code.layout.codeField` | ios: one TextField, textContentType .oneTimeCode, keyboardType .numberPad; no per-digit boxes (a custom input view cannot show the AutoFill suggestion); andr… (PLATFORM) | `FormField(keyboard: .numberPad, contentType: .oneTimeCode)`; digits only (`CodeModel.setCode`) |
+| matched | `auth.code.field.placeholder` | “Enter the code…” (SOURCED) | `Copy.authCodeFieldPlaceholder` in CodeScreen.swift |
+| matched | `size.global.sectionHeaderToContent` | 11.7 pt (SOURCED) | `Tokens.Sizes.globalSectionHeaderToContent` in CodeScreen.swift, GroupInviteScreen.swift, GroupScreen.swift, GroupsHomeScreen.swift … |
+| matched | `auth.code.helper` | “Your code may take up to 30 seconds to arrive” (SOURCED) | `Copy.authCodeHelper` in CodeScreen.swift |
+| matched | `auth.code.resend.prefix` | “Didn't receive a code?” (SOURCED) | `Copy.authCodeResendPrefix` in CodeScreen.swift |
+| matched | `auth.code.resend` | “Send again” (SOURCED) | `Copy.authCodeResend` in CodeScreen.swift |
+| matched | `auth.code.continue` | “Next” (SOURCED) | `Copy.authCodeContinue` in CodeScreen.swift |
+| matched | `size.global.buttonMarginH` | 20 pt (SOURCED) | `Tokens.Sizes.globalButtonMarginH` in BackdropCard.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, OnboardingTitle.swift … |
+
+## Elements
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.code.back.accessibilityLabel` | “Back” (VERIFIED) | `Copy.authCodeBackAccessibilityLabel` in CodeScreen.swift, PhoneForm.swift, ProfileScreen.swift, WidgetGuideScreen.swift |
+| matched | `auth.code.field.accessibilityLabel` | “Verification code” (VERIFIED) | `Copy.authCodeFieldAccessibilityLabel` in CodeScreen.swift |
+| matched | `color.global.textTertiary` | light: #C1C1C1; dark: #FFFFFF4D (SOURCED) | `Tokens.Colors.globalTextTertiary` in AccountGroupedRows.swift, CapsuleButton.swift, CodeScreen.swift |
+| matched | `auth.code.duration.resendLock` | 60000 ms (VERIFIED) | `Tokens.Durations.authCodeDurationResendLock` in CodeModel.swift |
+| matched | `auth.code.toast.resent` | “Code sent!” (SOURCED) | `Copy.authCodeToastResent` in CodeScreen.swift |
+
+## States
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.code.error.wrong.title` | “SMS Code Error” (SOURCED) | `Copy.authCodeErrorWrongTitle` in AuthFailure.swift |
+| matched | `auth.code.error.wrong` | “Unable to verify code. Please check the code and try again.” (SOURCED) | `Copy.authCodeErrorWrong` in AuthFailure.swift |
+| matched | `auth.code.error.editCode` | “Edit code” (SOURCED) | `Copy.authCodeErrorEditCode` in CodeScreen.swift |
+| matched | `auth.code.error.sendNew` | “Send a new code” (SOURCED) | `Copy.authCodeErrorSendNew` in CodeScreen.swift |
+| matched | `auth.code.error.expired.title` | “Code Expired” (SOURCED) | `Copy.authCodeErrorExpiredTitle` in AuthFailure.swift |
+| matched | `auth.code.error.expired` | “That code has expired. Send a new code and try again.” (SOURCED) | `Copy.authCodeErrorExpired` in AuthFailure.swift |
+| matched | `auth.code.error.service.title` | “Couldn't Verify Code” (SOURCED) | `Copy.authCodeErrorServiceTitle` in AuthFailure.swift |
+| matched | `auth.code.error.service` | “We couldn't verify the code. Check your connection and try again.” (SOURCED) | `Copy.authCodeErrorService` in AuthFailure.swift |
+| matched | `auth.phone.error.dismiss` | “OK” (VERIFIED) | `Copy.authPhoneErrorDismiss` in CodeScreen.swift, FormErrorAlert.swift, ReportFlow.swift |
+| matched | `auth.code.error.tooMany` | “Too many tries. Please wait a minute, then send a new code.” (SOURCED) | `Copy.authCodeErrorTooMany` in AuthFailure.swift |
+| matched | `auth.phone.offline.title` | “You're offline” (SOURCED) | `Copy.authPhoneOfflineTitle` in AuthFlowView.swift, SignUpLayout.swift |
+| matched | `auth.phone.offline.detail` | “Could not connect. Check your connection and try again.” (SOURCED) | `Copy.authPhoneOfflineDetail` in AuthFlowView.swift, SignUpLayout.swift |
+| matched | `auth.phone.offline.retry` | “Try again” (SOURCED) | `Copy.authPhoneOfflineRetry` in AuthFlowView.swift, SignUpLayout.swift |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `easing.global.native` | sheet: system (.sheet / ModalBottomSheet) — measured on Retro: spring.global.sheetPresent; navigationPush: system (NavigationStack / Compose Navigation defau… (PLATFORM) | platform push / sheet animations (`NavigationStack`, `.sheet`, `.fullScreenCover`) |
+| matched | `duration.global.crossfade` | 100 ms (SOURCED) | `Tokens.Durations.globalCrossfade` in AgeGateForm.swift, ComponentSupport.swift |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+| matched | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | `Tokens.Haptics.globalSuccess` in AgeGateForm.swift, CodeScreen.swift, GroupCreateScreen.swift, InviteClipApp.swift … |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | `Tokens.Haptics.globalError` in AgeGateForm.swift, BlockConfirmation.swift, CodeScreen.swift, GroupCreateScreen.swift … |
+
+## Notes
+
+- Resend: the line is `color.global.textTertiary` while locked; no countdown (spec).

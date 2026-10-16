@@ -170,7 +170,11 @@ class ScreenSnapshotTest {
         }
         compose.mainClock.advanceTimeBy(FRAME_MS)
         if (act != null) {
+            // Scrolls and taps animate: the clock runs while they play out (infinite animations do not block idling).
+            compose.mainClock.autoAdvance = true
             act()
+            compose.waitForIdle()
+            compose.mainClock.autoAdvance = false
             compose.mainClock.advanceTimeBy(SHEET_MS)
         }
         compose.mainClock.advanceTimeBy(settleMs)
@@ -269,11 +273,14 @@ class ScreenSnapshotTest {
     @Test fun photosDeniedDark() = snap("onboarding.permission.photos", "denied", dark = true, content = photosDenied)
 
     // onboarding.permission.contacts lives in groups.invite (its Contacts section).
-    @Test fun contactsNotAsked() = snap("onboarding.permission.contacts", "notAsked", content = inviteScreen(linkOn))
-    @Test fun contactsNotAskedDark() = snap("onboarding.permission.contacts", "notAsked", dark = true, content = inviteScreen(linkOn))
-    @Test fun contactsGranted() = snap("onboarding.permission.contacts", "granted", content = inviteScreen(withContacts))
-    @Test fun contactsNone() = snap("onboarding.permission.contacts", "noContacts", content = inviteScreen(linkOn.copy(contactsGranted = true, contacts = emptyList())))
-    @Test fun contactsRationale() = snap("onboarding.permission.contacts", "rationale") {
+    // The Contacts section sits under the link controls: each render scrolls the sheet to it.
+    private fun scrollTo(text: Int): () -> Unit = { compose.onNodeWithText(context.getString(text)).performScrollTo() }
+    private fun scrollToText(text: String): () -> Unit = { compose.onNodeWithText(text).performScrollTo() }
+    @Test fun contactsNotAsked() = snap("onboarding.permission.contacts", "notAsked", act = scrollTo(R.string.onboarding_permission_contacts_card_button), content = inviteScreen(linkOn))
+    @Test fun contactsNotAskedDark() = snap("onboarding.permission.contacts", "notAsked", dark = true, act = scrollTo(R.string.onboarding_permission_contacts_card_button), content = inviteScreen(linkOn))
+    @Test fun contactsGranted() = snap("onboarding.permission.contacts", "granted", act = scrollToText("Zoe Park"), content = inviteScreen(withContacts))
+    @Test fun contactsNone() = snap("onboarding.permission.contacts", "noContacts", act = scrollTo(R.string.groups_invite_contacts_empty), content = inviteScreen(linkOn.copy(contactsGranted = true, contacts = emptyList())))
+    @Test fun contactsRationale() = snap("onboarding.permission.contacts", "rationale", act = scrollTo(R.string.onboarding_permission_contacts_card_button)) {
         inviteScreen(linkOn)()
         SystemAlertDialog(
             stringResource(R.string.system_permissions_rationale_contacts_title),
@@ -465,10 +472,10 @@ class ScreenSnapshotTest {
     @Test fun settingsRootDark() = snap("settings.root", "default", dark = true, content = root(rootState))
     @Test fun settingsRootLoading() = snap("settings.root", "subscriptionLoading", content = root(rootState.copy(subscription = SubscriptionState.Loading)))
     @Test fun settingsRootSubscriber() = snap("settings.root", "subscriber-annual", content = root(rootState.copy(subscription = SubscriptionState.Annual)))
-    @Test fun settingsRootDenied() = snap("settings.root", "permissionsDenied-scrolled", act = { compose.onNodeWithText(context.getString(R.string.settings_root_permissions_camera)).performScrollTo() }) {
+    @Test fun settingsRootDenied() = snap("settings.root", "permissionsDenied-scrolled", act = { compose.onNodeWithText(context.getString(R.string.settings_root_permissions_notifications)).performScrollTo() }) {
         root(rootState, granted.mapIndexed { i, row -> row.copy(denied = i % 2 == 0) })()
     }
-    @Test fun settingsRootSigningOut() = snap("settings.root", "signingOut-scrolled", act = { compose.onNodeWithText(context.getString(R.string.settings_root_signout)).performScrollTo() }) {
+    @Test fun settingsRootSigningOut() = snap("settings.root", "signingOut-scrolled", act = { compose.onNodeWithText(context.getString(R.string.settings_root_version)).performScrollTo() }) {
         root(rootState.copy(signingOut = true))()
     }
     @Test fun settingsRootSignOutAlert() = snap("settings.root", "signOutAlert", act = {

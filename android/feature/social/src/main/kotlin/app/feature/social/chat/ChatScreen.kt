@@ -966,22 +966,26 @@ private fun menuItems(row: ChatRow, ui: ChatUiState, nav: ChatNav, onRetrySend: 
 private fun PhotoMessage(row: ChatRow, afterHeader: Boolean, ui: ChatUiState, nav: ChatNav, voice: VoiceUi, labels: RowLabels, semantics: Modifier, tap: () -> Unit) {
     val media = row.media
     if (afterHeader) Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
+    // A post with a front photo is core:ui daily.dualimage: the card's width and corners, its own 3:4 height
+    // (`daily.dualimage.layout.composition`) in place of the 2:3 card frame.
+    val front = media?.frontImagePath(app.data.model.Media.Rendition.Display)
     Column {
         Box(
             Modifier
-                .size(Tokens.Sizes.globalFriendCardWidth, Tokens.Sizes.globalFriendCardHeight)
+                .then(
+                    if (front != null) Modifier.width(Tokens.Sizes.globalFriendCardWidth)
+                    else Modifier.size(Tokens.Sizes.globalFriendCardWidth, Tokens.Sizes.globalFriendCardHeight),
+                )
                 .clip(RoundedCornerShape(Tokens.Radii.globalCard))
                 .combinedClickable(onClick = tap, onLongClick = { ui.menuFor = row.key })
                 .then(semantics),
         ) {
-            val front = media?.frontImagePath(app.data.model.Media.Rendition.Display)
             if (front != null) {
-                // A post with a front photo is core:ui daily.dualimage, in the card's corners.
                 DualImage(
                     main = photoModel(media.imagePath(app.data.model.Media.Rendition.Display)),
                     inset = photoModel(front),
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth(),
                     cornerRadius = Tokens.Radii.globalCard,
                     loadingFill = Tokens.Colors.globalControl,
                 )

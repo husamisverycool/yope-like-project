@@ -1,27 +1,58 @@
-# Verification — `settings.blocked` (iOS)
+# Verification — `settings.blocked` (iOS, Pass 4 — Retro redesign)
 
-Blocked people — `Features/Account/Settings/SettingsBlockedScreen.swift`.
+Blocked people — `Features/Account/Settings/SettingsBlockedScreen.swift`, `SettingsBlockedModel.swift`.
 
-Checklist written from the spec (`design/surfaces/settings.blocked.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/settings.blocked.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/settings.blocked.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/settings.blocked.png` next to the reference image(s) below.
 
-Snapshots (CI): `settings.blocked-loading.png`, `settings.blocked-empty.png`, `settings.blocked-loaded.png`, `settings.blocked-error.png`
+Reference image(s): `references/auto/retro/press/tc-2023-07-retro-1b.webp`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`
 
-**Summary: 13 matched · 0 approximated · 0 not matched (BLOCKED or not buildable) · 2 not applicable on iOS / placed by another pass.**
+Snapshots (CI, `ios/build/snapshots/account/`): `settings.blocked-loading-light.png`, `settings.blocked-empty-light.png`, `settings.blocked-default-light.png`, `settings.blocked-default-dark.png`, `settings.blocked-error-light.png`
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | token | `settings.root.layout.list` | ios: List with .listStyle(.insetGrouped); Section(header:footer:); NavigationLink rows show the system disclosure indicator; colours color.global.system.ios;… (PLATFORM) | settings list container (also settings.notifications, settings.account, settings.blocked, groups.settings) | List with .insetGrouped style, system rows |
-| n/a | token | `settings.root.size.listItemAvatar.android` | 40 dp (VERIFIED) | M3 list item leading avatar size (blocked people, members) | Android only |
-| matched | token | `settings.blocked.layout.empty` | ios: ContentUnavailableView(title, systemImage: nil, description); android: centred Column: headline in MaterialTheme.typography.bodyLarge, color.global.syst… (PLATFORM) | empty state of the blocked list | ContentUnavailableView(title, description), no image |
-| matched | copy | `settings.blocked.title` | “Blocked People” (VERIFIED) |  | `Copy.…settingsBlockedTitle` in SettingsBlockedScreen.swift |
-| matched | token | `size.global.avatarPicker` | 40 pt (SOURCED) | avatar in a people-picker row | `Tokens.…globalAvatarPicker` in SettingsBlockedScreen.swift |
-| matched | token | `color.global.controlRaised` | #434343 (SOURCED) | raised fill: selected tab pill, inner pill inside the header capsule, inactive page dots | `Tokens.…globalControlRaised` in FloatingTabBar.swift, StorageImage.swift |
-| matched | token | `icon.global.person` | ios: person.fill; android: Rounded.Person (PLATFORM) | default avatar silhouette | `Tokens.…globalPerson` in FloatingTabBar.swift, StorageImage.swift |
-| matched | copy | `settings.blocked.unknown` | “Someone you blocked” (VERIFIED) |  | `Copy.…settingsBlockedUnknown` in SettingsBlockedModel.swift |
-| matched | copy | `settings.blocked.unblock` | “Unblock” (VERIFIED) |  | `Copy.…settingsBlockedUnblock` in SettingsBlockedScreen.swift |
-| n/a | token | `color.global.system.primary` | #D0BCFF (PLATFORM) | dialog action labels, switches, selected controls (role md.sys.color.primary, baseline dark scheme) | Android only |
-| matched | copy | `settings.blocked.empty.title` | “No Blocked People” (VERIFIED) |  | `Copy.…settingsBlockedEmptyTitle` in SettingsBlockedScreen.swift |
-| matched | copy | `settings.blocked.empty.message` | “When you block someone, you won’t see each other’s photos, messages or reactions in any group you share.” (VERIFIED) |  | `Copy.…settingsBlockedEmptyMessage` in SettingsBlockedScreen.swift |
-| matched | copy | `settings.blocked.error` | “The list didn’t load. Check your connection and try again.” (VERIFIED) |  | `Copy.…settingsBlockedError` in SettingsBlockedScreen.swift |
-| matched | copy | `settings.blocked.retry` | “Try Again” (VERIFIED) |  | `Copy.…settingsBlockedRetry` in SettingsBlockedScreen.swift |
-| matched | token | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | any task completed successfully (same generator as send) | `Tokens.…globalSuccess` in SettingsBlockedScreen.swift |
+**Summary: 14 matched · 0 approximated · 0 not matched · 2 not applicable on iOS / owner / another pass.**
+
+
+## Structure
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `settings.blocked.title` | “Blocked People” (SOURCED) | `Copy.settingsBlockedTitle` in SettingsBlockedScreen.swift |
+| matched | `size.global.avatarPicker` | 37 pt (SOURCED) | `Tokens.Sizes.globalAvatarPicker` in GroupScreen.swift, GroupSettingsScreen.swift, PeopleRow.swift, SettingsBlockedScreen.swift |
+| matched | `icon.global.person` | ios: person.fill; android: Rounded.Person (PLATFORM) | `Tokens.Icons.globalPerson` in Avatar.swift, SettingsBlockedScreen.swift |
+| matched | `settings.blocked.unknown` | “Someone you blocked” (SOURCED) | `Copy.settingsBlockedUnknown` in SettingsBlockedModel.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `settings.blocked.unblock` | “Unblock” (SOURCED) | `Copy.settingsBlockedUnblock` in SettingsBlockedScreen.swift |
+| matched | `size.global.pillHeight` | 37 pt (SOURCED) | `Tokens.Sizes.globalPillHeight` in CapsuleButton.swift, LightPill.swift, OutlineCTA.swift |
+| matched | `settings.root.size.rowHeight` | 58.7 pt (SOURCED) | `Tokens.Sizes.settingsRootSizeRowHeight` in AccountGroupedRows.swift |
+
+## Elements
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `safety.block.undone` | “Unblocked {first_name}” (SOURCED) | `Copy.safetyBlockUndone` in SettingsBlockedScreen.swift |
+
+## States
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `settings.blocked.empty.title` | “No blocked people” (SOURCED) | `Copy.settingsBlockedEmptyTitle` in SettingsBlockedScreen.swift |
+| matched | `settings.blocked.error` | “Error loading blocked people. Tap here to try again.” (SOURCED) | `Copy.settingsBlockedError` in SettingsBlockedScreen.swift |
+| matched | `safety.block.error` | “There was a problem. Please try again.” (SOURCED) | `Copy.safetyBlockError` in BlockConfirmation.swift, SettingsBlockedScreen.swift |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `duration.global.fade` | 150 ms (SOURCED) | `Tokens.Durations.globalFade` in ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, PaywallScreen.swift … |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+| matched | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | `Tokens.Haptics.globalSuccess` in AgeGateForm.swift, CodeScreen.swift, GroupCreateScreen.swift, InviteClipApp.swift … |
+
+## Platform notes
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `color.global.surfaceSecondary.android` | light: #F7F7F7; dark: #262626 (SOURCED) | Android only |

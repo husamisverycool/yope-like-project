@@ -1,70 +1,79 @@
-# Verification — `auth.agegate` (iOS)
+# Verification — `auth.agegate` (iOS, Pass 4 — Retro redesign)
 
-Birthday entry and age gate — `Features/Account/Auth/AgeGateScreen.swift`.
+Birthday / age gate — `Features/Account/Shared/AgeGateForm.swift` (`AgeGateForm`, `AgeGateRefusedScreen`), `Auth/AgeGateScreen.swift`, `Shared/AgeGateModel.swift`, `Shared/BirthdayEntry.swift`.
 
-Checklist written from the spec (`design/surfaces/auth.agegate.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/auth.agegate.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/auth.agegate.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/auth.agegate.png` next to the reference image(s) below.
 
-Snapshots (CI): `auth.agegate-default.png`, `auth.agegate-filled-opt-in.png`, `auth.agegate-invalid-date.png`, `auth.agegate-not-configured.png`, `auth.agegate-offline.png`, `auth.agegate-under-age.png`
+Reference image(s): `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png`, `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png`, `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`
 
-**Summary: 48 matched · 2 approximated · 1 not matched (BLOCKED or not buildable) · 0 not applicable on iOS / placed by another pass.**
+Snapshots (CI, `ios/build/snapshots/account/`): `auth.agegate-default-light.png`, `auth.agegate-default-dark.png`, `auth.agegate-filled-opt-in-light.png`, `auth.agegate-checking-light.png`, `auth.agegate-not-configured-light.png`, `auth.agegate-offline-light.png`, `auth.agegate-under-age-light.png`
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| matched | copy | `auth.agegate.title` | “when’s your birthday?” (SOURCED) |  | `Copy.…authAgegateTitle` in AgeGateScreen.swift |
-| matched | copy | `auth.agegate.subtitle` | “we use it to check your age. we don’t save it.” (SOURCED) |  | `Copy.…authAgegateSubtitle` in AgeGateScreen.swift |
-| matched | token | `groups.create.size.titleToContent` | 34 pt (SOURCED) | title text bottom (descender) to the first content element | `Tokens.…groupsCreateSizeTitleToContent` in AgeGateScreen.swift |
-| matched | token | `groups.create.size.fieldToButton` | 18 pt (SOURCED) | form field bottom to the primary button top | `Tokens.…groupsCreateSizeFieldToButton` in AgeGateScreen.swift |
-| matched | token | `size.global.buttonMarginH` | 19 pt (SOURCED) | side margin of the form primary button | `Tokens.…globalButtonMarginH` in AgeGateScreen.swift |
-| matched | copy | `auth.agegate.continue` | “continue” (SOURCED) |  | `Copy.…authAgegateContinue` in AgeGateScreen.swift |
-| matched | token | `auth.phone.fontSize.subtitle` | 14 pt (SOURCED) | italic subtitle under the sign-up title ('to join or create your friends groups') | `Tokens.…authPhoneFontSizeSubtitle` in TextRoles.swift |
-| matched | token | `auth.phone.layout.subtitle` | style: italic; weight: regular; color: color.global.textPrimary; align: center (SOURCED) | subtitle text style under the sign-up title | OnboardingTitleBlock subtitle: italic, regular, textPrimary, centred |
-| matched | token | `auth.agegate.layout.dateEntry` | control: the Yope form field (groups.create.color.field, size.global.fieldHeight, radius.global.field, groups.create.fontSize.fieldText) with a numeric keybo… (VERIFIED) | birthday entry (neutral age screen) | FormField with numeric keyboard; separators per the locale template "MMddyyyy" (`BirthdayEntry`) |
-| matched | token | `groups.create.color.field` | #141414 (SOURCED) | single-line text field fill on black ('name group (optional)'); reused by every form field on black (auth.*… | `Tokens.…groupsCreateColorField` in FormField.swift |
-| matched | token | `size.global.fieldHeight` | 44 pt (SOURCED) | single-line form text field height | `Tokens.…globalFieldHeight` in FormField.swift |
-| matched | token | `radius.global.field` | 12 pt (SOURCED) | single-line form text field corners ('name group (optional)') | `Tokens.…globalField` in FormField.swift |
-| matched | token | `groups.create.fontSize.fieldText` | 15 pt (SOURCED) | typed text in the form field (centred) | `Tokens.…groupsCreateFontSizeFieldText` in TextRoles.swift |
-| matched | copy | `auth.agegate.field.placeholder` | “birthday ({date_format})” (SOURCED) |  | `Copy.…authAgegateFieldPlaceholder` in AgeGateModel.swift |
-| matched | copy | `auth.agegate.field.accessibilityLabel` | “birthday” (SOURCED) |  | `Copy.…authAgegateFieldAccessibilityLabel` in AgeGateScreen.swift |
-| matched | token | `auth.agegate.layout.optIn` | control: row with icon.global.uncheck / icon.global.check (color.global.selection) at size.global.checkCircle, trailing, as in Yope's pickers; default: unche… (SOURCED) | optional 'tell my groups on my birthday' opt-in row | `CheckRow` under the field: check / uncheck glyph at checkCircle in selection colour, label + detail listSubtitle; unchecked by default |
-| matched | token | `icon.global.uncheck` | ios: circle; android: Rounded.RadioButtonUnchecked (PLATFORM) | not selected (empty ring) | `Tokens.…globalUncheck` in CheckRow.swift |
-| matched | token | `icon.global.check` | ios: checkmark.circle.fill; android: Rounded.CheckCircle (PLATFORM) | selected (filled check circle, color.global.selection) | `Tokens.…globalCheck` in CheckRow.swift |
-| matched | token | `color.global.selection` | #0091FF (PLATFORM) | filled check circle on selected people / groups (Yope draws it in iOS system blue) | `Tokens.…globalSelection` in CheckRow.swift |
-| matched | token | `size.global.checkCircle` | 24 pt (SOURCED) | selection circle (empty ring / filled check) in pickers and recipient rows | `Tokens.…globalCheckCircle` in CheckRow.swift |
-| matched | token | `fontSize.global.listSubtitle` | 14 pt (SOURCED) | row subtitle ('new pic added · 9:43 AM'), secondary color | `Tokens.…globalListSubtitle` in TextRoles.swift |
-| matched | token | `color.global.textPrimary` | #FFFFFF (SOURCED) | primary text and glyphs | `Tokens.…globalTextPrimary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | token | `color.global.textSecondary` | #969696 (SOURCED) | secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules | `Tokens.…globalTextSecondary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | copy | `auth.agegate.optIn.label` | “tell my groups when it’s my birthday” (SOURCED) |  | `Copy.…authAgegateOptInLabel` in AgeGateScreen.swift |
-| matched | copy | `auth.agegate.optIn.detail` | “we’ll save your birthday for this” (SOURCED) |  | `Copy.…authAgegateOptInDetail` in AgeGateScreen.swift |
-| matched | copy | `auth.agegate.optIn.accessibilityLabel` | “tell my groups when it’s my birthday” (SOURCED) |  | `Copy.…authAgegateOptInAccessibilityLabel` in AgeGateScreen.swift |
-| matched | token | `groups.create.color.hud` | #0C0C0C (SOURCED) | Loading HUD square fill (on black) | `Tokens.…groupsCreateColorHud` in LoadingHUD.swift |
-| matched | token | `groups.create.size.hud` | 100 pt (SOURCED) | Loading HUD square side | `Tokens.…groupsCreateSizeHud` in LoadingHUD.swift |
-| matched | token | `groups.create.fontSize.hudLabel` | 15 pt (SOURCED) | 'Loading' label under the spinner in the HUD | `Tokens.…groupsCreateFontSizeHudLabel` in TextRoles.swift |
-| matched | copy | `groups.create.hud.loading` | “Loading” (SOURCED) |  | `Copy.…groupsCreateHudLoading` in LoadingHUD.swift |
-| matched | token | `auth.phone.layout.inlineError` | presentation: system alert: iOS UIAlertController .alert / SwiftUI .alert, Android M3 AlertDialog; not dismissible by tapping outside; title: none: the auth.… (SOURCED) | how a field-level error (wrong number, wrong or expired code, invalid date) is presented on the sign-up scr… | `formErrorAlert` (Components/FormErrorAlert.swift): system alert, no title, the error sentence as its message, one `auth.phone.error.dismiss` button (+ haptic.global.error) |
-| matched | copy | `auth.agegate.error.invalidDate` | “check the date and try again” (SOURCED) |  | `Copy.…authAgegateErrorInvalidDate` in AgeGateScreen.swift |
-| matched | copy | `auth.phone.error.dismiss` | “OK” (SOURCED) |  | `Copy.…authPhoneErrorDismiss` in FormErrorAlert.swift |
-| matched | token | `fontSize.global.emptyTitle` | 16 pt (SOURCED) | empty-state title ('you created group') | `Tokens.…globalEmptyTitle` in TextRoles.swift |
-| matched | token | `fontSize.global.emptyDetail` | 14 pt (SOURCED) | empty-state detail line ('and added mẹ, Anh'), italic | `Tokens.…globalEmptyDetail` in TextRoles.swift |
-| matched | token | `color.global.surfaceLight` | #FFFFFF (SOURCED) | light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, '… | `Tokens.…globalSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | token | `groups.screen.radius.lightPill` | 11 pt (SOURCED) | white secondary pill ('invite more friends') corner radius | `Tokens.…groupsScreenRadiusLightPill` in LightPill.swift |
-| matched | token | `groups.screen.size.lightPillHeight` | 45 pt (SOURCED) | white secondary pill height ('invite more friends', 205 pt wide = hug + leading icon.global.link) | `Tokens.…groupsScreenSizeLightPillHeight` in LightPill.swift |
-| matched | copy | `auth.agegate.notConfigured.title` | “sign-up isn’t open yet” (SOURCED) |  | `Copy.…authAgegateNotConfiguredTitle` in AgeGateScreen.swift |
-| matched | copy | `auth.agegate.notConfigured.detail` | “try again soon. your next memories are waiting.” (SOURCED) |  | `Copy.…authAgegateNotConfiguredDetail` in AgeGateScreen.swift |
-| matched | copy | `auth.agegate.notConfigured.retry` | “try again” (SOURCED) |  | `Copy.…authAgegateNotConfiguredRetry` in AgeGateScreen.swift |
-| not matched | copy | `auth.agegate.underAge.title` | “you need to be {min_age} or older to use {app_name}” (SOURCED) |  | uses {app_name}: DEBUG builds only via `AccountBlockedCopy` (AccountBlockedCopy.swift); omitted in release |
-| matched | copy | `auth.agegate.underAge.detail` | “we didn’t save your birthday or your number.” (SOURCED) |  | `Copy.…authAgegateUnderAgeDetail` in AgeGateScreen.swift |
-| matched | copy | `auth.phone.offline.title` | “you’re offline” (SOURCED) |  | `Copy.…authPhoneOfflineTitle` in AgeGateScreen.swift |
-| matched | copy | `auth.agegate.offline.detail` | “connect to the internet to keep going. your next memories are waiting.” (SOURCED) |  | `Copy.…authAgegateOfflineDetail` in AgeGateScreen.swift |
-| matched | copy | `auth.phone.offline.retry` | “try again” (SOURCED) |  | `Copy.…authPhoneOfflineRetry` in AgeGateScreen.swift |
-| matched | token | `haptic.global.select` | ios: selection; android: SEGMENT_TICK (PLATFORM) | a recipient / group toggled, a segmented choice, picker scrubbing | `Tokens.…globalSelect` in CheckRow.swift, SegmentedPills.swift |
-| matched | token | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | any task completed successfully (same generator as send) | `Tokens.…globalSuccess` in AgeGateScreen.swift |
-| matched | token | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | a task failed (send failed) | `Tokens.…globalError` in AgeGateScreen.swift, BlockConfirmation.swift |
+**Summary: 34 matched · 0 approximated · 0 not matched · 3 not applicable on iOS / owner / another pass.**
 
-## Approximations
 
-- Same sign-up layout approximations as auth.phone.
-- Under-age refusal: `delete_account`, falling back to sign-out when deletion fails; the refusal is kept in the Keychain (survives reinstall).
+## References
 
-## Not matched
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.agegate.layout.dateEntry` | control: C-12 text field (fill color.global.control, size.global.fieldHeight, radius.global.field, text role placeholder) with a numeric keyboard; format: th… (VERIFIED) | `BirthdayEntry`: the locale's numeric order as placeholder, digits only, separators inserted |
 
-- `auth.agegate.underAge.title` — uses {app_name}: DEBUG builds only via `AccountBlockedCopy` (AccountBlockedCopy.swift); omitted in release
+## Structure
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `color.global.background` | light: #FFFFFF; dark: #000000 (SOURCED) | `Tokens.Colors.globalBackground` in AccountGroupedRows.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, GroupScreen.swift … |
+| matched | `auth.agegate.title` | “When's your birthday?” (SOURCED) | `Copy.authAgegateTitle` in AgeGateForm.swift |
+| matched | `font.global.display` | ios: system-serif; android: serif (PLATFORM) | `Tokens.Fonts.globalDisplay` in InvitePreviewView.swift, PhoneScreen.swift, TextRoles.swift |
+| matched | `size.global.titleTop` | 64 pt (SOURCED) | `Tokens.Sizes.globalTitleTop` in FullBleedMediaPage.swift, GroupScreen.swift, ScreenHeader.swift, SignUpLayout.swift |
+| matched | `auth.agegate.subtitle` | “We use it to check your age. We don't save it.” (SOURCED) | `Copy.authAgegateSubtitle` in AgeGateForm.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `size.global.titleToContent` | 30 pt (SOURCED) | `Tokens.Sizes.globalTitleToContent` in AccountGroupedRows.swift, AgeGateForm.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+| matched | `auth.agegate.field.placeholder` | “{date_format}” (SOURCED) | `Copy.authAgegateFieldPlaceholder` in AgeGateModel.swift |
+| matched | `auth.agegate.layout.optIn` | control: C-14 grouped section with a single row: title (text role body) + subtitle (text role meta, color.global.textSecondary) + trailing native switch (tin… (SOURCED) | `SettingsRow(kind: .toggle)` single grouped row with a switch, off by default |
+| matched | `auth.agegate.optIn.label` | “Share My Birthday” (SOURCED) | `Copy.authAgegateOptInLabel` in AgeGateForm.swift |
+| matched | `auth.agegate.optIn.detail` | “Your groups can make you a birthday video. We save your birthday for this.” (SOURCED) | `Copy.authAgegateOptInDetail` in AgeGateForm.swift |
+| matched | `auth.agegate.continue` | “Next” (SOURCED) | `Copy.authAgegateContinue` in AgeGateForm.swift |
+| matched | `size.global.buttonMarginH` | 20 pt (SOURCED) | `Tokens.Sizes.globalButtonMarginH` in BackdropCard.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, OnboardingTitle.swift … |
+
+## Elements
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `color.global.control` | light: #F1F1F1; dark: #262626 (SOURCED) | `Tokens.Colors.globalControl` in AccountGroupedRows.swift, Avatar.swift, CapsuleButton.swift, CircleButton.swift … |
+| matched | `size.global.fieldHeight` | 52 pt (SOURCED) | `Tokens.Sizes.globalFieldHeight` in FormField.swift |
+| matched | `radius.global.field` | 19 pt (SOURCED) | `Tokens.Radii.globalField` in FormField.swift |
+| matched | `auth.agegate.field.accessibilityLabel` | “Birthday” (VERIFIED) | `Copy.authAgegateFieldAccessibilityLabel` in AgeGateForm.swift |
+| n/a | `color.global.surfaceSecondary.android` | light: #F7F7F7; dark: #262626 (SOURCED) | Android only |
+| matched | `radius.global.groupedRow` | 12 pt (SOURCED) | `Tokens.Radii.globalGroupedRow` in AccountGroupedRows.swift, GroupInviteScreen.swift, GroupedSection.swift |
+| matched | `size.global.screenMargin` | 16 pt (SOURCED) | `Tokens.Sizes.globalScreenMargin` in AccountGroupedRows.swift, AgeGateForm.swift, CodeScreen.swift, EmptyStateView.swift … |
+| matched | `color.global.selection` | light: #0088FF; dark: #0091FF (PLATFORM) | `Tokens.Colors.globalSelection` in AccountGroupedRows.swift, CheckRow.swift, GroupedSection.swift, SettingsNotificationsScreen.swift … |
+| n/a | `color.global.system.primary` | #0A84FF (SOURCED) | Android M3 dialog colour; iOS uses system alerts and the `color.global.selection` tint |
+| matched | `settings.root.size.rowHeight` | 58.7 pt (SOURCED) | `Tokens.Sizes.settingsRootSizeRowHeight` in AccountGroupedRows.swift |
+| matched | `auth.agegate.optIn.accessibilityLabel` | “Share my birthday with my groups” (VERIFIED) | `Copy.authAgegateOptInAccessibilityLabel` in AgeGateForm.swift |
+| matched | `auth.phone.layout.inlineError` | presentation: native alert: iOS SwiftUI .alert / Android M3 AlertDialog (settings.account.layout.alert); not dismissed by tapping outside; titled: code error… (SOURCED) | `formErrorAlert(_:trigger:)` (C-29 native message-only alert); code errors: titled alert with Retro's two recoveries |
+| matched | `auth.agegate.error.invalidDate` | “Please check the date and try again.” (SOURCED) | `Copy.authAgegateErrorInvalidDate` in AgeGateForm.swift |
+| matched | `auth.phone.error.dismiss` | “OK” (VERIFIED) | `Copy.authPhoneErrorDismiss` in CodeScreen.swift, FormErrorAlert.swift, ReportFlow.swift |
+
+## States
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `auth.agegate.notConfigured.title` | “Sign-up isn't open yet” (SOURCED) | `Copy.authAgegateNotConfiguredTitle` in AgeGateForm.swift |
+| matched | `auth.agegate.underAge.title` | “Sorry, you need to be {min_age} or older to sign up.” (SOURCED) | `AgeGateRefusedScreen` (BLOCKED {app_name}: the explanation stands alone in release) |
+| matched | `auth.agegate.underAge.detail` | “We didn't save your birthday.” (SOURCED) | `Copy.authAgegateUnderAgeDetail` in AgeGateForm.swift |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `duration.global.crossfade` | 100 ms (SOURCED) | `Tokens.Durations.globalCrossfade` in AgeGateForm.swift, ComponentSupport.swift |
+| matched | `easing.global.standard` | x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | `Tokens.Easings.globalStandard` in AgeGateForm.swift, ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+| matched | `settings.root.layout.toggleHaptic` | ios: system (SwiftUI Toggle plays its own haptic; no custom generator); android: TOGGLE_ON / TOGGLE_OFF (API 34) only if the Switch does not already play one (PLATFORM) | SwiftUI `Toggle` plays its own haptic (no custom generator) |
+| matched | `haptic.global.success` | ios: notification.success; android: CONFIRM (PLATFORM) | `Tokens.Haptics.globalSuccess` in AgeGateForm.swift, CodeScreen.swift, GroupCreateScreen.swift, InviteClipApp.swift … |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | `Tokens.Haptics.globalError` in AgeGateForm.swift, BlockConfirmation.swift, CodeScreen.swift, GroupCreateScreen.swift … |

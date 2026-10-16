@@ -63,6 +63,12 @@ protocol PurchasesProviding: AnyObject, Sendable {
     func purchase(_ plan: PlanOption) async throws -> PurchaseResult
     /// Restores; returns true when premium is active afterwards.
     func restore() async throws -> Bool
+    /// The period of the active subscription (settings.root "Your Subscription" subtitle); nil when unknown.
+    func activePeriod() async -> PlanOption.Period?
+}
+
+extension PurchasesProviding {
+    func activePeriod() async -> PlanOption.Period? { nil }
 }
 
 // MARK: - Fixed implementations (no services: previews, the unconfigured shell)

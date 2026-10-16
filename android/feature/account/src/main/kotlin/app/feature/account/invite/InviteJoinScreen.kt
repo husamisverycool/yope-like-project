@@ -32,6 +32,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -211,7 +214,12 @@ fun InviteJoinScreen(
         Box(Modifier.fillMaxSize().clip(shape).background(Tokens.Colors.globalBackgroundDeep, shape)) {
             // The group's blurred cover stays behind the card while the preview is known (live, or full at join time).
             val backdrop = if (live || state.phase == InviteJoinState.Full) preview?.coverUrl ?: preview?.inviterAvatarUrl else null
-            if (backdrop != null) BlurredBackdrop(backdrop)
+            if (backdrop != null) {
+                // `invite.web.layout.backdrop`: the blur scales with the card (σ = blurSigmaToWidth × width), as on the web.
+                BoxWithConstraints(Modifier.fillMaxSize()) {
+                    BlurredBackdrop(backdrop, sigma = maxWidth * Tokens.Layouts.InviteWebLayoutBackdrop.blurSigmaToWidth)
+                }
+            }
             if (state.phase == InviteJoinState.Loading) {
                 val loading = stringResource(R.string.global_a11y_loading)
                 CircularProgressIndicator(color = white, modifier = Modifier.align(Alignment.Center).semantics { contentDescription = loading })
@@ -324,10 +332,12 @@ private fun Footer(onTerms: (() -> Unit)?, onPrivacy: (() -> Unit)?, modifier: M
     val terms = stringResource(R.string.invite_web_footer_terms)
     val privacy = stringResource(R.string.invite_web_footer_privacy)
     // One line, as Retro's footer ("Terms & Privacy"): each label is its own link span; the line keeps the minimum touch height.
+    // Plain white like the rest of the line (Retro's footer links are not styled as links).
+    val linkStyle = TextLinkStyles(SpanStyle(color = Tokens.Colors.globalTextOnMedia))
     val text = buildAnnotatedString {
-        onTerms?.let { action -> withLink(LinkAnnotation.Clickable(terms) { action() }) { append(terms) } }
+        onTerms?.let { action -> withLink(LinkAnnotation.Clickable(terms, linkStyle) { action() }) { append(terms) } }
         if (onTerms != null && onPrivacy != null) append(AMPERSAND)
-        onPrivacy?.let { action -> withLink(LinkAnnotation.Clickable(privacy) { action() }) { append(privacy) } }
+        onPrivacy?.let { action -> withLink(LinkAnnotation.Clickable(privacy, linkStyle) { action() }) { append(privacy) } }
     }
     Box(modifier.padding(bottom = Tokens.Sizes.inviteWebSizeFooterMargin).heightIn(min = Tokens.Sizes.globalMinTouchTargetAndroid), contentAlignment = Alignment.Center) {
         Text(text, style = style, color = Tokens.Colors.globalTextOnMedia, maxLines = 1)

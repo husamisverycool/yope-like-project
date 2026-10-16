@@ -1,41 +1,53 @@
-# Verification — `onboarding.permission.camera` (iOS)
+# Verification — `onboarding.permission.camera` (iOS, Pass 4 — Retro redesign)
 
-Camera permission: system request on first camera open (capture pass) and the denied card — `Components/PermissionCard.swift` (`.cameraDenied`).
+Camera denied card — C-27 `PermissionCard.cameraDenied` (Components) placed by camera.capture; Settings → `SystemPermissions.swift`.
 
-Checklist written from the spec (`design/surfaces/onboarding.permission.camera.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>.png` (AccountSnapshotTests), then `tools/sidebyside.py` makes `design/verification/onboarding.permission.camera.png` next to the reference image(s) below. The "what the snapshot shows" column states what the code draws for that value; it is to be confirmed on the image.
+Checklist written from the spec (`design/surfaces/onboarding.permission.camera.md`) against the iOS code: every token and copy key the spec names, its reference value, and where the iOS code uses it. The snapshot step is the lead's: macOS CI records `ios/build/snapshots/account/<surface>-<state>-<light|dark>.png` (AccountSnapshotTests: every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/onboarding.permission.camera.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-virgi-7686278541255642390-t35.23-camera-permission-alert.png`, `references/auto/yope/frames/a-yrrah-7454430216123862280-t13.23-camera-permission-alert-2024.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png`
+Reference image(s): `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png`
 
-Snapshots (CI): `onboarding.permission.camera-denied.png`
+Snapshots (CI, `ios/build/snapshots/account/`): `onboarding.permission.camera-denied-light.png`, `onboarding.permission.camera-denied-dark.png`
 
-**Summary: 21 matched · 0 approximated · 0 not matched (BLOCKED or not buildable) · 6 not applicable on iOS / placed by another pass.**
+**Summary: 15 matched · 0 approximated · 0 not matched · 6 not applicable on iOS / owner / another pass.**
 
-| status | kind | token / copy | reference value | element | what the snapshot shows (iOS implementation) |
-|---|---|---|---|---|---|
-| n/a | token | `onboarding.permission.camera.layout.request` | ios: no pre-alert screen: AVCaptureDevice.requestAccess(for: .video) the first time camera.capture opens; the system alert shows NSCameraUsageDescription ove… (SOURCED) | when and how camera access is requested | camera.capture (capture pass) calls AVCaptureDevice.requestAccess on first open; no pre-alert screen |
-| matched | copy | `system.permissions.camera.purpose` | “The app uses your camera to take the photos you send to your groups.” (VERIFIED) |  | Info.plist NSCameraUsageDescription (ios/Config/InfoPlist.generated.xcconfig) |
-| matched | token | `settings.account.layout.alert` | ios: alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; Cancel on the leading side; and… (VERIFIED) | confirmation alerts / dialogs (delete account; also leave group, remove member, block, turn off link) | iOS .alert / .confirmationDialog (system); the M3 dialog half is Android |
-| n/a | copy | `system.permissions.rationale.camera.title` | “want to share pics with your groups?” (SOURCED) |  | Android only |
-| n/a | copy | `system.permissions.rationale.camera.message` | “{app_name} uses your camera to take the pics you share.” (SOURCED) |  | Android only |
-| n/a | copy | `system.permissions.rationale.notNow` | “Not Now” (VERIFIED) |  | Android only |
-| n/a | copy | `system.permissions.rationale.continue` | “Continue” (VERIFIED) |  | Android only |
-| matched | token | `onboarding.permission.contacts.color.card` | #131313 (SOURCED) | inline permission card fill (contacts card; reused for every permission-denied card) | `Tokens.…onboardingPermissionContactsColorCard` in PermissionCard.swift |
-| matched | token | `onboarding.permission.contacts.size.cardHeight` | 101 pt (SOURCED) | inline permission card height | `Tokens.…onboardingPermissionContactsSizeCardHeight` in PermissionCard.swift |
-| matched | token | `onboarding.permission.contacts.size.cardMarginH` | 18 pt (SOURCED) | inline permission card side margin | `PermissionCard` horizontal padding (Components/PermissionCard.swift) |
-| matched | token | `radius.global.card` | 17 pt (SOURCED) | list card corners (home conversation / group cards, inline permission card) | `Tokens.…globalCard` in PermissionCard.swift |
-| matched | token | `onboarding.permission.contacts.layout.card` | leading: none (Yope's contacts-app-like illustration with a red '!' is do-not-copy); text: title then detail, left-aligned, 16 pt from the card's leading edg… (SOURCED) | inline permission card structure | `PermissionCard` (Components): text block left at avatarInset, white pill trailing, ✕ top-trailing when dismissible |
-| matched | token | `onboarding.permission.contacts.fontSize.cardTitle` | 17 pt (SOURCED) | card title ('can’t see / your friends?', bold, white, 2 lines) | `Tokens.…onboardingPermissionContactsFontSizeCardTitle` in PermissionCard.swift |
-| matched | token | `onboarding.permission.contacts.fontWeight.cardTitle` | bold (SOURCED) | card title weight | `Tokens.…onboardingPermissionContactsFontWeightCardTitle` in PermissionCard.swift |
-| matched | token | `color.global.textPrimary` | #FFFFFF (SOURCED) | primary text and glyphs | `Tokens.…globalTextPrimary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | copy | `onboarding.permission.camera.denied.title` | “can’t take pics?” (SOURCED) |  | `Copy.…onboardingPermissionCameraDeniedTitle` in PermissionCard.swift |
-| matched | token | `onboarding.permission.contacts.fontSize.cardDetail` | 14 pt (SOURCED) | card detail ('enable contacts', color.global.textSecondary) | `Tokens.…onboardingPermissionContactsFontSizeCardDetail` in PermissionCard.swift |
-| matched | token | `color.global.textSecondary` | #969696 (SOURCED) | secondary text, placeholders ('start typing...'), inactive tab-bar glyphs, chevrons inside capsules | `Tokens.…globalTextSecondary` in CheckRow.swift, EmptyStateView.swift, FloatingTabBar.swift |
-| matched | copy | `onboarding.permission.camera.denied.detail` | “enable camera” (SOURCED) |  | `Copy.…onboardingPermissionCameraDeniedDetail` in PermissionCard.swift |
-| matched | token | `onboarding.permission.contacts.size.cardButtonWidth` | 91 pt (SOURCED) | white 'enable' button width (color.global.surfaceLight, label color.global.onSurfaceLight) | `Tokens.…onboardingPermissionContactsSizeCardButtonWidth` in LightPill.swift |
-| matched | token | `onboarding.permission.contacts.size.cardButtonHeight` | 37 pt (SOURCED) | white 'enable' button height | `Tokens.…onboardingPermissionContactsSizeCardButtonHeight` in LightPill.swift |
-| matched | token | `color.global.surfaceLight` | #FFFFFF (SOURCED) | light pill fill: secondary buttons ('invite more friends', 'enable', 'new recap'), selected segment pill, '… | `Tokens.…globalSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | token | `color.global.onSurfaceLight` | #000000 (SOURCED) | label on the light pill (secondary buttons, selected segment, 'today') | `Tokens.…globalOnSurfaceLight` in LightPill.swift, SegmentedPills.swift |
-| matched | token | `radius.global.capsule` | shape: capsule; radius: height / 2 (SOURCED) | full pill: header title capsule, composer text field, chat bubbles, tab-bar capsule, tooltip ends, white se… | Capsule() shape |
-| matched | copy | `onboarding.permission.camera.denied.button` | “enable” (SOURCED) |  | `Copy.…onboardingPermissionCameraDeniedButton` in PermissionCard.swift |
-| n/a | token | `haptic.global.shutter` | ios: none; android: none (PLATFORM) | shutter press (photo / video capture) | camera.capture (capture pass) |
-| matched | copy | `system.permissions.microphone.purpose` | “The app uses your microphone to record voice notes and the sound in videos you send to your groups.” (VERIFIED) |  | Info.plist NSMicrophoneUsageDescription (InfoPlist.generated.xcconfig) |
+
+## Structure
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `onboarding.permission.camera.layout.request` | ios: no pre-alert page: AVCaptureDevice.requestAccess(for: .video) the first time camera.capture opens; the system alert shows NSCameraUsageDescription; andr… (PLATFORM) | capture pass: camera.capture asks on first open (CameraService) |
+| matched | `system.permissions.camera.purpose` | “The app uses your camera to take the photos and videos you share with your groups.” (VERIFIED) | Info.plist `INFOPLIST_KEY_*UsageDescription` generated by tools/designgen.mjs (ios/Config/InfoPlist.generated.xcconfig) |
+| matched | `settings.account.layout.alert` | ios: alert(_:isPresented:actions:message:): destructive-role button + Cancel; at most 3 buttons; Cancel is never the default; android: M3 AlertDialog: contai… (VERIFIED) | native `.alert` / `.confirmationDialog` (C-29) |
+| n/a | `system.permissions.rationale.camera.title` | “Allow Access to Camera” (SOURCED) | Android rationale dialog only |
+| n/a | `system.permissions.rationale.notNow` | “Not now” (SOURCED) | Android rationale dialog only |
+| n/a | `system.permissions.rationale.continue` | “Give Permission” (SOURCED) | Android rationale dialog only |
+| matched | `color.global.backgroundDeep` | #000000 (SOURCED) | `Tokens.Colors.globalBackgroundDeep` in BackdropCard.swift, FullBleedMediaPage.swift, GroupScreen.swift, InvitePreviewView.swift … |
+| matched | `icon.global.camera` | ios: camera; android: Outlined.PhotoCamera (PLATFORM) | `Tokens.Icons.globalCamera` in TabBar.swift |
+| matched | `size.global.emptyIcon` | 22 pt (SOURCED) | `Tokens.Sizes.globalEmptyIcon` in EmptyStateView.swift |
+| matched | `color.global.textOnMedia` | #FFFFFF (SOURCED) | `Tokens.Colors.globalTextOnMedia` in CircleButton.swift, FullBleedMediaPage.swift, GroupScreen.swift, InvitePreviewView.swift … |
+| matched | `size.global.emptyIconToTitle` | 26 pt (SOURCED) | `Tokens.Sizes.globalEmptyIconToTitle` in EmptyStateView.swift |
+| matched | `onboarding.permission.camera.denied.title` | “Camera Access” (SOURCED) | `Copy.onboardingPermissionCameraDeniedTitle` in PermissionCard.swift, SettingsAccountScreen.swift |
+| matched | `onboarding.permission.camera.denied.detail` | “We need permission to use your camera so you can take photos for your groups.” (SOURCED) | `Copy.onboardingPermissionCameraDeniedDetail` in PermissionCard.swift, SettingsAccountScreen.swift |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
+| matched | `size.global.emptyTitleToAction` | 25 pt (SOURCED) | `Tokens.Sizes.globalEmptyTitleToAction` in EmptyStateView.swift, SettingsNotificationsScreen.swift |
+| matched | `onboarding.permission.camera.denied.button` | “Allow Camera Access” (SOURCED) | `Copy.onboardingPermissionCameraDeniedButton` in PermissionCard.swift, SettingsAccountScreen.swift |
+
+## Motion
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `duration.global.fade` | 150 ms (SOURCED) | `Tokens.Durations.globalFade` in ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, PaywallScreen.swift … |
+| matched | `easing.global.standard` | x1: 0.4; y1: 0; x2: 0.2; y2: 1 (SOURCED) | `Tokens.Easings.globalStandard` in AgeGateForm.swift, ComponentSupport.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |
+
+## Haptics
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| n/a | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | Android only — iOS presses play no haptic |
+| n/a | `haptic.global.shutter` | ios: none; android: none (PLATFORM) | capture pass (camera.capture) |
+
+## Data & actions
+
+| status | token / copy | reference value | iOS implementation |
+|---|---|---|---|
+| matched | `system.permissions.microphone.purpose` | “The app uses your microphone to record voice notes and the sound in videos you share with your groups.” (VERIFIED) | Info.plist `INFOPLIST_KEY_*UsageDescription` generated by tools/designgen.mjs (ios/Config/InfoPlist.generated.xcconfig) |

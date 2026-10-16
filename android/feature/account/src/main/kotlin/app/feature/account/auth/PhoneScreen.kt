@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -273,11 +275,13 @@ private fun Landing(onGetStarted: () -> Unit, onTerms: () -> Unit, onPrivacy: ()
         content = {
             Column(Modifier.fillMaxWidth().padding(horizontal = Tokens.Sizes.globalScreenMargin), horizontalAlignment = Alignment.CenterHorizontally) {
                 if (wordmark != null) {
-                    Text(
+                    // One line, as Retro's wordmark: a name too long for the width steps down from the token size.
+                    BasicText(
                         wordmark,
-                        style = dsTextStyle(Tokens.FontSizes.authPhoneFontSizeWordmark, Tokens.FontWeights.fontWeightGlobalHeaderTitle, Tokens.Fonts.globalDisplay),
-                        color = Tokens.Colors.globalTextPrimary,
-                        textAlign = TextAlign.Center,
+                        style = dsTextStyle(Tokens.FontSizes.authPhoneFontSizeWordmark, Tokens.FontWeights.fontWeightGlobalHeaderTitle, Tokens.Fonts.globalDisplay)
+                            .copy(color = Tokens.Colors.globalTextPrimary, textAlign = TextAlign.Center),
+                        maxLines = 1,
+                        autoSize = TextAutoSize.StepBased(maxFontSize = Tokens.FontSizes.authPhoneFontSizeWordmark),
                         modifier = Modifier.endAtLastBaseline().semantics { heading() },
                     )
                 }

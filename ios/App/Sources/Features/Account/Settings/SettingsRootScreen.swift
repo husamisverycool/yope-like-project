@@ -20,6 +20,7 @@ struct SettingsRootScreen: View {
     @State private var profile: Profile?
     @State private var isPremium = false
     @State private var premiumLoaded = false
+    @State private var activePeriod: PlanOption.Period?
     @State private var statuses: [SystemPermission: PermissionStatus] = [:]
     @State private var showsManageSubscriptions = false
     @State private var showsPaywall = false
@@ -29,10 +30,16 @@ struct SettingsRootScreen: View {
     @Environment(\.openURL) private var openURL
 
     /// - Parameters: the values `load()` reads, given up front (snapshots); nil / empty: read when the sheet appears.
-    init(profile: Profile? = nil, isPremium: Bool? = nil, statuses: [SystemPermission: PermissionStatus] = [:]) {
+    init(
+        profile: Profile? = nil,
+        isPremium: Bool? = nil,
+        activePeriod: PlanOption.Period? = nil,
+        statuses: [SystemPermission: PermissionStatus] = [:]
+    ) {
         _profile = State(initialValue: profile)
         _isPremium = State(initialValue: isPremium ?? false)
         _premiumLoaded = State(initialValue: isPremium != nil)
+        _activePeriod = State(initialValue: activePeriod)
         _statuses = State(initialValue: statuses)
     }
 
@@ -115,6 +122,7 @@ struct SettingsRootScreen: View {
             isPremium = serverPremium || dependencies.purchases.isPremium
         }
         premiumLoaded = true
+        if isPremium { activePeriod = await dependencies.purchases.activePeriod() }
         for permission in SystemPermission.allCases {
             statuses[permission] = await dependencies.status(of: permission)
         }
@@ -154,13 +162,13 @@ struct SettingsRootScreen: View {
     // MARK: Subscription
 
     /// Non-subscriber: "{app_name} Premium" (BLOCKED until the app is named: release builds omit the row) with "Unlock
-    /// more of what you love." → paywall (never counted as a prompt). Subscriber: "Your Subscription" → the system's
-    /// subscription sheet. Loading: the row's value is the activity indicator.
+    /// more of what you love." → paywall (never counted as a prompt). Subscriber: "Your Subscription" with the plan's
+    /// period ("Annual" / "Monthly") → the system's subscription sheet. Loading: the row's value is the activity indicator.
     @ViewBuilder
     private var subscriptionSection: some View {
         if isPremium {
             SettingsGroup(header: Copy.settingsRootSubscriptionHeader, rows: [
-                SettingsRow(Copy.settingsRootManageSubscription, kind: .navigation { showsManageSubscriptions = true })
+                SettingsRow(Copy.settingsRootManageSubscription, subtitle: periodText, kind: .navigation { showsManageSubscriptions = true })
                     .asSettingsRow(),
             ])
         } else if let title = AccountBlockedCopy.premiumRowTitle {
@@ -169,6 +177,15 @@ struct SettingsRootScreen: View {
                     .accessibilityIdentifier("settings.root.premium")
                     .asSettingsRow(),
             ])
+        }
+    }
+
+    /// `settings.root.premium.annual` / `.monthly` under "Your Subscription"; none while the store has not answered.
+    private var periodText: String? {
+        switch activePeriod {
+        case .year?: return Copy.settingsRootPremiumAnnual
+        case .month?: return Copy.settingsRootPremiumMonthly
+        case nil: return nil
         }
     }
 
