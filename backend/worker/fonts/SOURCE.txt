@@ -9,3 +9,7 @@ ofl/robotoserif/RobotoSerif[GRAD,opsz,wdth,wght].ttf. Axis values: design/MERGE_
 Inter-Regular.ttf, Inter-SemiBold.ttf — Inter (UI role, font.global.family on Android), SIL Open Font License 1.1
 (OFL-Inter.txt). Static instances (wght 400 / 600, default opsz) made with fontTools.varLib.instancer from the
 app's bundled variable font android/core/designsystem/src/main/res/font/inter.ttf (Inter 4.1).
+
+fonts.conf — the fontconfig file the worker uses (src/tribute/render.ts sets FONTCONFIG_FILE): these faces, then the
+fallback fonts of ../../../fonts/fallback/scripts and ../../../fonts/fallback/emoji-color (fonts/fallback/SOURCE.txt) for
+other scripts and colour emoji; no system fonts.

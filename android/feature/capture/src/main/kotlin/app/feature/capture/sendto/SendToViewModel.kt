@@ -23,8 +23,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 
-/** A recorded voice note for the post (AAC `.m4a`). */
-data class VoiceNoteFile(val file: File, val durationMs: Int)
+/** A recorded voice note for the post (AAC `.m4a`) and its waveform (100 levels of 0…31, C-36; null when none). */
+data class VoiceNoteFile(val file: File, val durationMs: Int, val levels: List<Int>? = null)
+
+/**
+ * The voice recorder's state on the composer (`chat.voice.layout.recording` / `.locked`, owner decision 16): holding the
+ * mic, hands-free, or a paused draft that can be previewed, continued, deleted or kept.
+ */
+enum class VoicePhase { Idle, Holding, Locked, Paused }
 
 /**
  * `camera.sendto` (Retro's Postcard composer, RC-5 … RC-8): choose one or more groups, an optional message
@@ -40,6 +46,8 @@ class SendToViewModel(
     /** Whether the device can record a voice note (false without a microphone). */
     private val voiceRecorderAvailable: Boolean,
     private val maxCaption: Int? = null,
+    /** The recorder and player of the voice note (null: no microphone, or a test without one). */
+    private val voiceIo: SendToVoice? = null,
 ) : ViewModel() {
 
     sealed interface Groups {
@@ -64,9 +72,8 @@ class SendToViewModel(
         val selected: Set<String> = emptySet(),
         val caption: String = "",
         val voice: VoiceNoteFile? = null,
-        val recordingVoice: Boolean = false,
-        /** When the current recording started (device elapsed clock), for the timer. */
-        val recordingStartedAt: Long? = null,
+        /** The recorder's state (`chat.voice.layout.recording` / `.locked`). */
+        val voicePhase: VoicePhase = VoicePhase.Idle,
         val premium: Boolean = false,
         /** A reply to a photo: exactly the replied post's group. */
         val replyGroupId: String? = null,
@@ -86,7 +93,10 @@ class SendToViewModel(
                 (media.kind != MediaKind.Video || premium)
 
         /** Whether closing would lose something the member added (Retro's lost-changes rule). */
-        val hasAdditions: Boolean get() = caption.isNotBlank() || voice != null
+        val hasAdditions: Boolean get() = caption.isNotBlank() || voice != null || voicePhase != VoicePhase.Idle
+
+        /** A recording (or a paused draft) is on the composer: the recording capsule takes the message pill's place. */
+        val recordingVoice: Boolean get() = voicePhase != VoicePhase.Idle
     }
 
     sealed interface Event {
@@ -202,17 +212,96 @@ class SendToViewModel(
         return text.substring(0, end)
     }
 
-    fun onVoiceRecording(recording: Boolean, startedAt: Long? = null) {
-        state.update { it.copy(recordingVoice = recording, recordingStartedAt = if (recording) startedAt else null) }
-    }
+    /** The recorder's state changed (the route's gestures drive it when there is no [voiceIo]). */
+    fun onVoicePhase(phase: VoicePhase) = state.update { it.copy(voicePhase = phase) }
 
+    /** The kept note (replacing an earlier one), or null to remove it; the recording ends. */
     fun onVoiceNote(note: VoiceNoteFile?) {
         state.value.voice?.file?.takeIf { it != note?.file }?.delete()
-        state.update { it.copy(voice = note, recordingVoice = false, recordingStartedAt = null) }
+        state.update { it.copy(voice = note, voicePhase = VoicePhase.Idle) }
     }
 
     /** Removes the recorded note (its menu's "Delete recording"). */
-    fun deleteVoice() = onVoiceNote(null)
+    fun deleteVoice() {
+        voiceIo?.stopPlayback()
+        onVoiceNote(null)
+    }
+
+    // Voice note (`chat.voice.layout.recording` / `.locked`): hold records, lift keeps, slide left discards, slide up
+    // locks; locked: pause keeps a draft that previews, continues, deletes or is kept; the note goes on every post.
+
+    /** Finger down on the mic (or TalkBack's activation, [locked]): RECORD_AUDIO is granted (the route asked). */
+    fun beginVoice(locked: Boolean = false): Boolean {
+        val io = voiceIo ?: return false
+        if (state.value.voicePhase != VoicePhase.Idle || state.value.sending) return false
+        io.stopPlayback()
+        if (runCatching { io.start() }.isFailure) return false
+        onVoicePhase(if (locked) VoicePhase.Locked else VoicePhase.Holding)
+        return true
+    }
+
+    /** Slide up onto the lock: hands-free. */
+    fun lockVoice() {
+        if (state.value.voicePhase == VoicePhase.Holding) onVoicePhase(VoicePhase.Locked)
+    }
+
+    /** Locked → paused (`chat.voice.a11y.pauseRecording`). */
+    fun pauseVoice() {
+        if (state.value.voicePhase != VoicePhase.Locked) return
+        voiceIo?.pause()
+        onVoicePhase(VoicePhase.Paused)
+    }
+
+    /** Paused → locked (`chat.voice.a11y.resumeRecording`): recording continues at the end of the draft. */
+    fun resumeVoice() {
+        if (state.value.voicePhase != VoicePhase.Paused) return
+        val io = voiceIo ?: return
+        io.stopPlayback()
+        if (runCatching { io.resume() }.isSuccess) onVoicePhase(VoicePhase.Locked)
+    }
+
+    /** Paused: plays / pauses the draft from its start. */
+    fun toggleDraftPreview() {
+        if (state.value.voicePhase != VoicePhase.Paused) return
+        val io = voiceIo ?: return
+        viewModelScope.launch {
+            val file = runCatching { io.draftFile() }.getOrNull() ?: return@launch
+            if (state.value.voicePhase == VoicePhase.Paused) io.toggle(file)
+        }
+    }
+
+    /** Slide left, or delete while locked / paused: the recording is discarded. */
+    fun cancelVoice() {
+        if (state.value.voicePhase == VoicePhase.Idle) return
+        voiceIo?.stopPlayback()
+        voiceIo?.cancel()
+        onVoicePhase(VoicePhase.Idle)
+    }
+
+    /** Lift (holding) or the send capsule (locked / paused): the recording becomes the note (≥ 1 s), replacing an earlier one. */
+    fun keepVoice() {
+        if (state.value.voicePhase == VoicePhase.Idle) return
+        val io = voiceIo ?: return
+        io.stopPlayback()
+        onVoicePhase(VoicePhase.Idle)
+        viewModelScope.launch {
+            val note = runCatching { io.finish() }.getOrNull() ?: return@launch
+            if (note.durationMs < MIN_NOTE_MS) {
+                note.file.delete()
+                return@launch
+            }
+            onVoiceNote(VoiceNoteFile(note.file, note.durationMs.toInt(), note.levels.takeIf(app.voice.VoiceLevels::isValid)))
+        }
+    }
+
+    /** ▶ / pause on the attached note. */
+    fun toggleNote() {
+        state.value.voice?.file?.let { voiceIo?.toggle(it) }
+    }
+
+    override fun onCleared() {
+        voiceIo?.release()
+    }
 
     /** ✕: back to the camera, discarding the capture; asks first when a message or voice note exists. */
     fun close() {
@@ -232,6 +321,8 @@ class SendToViewModel(
 
     private fun discardAndClose() {
         handoff.discard()
+        voiceIo?.stopPlayback()
+        voiceIo?.cancel()
         state.value.voice?.file?.delete()
         events.trySend(Event.Close)
     }
@@ -256,8 +347,25 @@ class SendToViewModel(
         events.trySend(Event.CreateGroup)
     }
 
-    /** Sends to every selected group; the sheet stays open (busy) until the post exists. */
+    /** Sends to every selected group; the sheet stays open (busy) until the post exists. A running recording is kept first. */
     fun send() {
+        if (state.value.voicePhase != VoicePhase.Idle && voiceIo != null) {
+            val io = voiceIo
+            io.stopPlayback()
+            onVoicePhase(VoicePhase.Idle)
+            viewModelScope.launch {
+                runCatching { io.finish() }.getOrNull()?.let { note ->
+                    if (note.durationMs >= MIN_NOTE_MS) onVoiceNote(VoiceNoteFile(note.file, note.durationMs.toInt(), note.levels.takeIf(app.voice.VoiceLevels::isValid)))
+                    else note.file.delete()
+                }
+                sendNow()
+            }
+            return
+        }
+        sendNow()
+    }
+
+    private fun sendNow() {
         val s = state.value
         val media = s.media ?: return
         if (!s.sendEnabled) return
@@ -273,10 +381,16 @@ class SendToViewModel(
                 durationMs = media.durationMs,
                 voice = s.voice?.file,
                 voiceDurationMs = s.voice?.durationMs,
+                voiceLevels = s.voice?.levels,
                 groupIds = order.map { it.id },
                 caption = caption,
                 replyToPostId = pending?.replyToPostId,
             ),
         )
+    }
+
+    private companion object {
+        /** A recording shorter than a second reads 0:00 (`chat.voice.layout.durationFormat`): not a note. */
+        const val MIN_NOTE_MS = 1000L // provenance-ok: one second, the duration format's resolution
     }
 }

@@ -28,9 +28,26 @@ docker build -f backend/worker/Dockerfile -t worker .
 
 - Base image `node:22-slim` + Debian `ffmpeg` (libx264, AAC) + `fontconfig`; Roboto Serif Headline and Inter (SIL OFL)
   are vendored in `backend/worker/fonts/` (see `SOURCE.txt`).
+- Fallback fonts for tribute names and lines in other scripts and with emoji (SIL OFL, `fonts/fallback/SOURCE.txt`):
+  the image carries `fonts/fallback/scripts` (Noto: Greek serif, Arabic, Hebrew, Devanagari, Thai, CJK and Hangul
+  subsets, 10.2 MB) and `fonts/fallback/emoji-color` (Noto Color Emoji COLRv1, 5.0 MB) at `/app/fonts/fallback/`.
+  The worker points fontconfig at `backend/worker/fonts/fonts.conf` (`FONTCONFIG_FILE`, set at start unless the
+  environment already sets it): those fonts only, no system fonts, so renders match CI.
 - Docker Hub rate limits: `--build-arg NODE_IMAGE=public.ecr.aws/docker/library/node:22-slim`.
 - Behind a TLS-intercepting proxy: `--build-arg HTTPS_PROXY=… --secret id=build_ca,src=<ca.pem>`.
 - Runs `node --import tsx src/main.ts` as user `node`; listens on `PORT` (8080).
+
+### The web image (invite page)
+
+```sh
+# from the repository root
+docker build -f web/Dockerfile -t web .
+```
+
+- The share image (`/i/<token>/og.png`) sets group names with the faces in `web/assets/fonts/` and the fallback fonts of
+  `fonts/fallback/scripts` + `fonts/fallback/emoji-mono` (monochrome Noto Emoji: librsvg draws SVG text as outlines,
+  so a colour emoji font would come out as silhouettes), 11.1 MB in all, copied to `/app/fonts/fallback/`;
+  `web/assets/fonts/fonts.conf` lists them and nothing from the system.
 
 ## 3. Run it
 
