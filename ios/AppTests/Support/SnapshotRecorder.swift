@@ -29,7 +29,9 @@ enum SnapshotRecorder {
         let folder = directory.appendingPathComponent(group, isDirectory: true)
         _ = verifySnapshot(
             of: view,
-            as: .image(layout: layout),
+            // Drawn through the key window (`drawHierarchy`), not `layer.render(in:)`: only the former composites
+            // Core Animation filters, so blurs (C-34 backdrops, colour fields) and materials appear as on a device.
+            as: .image(drawHierarchyInKeyWindow: true, layout: layout),
             named: name,
             record: .all,
             snapshotDirectory: folder.path,
