@@ -2515,6 +2515,12 @@ public enum Tokens {
         /// Retro · global · small close circle (glass over colour on the paywall) · SOURCED
         /// token: `size.global.circleButtonSmall`
         public static let globalCircleButtonSmall: CGFloat = 32
+        /// Retro · global · close '×' ink inside the 36-pt page / media circle (C-11); circles of another diameter scale it by diameter ÷ size.global.circleButton · SOURCED
+        /// token: `size.global.circleCloseGlyph`
+        public static let globalCircleCloseGlyph: CGFloat = 10.9
+        /// Retro · global · glyph ink ('+', and every glyph but the close '×') inside the 36-pt page / media circle (C-11); circles of another diameter scale it by diameter ÷ size.global.circleButton · SOURCED
+        /// token: `size.global.circleGlyph`
+        public static let globalCircleGlyph: CGFloat = 13.6
         /// Retro · global · reply / comment field at the bottom of the viewer (own avatar leading, trailing glyph) · SOURCED
         /// token: `size.global.commentFieldHeight`
         public static let globalCommentFieldHeight: CGFloat = 51.2

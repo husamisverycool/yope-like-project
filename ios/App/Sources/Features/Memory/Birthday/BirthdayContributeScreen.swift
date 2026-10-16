@@ -273,8 +273,7 @@ struct BirthdayContributeComposer: View {
             }
             .overlay(alignment: Alignment(horizontal: .trailing, vertical: .capMiddle)) {
                 CircleButton(
-                    icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.birthdayContributeA11yClose, style: .media,
-                    glyphSize: Tokens.Sizes.globalIconSmall
+                    icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.birthdayContributeA11yClose, style: .media
                 ) {
                     model.finish()
                 }

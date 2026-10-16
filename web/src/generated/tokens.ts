@@ -492,6 +492,8 @@ export const tokens = {
   "size.global.circleButtonLarge": 64, // Retro · global · SOURCED
   "size.global.circleButtonPhoto": 40, // Retro · global · SOURCED
   "size.global.circleButtonSmall": 32, // Retro · global · SOURCED
+  "size.global.circleCloseGlyph": 10.9, // Retro · global · SOURCED
+  "size.global.circleGlyph": 13.6, // Retro · global · SOURCED
   "size.global.commentFieldHeight": 51.2, // Retro · global · SOURCED
   "size.global.emptyIcon": 22, // Retro · global · SOURCED
   "size.global.emptyIconToTitle": 26, // Retro · global · SOURCED

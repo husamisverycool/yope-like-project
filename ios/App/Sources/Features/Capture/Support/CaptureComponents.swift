@@ -156,10 +156,10 @@ struct CaptureMediaHeader<Title: View>: View {
         .frame(maxWidth: .infinity, alignment: .top)
     }
 
-    /// Retro's '×' measures ≈ 9.7 pt in the 36-pt circle (ST-03) with no token: the glyph box is `size.global.iconSmall`,
-    /// the nearest glyph token, as on the recap preview's close (`RecapPreviewClose`; component gap reported).
+    /// C-11 media circles: the glyph ink is the circle's measured default (`size.global.circleCloseGlyph` for the '×',
+    /// `size.global.circleGlyph` for the save arrow; ST-03 / ST-04).
     private func circle(_ item: HeaderAction) -> some View {
-        CircleButton(icon: item.icon, accessibilityLabel: item.accessibilityLabel, style: .media, glyphSize: Tokens.Sizes.globalIconSmall, action: item.action)
+        CircleButton(icon: item.icon, accessibilityLabel: item.accessibilityLabel, style: .media, action: item.action)
     }
 }
 

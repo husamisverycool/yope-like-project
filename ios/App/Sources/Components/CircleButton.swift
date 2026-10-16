@@ -42,19 +42,32 @@ enum CircleButtonStyle {
         case .media, .glass, .glassLarge, .glassSmall: return Tokens.Colors.globalTextOnMedia
         }
     }
+
+    /// The glyph's box (= its ink: `Glyph` fits the symbol to the box). Page, media and small glass circles draw Retro's
+    /// measured ink — `size.global.circleCloseGlyph` for the close '×', `size.global.circleGlyph` for the rest, both
+    /// measured in the 36-pt circle and scaled with the diameter (ST-04, ED-W3; PAY's 32-pt close → 9.7). The glass
+    /// circles over photos keep `size.global.icon` (RWB share / random ink fills the 24-pt box).
+    func glyphSize(for icon: String) -> CGFloat {
+        switch self {
+        case .page, .media, .glassSmall:
+            let ink = icon == Tokens.Icons.globalClose ? Tokens.Sizes.globalCircleCloseGlyph : Tokens.Sizes.globalCircleGlyph
+            return ink * diameter / Tokens.Sizes.globalCircleButton
+        case .glass, .glassLarge:
+            return Tokens.Sizes.globalIcon
+        }
+    }
 }
 
 /// The circle face: a circle of `style.diameter` in `style.fill` with the glyph centred in a `glyphSize` box
-/// (`size.global.icon` by default — the spec's rule for glyphs in circles; the close '×' measures 9.7 pt in a 32–36
-/// circle, which has no token yet: pass it when one exists). No shadow; glass is the fill colour only (its blur was
-/// not derivable — Gap). The hit area is at least `size.global.minTouchTarget.ios` around the drawn circle.
+/// (`style.glyphSize(for:)` by default). No shadow; glass is the fill colour only (its blur was not derivable — Gap).
+/// The hit area is at least `size.global.minTouchTarget.ios` around the drawn circle.
 struct CircleButtonFace: View {
     let icon: String
     var style: CircleButtonStyle = .page
-    var glyphSize: CGFloat = Tokens.Sizes.globalIcon
+    var glyphSize: CGFloat?
 
     var body: some View {
-        Glyph(icon, size: glyphSize)
+        Glyph(icon, size: glyphSize ?? style.glyphSize(for: icon))
             .foregroundStyle(style.glyph)
             .frame(width: style.diameter, height: style.diameter)
             .background(style.fill, in: Circle())
@@ -68,14 +81,14 @@ struct CircleButton: View {
     let icon: String
     let accessibilityLabel: String
     var style: CircleButtonStyle = .page
-    var glyphSize: CGFloat = Tokens.Sizes.globalIcon
+    var glyphSize: CGFloat?
     let action: () -> Void
 
     init(
         icon: String,
         accessibilityLabel: String,
         style: CircleButtonStyle = .page,
-        glyphSize: CGFloat = Tokens.Sizes.globalIcon,
+        glyphSize: CGFloat? = nil,
         action: @escaping () -> Void
     ) {
         self.icon = icon
@@ -99,14 +112,14 @@ struct CircleMenu<Content: View>: View {
     let icon: String
     let accessibilityLabel: String
     var style: CircleButtonStyle = .page
-    var glyphSize: CGFloat = Tokens.Sizes.globalIcon
+    var glyphSize: CGFloat?
     @ViewBuilder let content: () -> Content
 
     init(
         icon: String,
         accessibilityLabel: String,
         style: CircleButtonStyle = .page,
-        glyphSize: CGFloat = Tokens.Sizes.globalIcon,
+        glyphSize: CGFloat? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.icon = icon

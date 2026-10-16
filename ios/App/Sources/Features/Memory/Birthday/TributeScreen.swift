@@ -94,8 +94,7 @@ struct TributeScreen: View {
                 .accessibilitySortPriority(4)
                 .overlay(alignment: Alignment(horizontal: .trailing, vertical: .capMiddle)) {
                     CircleButton(
-                        icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.birthdayTributeA11yClose, style: .media,
-                        glyphSize: Tokens.Sizes.globalIconSmall
+                        icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.birthdayTributeA11yClose, style: .media
                     ) {
                         dismiss()
                     }

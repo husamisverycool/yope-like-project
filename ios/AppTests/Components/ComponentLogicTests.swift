@@ -1,6 +1,6 @@
 // Logic of the shared components (design/components.md): week-strip tile selection (C-17), avatar-stack overflow
-// (C-23), the app's tab items (C-04), confirmations (C-26), token parsing (C-25), the text roles' families, and the
-// metric stack that places views by baseline / cap height (C-01, C-20, C-27).
+// (C-23), the app's tab items (C-04), confirmations (C-26), token parsing (C-25), the text roles' families, circle glyph
+// sizes (C-11), and the metric stack that places views by baseline / cap height (C-01, C-20, C-27).
 @testable import App
 import DesignSystem
 import SwiftUI
@@ -220,5 +220,20 @@ final class ComponentLogicTests: XCTestCase {
             guard case let .custom(name) = family else { return XCTFail("display families are bundled faces (L-8)") }
             XCTAssertNotNil(UIFont(name: name, size: Tokens.FontSizes.globalHeaderTitle), "\(name) is registered from DesignSystem/Fonts")
         }
+    }
+
+    // MARK: C-11 circle glyphs
+
+    func testCircleGlyphsUseRetrosMeasuredInk() {
+        let accuracy: CGFloat = 0.01
+        XCTAssertEqual(CircleButtonStyle.page.glyphSize(for: Tokens.Icons.globalAdd), Tokens.Sizes.globalCircleGlyph, accuracy: accuracy)
+        XCTAssertEqual(CircleButtonStyle.media.glyphSize(for: Tokens.Icons.globalClose), Tokens.Sizes.globalCircleCloseGlyph, accuracy: accuracy)
+        XCTAssertEqual(
+            CircleButtonStyle.glassSmall.glyphSize(for: Tokens.Icons.globalClose),
+            Tokens.Sizes.globalCircleCloseGlyph * Tokens.Sizes.globalCircleButtonSmall / Tokens.Sizes.globalCircleButton,
+            accuracy: accuracy,
+            "PAY's close scales with the 32-pt circle"
+        )
+        XCTAssertEqual(CircleButtonStyle.glassLarge.glyphSize(for: Tokens.Icons.globalShare), Tokens.Sizes.globalIcon, accuracy: accuracy)
     }
 }

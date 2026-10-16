@@ -1868,6 +1868,32 @@
       "precision": "±0.5 pt",
       "unit": "pt"
     },
+    "size.global.circleGlyph": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "dimension",
+      "value": 13.6,
+      "element": "glyph ink ('+', and every glyph but the close '×') inside the 36-pt page / media circle (C-11); circles of another diameter scale it by diameter ÷ size.global.circleButton",
+      "evidence": "references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png first-row '+' ink 52 × 51 px (rows 1005–1055, threshold 80–160 alike) inside its circle x 3138–3277 / 136 px tall (Pass 5 review)",
+      "method": "52 px ÷ (138 px ÷ 36 pt = 3.83 px/pt) = 13.6; ink ÷ diameter 0.377",
+      "precision": "±0.3 pt",
+      "unit": "pt",
+      "notes": "iOS: Glyph sizes an SF Symbol's ink to its box, so the box is this value. Android keeps Retro's Android 24-dp glyph box (APK Modifier.size(24.dp)): Material's Rounded.Add measures 0.389 of the circle there. Glass circles (40, 64) keep size.global.icon (RWB share / random ink 19.7–24.7 in the 64 circle)."
+    },
+    "size.global.circleCloseGlyph": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "dimension",
+      "value": 10.9,
+      "element": "close '×' ink inside the 36-pt page / media circle (C-11); circles of another diameter scale it by diameter ÷ size.global.circleButton",
+      "evidence": "references/auto/retro/store/retro-store-04.png close circle centre (1020, 808), Ø ≈ 86 px, '×' ink 26 × 26 px (threshold 146–180 alike); references/auto/retro/store/retro-store-03.png close (977–1063, 736–822): the same 26 px in 86 px (Pass 5 review)",
+      "method": "26 px ÷ 2.389 px/pt (ST-04 scale, design/tokens/capture.json) = 10.9; ink ÷ diameter 0.302",
+      "precision": "±0.4 pt",
+      "unit": "pt",
+      "notes": "The same ratio gives PAY's 32-pt glass close 9.7 (the C-11 note) and the viewer's ≈ 23-pt close 6.8 (photo.viewer.dimension.closeGlyph). iOS only, as size.global.circleGlyph (Android's Rounded.Close in the 24-dp box: 0.361)."
+    },
     "size.global.circleButtonSmall": {
       "level": "SOURCED",
       "source_app": "Retro",

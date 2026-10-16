@@ -237,8 +237,7 @@ Retro shows destructive actions as **red text**, never a red-filled button: menu
 | glass large (share / random beside a dial) | `size.global.circleButtonLarge` (64) | `color.global.glass` | `color.global.textOnMedia` |
 | glass small (close over colour) | `size.global.circleButtonSmall` (32) | white ≈15 % (PAY; measured as a range — use `color.global.glass`) | `color.global.textOnMedia` |
 
-Glyph size inside circles: close "×" 9.7 pt in a 32–36 circle (PAY, ST-03); other glyphs in the
-`size.global.icon` box. **States.** Pressed: platform default. **Accessibility.** Label from copy; hit area
+Glyph ink inside page / media / small glass circles: close "×" `size.global.circleCloseGlyph` (10.9 in the 36 circle; ST-04, ST-03), every other glyph `size.global.circleGlyph` (13.6; ED-W3), both scaled with the diameter (PAY's 32-pt close → 9.7). iOS sizes the SF Symbol ink to these; Android keeps Retro's Android 24-dp glyph box (Material ink 0.36–0.39 of the circle). Glass circles over photos: glyphs in the `size.global.icon` box. **States.** Pressed: platform default. **Accessibility.** Label from copy; hit area
 ≥ 44 / 48. Contrast: glyph rows 10, 40, 47–48; the fills themselves fail non-text against the page
 (failure 2) — identified by their glyph. **Evidence.** ED-W3 ("+" x3138–3277), ST-03 (977–1063,736–822), RWA
 (more y276–396; share / random), PAY, TC-2B; RV §3.4, §3.7, §4 #7.

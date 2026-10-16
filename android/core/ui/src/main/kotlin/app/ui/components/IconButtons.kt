@@ -86,8 +86,9 @@ enum class CircleButtonStyle {
 
 /**
  * C-11 circle button: [style] sets diameter, fill and glyph colour; the glyph is drawn in the
- * `size.global.icon` box (components.md C-11: "other glyphs in the size.global.icon box"; the 9.7 pt close
- * "×" ink of PAY / ST-03 has no size token — reported gap). Hit area at least
+ * `size.global.icon` box, Retro's Android glyph box (its APK sizes 61 glyphs to `size.global.icon`): Material's padded
+ * glyphs ink 0.389 ("+") and 0.361 ("×") of the 36 circle against Retro iOS's measured `size.global.circleGlyph` /
+ * `.circleCloseGlyph` (0.377 / 0.302 — components.md C-11). Hit area at least
  * `size.global.minTouchTarget.android` (touch bounds expanded by `AppTheme`). Label from copy. The fills fail
  * non-text contrast against the page (CONTRAST failure 2): the glyph identifies the control.
  */

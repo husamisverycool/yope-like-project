@@ -221,18 +221,15 @@ struct RecapPreviewScreen<Page: View, Overlay: View, Leading: View, Trailing: Vi
 
 /// The recap preview's close circle: C-11 on media (`size.global.circleButton`, `color.global.controlOnDeep`,
 /// `icon.global.close` in `color.global.textOnMedia`) centred `closeCentreFromTrailing` / `closeCentreBelowPageTop` in the
-/// frame. Retro's '×' is ≈ 9.7 pt with no token: the glyph box is `size.global.iconSmall`, the nearest glyph token
-/// (component gap reported) — the same in every recap preview and on the black composer (`CaptureMediaHeader`).
+/// frame; the '×' ink is the circle's measured default (`size.global.circleCloseGlyph`, ST-04) — the same in every recap
+/// preview and on the black composer (`CaptureMediaHeader`).
 struct RecapPreviewClose: View {
     let geometry: RecapPreviewGeometry
     let accessibilityLabel: String
     let action: () -> Void
 
     var body: some View {
-        CircleButton(
-            icon: Tokens.Icons.globalClose, accessibilityLabel: accessibilityLabel, style: .media,
-            glyphSize: Tokens.Sizes.globalIconSmall, action: action
-        )
+        CircleButton(icon: Tokens.Icons.globalClose, accessibilityLabel: accessibilityLabel, style: .media, action: action)
         .position(geometry.closeCentreInFrame)
     }
 }

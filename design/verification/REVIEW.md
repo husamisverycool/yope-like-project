@@ -23,6 +23,7 @@ side-by-side images are local only (git-ignored: the reference half is third-par
 | 9 | iOS review images showed no blur at all (App Clip backdrop sharp) although the code blurs. | snapshot of invite.appclip | `SnapshotRecorder` draws through the key window (`drawHierarchy`) so Core Animation filters render; not an app bug. |
 | 10 | Recap list week cards ("Week 41" on the cover) used the light headline cut and washed out on bright covers; the C-34 library card's year did too. | TC-2023-12 recaps: "December" / "November" and the card's "2023" are the heavy title cut | Week cards → `displayTitle`; C-34 card year → `headerTitle` (as memory's recap card, RM-8). |
 | 11 | Paywall media card ended in a hard edge; Retro's card fades into the colour field at the bottom. | PAY rows 700–1050 (card vs backdrop colour distance; linear ramp y 805 → 950) | `paywall.size.mediaCardFade` (48 pt) alpha mask on both platforms. |
+| 12 | iOS circle glyphs filled the 24-pt box: the "+" on group rows was 0.66 of its circle, the sheet "×" 0.67; Retro's are 0.377 and 0.302. | ED-W3 "+" 52 px in 138 px; ST-04 / ST-03 "×" 26 px in 86 px | `size.global.circleGlyph` (13.6) and `size.global.circleCloseGlyph` (10.9), scaled with the diameter, as the iOS `CircleButtonStyle` default; the hand-set `iconSmall` overrides removed. Android already draws Retro's Android 24-dp glyph box (0.389 / 0.361). |
 
 ## Reviewed and kept (matches the reference or the spec)
 
@@ -56,7 +57,7 @@ side-by-side images are local only (git-ignored: the reference half is third-par
 - Debug builds show `{app_name}` placeholders where copy names the app (release omits those elements).
 - Display faces are the closest free match, not Roslindale itself (licence: owner).
 - Trial UI on the Android paywall (core:billing exposes no trial offer); iOS shows StoreKit's trial.
-- Component gaps logged by the Pass 4 agents (local variants built from tokens): 64-pt dark circle, close-glyph size
-  (~9.7 pt), header action state, grouped-row value/height variants, people-row check slot, white loading indicator
+- Component gaps logged by the Pass 4 agents (local variants built from tokens): 64-pt dark circle, header action
+  state, grouped-row value/height variants, people-row check slot, white loading indicator
   on media, sheet header with a leading close, reply-bar internals. Each is drawn from tokens; consolidating them into
   the libraries is follow-up work, not a visual difference.

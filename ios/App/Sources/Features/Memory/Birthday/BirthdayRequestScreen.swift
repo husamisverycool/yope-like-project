@@ -85,8 +85,7 @@ struct BirthdayRequestScreen: View {
     /// `dimension.birthday.request.close.inset` from the screen edge, its centre `.close.centerY` below the safe-area top.
     private var closeButton: some View {
         CircleButton(
-            icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.birthdayRequestA11yClose, style: .glassSmall,
-            glyphSize: Tokens.Sizes.globalIconSmall
+            icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.birthdayRequestA11yClose, style: .glassSmall
         ) {
             dismiss()
         }

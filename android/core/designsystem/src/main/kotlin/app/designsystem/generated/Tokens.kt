@@ -2076,6 +2076,10 @@ object Tokens {
         val globalCircleButtonPhoto: Dp = 40.dp
         /** Retro · global · small close circle (glass over colour on the paywall) · SOURCED — token `size.global.circleButtonSmall` */
         val globalCircleButtonSmall: Dp = 32.dp
+        /** Retro · global · close '×' ink inside the 36-pt page / media circle (C-11); circles of another diameter scale it by diameter ÷ size.global.circleButton · SOURCED — token `size.global.circleCloseGlyph` */
+        val globalCircleCloseGlyph: Dp = 10.9.dp
+        /** Retro · global · glyph ink ('+', and every glyph but the close '×') inside the 36-pt page / media circle (C-11); circles of another diameter scale it by diameter ÷ size.global.circleButton · SOURCED — token `size.global.circleGlyph` */
+        val globalCircleGlyph: Dp = 13.6.dp
         /** Retro · global · reply / comment field at the bottom of the viewer (own avatar leading, trailing glyph) · SOURCED — token `size.global.commentFieldHeight` */
         val globalCommentFieldHeight: Dp = 51.2.dp
         /** Retro · global · empty-state outline glyph · SOURCED — token `size.global.emptyIcon` */
