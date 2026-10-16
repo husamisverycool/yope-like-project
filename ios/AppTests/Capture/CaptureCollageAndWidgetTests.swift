@@ -47,6 +47,33 @@ final class CaptureCollageModelTests: XCTestCase {
         XCTAssertEqual(model.shareItem()?.path, "g/g1/collages/c1/v1/share-2.jpg", "shares the current page")
     }
 
+    func testBackdropIsTheFirstPhotoElsePageOne() async {
+        let page = CaptureTestImages.scene(1)
+        let photo = CaptureTestImages.scene(4)
+        let rig = CaptureTestRig()
+        rig.collages.collage = collage(pages: 1)
+        rig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page, "u/u1/m1/display.jpg": photo]
+        rig.collages.firstPhotoPaths = [PostID("p1"): "u/u1/m1/display.jpg"]
+        let model = rig.collageModel()
+        await model.load()
+        XCTAssertEqual(rig.collages.firstPhotoRequests.last, [PostID("p1"), PostID("p2")], "resolved from the collage's post ids, first first")
+        XCTAssertTrue(model.backdropImage === photo, "MERGE L-7: the collage's first photo, not the composed page")
+
+        let fallbackRig = CaptureTestRig()
+        fallbackRig.collages.collage = collage(pages: 1)
+        fallbackRig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page]
+        let fallback = fallbackRig.collageModel()
+        await fallback.load()
+        XCTAssertNil(fallback.firstPhoto, "no resolvable first photo (offline, blocked, deleted)")
+        XCTAssertTrue(fallback.backdropImage === page, "page 1's image until (or unless) the first photo loads")
+
+        let pendingRig = CaptureTestRig()
+        pendingRig.collages.collage = collage(status: .pending)
+        let pending = pendingRig.collageModel()
+        await pending.load()
+        XCTAssertNil(pending.backdropImage, "no backdrop while composing: the page is controlOnDeep")
+    }
+
     func testNoCollageIsEmptyAndOpensCamera() async {
         let rig = CaptureTestRig()
         let model = rig.collageModel()

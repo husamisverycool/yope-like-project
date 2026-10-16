@@ -67,7 +67,7 @@ import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.sendto.decodePreview
 import app.feature.capture.ui.ControlRow
 import app.feature.capture.ui.CrossfadeText
-import app.feature.capture.ui.DualImage
+import app.ui.media.DualImage
 import app.feature.capture.ui.MediaControlCircle
 import app.feature.capture.ui.MediaEmptyState
 import app.feature.capture.ui.MediaLabelPill

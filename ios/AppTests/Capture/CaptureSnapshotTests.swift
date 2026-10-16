@@ -287,10 +287,15 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         await loading.load()
         assertRecorded(CaptureSnapshot.record(CollageView(model: loading), surface: "collage.view", state: "loading"))
 
+        // The backdrop is the collage's first photo (MERGE L-7): a real sample photo at the display rendition's shape.
+        let firstPhoto = CaptureTestImages.scene(0, CGSize(width: 900, height: 1200))
+        let firstPhotoPath = "u/u1/m1/display.jpg"
+
         let rig = CaptureTestRig()
         rig.openInvitation(closingIn: -60)
         rig.collages.collage = collage(pages: 2)
-        rig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page, "g/g1/collages/c1/v1/display-2.jpg": secondPage]
+        rig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page, "g/g1/collages/c1/v1/display-2.jpg": secondPage, firstPhotoPath: firstPhoto]
+        rig.collages.firstPhotoPaths = [PostID("p1"): firstPhotoPath]
         let ready = rig.collageModel()
         await ready.load()
         assertRecorded(CaptureSnapshot.record(CollageView(model: ready), surface: "collage.view", state: "ready", appearances: CaptureSnapshot.both))
@@ -299,17 +304,28 @@ final class CaptureScreenSnapshotTests: XCTestCase {
         let singleRig = CaptureTestRig()
         singleRig.openInvitation(closingIn: -60)
         singleRig.collages.collage = collage(pages: 1)
-        singleRig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page]
+        singleRig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page, firstPhotoPath: firstPhoto]
+        singleRig.collages.firstPhotoPaths = [PostID("p1"): firstPhotoPath]
         let single = singleRig.collageModel()
         await single.load()
         assertRecorded(CaptureSnapshot.record(CollageView(model: single), surface: "collage.view", state: "ready-one-page"))
+
+        // First photo not resolvable (offline / blocked): page 1's image stands in as the backdrop.
+        let pageBackdropRig = CaptureTestRig()
+        pageBackdropRig.openInvitation(closingIn: -60)
+        pageBackdropRig.collages.collage = collage(pages: 1)
+        pageBackdropRig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page]
+        let pageBackdrop = pageBackdropRig.collageModel()
+        await pageBackdrop.load()
+        assertRecorded(CaptureSnapshot.record(CollageView(model: pageBackdrop), surface: "collage.view", state: "backdrop-page-1"))
 
         let noShareRig = CaptureTestRig()
         noShareRig.openInvitation(closingIn: -60)
         var withoutShare = collage(pages: 1)
         withoutShare.sharePath = nil
         noShareRig.collages.collage = withoutShare
-        noShareRig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page]
+        noShareRig.collages.images = ["g/g1/collages/c1/v1/display-1.jpg": page, firstPhotoPath: firstPhoto]
+        noShareRig.collages.firstPhotoPaths = [PostID("p1"): firstPhotoPath]
         let noShare = noShareRig.collageModel()
         await noShare.load()
         assertRecorded(CaptureSnapshot.record(CollageView(model: noShare), surface: "collage.share", state: "not-ready"))

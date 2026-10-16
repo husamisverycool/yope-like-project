@@ -31,7 +31,7 @@ import app.feature.capture.sendto.SendToChrome
 import app.feature.capture.sendto.SendToScreen
 import app.feature.capture.sendto.SendToViewModel
 import app.feature.capture.sendto.VoiceNoteFile
-import app.feature.capture.ui.DualImage
+import app.ui.media.DualImage
 import app.feature.capture.widget.WidgetPickerScreen
 import app.feature.capture.widget.WidgetPickerState
 import app.media.DualCaptureMode

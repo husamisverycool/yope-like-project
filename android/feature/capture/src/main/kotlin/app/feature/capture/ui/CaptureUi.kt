@@ -357,14 +357,8 @@ private const val ARC_BOTTOM = 90f // provenance-ok: geometry (quarter-circle co
 private const val ARC_LEFT = 180f // provenance-ok: geometry (quarter-circle corner)
 private const val ARC_SWEEP = 90f // provenance-ok: geometry (quarter-circle corner)
 
-/**
- * The dual image (`daily.dualimage.layout.composition`, every value a ratio of the main width W): main 3:4,
- * aspect-fill, outer corners [cornerRadius] = the host's (`radius.global.viewfinder` in daily.capture; null =
- * the token's `mainRadiusRatio` × W where the host draws no shape); inset (front photo) outer width 0.31 W,
- * 3:4, top-leading at 0.03 W, a 0.0051 W border in `color.global.backgroundDeep`, outer corners 0.126 × its
- * outer width, inner = outer − border. While loading the frame is [loadingFill] (`color.global.backgroundDeep`
- * on media hosts). Images fade in (`duration.global.fade`). One element labelled [contentDescription].
- */
+/** Moved to core:ui (`app.ui.media.DualImage`, shared with social's viewer and chat); this forwards to it. */
+@Deprecated("Use app.ui.media.DualImage", ReplaceWith("app.ui.media.DualImage(main, inset, contentDescription, modifier, cornerRadius, loadingFill)"))
 @Composable
 internal fun DualImage(
     main: Painter?,
@@ -373,37 +367,7 @@ internal fun DualImage(
     modifier: Modifier = Modifier,
     cornerRadius: Dp? = null,
     loadingFill: Color = Tokens.Colors.globalBackgroundDeep,
-) {
-    val c = Tokens.Layouts.DailyDualimageLayoutComposition
-    BoxWithConstraints(
-        modifier
-            .aspectRatio(c.mainAspect)
-            .then(if (contentDescription != null) Modifier.clearAndSetSemantics { this.contentDescription = contentDescription } else Modifier),
-    ) {
-        val w = maxWidth
-        val mainShape = RoundedCornerShape(cornerRadius ?: (w * c.mainRadiusRatio))
-        Box(Modifier.fillMaxSize().clip(mainShape).background(loadingFill)) {
-            FadeImage(main, Modifier.fillMaxSize())
-        }
-        if (inset != null) {
-            val outerW = w * c.insetWidthRatio
-            val border = w * c.insetBorderRatio
-            val outerR = outerW * c.insetOuterRadiusRatio
-            val margin = w * c.insetMarginRatio
-            Box(
-                Modifier
-                    .padding(start = margin, top = margin)
-                    .width(outerW)
-                    .aspectRatio(c.insetAspect)
-                    .clip(RoundedCornerShape(outerR))
-                    .background(Tokens.Colors.globalBackgroundDeep)
-                    .padding(border),
-            ) {
-                FadeImage(inset, Modifier.fillMaxSize().clip(RoundedCornerShape(outerR - border)))
-            }
-        }
-    }
-}
+) = app.ui.media.DualImage(main, inset, contentDescription, modifier, cornerRadius, loadingFill)
 
 /** [painter] aspect-filled, fading in with `duration.global.fade` when it arrives. */
 @Composable

@@ -3,6 +3,7 @@ package app.main
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -81,29 +82,33 @@ class AccountFlowsTest {
         invites += GroupInvite("i9", "g9", token, "u-sam", now, now.plusSeconds(3600), null)
     }
 
-    /** auth.phone → auth.code → auth.agegate → auth.profile → notifications → widget. */
+    /** auth.phone (landing → form) → auth.code → auth.agegate → auth.profile (name → photo) → notifications → widget. */
     private fun signUp(backend: FakeAccountBackend) {
-        text("sign up or log in").assertExists()
-        field("phone number").performTextInput(" 415 555 0100")
-        text("continue").performClick()
+        text("Get started").performClick()
+        compose.waitForIdle()
+        field("Phone number").performTextInput(" 415 555 0100")
+        text("Next").performClick()
         compose.waitForIdle()
         at<AppRoute.AuthCode>()
-        field("verification code").performTextInput(backend.validCode)
-        text("continue").performClick()
+        field("Verification code").performTextInput(backend.validCode)
+        text("Next").performClick()
         compose.waitForIdle()
         at<AppRoute.AuthAgeGate>()
-        field("birthday").performTextInput("03142001")
-        text("continue").performClick()
+        field("Birthday").performTextInput("03142001")
+        text("Next").performClick()
         compose.waitForIdle()
         at<AppRoute.AuthProfile>()
-        field("your name").performTextInput("Ana Lima")
-        text("continue").performClick()
+        field("Full name").performTextInput("Ana Lima")
+        text("Next").performClick()
+        compose.waitForIdle()
+        // Step 2 (photo): skipped.
+        text("Maybe Later").performClick()
         compose.waitForIdle()
         at<AppRoute.PermissionNotifications>()
-        text("maybe later").performClick()
+        text("Maybe later").performClick()
         compose.waitForIdle()
         at<AppRoute.OnboardingWidget>()
-        text("Continue").performClick()
+        text("Maybe later").performClick()
         compose.waitForIdle()
     }
 
@@ -114,7 +119,7 @@ class AccountFlowsTest {
         at<AppRoute.AuthPhone>()
         signUp(backend)
         at<AppRoute.GroupsList>()
-        text("create group").assertExists()
+        text("Welcome to groups!").assertExists()
         assertEquals(listOf("requestOtp", "verifyOtp"), backend.calls.filter { it == "requestOtp" || it == "verifyOtp" })
         assertTrue(backend.ageConfirmed)
         assertEquals("Ana Lima", backend.profiles.getValue(backend.meId).displayName)
@@ -127,16 +132,18 @@ class AccountFlowsTest {
         val backend = FakeAccountBackend().apply { signIn(); ageConfirmed = true; profile(meId, "Ana Lima") }
         start(fakeEnvironment(backend, FakeStores().apply { onboarded += backend.meId }))
         at<AppRoute.GroupsList>()
-        text("create group").performClick()
+        text("Create Group").performClick()
         compose.waitForIdle()
         at<AppRoute.GroupCreate>()
-        field("group name").performTextInput("Book club")
-        text("family").performClick()
-        text("create group").performClick()
+        // Step A: the kind (template rows) → step B: cover and name.
+        text("Family").performClick()
+        compose.waitForIdle()
+        field("Group name").performTextInput("Book club")
+        text("Create Group").performClick()
         compose.waitForIdle()
         at<AppRoute.Group>()
-        text("you created group").assertExists()
-        text("invite more family").assertExists()
+        text("Let's get started").assertExists()
+        text("Invite Family").assertExists()
         assertEquals("Book club", backend.groups.values.single().name)
         // Back from the new group returns home (the create sheet closed).
         nav.popBackStack()
@@ -150,6 +157,10 @@ class AccountFlowsTest {
         val stores = FakeStores().apply { onboarded += backend.meId }
         start(fakeEnvironment(backend, stores))
         links.tryEmit(DeepLink.Invite("AbCdEfGhIjKlMnOpQrStUvWx"))
+        compose.waitForIdle()
+        // The invite card (invite.web's card, natively) → "Let's go" joins.
+        at<AppRoute.InviteJoin>()
+        text("Let's go").performClick()
         compose.waitForIdle()
         at<AppRoute.Group>()
         text("Book club").assertExists()
@@ -177,7 +188,7 @@ class AccountFlowsTest {
         links.tryEmit(DeepLink.Invite("AbCdEfGhIjKlMnOpQrStUvWx"))
         compose.waitForIdle()
         at<AppRoute.InviteJoin>()
-        text("THIS LINK NO LONGER WORKS").assertExists()
+        text("This link no longer works").assertExists()
     }
 
     @Test fun leaveAGroupFromItsSettings() {
@@ -190,11 +201,11 @@ class AccountFlowsTest {
         text("Sunday dinners").assertExists()
         compose.runOnIdle { nav.navigate(AppRoute.GroupSettings("g1")) }
         compose.waitForIdle()
-        compose.onNode(hasScrollAction()).performScrollToNode(hasText("leave group"))
-        compose.onNode(hasText("leave group")).performClick()
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText("Leave Group"))
+        compose.onNode(hasText("Leave Group")).performClick()
         compose.waitForIdle()
         text("Leave Sunday dinners?").assertExists()
-        text("Leave").performClick()
+        text("Yes, leave").performClick()
         compose.waitForIdle()
         at<AppRoute.GroupsList>()
         text("Sunday dinners").assertDoesNotExist()
@@ -209,18 +220,18 @@ class AccountFlowsTest {
         compose.waitForIdle()
         text("Delete Account").performClick()
         compose.waitForIdle()
-        text("Delete your account?").assertExists()
+        text("Delete account?").assertExists()
         // Cancel keeps everything.
         text("Cancel").performClick()
         compose.waitForIdle()
         assertFalse(backend.accountDeleted)
         text("Delete Account").performClick()
         compose.waitForIdle()
-        text("Delete").performClick()
+        text("Yes, delete").performClick()
         compose.waitForIdle()
         assertTrue(backend.accountDeleted)
         at<AppRoute.AuthPhone>()
-        text("sign up or log in").assertExists()
+        text("Get started").assertExists()
     }
 
     /** camera.capture → In: "app launch (the app opens to the camera)", over groups.list. */
@@ -232,8 +243,8 @@ class AccountFlowsTest {
         start(fakeEnvironment(backend, FakeStores().apply { onboarded += backend.meId }, launchToCamera = true))
         at<AppRoute.Camera>()
         assertTrue(nav.previousBackStackEntry!!.destination.hasRoute<AppRoute.GroupsList>())
-        // The tab bar sits under the camera; Groups goes home.
-        compose.onNode(hasContentDescription("groups")).performClick()
+        // The tab bar sits under the camera; Home goes to the groups list.
+        compose.onNode(hasContentDescription("Home")).performClick()
         compose.waitForIdle()
         at<AppRoute.GroupsList>()
     }
@@ -260,8 +271,11 @@ class AccountFlowsTest {
         start(fakeEnvironment(backend, FakeStores().apply { onboarded += backend.meId }), memory)
         compose.runOnIdle { nav.navigate(AppRoute.Group("g1")) }
         compose.waitForIdle()
-        compose.waitUntil(WAIT_MS) { compose.onAllNodes(hasText("Day in History", substring = true)).fetchSemanticsNodes().isNotEmpty() }
-        compose.onNode(hasText("Day in History", substring = true)).performClick()
+        // The entry is a card in the pager under this week's strip.
+        compose.waitUntil(WAIT_MS) {
+            runCatching { compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("On this day")) }.isSuccess
+        }
+        compose.onNode(hasText("On this day"), useUnmergedTree = true).performClick()
         compose.waitForIdle()
         assertTrue("at ${nav.currentDestination?.route}", nav.currentBackStack.value.any { it.destination.hasRoute<OnThisDayRoute>() })
     }
