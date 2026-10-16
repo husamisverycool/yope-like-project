@@ -41,7 +41,8 @@ final class PlansModelTests: XCTestCase {
         XCTAssertEqual(model.place.count, PlanCreateModel.maxPlaceLength, "typing stops at the server's limit")
         XCTAssertEqual(model.startsAt, PlansFixture.dinnerStart)
         let revision = services.revision
-        let plan = try XCTUnwrap(await model.submit())
+        let submitted = await model.submit()
+        let plan = try XCTUnwrap(submitted)
         XCTAssertEqual(plan.title, "Dinner at ours")
         XCTAssertFalse(plan.allDay)
         XCTAssertEqual(plan.localDate.description, "2026-10-17")
@@ -82,7 +83,8 @@ final class PlansModelTests: XCTestCase {
     func testEditPrefillsAndSaves() async throws {
         let fixture = PlansFixture(me: PlansFixture.ana)
         fixture.addDinner()
-        let plan = try XCTUnwrap(try await fixture.data.plan(id: PlansFixture.planID))
+        let stored = try await fixture.data.plan(id: PlansFixture.planID)
+        let plan = try XCTUnwrap(stored)
         let model = PlanCreateModel(groupID: PlansFixture.groupID, editing: plan, services: fixture.services)
         XCTAssertTrue(model.isEditing)
         XCTAssertEqual(model.title, "Dinner at ours")
@@ -90,7 +92,8 @@ final class PlansModelTests: XCTestCase {
         XCTAssertTrue(model.hasCover)
         XCTAssertFalse(model.hasInput, "nothing changed yet")
         model.setTitle("Dinner at ours!")
-        let saved = try XCTUnwrap(await model.submit())
+        let submitted = await model.submit()
+        let saved = try XCTUnwrap(submitted)
         XCTAssertEqual(saved.title, "Dinner at ours!")
         XCTAssertEqual(saved.coverPath, plan.coverPath, "a kept cover is sent as it is")
     }
