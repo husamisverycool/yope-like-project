@@ -79,6 +79,7 @@ struct GroupSettingsView: View {
                 RouteDestination(route: route)
             }
         }
+        .environment(\.settingsPush) { route in path.append(route) }
         .dsSheetBackground()
         .task { await model.load() }
         .leaveGroupAlert(

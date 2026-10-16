@@ -33,6 +33,8 @@ struct PlanOption: Identifiable, Hashable {
     let monthlyEquivalent: String?
     /// The localized subscription period unit for the billing line (`{period}`: "year" / "month").
     let periodUnit: String?
+    /// The free trial's length in the store's terms (`{trial_duration}`: "1 week"); nil without a trial.
+    var trialDuration: String?
 }
 
 enum PurchaseResult: Equatable {

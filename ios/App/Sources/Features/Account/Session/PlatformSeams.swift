@@ -58,7 +58,8 @@ final class RevenueCatPurchases: PurchasesProviding {
                 period: type == .annual ? .year : .month,
                 price: product.localizedPriceString,
                 monthlyEquivalent: type == .annual ? product.localizedPricePerMonth : nil,
-                periodUnit: product.sk2Product?.subscription?.subscriptionPeriod.unit.localizedDescription
+                periodUnit: product.sk2Product?.subscription?.subscriptionPeriod.unit.localizedDescription,
+                trialDuration: Self.trialDuration(of: product)
             ))
         }
         guard !result.isEmpty else { throw PurchasesFailure.unavailable }
@@ -88,6 +89,24 @@ final class RevenueCatPurchases: PurchasesProviding {
         } catch {
             throw Self.map(error, otherwise: .failed)
         }
+    }
+
+    /// The introductory free trial's length ("1 week", the locale's full units), or nil when the product has none.
+    private static func trialDuration(of product: StoreProduct) -> String? {
+        guard let intro = product.introductoryDiscount, intro.paymentMode == .freeTrial else { return nil }
+        let period = intro.subscriptionPeriod
+        var components = DateComponents()
+        switch period.unit {
+        case .day: components.day = period.value
+        case .week: components.weekOfMonth = period.value
+        case .month: components.month = period.value
+        case .year: components.year = period.value
+        @unknown default: return nil
+        }
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = [.day, .weekOfMonth, .month, .year]
+        return formatter.string(from: components)
     }
 
     private static func map(_ error: Error, otherwise: PurchasesFailure) -> PurchasesFailure {

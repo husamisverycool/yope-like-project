@@ -968,12 +968,13 @@ private fun PhotoMessage(row: ChatRow, afterHeader: Boolean, ui: ChatUiState, na
             Text(caption, style = TextRoles.body, color = Tokens.Colors.globalTextPrimary, modifier = Modifier.clearAndSetSemantics { })
         }
         val post = row.post
-        if (post?.voicePath != null) {
+        val notePath = post?.voicePath
+        if (post != null && notePath != null) {
             val duration = (post.voiceDurationMs ?: 0).toLong()
             val voiceLabel = if (row.mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(duration))
             else stringRes(R.string.chat_voice_a11y_message, row.author?.firstName.orEmpty(), Formats.spokenDuration(duration))
             Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
-            VoiceCapsule(duration, voice.elapsedOf(post.voicePath, duration), voice.stateOf(post.voicePath), voiceLabel, onClick = { voice.onPlay(post.voicePath) })
+            VoiceCapsule(duration, voice.elapsedOf(notePath, duration), voice.stateOf(notePath), voiceLabel, onClick = { voice.onPlay(notePath) })
         }
     }
 }

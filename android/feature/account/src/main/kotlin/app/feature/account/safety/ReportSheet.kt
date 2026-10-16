@@ -4,7 +4,6 @@
 // tc-2025-12-rewind-panels.png (TC-RWP: native menu, destructive red); HIG action sheets; M3 bottom sheets; App Review 1.2.
 package app.feature.account.safety
 
-import android.view.View
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -25,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -49,7 +47,6 @@ import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.dataError
 import app.feature.account.common.errorDismissLabel
-import app.feature.account.common.navigateAccount
 import app.feature.account.groups.GroupActions
 import app.feature.account.groups.LeaveGroupDialog
 import app.model.AppRoute

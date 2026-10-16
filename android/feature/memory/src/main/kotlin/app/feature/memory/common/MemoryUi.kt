@@ -148,6 +148,29 @@ fun MemoryImage(
 }
 
 /**
+ * C-34 backdrop of a signed URL: core:ui `BlurredBackdrop` (the measured blur `size.global.backdropBlur` under
+ * `color.global.backdropDim`, lead L-5). [software] / [onSettled] serve the share renderer: the image is decoded into a
+ * software bitmap and [onSettled] runs once it has loaded or failed.
+ */
+@Composable
+fun MemoryBackdrop(url: String?, modifier: Modifier = Modifier, software: Boolean = false, onSettled: () -> Unit = {}) {
+    val painter = url?.let { LocalMemoryImages.current?.invoke(it) }
+    val context = LocalContext.current
+    val model: Any? = when {
+        url == null -> null
+        painter != null -> painter
+        software -> remember(url) {
+            ImageRequest.Builder(context).data(url).allowHardware(false)
+                .listener(onSuccess = { _, _ -> onSettled() }, onError = { _, _ -> onSettled() })
+                .build()
+        }
+        else -> url
+    }
+    if (url == null || painter != null) LaunchedEffect(url) { onSettled() }
+    app.ui.components.BlurredBackdrop(model, modifier = modifier)
+}
+
+/**
  * Starts loading [urls] into the image caches now, so they show at once when their card or memory appears (no
  * image popping in after a step). Nothing when tests supply images.
  */

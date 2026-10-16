@@ -21,8 +21,8 @@
 //  1. the media page (`RecapPreviewGeometry.frame`): full width, from the safe-area top to
 //     `mediaPageBottomFromScreenBottom` (94.8) above the screen bottom, corners `mediaPageCornerRadius` (26.5,
 //     continuous), holding `page(geometry)` clipped to it. The caller fills it: a backdrop (C-34 `BlurredBackdrop`, σ
-//     `size.global.backdropBlur` under `color.global.backdropDim` — L-5; `color.global.controlOnDeep` when there is none)
-//     and the card(s) — `RecapPreviewMetrics.cardSize(in:)` gives the collage card's aspect-fit box, `geometry.contentBox`
+//     `size.global.backdropBlur` under `color.global.backdropDim` — L-5; collage.view's states fill it
+//     `color.global.controlOnDeep`) and the card(s) — `RecapPreviewMetrics.cardSize(in:)` gives the collage card's aspect-fit box, `geometry.contentBox`
 //     year.story's 9:16 box; a paging `TabView` for swiped pages;
 //  2. `overlay(geometry)` on the page in frame coordinates: normally `RecapPreviewClose` (C-11 on media at
 //     `closeCentreFromTrailing` (37.7) / `closeCentreBelowPageTop` (38)) and, for year.story, the C-22 position pill on the
@@ -169,11 +169,8 @@ struct RecapPreviewScreen<Page: View, Overlay: View, Leading: View, Trailing: Vi
             ZStack(alignment: .topLeading) {
                 Tokens.Colors.globalBackgroundDeep
                 ZStack(alignment: .topLeading) {
-                    ZStack {
-                        Tokens.Colors.globalControlOnDeep
-                        page(geometry)
-                    }
-                    .frame(width: frame.width, height: frame.height)
+                    page(geometry)
+                        .frame(width: frame.width, height: frame.height)
                     .clipShape(DSShape.rounded(Tokens.Layouts.CollageViewLayoutScreen.mediaPageCornerRadius))
                     overlay(geometry)
                         .frame(width: frame.width, height: frame.height, alignment: .topLeading)

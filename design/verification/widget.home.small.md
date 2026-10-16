@@ -1,53 +1,46 @@
-# Verification — `widget.home.small` (iOS)
+# Verification — `widget.home.small` (iOS, Pass 4 — Retro redesign)
 
-Home Screen widget — `ios/Widgets/Sources/WidgetSlots.swift`, `GroupPhotoWidget.swift`, `GroupWidgetEntry.swift`.
+Home Screen widget (systemSmall) — `ios/Widgets/Sources/WidgetSlots.swift`, `GroupWidgetEntry.swift`, `GroupPhotoWidget.swift`, `WidgetStyle.swift`.
 
-Checklist written from the spec (`design/surfaces/widget.home.small.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>.png`, then `tools/sidebyside.py` makes `design/verification/widget.home.small.png` next to the reference image(s) below.
+Checklist written from the spec (`design/surfaces/widget.home.small.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>-<light|dark>.png` (every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/widget.home.small.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/locket/store/locket-store-03.png`, `references/auto/locket/store/locket-store-06.png`, `references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg`
+Reference image(s): `references/auto/retro/apk/widget_preview_journals.webp`, `references/auto/retro/apk/widget_preview_friends.webp`, `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt §Glance widget`, `references/auto/platform/hig-widgets-ios-dimensions.png`
 
-Snapshots (CI): `widget.home.small-photo.png`, `widget.home.small-photo-caption.png`, `widget.home.small-collage.png`, `widget.home.small-loading.png`, `widget.home.small-empty.png`, `widget.home.small-not-set-up.png`, `widget.home.small-no-avatar.png`
+Snapshots (CI, `ios/build/snapshots/capture/`): `widget.home.small-photo-light.png`, `widget.home.small-photo-dark.png`, `widget.home.small-collage-light.png`, `widget.home.small-loading-light.png`, `widget.home.small-empty-light.png`, `widget.home.small-not-set-up-light.png`, `widget.home.small-signed-out-light.png`, `widget.home.small-long-names-light.png`
 
-**Summary: 29 matched · 1 approximated · 2 not matched (BLOCKED or not buildable).**
+**Summary: 14 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Values
+## Anatomy (one layout at every size, RC-11)
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `widget.home.small.layout.size` | w430h932: 170x170; w428h926: 170x170; w414h896: 169x169; w414h736: 159x159; w393h852: 158x158; w390h844: 158x158; w375h812: 155x155; w375h667: 148x148; w360h780: 155x155; w320h568: 141x141 (VERIFIED) | family size | supportedFamilies; snapshots at the 393 × 852 (xl: 13" iPad) size |
-| matched | `widget.home.small.layout.photo` | fill: aspect-fill, full bleed; ios: containerBackground(for: .widget) with the image; contentMarginsDisabled; android: ImageView centerCrop (SOURCED) | photo aspect-fill as removable container background | containerBackground(for: .widget) { WidgetPhotoImage }, contentMarginsDisabled |
-| matched | `widget.home.small.size.avatar` | 24 pt (SOURCED) | avatar 24 | WidgetAvatar |
-| matched | `widget.home.small.size.avatarInset` | 6 pt (SOURCED) | 6 pt from edges | padding |
-| matched | `widget.home.small.size.avatarRing` | 1 pt (SOURCED) | 1-pt ring | strokeBorder |
-| matched | `widget.home.small.color.avatarRing` | #0000001A (SOURCED) | ring colour | strokeBorder colour |
-| matched | `widget.android.color.avatarPlaceholderTop` | #A0A0A0F5 (SOURCED) | no-avatar gradient top | LinearGradient |
-| matched | `widget.android.color.avatarPlaceholderBottom` | #828282F5 (SOURCED) | no-avatar gradient bottom | LinearGradient |
-| matched | `widget.home.small.size.captionGap` | 5 pt (SOURCED) | pill 5 after avatar | HStack spacing |
-| matched | `widget.home.small.size.captionHeight` | 23 pt (SOURCED) | pill height 23 | minHeight (grows with Dynamic Type) |
-| matched | `widget.home.small.size.captionPadding` | 7 pt (SOURCED) | padding 7 | padding(.horizontal) |
-| matched | `widget.home.small.color.captionPill` | #333333CC (SOURCED) | #333333CC | Capsule fill |
-| matched | `widget.home.small.fontSize.caption` | 12 pt (SOURCED) | 12 pt | DSTextStyle (caption) |
-| matched | `widget.home.small.fontWeight.caption` | semibold (SOURCED) | semibold | DSTextStyle |
-| matched | `widget.home.small.color.placeholderTop` | #2D2B2F (SOURCED) | loading gradient | LinearGradient |
-| matched | `widget.home.small.color.placeholderBottom` | #201E21 (SOURCED) | loading gradient | LinearGradient |
-| not matched | `widget.home.small.layout.placeholderAvatars` | diameter: 25; gap: 2.5; max: 3; inset: 6 (SOURCED) | up to 3 member avatars on the placeholder | not drawn: the App Group store holds no member avatars before the first rendition |
-| matched | `widget.home.small.color.emptyTop` | #2E2E2E (SOURCED) | empty gradient | LinearGradient |
-| matched | `widget.home.small.color.emptyBottom` | #1B1B1B (SOURCED) | empty gradient | LinearGradient |
-| matched | `widget.home.small.layout.empty` | circle: 72; ring: 82; ringStroke: 3; glyphWidth: 32; glyphHeight: 28; label: 19; labelGap: 9 (SOURCED) | md: circle 72, ring 82 / 3, glyph 32 × 28, label 19, gap 9 | WidgetEmptyStack |
-| matched | `widget.home.small.color.emptyCircle` | #FFFFFF3D (SOURCED) | circle fill | Circle fill |
-| matched | `widget.home.small.color.emptyRing` | #FFB800 (SOURCED) | #FFB800 ring | strokeBorder |
-| matched | `widget.home.small.color.emptyLabel` | #969696 (SOURCED) | label #969696 | label 9 pt under the stack at 19 pt (weight not measured: platform regular) |
-| matched | `widget.home.small.empty.noPhotos` | “No pics yet” (SOURCED) | empty text | visible label + accessibility label |
-| matched | `widget.home.small.empty.setUp` | “Tap to set up” (SOURCED) | not-set-up text | same |
-| matched | `widget.home.small.a11y.photoWithCaption` | “{name}’s photo in {group}, {caption}” (SOURCED) | label | one element, button trait |
-| matched | `widget.home.small.a11y.photo` | “{name}’s photo in {group}” (SOURCED) | label | same |
-| matched | `widget.home.small.a11y.collage` | “Photos from {group}, {date}” (SOURCED) | label ({date} medium date) | postedAt .abbreviated |
-| matched | `widget.arrival.duration.transition` | 0 ms (SOURCED) | 0 ms swap | .transition(.identity), .contentTransition(.identity) |
-| matched | `widget.home.small.gallery.description` | “See live pics from your group right on your Home Screen” (SOURCED) | gallery description | .description(Text(Copy…)) |
-| not matched | `widget.home.small.gallery.name` | “{app_name} Widget” (SOURCED) | gallery name ({app_name} BLOCKED) | not set: the system shows the app name |
-| approximated | `widget.home.small.configuration.title` | “Customize the widget” (SOURCED) | configuration title | LocalizedStringResource key renamed (C-25); text needs a Localizable.strings entry the copy pipeline does not emit |
+| matched | `widget.home.small.layout.size` | w430h932: 170x170; w428h926: 170x170; w414h896: 169x169; w414h736: 159x159; w393h852: 158x158; w390h844: 158x158; w375h812: 155x155; w375h667: 148x148; w360h780: 155x155; w320h568: 141x141 (VERIFIED) | 158 × 158 | system container; snapshots at the 393 × 852 size |
+| matched | `widget.home.small.layout.photo` | fill: aspect-fill, full bleed; ios: containerBackground(for: .widget) with the image; contentMarginsDisabled; android: ImageView centerCrop (SOURCED) | photo / collage page full bleed as the removable container background; content margins disabled | `containerBackground(for: .widget) { WidgetContainerBackground }`, `contentMarginsDisabled()`, `widgetAccentedRenderingMode(.fullColor)` |
+| matched | `layout.global.photoScrim` | color: #000000; startAt: 0.55; startOpacity: 0; endOpacity: 0.6; direction: top → bottom (SOURCED) | transparent → black 60 % from 55 % of the height | `WidgetPhotoScrim` |
+| matched | `widget.home.small.layout.overlay` | lines: line 1: the poster's first name; line 2: the group name (collage: the group name alone, one line); align: trailing-aligned stack at the bottom-trailing corner; trailingInset: 11; lastBaselineFromBottom: 15; linePitch: 13; colour: color.global.textOnMedia; scrim: layout.global.photoScrim (SOURCED) | trailing stack: first name over group; last baseline 15, pitch 13, trailing 11, truncated at 16 | `WidgetTextStack` (baseline alignment guides; pitch scales with Caption 2) |
+| matched | `widget.home.small.fontSize.overlay` | 11 pt (SOURCED) | 11 | `WidgetType.overlay` |
+| matched | `widget.home.small.fontWeight.overlay` | regular (SOURCED) | regular | same |
+| matched | `color.global.textOnMedia` | #FFFFFF (SOURCED) | white lines | foreground |
+
+## States
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| approximated | `widget.home.small.color.stateTint` | #FFFFFFD9 (SOURCED) | camera glyph 24 in a 48 box + line, white 85 %, on backgroundDeep | `WidgetStateColumn`; the 48 box from `size.global.minTouchTarget.android` (the APK's 48-dp Glance box; no capture token holds it) |
+| matched | `widget.home.small.empty.noPhotos` | “No photos yet. Tap to add one” (SOURCED) | empty | state line |
+| matched | `widget.home.small.empty.setUp` | “Tap to choose a group” (SOURCED) | not set up | state line |
+| matched | `widget.home.small.empty.signedOut` | “Log in to see your content” (SOURCED) | signed out (no group list on the device) | state line; detected by the store's group list file |
+| matched | `widget.home.small.a11y.photo` | “{name}'s photo in {group}” (SOURCED) | one element, button trait | `WidgetOverlay` label |
+| matched | `widget.home.small.a11y.collage` | “Photos from {group}, {date}” (SOURCED) | collage label {group}, {date} | same |
+
+## Gallery and configuration
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `widget.home.small.gallery.name` | “Group Updates” (SOURCED) | "Group Updates" | `.configurationDisplayName` |
+| matched | `widget.home.small.gallery.description` | “See live updates from your group” (SOURCED) | description | `.description` |
+| approximated | `widget.home.small.configuration.title` | “See photos from…” (SOURCED) | "See photos from…" | `SelectGroupIntent` LocalizedStringResource key (needs a Localizable.strings entry — reported earlier) |
 
 ## Notes
 
-- Same widget kind for small / medium / large / extra large (one gallery description); Locket's anatomy at every size (C-20).
-- Error / offline: the last rendition stays (the provider reads the App Group store only; never the network).
+- The widget corner is the system's (`ContainerRelativeShape`); snapshots clip with `widget.android.radius.widget` to stand in for it.

@@ -1,5 +1,6 @@
 // year.story: auto-advance (`duration.year.story.card`) with pause / play, tap-through (right half
-// next, left half previous), summary with page dots, replay, close.
+// next, left half previous), the Share pill on fact cards, the summary with page dots, replay, close — inside the
+// shared recap preview (capture's `RecapPreviewScreen`: close `recap.preview.close`, dots `recap.preview.dots`).
 import XCTest
 
 final class MemoryYearStoryUITests: XCTestCase {
@@ -13,7 +14,7 @@ final class MemoryYearStoryUITests: XCTestCase {
         app.launchArguments += MemoryUITestLaunch.arguments(open: "yearStory")
         app.launch()
         let story = try MemoryUITestLaunch.waitForScreen(app, "year.story")
-        let close = MemoryUITestLaunch.element(app, "year.story.close")
+        let close = MemoryUITestLaunch.element(app, "recap.preview.close")
         XCTAssertTrue(close.waitForExistence(timeout: 10))
 
         // Pause first so the cards only change on taps (the story advances on its own otherwise).
@@ -26,21 +27,24 @@ final class MemoryYearStoryUITests: XCTestCase {
         // Back to card 1 in case the story advanced before the pause (left on card 1 does nothing).
         for _ in 0..<3 { left.tap() }
         let share = MemoryUITestLaunch.element(app, "year.story.share")
-        XCTAssertFalse(share.exists, "the intro card states no fact: no share row")
+        let position = MemoryUITestLaunch.element(app, "year.story.position")
+        XCTAssertFalse(share.exists, "the intro card states no fact: no Share pill")
+        XCTAssertTrue(position.exists, "the position pill on the cards")
 
-        // Card 2 (setup) → card 3 (moments shared): a fact card with the share row.
+        // Card 2 (look back) → card 3 (moments shared): a fact card with the Share pill.
         right.tap()
         right.tap()
         XCTAssertTrue(share.waitForExistence(timeout: 5))
         left.tap()
-        XCTAssertFalse(share.exists, "back on the setup card")
+        XCTAssertFalse(share.exists, "back on the look-back card")
 
         // On to the summary (13 cards in the fixture story).
         for _ in 0..<15 { right.tap() }
         let replay = MemoryUITestLaunch.element(app, "year.story.replay")
         XCTAssertTrue(replay.waitForExistence(timeout: 5))
-        XCTAssertTrue(MemoryUITestLaunch.element(app, "year.story.summary.share").waitForExistence(timeout: 10))
-        XCTAssertTrue(MemoryUITestLaunch.element(app, "year.story.summary.pager").exists)
+        XCTAssertTrue(share.waitForExistence(timeout: 10), "the summary shares the style in view")
+        XCTAssertTrue(MemoryUITestLaunch.element(app, "recap.preview.dots").exists, "page dots under the frame on the summary")
+        XCTAssertFalse(position.exists, "the summary: no position pill")
         XCTAssertFalse(pause.exists, "the summary waits: no pause circle")
         replay.tap()
         XCTAssertFalse(replay.exists)

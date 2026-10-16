@@ -2,6 +2,8 @@
 // References: references/auto/retro/press/tc-2023-12-recaps.png phone 1 ("Create Recap" month cards: cover, serif month,
 // year, chevron), references/auto/retro/store/retro-store-04.png (2026 recap preview: media page, close, select-photos
 // thumbnail, page dots, light pill), references/auto/retro/web/retro.app-42b38811bebcd07d.css (journal note box).
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package app.feature.social.week
 
 import androidx.compose.foundation.background

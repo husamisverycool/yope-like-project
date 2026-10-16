@@ -3,6 +3,8 @@
 // search field, rows with 3:4 covers), references/auto/retro/press/tc-2024-04-journals-1.webp phones 2–3 (rows "daniel …";
 // album sheet: cover, serif name, meta, capsules, 3-column grid with rounded outer corners),
 // references/auto/retro/web/retro.app-42b38811bebcd07d.css (grid outer radius .75rem, 2-px gaps).
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package app.feature.social.albums
 
 import androidx.compose.foundation.background

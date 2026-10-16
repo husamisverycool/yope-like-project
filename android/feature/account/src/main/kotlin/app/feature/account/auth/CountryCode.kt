@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -109,6 +110,7 @@ fun CountryFlagButton(region: String, onClick: () -> Unit) {
  * The country list (`auth.phone.layout.countryCode` flagTap: "opens a country list in a native sheet (C-29)"): the C-29 page
  * sheet ([DsBottomSheet], expanded) holding the list, scrolled to the current country; choosing one replaces the calling code.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountryPickerSheet(selected: String?, onPick: (String) -> Unit, onDismiss: () -> Unit) {
     DsBottomSheet(onDismissRequest = onDismiss) {

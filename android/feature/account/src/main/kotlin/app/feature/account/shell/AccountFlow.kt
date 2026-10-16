@@ -20,7 +20,7 @@ object AccountFlow {
     /** Routes that belong to sign-up / onboarding (the premium prompt is blocked while one shows). */
     fun isOnboarding(route: AppRoute?): Boolean = when (route) {
         AppRoute.AuthPhone, AppRoute.AuthCode, AppRoute.AuthAgeGate, AppRoute.AuthProfile,
-        AppRoute.PermissionNotifications, AppRoute.OnboardingWidget,
+        AppRoute.PermissionNotifications, AppRoute.OnboardingWidget, app.model.OnboardingWidgetFromSettingsRoute,
         AppRoute.PermissionCamera, AppRoute.PermissionContacts, AppRoute.PermissionPhotos,
         -> true
         else -> false
@@ -58,10 +58,10 @@ object AccountFlow {
         return home(env)
     }
 
-    /** Home, or the pending invite's join first (invite.web install path). */
     /** Whether the person is in a group: the cached list when there is one, else the first answer. */
     suspend fun hasGroups(env: AccountEnvironment): Boolean =
         env.backend.observeMyGroups().first { it.value != null || !it.refreshing }.value?.isNotEmpty() == true
 
-    fun home(env: AccountEnvironment): AppRoute = env.stores.pendingInviteToken?.let(AppRoute::InviteJoin) ?: AppRoute.GroupsList
+    /** Home, or the pending invite's join first (invite.web install path; the person already chose to join: no second tap). */
+    fun home(env: AccountEnvironment): AppRoute = env.stores.pendingInviteToken?.let { AppRoute.InviteJoin(it, join = true) } ?: AppRoute.GroupsList
 }

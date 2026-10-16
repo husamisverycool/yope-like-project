@@ -1,105 +1,92 @@
-# Verification — `camera.capture` (iOS)
+# Verification — `camera.capture` (iOS, Pass 4 — Retro redesign)
 
-Camera the app opens to — `ios/App/Sources/Features/Capture/Camera/CameraCaptureView.swift`, `CameraCaptureModel.swift`.
+Camera the app opens to — `ios/App/Sources/Features/Capture/Camera/CameraCaptureView.swift`, `CameraCaptureModel.swift`, `ios/App/Sources/Features/Capture/Support/CaptureComponents.swift` (shutter, control row, 64-pt circle); tab bar = the shell's `AppTabBar(surface: .media)`.
 
-Checklist written from the spec (`design/surfaces/camera.capture.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>.png`, then `tools/sidebyside.py` makes `design/verification/camera.capture.png` next to the reference image(s) below.
+Checklist written from the spec (`design/surfaces/camera.capture.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>-<light|dark>.png` (every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/camera.capture.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-jacob-7691153057177931039-t3.73-camera-hold-to-record.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t4.73-camera.png`, `references/auto/locket/frames/locket-tt-7069892557970345259-03.367s-shutter-pressed-2022.jpg`
+Reference image(s): `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (H43)`, `references/auto/retro/press/tc-2025-12-rewind-device-a.png (RWA)`, `references/auto/retro/press/tc-2025-12-rewind-device-b.jpg (RWB)`, `references/auto/retro/store/retro-store-03.png (ST-03)`, `references/auto/locket/store/locket-store-07.png (AS-7, mechanics)`
 
-Snapshots (CI): `camera.capture-loading.png`, `camera.capture-live.png`, `camera.capture-flash-on.png`, `camera.capture-shutter-pressed.png`, `camera.capture-coach.png`, `camera.capture-recording.png`, `camera.capture-permission-denied.png`, `camera.capture-error.png`
+Snapshots (CI, `ios/build/snapshots/capture/`): `camera.capture-live-light.png`, `camera.capture-live-dark.png`, `camera.capture-loading-light.png`, `camera.capture-flash-on-light.png`, `camera.capture-no-flash-light.png`, `camera.capture-coach-light.png`, `camera.capture-recording-light.png`, `camera.capture-permission-denied-light.png`, `camera.capture-error-light.png`
 
-**Summary: 47 matched · 5 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 43 matched · 2 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Layout
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `color.global.backgroundDeep` | #000000 (SOURCED) | screen background | ZStack background |
-| matched | `camera.capture.layout.viewfinder` | width: full screen width; heightOverWidth: 1.38; top: 103 (SOURCED) | viewfinder full width, top 103, h = w × 1.38 | frame(width, width × heightOverWidth), offset(y: top) |
-| matched | `radius.global.viewfinder` | 18.5 pt (SOURCED) | viewfinder corners | RoundedRectangle(cornerRadius:, .continuous) clip |
-| matched | `camera.capture.size.shutterTopGap` | 38 pt (SOURCED) | ring top 38 pt below viewfinder | row centre = vf bottom + gap + outer/2 |
-| matched | `camera.capture.size.sideControlOffset` | 110 pt (SOURCED) | thumb / flip centres ±110 from shutter | .position(x: centre ∓ offset) |
-| matched | `camera.capture.layout.flashGlyph` | centerFromLeading: 28.3; centerFromBottom: 33; glyphHeight: 15 (SOURCED) | flash glyph centre (28.3, bottom − 33), height 15 | .position + .frame(height: glyphHeight) |
-
-## Hour overlay
+## Page and header (C-01 on media)
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `fontSize.global.overlayTimeCamera` | 26 pt (SOURCED) | hour overlay size | DSTextStyle size, Dynamic Type relative to `title` |
-| matched | `fontWeight.global.overlayTimeCamera` | heavy (SOURCED) | hour overlay weight | DSTextStyle weight |
-| matched | `layout.global.textStyleMap` | onboardingTitle: largeTitle; sheetTitle: title3; headerTitle: subheadline; listTitle: headline; listSubtitle: subheadline; body: body; button: subheadline; caption: caption; overlayTime: title2; overlayTimeCamera: title; placeholder: body; sectionLabel: callout; emptyTitle: callout; emptyDetail: subheadline (PLATFORM) | overlayTimeCamera → title | relativeTo resolved from the map |
-| matched | `color.global.textPrimary` | #FFFFFF (SOURCED) | overlay colour | foregroundStyle |
-| matched | `camera.capture.hourOverlay` | “{time}” (SOURCED) | {time} = start of hour, short time style | CaptureFormat.hourOverlay (Date.FormatStyle time .shortened); TimelineView(.everyMinute) |
+| matched | `color.global.backgroundDeep` | #000000 (SOURCED) | page, both appearances | `.background(backgroundDeep.ignoresSafeArea())`; subtree rendered dark (`captureMediaAppearance`) |
+| matched | `layout.global.appearance` | mode: follows the system Light / Dark setting; ios: no UIUserInterfaceStyle key and no preferredColorScheme override; colour tokens are dynamic (Color(light:dark:)); android: DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme; media: photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance (SOURCED) | media surface stays black | `environment(\.colorScheme, .dark)` on the page only; send-to cover and picker sheet attached outside it |
+| matched | `camera.capture.title` | “Week {number}” (SOURCED) | "Week {number}" serif title | `ScreenHeader(title:onMedia: true)`; {number} = ISO-8601 week of today (device time zone) |
+| matched | `fontSize.global.headerTitle` | 40 pt (SOURCED) | 40 / line 48, regular, display serif | `TextRole.headerTitle` inside C-01 |
+| matched | `size.global.titleTop` | 64 pt (SOURCED) | baseline 64 below the safe-area top | C-01 metric stack |
+| matched | `color.global.textOnMedia` | #FFFFFF (SOURCED) | title, flash glyph | `onMedia: true`, `HeaderIconButton(color:)` |
+| matched | `icon.global.flashOff` | ios: bolt.slash; android: Outlined.FlashOff (PLATFORM) | flash off glyph | bare header glyph, `size.global.icon` box, cross-fade on toggle |
+| matched | `icon.global.flashOn` | ios: bolt; android: Outlined.FlashOn (PLATFORM) | flash on glyph | same |
+| approximated | `size.global.headerInset` | 16 pt (SOURCED) | glyph ink 16 from the trailing edge, centred on the title's cap middle | C-01 trailing-glyph geometry reproduced (hit area 44 + 6 padding; cap middle = titleTop − capHeight/2) because `HeaderAction` cannot carry the On/Off value |
+| matched | `size.global.headerButton` | 44 pt (PLATFORM) | flash hit area 44 | HeaderIconButton frame |
 
-## Shutter
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `camera.capture.size.shutterOuter` | 80 pt (SOURCED) | outer 80 | CaptureShutterGraphic outer |
-| matched | `camera.capture.size.shutterRing` | 3.5 pt (SOURCED) | ring 3.5 accent | strokeBorder(accent, lineWidth: ring) |
-| approximated | `camera.capture.size.shutterGap` | 5.5 pt (SOURCED) | gap 5.5 backgroundDeep | fill backgroundDeep inside the ring; the measured outer/ring/disc leave 7 pt, not 5.5 (values do not sum; drawn from outer, ring and disc) |
-| matched | `camera.capture.size.shutterDisc` | 59 pt (SOURCED) | disc 59 surfaceLight | Circle 59 |
-| matched | `camera.capture.color.shutterDiscPressed` | #E0DEDF (SOURCED) | pressed disc | disc colour while pressed |
-| matched | `camera.capture.layout.shutterPress` | scale: 0.85 (SOURCED) | press scale 0.85 | dsMotion scale (dropped under Reduce Motion) |
-| matched | `camera.capture.spring.shutterPress` | response: 0.233; dampingFraction: 1 (SOURCED) | press spring 233 ms, no overshoot | .spring(token) via dsMotion / dsAnimation |
-| matched | `camera.capture.duration.videoMax` | 10000 ms (SOURCED) | video stops at 10 s | CMTime maxDuration + model timer |
-| matched | `haptic.global.shutter` | ios: none; android: none (PLATFORM) | no haptic | none played |
-
-## Controls
+## Viewfinder
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `camera.capture.size.libraryThumb` | 46 pt (SOURCED) | thumbnail 46 | frame 46 × 46 |
-| matched | `camera.capture.radius.libraryThumb` | 8 pt (SOURCED) | thumbnail corners 8 | clip + border shape |
-| matched | `camera.capture.size.libraryThumbBorder` | 1 pt (SOURCED) | 1-pt border textPrimary | strokeBorder |
-| approximated | `icon.global.gallery` | ios: photo.on.rectangle; android: Rounded.PhotoLibrary (PLATFORM) | no photo / no access | Image(systemName:) textPrimary, platform default size (glyph size not measured) |
-| matched | `camera.capture.size.flipButton` | 47 pt (SOURCED) | flip circle 47 | frame 47 circle |
-| matched | `camera.capture.color.flipButton` | #1F1F1F (SOURCED) | flip fill | background Circle |
-| approximated | `icon.global.flip` | ios: arrow.triangle.2.circlepath; android: Rounded.Sync (PLATFORM) | flip glyph | Image(systemName:), platform default size (not measured) |
-| matched | `icon.global.flashOff` | ios: bolt.slash.fill; android: Rounded.FlashOff (PLATFORM) | flash off glyph | Image |
-| matched | `icon.global.flashOn` | ios: bolt; android: Rounded.FlashOn (PLATFORM) | flash on glyph | Image |
+| matched | `camera.capture.layout.viewfinder` | aspect: 0.75; width: screen width − 2 × size.global.screenMargin; corners: radius.global.viewfinder; top: size.global.titleToContent below the header title baseline (C-01); fill: aspect-fill live preview; what the frame shows is what is captured; shrink: if the control row would get less than size.global.screenMargin above and below the shutter, the viewfinder height shrinks (3:4 kept, centred horizontally) (SOURCED) | 3:4, screen − 2 × 16 (361 × 481), top 30 below the title baseline, aspect-fill; shrinks if the row gets < 16 above/below the shutter | `CameraCaptureView.viewfinderSize(in:)` below the C-01 header (whose bottom is `titleToContent` below the baseline) |
+| matched | `size.global.titleToContent` | 30 pt (SOURCED) | 30 | C-01 bottom edge |
+| matched | `radius.global.viewfinder` | 18 pt (SOURCED) | 18, continuous | `DSShape.rounded` clip |
+| matched | `duration.global.fade` | 150 ms (SOURCED) | preview fades in after the first frame; C-27 block in/out | `.dsTransition(.opacity)` + `ComponentMotion.fade`; preview kept on screen through a flip restart (`hasBeenLive`) |
+| matched | `camera.capture.size.recordingOutline` | 6 pt (SOURCED) | 6 pt outline while recording | `DSShape.rounded(18).inset(3).trim(0, progress).stroke(lineWidth: 6)` |
+| matched | `color.global.surfaceLight` | #FFFFFF (SOURCED) | outline colour | stroke colour |
+| matched | `camera.capture.duration.videoMax` | 10000 ms (SOURCED) | linear 0 → 1 over 10 s; video stops at 10 s | linear `DSAnimation.timing`; model stops at the token |
 
-## Coach tooltip
+## Coach pill (C-09 on media)
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `camera.capture.layout.coach` | height: 34; cornerRadius: 8; paddingHorizontal: 13.6; textToCloseGap: 13.6; closeGlyph: 9.5; pointerWidth: 13.6; pointerHeight: 6.8; pointerToTarget: 2 (SOURCED) | lime pill: h 34, r 8, padding 13.6, ✕ 9.5, pointer 13.6 × 6.8, 2 pt above ring | CaptureCoachTooltip |
-| approximated | `camera.capture.icon.recordHint` | ios: video.fill; android: Rounded.Videocam (PLATFORM) | leading glyph at text size | Text(Image) + word space + Text — the glyph-to-text gap is a word space (not measured) |
-| matched | `camera.capture.fontSize.coach` | 11 pt (SOURCED) | coach text size | DSTextStyle |
-| matched | `camera.capture.fontWeight.coach` | semibold (SOURCED) | coach text weight | DSTextStyle |
-| matched | `camera.capture.layout.textStyleMap` | coach: caption2 (PLATFORM) | coach → caption2 | relativeTo |
-| matched | `camera.capture.coach.holdToRecord` | “hold down to record” (SOURCED) | coach text | Copy |
-| matched | `color.global.accent` | #CDFD07 (SOURCED) | coach fill | background |
-| matched | `color.global.onAccent` | #000000 (SOURCED) | coach text / glyphs | foregroundStyle |
+| matched | `camera.capture.coach.holdToRecord` | “Hold to record a video” (SOURCED) | "Hold to record a video" | `LightPill(_, icon: icon.global.video, style: .dark)` |
+| matched | `color.global.controlOnDeep` | #262626 (SOURCED) | pill fill | LightPill `.dark` |
+| matched | `icon.global.video` | ios: video.fill; android: Rounded.Videocam (PLATFORM) | leading glyph at iconSmall | LightPill icon |
+| matched | `size.global.pillHeight` | 37 pt (SOURCED) | 37 | LightPill minHeight |
+| matched | `size.global.pillPaddingLeading` | 18 pt (SOURCED) | 18 → glyph → 9.7 → label → 17 | LightPill anatomy |
+| matched | `camera.sendto.layout.messageField` | message: C-09 glass pill on the photo: fill color.global.controlOnDeep, icon.global.edit + label text role pill, colour color.global.textOnMedia, height size.global.pillHeight, width hugs the label; voice: icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic; gap: size.global.pillGap; bottomInset: 20.5; align: the pair centred horizontally on the photo (SOURCED) | bottom 20.5 above the viewfinder bottom (bottomInset) | `.padding(.bottom, bottomInset)` in a bottom overlay |
+
+## Control row (C-35)
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `camera.capture.layout.controlRow` | centre: the shutter, horizontally centred; sideControls: two circles of size.global.circleButtonLarge (64): library (leading), flip (trailing); sideCentre: each side circle is centred in the free space between the screen edge and the shutter's outer edge; vertical: the row is vertically centred between the viewfinder bottom and the tab bar top (daily.capture: the safe-area bottom); minimumGap: size.global.screenMargin above and below the shutter (SOURCED) | shutter centred; side circles centred between edge and shutter (76.8 pt on 393); row centred between viewfinder and tab bar | `CaptureControlRow` layout: side centre = (W/2 − 43)/2; row fills the remaining height, content centred |
+| matched | `camera.capture.size.shutterOuter` | 86 pt (SOURCED) | 86 | `CaptureShutter` frame |
+| matched | `camera.capture.size.shutterRing` | 4.5 pt (SOURCED) | 4.5 surfaceLight | strokeBorder |
+| approximated | `camera.capture.size.shutterGap` | 3 pt (SOURCED) | 3 backgroundDeep | values do not sum (86 − 9 − 70 = 7 → 3.5 per side): outer, ring, disc drawn exactly, gap shows 3.5 |
+| matched | `camera.capture.size.shutterDisc` | 70 pt (SOURCED) | 70 surfaceLight | Circle 70 |
+| matched | `size.global.circleButtonLarge` | 64 pt (SOURCED) | library / flip circles 64 | `CaptureLargeCircleButton` (no C-11 style for 64 on #262626 — component gap) |
+| matched | `icon.global.gallery` | ios: photo.on.rectangle; android: Outlined.PhotoLibrary (PLATFORM) | library glyph 24, textOnMedia | Glyph in `size.global.icon` box |
+| matched | `icon.global.flip` | ios: arrow.triangle.2.circlepath; android: Rounded.Sync (PLATFORM) | flip glyph | Glyph |
+| matched | `haptic.global.shutter` | ios: none; android: none (PLATFORM) | none | none played |
+| matched | `haptic.global.tap` | ios: none; android: VIRTUAL_KEY (PLATFORM) | iOS none | none played |
 
 ## States
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `camera.capture.denied.title` | “can’t take pics?” (SOURCED) | permission denied: emptyTitle | CaptureEmptyState in the viewfinder; shutter + flip hidden; thumb stays |
-| matched | `camera.capture.denied.detail` | “enable camera access in settings” (SOURCED) | emptyDetail, textSecondary, italic | CaptureEmptyState |
-| approximated | `camera.capture.denied.button` | “open settings” (SOURCED) | light pill → Settings | CaptureLightPill (height permissionButtonHeight, capsule; label inset = height/2, padding not measured) |
-| matched | `camera.capture.size.permissionButtonHeight` | 45 pt (SOURCED) | pill height 45 | minHeight |
-| matched | `camera.capture.unavailable.title` | “camera isn’t available right now” (SOURCED) | error / interrupted | same layout; retry restarts the session; AVCaptureSession interruption notifications |
-| matched | `camera.capture.unavailable.button` | “try again” (SOURCED) | retry | CaptureLightPill |
-| matched | `camera.capture.size.recordingOutline` | 6 pt (SOURCED) | recording outline 6 pt, accent, progress stroke | RoundedRectangle(radius.global.viewfinder).inset.trim(0…progress).stroke; progress 0 → 1 linearly over camera.capture.duration.videoMax |
-| matched | `camera.capture.a11y.recording` | “recording” (SOURCED) | announcement on record start | AccessibilityNotification.Announcement |
+| matched | `camera.capture.denied.title` | “No Camera Access” (SOURCED) | C-27 in the viewfinder: camera glyph → title → detail → outline capsule; shutter + flip hidden | `EmptyStateView(icon:title:detail:action:)` in the dark subtree (textPrimary → white, outline capsule white) |
+| matched | `camera.capture.denied.detail` | “Turn on camera access in Settings to take photos for your groups.” (SOURCED) | emptyDetail, textSecondary | C-27 |
+| matched | `camera.capture.denied.button` | “Open Settings” (SOURCED) | outline capsule → Settings | C-06 outline capsule (no icon) |
+| matched | `camera.capture.unavailable.title` | “Camera Unavailable” (SOURCED) | same block; Try Again restarts the session | C-27, `model.retry()` |
+| matched | `size.global.emptyIcon` | 22 pt (SOURCED) | 22 | C-27 |
+| matched | `icon.global.camera` | ios: camera; android: Outlined.PhotoCamera (PLATFORM) | state glyph | C-27 icon |
 
 ## Accessibility
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `camera.capture.a11y.shutter` | “take a pic” (SOURCED) | shutter label | accessibilityLabel + button trait; custom action recordVideo for premium |
-| matched | `camera.capture.a11y.recordVideo` | “record a video” (SOURCED) | custom action | accessibilityActions (premium only) |
-| matched | `camera.capture.a11y.flash` | “flash” (SOURCED) | flash label + value | accessibilityLabel/Value (flashOn/flashOff) |
-| matched | `camera.capture.a11y.flip` | “flip camera” (SOURCED) | flip | label |
-| matched | `camera.capture.a11y.library` | “choose from library” (SOURCED) | library | label |
-| matched | `camera.capture.a11y.close` | “close” (SOURCED) | coach ✕ | label; hit area minTouchTarget |
-| matched | `size.global.minTouchTarget.ios` | 44 pt (VERIFIED) | flash / ✕ hit areas | frame(minWidth/minHeight) / overlay hit area |
+| matched | `camera.capture.a11y.shutter` | “Take photo” (SOURCED) | shutter label + custom action record video | element with button trait, default action photo, custom action when premium |
+| matched | `camera.capture.a11y.recordVideo` | “Record video” (SOURCED) | custom action | `accessibilityActions` |
+| matched | `camera.capture.a11y.flash` | “Flash” (SOURCED) | label + value On / Off | `accessibilityValue` on the flash glyph |
+| matched | `camera.capture.a11y.library` | “Choose from Library” (SOURCED) | library label | CaptureLargeCircleButton label |
+| matched | `camera.capture.a11y.flip` | “Flip camera” (SOURCED) | flip label | label |
+| matched | `camera.capture.a11y.recording` | “Recording” (SOURCED) | announcement at record start | `AccessibilityNotification.Announcement` |
 
 ## Notes
 
-- No tab bar under the camera: the tab bar is the navigation surfaces' (account shell); the camera is presented as `AppModal.camera` (full-screen cover) and has no exit control of its own in the spec — reported.
-- Flash: `CameraService` has no flash mode for its photo settings; the flash is the camera's torch around the capture (reported to the foundation owner).
-- Live Photo: on where supported (`CameraConfiguration.photo(_, livePhoto: true)`); no toggle (not in any reference).
-- Free member long press: the camera closes and the paywall opens once per session (`SessionPromptGate` never prompts during capture); later long presses do nothing; tap always captures.
+- Tab bar: drawn by the shell (`RootView` → `AppTabBar(selected: .camera, surface: .media)`); the snapshots host it the same way.
+- Status bar: the camera is a tab of the main window (not a cover), so its status-bar content follows the system appearance; in light appearance the clock is dark on black — the shell (account group) owns the window and is told (report).
+- Shutter press: no custom press state (RC-3: platform default; Retro's press not recorded) — the drag-tracked shutter shows none.

@@ -244,6 +244,7 @@ fun TagRun(
         targetState = withText,
         transitionSpec = { DsMotion.fadeIn togetherWith DsMotion.fadeOut },
         modifier = modifier
+            .testTag(TagRunTags.RUN)
             .tapClickable(enabled = !controller.pending) { if (withText == null) controller.tag() else controller.sheetOpen = true }
             .clearAndSetSemantics {
                 role = Role.Button
@@ -253,8 +254,7 @@ fun TagRun(
                     contentDescription = peopleLabel
                     stateDescription = withText.text
                 }
-            }
-            .testTag(TagRunTags.RUN),
+            },
         label = "tagRun",
     ) { text ->
         if (text == null) {

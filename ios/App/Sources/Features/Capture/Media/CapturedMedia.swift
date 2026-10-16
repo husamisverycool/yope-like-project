@@ -1,5 +1,5 @@
-// Surfaces: camera.capture → camera.sendto, daily.capture. The captured media handed from the
-// camera to the send step, and its conversion into an AppData `PostDraft` (docs/API.md recipe 9.4:
+// Surfaces: camera.capture → camera.sendto, daily.capture (design/surfaces/<id>.md; reference images listed there).
+// The captured media handed from the camera to the send step, and its conversion into an AppData `PostDraft` (docs/API.md recipe 9.4:
 // original.jpg, front.jpg, motion.mov, voice.m4a).
 import AppData
 import AppModels
@@ -21,7 +21,7 @@ struct CapturedMedia: Identifiable, Sendable, Equatable {
     /// Photo / Live Photo still.
     var still: CaptureStill?
     var video: CaptureVideo?
-    /// The hour slot the photo is filed under (`camera.capture.hourOverlay` on the preview).
+    /// When the photo was taken.
     var capturedAt: Date
 
     static func photo(_ still: CaptureStill, capturedAt: Date) -> CapturedMedia {
@@ -70,7 +70,7 @@ struct CaptureSendRequest: Sendable, Identifiable {
     var caption: String?
     var voice: VoiceNote?
     var invitationID: String?
-    /// The confirmation toast text ('posted in {group}' / 'posted in your groups').
+    /// The confirmation announced once posted (`camera.sendto.toast.postedOne` / `.postedMany`; C-26).
     var confirmation: String?
     /// A photo replying to this post (`create_post p_reply_to_post_id`; exactly one group, the post's).
     var replyToPostID: String?

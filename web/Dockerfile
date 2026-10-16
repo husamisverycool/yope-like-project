@@ -27,6 +27,8 @@ WORKDIR /app/web
 COPY web/package.json ./
 COPY --from=build /app/web/node_modules ./node_modules
 COPY --from=build /app/web/dist ./dist
+# Fonts of the share image (OFL faces + fonts.conf; src/images.ts) and their licences.
+COPY web/assets ./assets
 COPY config/app.json /app/config/app.json
 USER node
 EXPOSE 8080

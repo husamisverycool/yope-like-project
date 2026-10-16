@@ -111,7 +111,14 @@ fun RecapCard(
  * [content]; its C-05 capsule ([actionText]) sits `size.global.screenMargin` (16) from the card's sides and bottom.
  */
 @Composable
-fun PlanCard(actionText: String, onAction: () -> Unit, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun PlanCard(
+    actionText: String,
+    onAction: () -> Unit,
+    modifier: Modifier = Modifier,
+    actionEnabled: Boolean = true,
+    actionLoading: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     val shape = RoundedCornerShape(Tokens.Radii.globalCardLarge)
     Column(modifier.clip(shape).background(Tokens.Colors.globalSurfaceElevated, shape)) {
         Column(Modifier.fillMaxWidth().padding(Tokens.Sizes.globalPlanCardPadding), content = content)
@@ -119,21 +126,30 @@ fun PlanCard(actionText: String, onAction: () -> Unit, modifier: Modifier = Modi
             actionText,
             onAction,
             Modifier.padding(start = Tokens.Sizes.globalScreenMargin, end = Tokens.Sizes.globalScreenMargin, bottom = Tokens.Sizes.globalScreenMargin),
+            enabled = actionEnabled,
+            loading = actionLoading,
         )
     }
 }
 
 /**
  * C-34 plan card pager: each card is the screen width − 2 × `size.global.buttonMarginH`, starting at
- * `size.global.buttonMarginH`; the next card peeks after `size.global.planCardGap`.
+ * `size.global.buttonMarginH`; the next card peeks after `size.global.planCardGap`; a fling settles on a card's leading
+ * edge. [state] lets the caller follow the visible card (the paywall's billing line).
  */
 @Composable
-fun PlanCardPager(count: Int, modifier: Modifier = Modifier, card: @Composable (index: Int, width: Dp) -> Unit) {
+fun PlanCardPager(
+    count: Int,
+    modifier: Modifier = Modifier,
+    state: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState(),
+    card: @Composable (index: Int, width: Dp) -> Unit,
+) {
     val margin = Tokens.Sizes.globalButtonMarginH
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val width = maxWidth - margin * 2
         LazyRow(
-            state = rememberLazyListState(),
+            state = state,
+            flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(state, androidx.compose.foundation.gestures.snapping.SnapPosition.Start),
             contentPadding = PaddingValues(horizontal = margin),
             horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPlanCardGap),
         ) {

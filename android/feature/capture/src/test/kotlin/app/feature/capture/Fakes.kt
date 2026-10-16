@@ -88,6 +88,8 @@ class FakeCaptureData : CaptureData {
     override fun progress(draftId: String): Flow<UploadProgress> = progressFlows.getOrPut(draftId) { MutableStateFlow(UploadProgress.Queued) }
     override fun retry(draftId: String) {
         retried += draftId
+        // The real queue re-submits the work: the draft is queued again.
+        progressFlows[draftId]?.value = UploadProgress.Queued
     }
     val discarded = mutableListOf<String>()
     override fun discardDraft(draftId: String) {

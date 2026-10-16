@@ -12,15 +12,21 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Modifier
 import androidx.test.core.app.ApplicationProvider
+import app.designsystem.generated.Tokens
 import app.feature.memory.FakeMemoryBackend
 import app.feature.memory.MemoryTestContent
 import app.feature.memory.Scenario
 import app.feature.memory.SnapshotTest
 import app.feature.memory.TestImages
+import app.feature.memory.common.MemoryCache
 import app.feature.memory.resetFileProviderCache
 import app.feature.memory.share.MemoryFiles
-import app.designsystem.generated.Tokens
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -28,46 +34,55 @@ import org.robolectric.Shadows.shadowOf
 import java.io.File
 import java.time.LocalDate
 
-/** Every card of a full story, in order (sample photos and a collage of them, fixtures/photos/). */
+/** Every kind of card of a story (sample photos and a collage of them, fixtures/photos/). */
 internal val sampleCards: List<StoryCard> = listOf(
-    StoryCard.Intro,
-    StoryCard.MomentsSetup,
+    StoryCard.Intro("Sunday Lunch", 2026),
+    StoryCard.LookBack,
     StoryCard.Moments("Sunday Lunch", 1284),
     StoryCard.BusiestMonth(7),
     StoryCard.MostReactedSetup,
     StoryCard.MostReactedPhoto("p1", TestImages.url("r1", 3, 4), "Ana", LocalDate.of(2026, 2, 25)),
     StoryCard.MostReactedPhoto("p2", TestImages.url("r2", 4, 3), "Ben", LocalDate.of(2026, 3, 14)),
     StoryCard.TogetherSetup,
-    StoryCard.TogetherDay("c1", TestImages.url("collage1", 4, 5), LocalDate.of(2026, 4, 2), listOf("p1")),
-    StoryCard.Teaser,
+    StoryCard.TogetherDay("c1", TestImages.url("collage1", 9, 16), LocalDate.of(2026, 4, 2), listOf("p1")),
     StoryCard.Outro,
     StoryCard.Summary,
 )
 
+/** The recap of the sample story: the cover and four rows of photos. */
+internal val sampleRecap = StoryRecap(
+    groupName = "Sunday Lunch",
+    year = 2026,
+    coverUrl = TestImages.url("r1", 3, 4),
+    photos = (1..16).map { n -> RecapPhoto("y$n", TestImages.url("y$n-thumb", 1, 1), "Ana", LocalDate.of(2026, 1 + n % 12, 1 + n)) },
+)
+
 private fun cardName(card: StoryCard): String = when (card) {
-    StoryCard.Intro -> "01-intro"
-    StoryCard.MomentsSetup -> "02-moments-setup"
+    is StoryCard.Intro -> "01-intro"
+    StoryCard.LookBack -> "02-look-back"
     is StoryCard.Moments -> "03-moments"
     is StoryCard.BusiestMonth -> "04-busiest-month"
     StoryCard.MostReactedSetup -> "05-most-reacted-setup"
     is StoryCard.MostReactedPhoto -> "06-most-reacted-photo-${card.postId}"
     StoryCard.TogetherSetup -> "07-together-setup"
     is StoryCard.TogetherDay -> "08-together-day"
-    StoryCard.Teaser -> "09-teaser"
-    StoryCard.Outro -> "10-outro"
-    StoryCard.Summary -> "11-summary"
+    StoryCard.Outro -> "09-outro"
+    StoryCard.Summary -> "10-summary"
 }
 
 class YearStorySnapshotTest : SnapshotTest() {
-    private fun story(state: String, s: YearStoryState) = snap("year.story", state) { YearStoryScreen(s, {}, {}, {}, {}, {}, {}) }
+    private fun story(state: String, s: YearStoryState, dark: Boolean = false) = snap("year.story", state, dark = dark) { YearStoryScreen(s, YearStoryActions()) }
 
-    private fun card(index: Int) = story("card-" + cardName(sampleCards[index]), YearStoryState.Story(sampleCards, index))
+    /** Cards are recorded paused (the frame and the play glyph); the reveal has settled. */
+    private fun card(index: Int, dark: Boolean = false) =
+        story("card-" + cardName(sampleCards[index]), YearStoryState.Story(sampleCards, index, sampleRecap, paused = index != 0), dark)
 
     @Test fun loading() = story("loading", YearStoryState.Loading)
     @Test fun error() = story("error", YearStoryState.Failed(offline = false))
     @Test fun offline() = story("offline", YearStoryState.Failed(offline = true))
     @Test fun intro() = card(0)
-    @Test fun momentsSetup() = card(1)
+    @Test fun introDark() = card(0, dark = true)
+    @Test fun lookBack() = card(1)
     @Test fun moments() = card(2)
     @Test fun busiestMonth() = card(3)
     @Test fun mostReactedSetup() = card(4)
@@ -75,42 +90,67 @@ class YearStorySnapshotTest : SnapshotTest() {
     @Test fun mostReactedPhotoLandscape() = card(6)
     @Test fun togetherSetup() = card(7)
     @Test fun togetherDay() = card(8)
-    @Test fun teaser() = card(9)
-    @Test fun outro() = card(10)
-    @Test fun summary() = card(11)
+    @Test fun outro() = card(9)
+    @Test fun summaryCard() = story("summary-card", YearStoryState.Story(sampleCards, 10, sampleRecap, style = 0))
+    @Test fun summaryCardDark() = story("summary-card", YearStoryState.Story(sampleCards, 10, sampleRecap, style = 0), dark = true)
+    @Test fun summaryCover() = story("summary-cover", YearStoryState.Story(sampleCards, 10, sampleRecap, style = 1))
+    @Test fun summaryCoverOnly() = story("summary-cover-only", YearStoryState.Story(sampleCards, 10, sampleRecap.copy(photos = emptyList())))
+
+    /** The public recap card (week.recap reuses it), white in both appearances (L-4). */
+    @Test fun recapCardLight() = recapCard(dark = false)
+    @Test fun recapCardDark() = recapCard(dark = true)
+
+    private fun recapCard(dark: Boolean) = snap("year.story", "recap-card", dark = dark) {
+        Box(Modifier.padding(Tokens.Sizes.globalScreenMargin)) {
+            RecapCard(
+                sampleRecap.photos.map { RecapCardPhoto(app.feature.memory.common.memoryModel(it.thumbUrl), "photo") },
+                "Week 27",
+                Modifier.width(RECAP_CARD_WIDTH.dp),
+                name = "Sunday Lunch",
+                detail = "Jul 3 – 9",
+            )
+        }
+    }
+
+    private companion object {
+        /** 82.5 % of a 393-pt frame (`layout.year.story.recapCard.widthRatio`). */
+        const val RECAP_CARD_WIDTH = 324
+    }
 }
 
-/** Share images: each fact card rendered off screen at 1080 × 1920 (`layout.year.story.shareCard`). */
+/** Share images: shareable cards rendered off screen at 1080 × 1920 (`layout.year.story.shareCard`). */
 class YearStoryShareImageTest : SnapshotTest() {
-    @Test fun factCardsRenderToShareImages() {
+    @Test fun shareableCardsRenderToShareImages() {
         resetFileProviderCache()
         val exporter = ShareCardExporter()
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val facts = sampleCards.filter { it.shareable }
+        val jobs = sampleCards.filter { it.shareable && it != StoryCard.Summary }.map { it to SummaryStyle.Card } +
+            listOf(StoryCard.Summary to SummaryStyle.Card, StoryCard.Summary to SummaryStyle.Cover)
         val uris = mutableListOf<Uri?>()
+        fun name(job: Pair<StoryCard, SummaryStyle>) = "share-" + cardName(job.first) + if (job.first == StoryCard.Summary) "-${job.second.name.lowercase()}" else ""
         compose.setContent {
             MemoryTestContent {
-                YearStoryScreen(YearStoryState.Story(sampleCards, 0), {}, {}, {}, {}, {}, {}, shareHost = { width -> ShareCardHost(exporter, width) })
-                LaunchedEffect(Unit) { for (card in facts) uris += exporter.export(context, card, "share-" + cardName(card)) }
+                YearStoryScreen(YearStoryState.Story(sampleCards, 0, sampleRecap, paused = true), YearStoryActions(), shareHost = { width -> ShareCardHost(exporter, width) })
+                LaunchedEffect(Unit) { for (job in jobs) uris += exporter.export(context, job.first, job.second, sampleRecap, name(job)) }
             }
         }
-        compose.waitUntil(30_000) { uris.size == facts.size }
+        compose.waitUntil(60_000) { uris.size == jobs.size }
         val out = File("src/test/snapshots/year.story/share").apply { mkdirs() }
-        facts.forEachIndexed { i, card ->
-            assertNotNull("rendered ${cardName(card)}", uris[i])
-            val file = File(MemoryFiles.dir(context), "share-${cardName(card)}.png")
+        jobs.forEachIndexed { i, job ->
+            assertNotNull("rendered ${name(job)}", uris[i])
+            val file = File(MemoryFiles.dir(context), "${name(job)}.png")
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeFile(file.path, bounds)
             assertEquals(1080, bounds.outWidth)
             assertEquals(1920, bounds.outHeight)
-            file.copyTo(File(out, "share-${cardName(card)}.png"), overwrite = true)
+            file.copyTo(File(out, "${name(job)}.png"), overwrite = true)
         }
     }
 }
 
 /**
- * Robolectric flow: tap through the story (both directions), share a card, replay from the summary.
- * The clock is driven by hand: the story advances on its own every `duration.year.story.card`.
+ * Robolectric flow: tap through the story (both directions), auto-advance and pause, share a card, the summary
+ * pager, replay. The clock is driven by hand: the story advances on its own every `duration.year.story.card`.
  */
 class YearStoryFlowTest : SnapshotTest() {
     private fun step(ms: Long = 100) = compose.mainClock.advanceTimeBy(ms)
@@ -118,36 +158,33 @@ class YearStoryFlowTest : SnapshotTest() {
     private fun open(backend: FakeMemoryBackend) {
         compose.mainClock.autoAdvance = false
         compose.setContent {
-            MemoryTestContent(backend) {
-                YearStoryDestination(FakeMemoryBackend.GROUP, 2026, onClose = {}, backend = backend, clock = Scenario.clock)
-            }
+            MemoryTestContent(backend) { YearStoryDestination(FakeMemoryBackend.GROUP, 2026, onClose = {}, backend = backend) }
         }
         step()
     }
 
     private fun tap(right: Boolean) {
-        compose.onNodeWithTag(YearStoryTags.CANVAS).performTouchInput { click(if (right) centerRight else centerLeft) }
+        compose.onNodeWithTag(YearStoryTags.CARD).performTouchInput { click(if (right) centerRight else centerLeft) }
         step()
     }
 
     @Test fun tapThroughShareAndReplay() {
         resetFileProviderCache()
-        val backend = Scenario.backend()
-        open(backend)
-        compose.onNodeWithText("We're ready for you.").assertExists()
+        MemoryCache.shared.remove(MemoryCache.key(Scenario.backend(), "yearstory", FakeMemoryBackend.GROUP, "2026"))
+        open(Scenario.backend())
+        compose.onNodeWithText("Year in Photos").assertExists()
+        compose.onNodeWithText("Sunday Lunch · 2026").assertExists()
+        compose.onNodeWithContentDescription("1 of 14").assertExists()
+        compose.onNodeWithText("Share").assertDoesNotExist()
         tap(right = false)
-        compose.onNodeWithText("We're ready for you.").assertExists()
+        compose.onNodeWithText("Year in Photos").assertExists()
         tap(right = true)
-        compose.onNodeWithText("You shared. We saved.").assertExists()
-        compose.onNodeWithTag(YearStoryTags.SHARE_ROW).assertDoesNotExist()
+        compose.onNodeWithText("Let’s look back at your 52 weeks").assertExists()
         tap(right = true)
-        compose.onNodeWithText("Sunday Lunch shared 1,284 moments this year.").assertExists()
-        tap(right = false)
-        compose.onNodeWithText("You shared. We saved.").assertExists()
-        tap(right = true)
+        compose.onNodeWithText("Sunday Lunch shared 1,284 photos this year").assertExists()
 
-        // Share this story → a 9:16 PNG to the system share sheet (rendered off screen, encoded off the main thread).
-        compose.onNodeWithTag(YearStoryTags.SHARE_ROW).performClick()
+        // Share → a 9:16 PNG to the system share sheet (rendered off screen, encoded off the main thread).
+        compose.onNodeWithText("Share").performClick()
         val app = ApplicationProvider.getApplicationContext<android.app.Application>()
         repeat(300) {
             if (shadowOf(app).peekNextStartedActivity() == null) {
@@ -162,50 +199,31 @@ class YearStoryFlowTest : SnapshotTest() {
         val send = chooser.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)!!
         assertEquals(Intent.ACTION_SEND, send.action)
         assertEquals("image/png", send.type)
-        @Suppress("DEPRECATION")
-        val stream = send.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)!!
-        assertEquals("content", stream.scheme)
+        assertEquals("2026 Recap", send.getStringExtra(Intent.EXTRA_TITLE))
 
-        // Most-reacted photos: names and dates only, in order; to the summary; replay.
+        // Most-reacted photos: who and when, in order; on to the summary; replay.
         repeat(3) { tap(right = true) }
-        compose.onNodeWithText("Ana shared this on February 25").assertExists()
+        compose.onNodeWithText("Post by Ana").assertExists()
         repeat(20) { tap(right = true) }
-        compose.onNodeWithTag(YearStoryTags.REPLAY).performClick()
+        compose.onNodeWithText("2 of 2", substring = false).assertDoesNotExist()
+        compose.onNodeWithContentDescription("Watch again").performClick()
         step()
-        compose.onNodeWithText("We're ready for you.").assertExists()
+        compose.onNodeWithText("Sunday Lunch · 2026").assertExists()
     }
 
     @Test fun advancesOnItsOwnAndPauses() {
+        MemoryCache.shared.remove(MemoryCache.key(Scenario.backend(), "yearstory", FakeMemoryBackend.GROUP, "2026"))
         open(Scenario.backend())
-        compose.onNodeWithText("We're ready for you.").assertExists()
+        compose.onNodeWithText("Sunday Lunch · 2026").assertExists()
         step(Tokens.Durations.yearStoryCard.toLong())
         step()
-        compose.onNodeWithText("You shared. We saved.").assertExists()
+        compose.onNodeWithText("Let’s look back at your 52 weeks").assertExists()
         compose.onNodeWithContentDescription("Pause").performClick()
         step(Tokens.Durations.yearStoryCard * 2L)
-        compose.onNodeWithText("You shared. We saved.").assertExists()
+        compose.onNodeWithText("Let’s look back at your 52 weeks").assertExists()
         compose.onNodeWithContentDescription("Play").performClick()
         step(Tokens.Durations.yearStoryCard.toLong())
         step()
-        compose.onNodeWithText("Sunday Lunch shared 1,284 moments this year.").assertExists()
-    }
-}
-
-/** Reopening shows the cached story at once: no loading state flashes before the refresh. */
-class YearStoryNoFlashTest : SnapshotTest() {
-    @Test fun reopenPaintsCachedCardsWithoutLoading() {
-        val backend = Scenario.backend().apply { gates["yearStory"] = kotlinx.coroutines.CompletableDeferred() }
-        app.feature.memory.common.MemoryCache.shared.put(app.feature.memory.common.MemoryCache.key(backend, "yearstory", FakeMemoryBackend.GROUP, "2026"), sampleCards)
-        compose.mainClock.autoAdvance = false
-        compose.setContent {
-            MemoryTestContent(backend) { YearStoryDestination(FakeMemoryBackend.GROUP, 2026, onClose = {}, backend = backend, clock = Scenario.clock) }
-        }
-        compose.mainClock.advanceTimeByFrame()
-        compose.onNodeWithText("Loading").assertDoesNotExist()
-        compose.onNodeWithText("We're ready for you.").assertExists()
-        backend.gates.getValue("yearStory").complete(Unit)
-        compose.mainClock.advanceTimeBy(1_000)
-        compose.onNodeWithText("Loading").assertDoesNotExist()
-        compose.onNodeWithText("We're ready for you.").assertExists()
+        compose.onNodeWithText("Sunday Lunch shared 1,284 photos this year").assertExists()
     }
 }

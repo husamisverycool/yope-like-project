@@ -1,40 +1,61 @@
-// Surface: paywall — premium screen and perks; plan sheet; welcome sheet. Reference app: Locket (Gold) for layout,
-// palette and voice; store-required elements from Apple (design/surfaces/paywall.md). Reference images:
-// references/auto/locket/mobbin/locket-mobbin-paywall-screen.png (MB), locket-mobbin-gold-flow-2.png … -6.png (MB2–6),
-// references/auto/locket/lazyweb/locket-lazyweb-20260803-cap-plan-picker.png (LZP), …-autocap-21.png (LZ21), …-autocap-25.png (LZ25).
+// Surface: paywall — the Premium screen. Visual reference: Retro Premium paywall
+// (references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png, PAY — RAW iOS: blurred colour-rich backdrop, title
+// row with the glass close circle, the benefit's media card, serif headline + description, a pager of plan cards with a
+// black 60-pt capsule, footer) and Retro's membership strings (references/auto/retro/apk/
+// retro-android-2026.10.1150-strings.txt `retro_membership_paywall_*`). Purchases: StoreKit through RevenueCat
+// (design/surfaces/paywall.md; MERGE RA-17, RA-18).
 import AppData
 import AppModels
 import DesignSystem
 import Observation
 import SwiftUI
 
-/// Text styles of the paywall (sizes and colours from `paywall.*`; weights from the spec where no weight token exists).
+/// The paywall's text styles: plan-card roles from `paywall.fontSize.*` / `paywall.fontWeight.*` (the weights PAY did not
+/// tokenise take the global role of the same text: body for the subtitle and footnote, textButton for the bullets).
 enum PaywallStyle {
-    private static func style(_ size: CGFloat, _ weight: Font.Weight, _ textStyle: Font.TextStyle, lineHeight: CGFloat? = nil) -> DSTextStyle {
-        DSTextStyle(family: Tokens.Fonts.globalFamily, size: size, weight: weight, relativeTo: textStyle, lineHeight: lineHeight)
+    private static func style(_ size: CGFloat, _ weight: Font.Weight, _ textStyle: Font.TextStyle) -> DSTextStyle {
+        DSTextStyle(family: Tokens.Fonts.globalFamily, size: size, weight: weight, relativeTo: textStyle)
     }
 
-    /// `paywall.fontSize.title`, bold (spec), title1.
-    static let title = style(Tokens.FontSizes.paywallFontSizeTitle, Font.Weight.bold, .title)
-    /// `paywall.fontSize.subtitle` / `.lineHeight.subtitle`, regular, body.
-    static let subtitle = style(Tokens.FontSizes.paywallFontSizeSubtitle, Font.Weight.regular, .body, lineHeight: Tokens.LineHeights.paywallLineHeightSubtitle)
-    static let perkTitle = style(Tokens.FontSizes.paywallFontSizePerkTitle, Tokens.FontWeights.paywallFontWeightPerkTitle, .headline)
-    static let perkSubtitle = style(Tokens.FontSizes.paywallFontSizePerkSubtitle, Font.Weight.regular, .subheadline)
-    /// Perk emoji at `paywall.size.perkIcon`.
-    static let perkIcon = style(Tokens.Sizes.paywallSizePerkIcon, Font.Weight.regular, .headline)
-    /// `paywall.fontSize.ctaLabel`, bold (spec), headline.
-    static let cta = style(Tokens.FontSizes.paywallFontSizeCtaLabel, Font.Weight.bold, .headline)
-    static let dismiss = style(Tokens.FontSizes.paywallFontSizeDismiss, Font.Weight.regular, .callout)
-    /// Legal block: global caption role; link labels at `paywall.fontWeight.perkTitle` (approximation, spec).
-    static let legal = TextRole.caption
-    static let legalLink = style(Tokens.FontSizes.globalCaption, Tokens.FontWeights.paywallFontWeightPerkTitle, .caption, lineHeight: Tokens.LineHeights.globalCaption)
-    /// `paywall.fontSize.planSheetTitle` / `.lineHeight.planSheetTitle`, bold (Locket), title2.
-    static let planSheetTitle = style(Tokens.FontSizes.paywallFontSizePlanSheetTitle, Font.Weight.bold, .title2, lineHeight: Tokens.LineHeights.paywallLineHeightPlanSheetTitle)
-    static let planName = style(Tokens.FontSizes.paywallFontSizePlanName, Font.Weight.bold, .headline)
-    static let planPrice = style(Tokens.FontSizes.paywallFontSizePlanPrice, Font.Weight.bold, .headline)
-    static let planDetail = style(Tokens.FontSizes.paywallFontSizePlanDetail, Font.Weight.regular, .subheadline)
-    /// `paywall.fontSize.subscribeLabel` at the global button weight (`fontWeight.global.button`; Locket's not measured), title3.
-    static let subscribe = style(Tokens.FontSizes.paywallFontSizeSubscribeLabel, Tokens.FontWeights.fontWeightGlobalButton, .title3)
+    /// 'Annual' / 'Monthly': `paywall.fontSize.planTitle`, `paywall.fontWeight.planTitle`, title2.
+    static let planTitle = style(Tokens.FontSizes.paywallFontSizePlanTitle, Tokens.FontWeights.paywallFontWeightPlanTitle, .title2)
+    static let planSubtitle = style(Tokens.FontSizes.paywallFontSizePlanSubtitle, Tokens.FontWeights.fontWeightGlobalBody, .subheadline)
+    static let planBullet = style(Tokens.FontSizes.paywallFontSizePlanBullet, Tokens.FontWeights.fontWeightGlobalTextButton, .body)
+    static let planPrice = style(Tokens.FontSizes.paywallFontSizePlanPrice, Tokens.FontWeights.paywallFontWeightPlanPrice, .title2)
+    static let planFootnote = style(Tokens.FontSizes.paywallFontSizePlanFootnote, Tokens.FontWeights.fontWeightGlobalBody, .subheadline)
+}
+
+/// One benefit page of the paywall (this app's perks only, directive Part 6).
+enum PaywallPerk: String, CaseIterable, Identifiable {
+    case video
+    case history
+    case widgets
+    case export
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .video: return Copy.paywallPerkVideoTitle
+        case .history: return Copy.paywallPerkHistoryTitle
+        case .widgets: return Copy.paywallPerkWidgetsTitle
+        case .export: return Copy.paywallPerkExportTitle
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .video: return Copy.paywallPerkVideoSubtitle
+        case .history: return Copy.paywallPerkHistorySubtitle
+        case .widgets: return Copy.paywallPerkWidgetsSubtitle
+        case .export: return Copy.paywallPerkExportSubtitle
+        }
+    }
+
+    /// The perks listed: unlimited history only while the free history window is set (`free_history_days`).
+    static func listed(showsHistory: Bool) -> [PaywallPerk] {
+        allCases.filter { $0 != .history || showsHistory }
+    }
 }
 
 /// `AccountModal.paywall` (full screen).
@@ -48,336 +69,354 @@ struct PaywallScreen: View {
 
 struct PaywallView: View {
     @State private var model: PaywallModel
-    @State private var showsPlans = false
+    @State private var photo: PhotoSource?
+    @State private var perkID: String?
+    @State private var link: BrowserLink?
     @Environment(AccountDependencies.self) private var dependencies
+    @Environment(\.dismiss) private var dismiss
 
-    init(model: PaywallModel) {
+    /// - Parameter photo: the benefit media (tests); the newest photo from the person's groups otherwise.
+    init(model: PaywallModel, photo: PhotoSource? = nil) {
         _model = State(initialValue: model)
+        _photo = State(initialValue: photo)
     }
 
+    private static let reveal = DSAnimation.timing(duration: Tokens.Durations.globalPageTransition, easing: Tokens.Easings.globalStandard)
+    private static let pageFade = DSAnimation.timing(duration: Tokens.Durations.globalFade, easing: Tokens.Easings.globalStandard)
+
+    private var perks: [PaywallPerk] { PaywallPerk.listed(showsHistory: model.showsHistoryPerk) }
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: Tokens.Sizes.paywallSizePerkGap) {
+        ZStack {
+            // C-34 backdrop: the benefit's media blurred to a colour field; none → the media black.
+            BlurredBackdrop(source: photo)
+                .environment(\.colorScheme, .dark)
+                .dsAnimation(Self.pageFade, value: perkID)
+            VStack(spacing: 0) {
                 header
-                perks
-                legalBlock
+                if let welcome = model.welcome {
+                    welcomeBlock(welcome)
+                        .transition(.opacity)
+                } else {
+                    VStack(spacing: 0) {
+                        benefits
+                        plansArea
+                            .padding(.top, Tokens.Sizes.globalTitleToContent)
+                        footer
+                    }
+                    .transition(.opacity)
+                }
             }
-            .padding(.horizontal, Tokens.Sizes.paywallSizePerkMarginH)
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) { pinnedActions }
-        .background(background.ignoresSafeArea())
-        .opensLinksInAppBrowser()
-        .sheet(isPresented: $showsPlans) {
-            PlanSheet(model: model, onClose: close)
+        .dsAnimation(Self.reveal, value: model.welcome)
+        .sheet(item: $link) { link in
+            SafariView(url: link.url)
+                .ignoresSafeArea()
         }
         .task {
             if dependencies.purchases.isPremium {
                 close()
                 return
             }
+            if photo == nil, let newest = await NewestGroupPhoto.load(from: dependencies.data) {
+                photo = .storage(newest.path)
+            }
             await model.load()
         }
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
+        .dsHaptic(Tokens.Haptics.globalSelect, trigger: perkID)
+        .dsHaptic(Tokens.Haptics.globalSelect, trigger: model.selectedPlanID)
+        .formErrorAlert(model.alertMessage, trigger: model.alertCount)
         .accessibilityIdentifier("paywall")
     }
 
-    /// Vertical gradient through the four stops at the screen-height fractions named by the tokens' elements.
-    private var background: some View {
-        LinearGradient(
-            stops: [
-                .init(color: Tokens.Colors.paywallColorBackgroundTop, location: 0.078), // provenance-ok: stop position of paywall.color.backgroundTop
-                .init(color: Tokens.Colors.paywallColorBackgroundUpper, location: 0.274), // provenance-ok: stop position of paywall.color.backgroundUpper
-                .init(color: Tokens.Colors.paywallColorBackgroundLower, location: 0.587), // provenance-ok: stop position of paywall.color.backgroundLower
-                .init(color: Tokens.Colors.paywallColorBackgroundBottom, location: 0.861), // provenance-ok: stop position of paywall.color.backgroundBottom
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    }
+    // MARK: Header
 
-    /// Icon tile (art BLOCKED → omitted), title and subtitle (both name the app: BLOCKED → omitted in release).
+    /// The title (text role `sheetTitle`, `color.global.textOnMedia`; "{app_name} Premium" — BLOCKED until the app is named,
+    /// omitted in release) centred, the glass close circle (C-11 `.glassSmall`, always visible) at the trailing margin.
     private var header: some View {
-        VStack {
+        ZStack {
             if let title = AccountBlockedCopy.paywallTitle {
                 Text(title)
-                    .dsTextStyle(PaywallStyle.title)
-                    .foregroundStyle(Tokens.Colors.paywallColorTitle)
+                    .dsTextStyle(TextRole.sheetTitle)
+                    .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                    .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
+                    .padding(.horizontal, Tokens.Sizes.globalCircleButtonSmall)
             }
-            if let subtitle = AccountBlockedCopy.paywallSubtitle {
-                Text(subtitle)
-                    .dsTextStyle(PaywallStyle.subtitle)
-                    .foregroundStyle(Tokens.Colors.paywallColorSubtitle)
-            }
-        }
-        .multilineTextAlignment(.center)
-    }
-
-    private struct Perk: Identifiable {
-        let id: String
-        let emoji: String?
-        let title: String
-        let subtitle: String
-    }
-
-    private var perkList: [Perk] {
-        var list = [
-            Perk(id: "video", emoji: Copy.paywallPerkVideoEmoji, title: Copy.paywallPerkVideoTitle, subtitle: Copy.paywallPerkVideoSubtitle), // provenance-ok: identifier
-            Perk(id: "widgets", emoji: Copy.paywallPerkWidgetsEmoji, title: Copy.paywallPerkWidgetsTitle, subtitle: Copy.paywallPerkWidgetsSubtitle), // provenance-ok: identifier
-        ]
-        if model.showsHistoryPerk {
-            list.append(Perk(id: "history", emoji: AccountBlockedCopy.paywallHistoryEmoji, title: Copy.paywallPerkHistoryTitle, subtitle: Copy.paywallPerkHistorySubtitle)) // provenance-ok: identifier
-        }
-        list.append(Perk(id: "export", emoji: Copy.paywallPerkExportEmoji, title: Copy.paywallPerkExportTitle, subtitle: Copy.paywallPerkExportSubtitle)) // provenance-ok: identifier
-        return list
-    }
-
-    /// Perk cards `paywall.size.perkHeight` (minimum), `paywall.size.perkGap` apart, outer corners
-    /// `paywall.radius.perkOuter` (top of the first, bottom of the last), inner `paywall.radius.perkInner`.
-    private var perks: some View {
-        let list = perkList
-        return VStack(spacing: Tokens.Sizes.paywallSizePerkGap) {
-            ForEach(Array(list.enumerated()), id: \.element.id) { index, perk in
-                HStack(spacing: 0) {
-                    Text(perk.emoji ?? "")
-                        .dsTextStyle(PaywallStyle.perkIcon)
-                        .frame(width: Tokens.Sizes.paywallSizePerkTextInset)
-                        .accessibilityHidden(true)
-                    VStack(alignment: .leading) {
-                        Text(perk.title)
-                            .dsTextStyle(PaywallStyle.perkTitle)
-                            .foregroundStyle(Tokens.Colors.paywallColorPerkTitle)
-                        Text(perk.subtitle)
-                            .dsTextStyle(PaywallStyle.perkSubtitle)
-                            .foregroundStyle(Tokens.Colors.paywallColorPerkSubtitle)
-                    }
-                    Spacer(minLength: 0)
-                }
-                .frame(minHeight: Tokens.Sizes.paywallSizePerkHeight)
-                .background(Tokens.Colors.paywallColorPerk, in: UnevenRoundedRectangle(
-                    topLeadingRadius: index == 0 ? Tokens.Radii.paywallRadiusPerkOuter : Tokens.Radii.paywallRadiusPerkInner,
-                    bottomLeadingRadius: index == list.count - 1 ? Tokens.Radii.paywallRadiusPerkOuter : Tokens.Radii.paywallRadiusPerkInner,
-                    bottomTrailingRadius: index == list.count - 1 ? Tokens.Radii.paywallRadiusPerkOuter : Tokens.Radii.paywallRadiusPerkInner,
-                    topTrailingRadius: index == 0 ? Tokens.Radii.paywallRadiusPerkOuter : Tokens.Radii.paywallRadiusPerkInner
-                ))
-                .accessibilityElement(children: .combine)
-            }
-        }
-    }
-
-    /// Renewal sentence, the selected plan's billing line, the "optional" line, then Restore · Terms · Privacy.
-    private var legalBlock: some View {
-        VStack {
-            Text(Copy.paywallLegalRenews)
-            switch model.plansPhase {
-            case .loading:
-                ProgressView()
-            case .loaded:
-                if let line = model.billingLine { Text(line) }
-            case .unavailable, .offline:
-                Text(model.plansPhase == .offline ? Copy.paywallOffline : Copy.paywallErrorProducts)
-                Button(Copy.paywallRetry) { Task { await model.loadPlans() } }
-                    .dsTextStyle(PaywallStyle.legalLink)
-            }
-            if let optional = AccountBlockedCopy.paywallLegalOptional { Text(optional) }
-            if let message = model.restoreMessage { Text(message) }
             HStack {
-                Button(Copy.paywallRestore) { Task { await model.restore() } }
-                if let terms = dependencies.configuration.termsURL {
-                    Link(Copy.paywallTerms, destination: terms)
-                } else {
-                    Text(Copy.paywallTerms)
+                Spacer(minLength: 0)
+                CircleButton(icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.paywallCloseAccessibilityLabel, style: .glassSmall) {
+                    close()
                 }
-                if let privacy = dependencies.configuration.privacyURL {
-                    Link(Copy.paywallPrivacy, destination: privacy)
-                } else {
-                    Text(Copy.paywallPrivacy)
-                }
+                .accessibilityIdentifier("paywall.close")
             }
-            .dsTextStyle(PaywallStyle.legalLink)
         }
-        .dsTextStyle(PaywallStyle.legal)
-        .foregroundStyle(Tokens.Colors.paywallColorDismiss)
-        .tint(Tokens.Colors.paywallColorDismiss)
-        .multilineTextAlignment(.center)
-        .padding(.vertical, Tokens.Sizes.paywallSizePerkMarginH)
+        .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
     }
 
-    /// CTA capsule (`paywall.size.ctaHeight`, `paywall.color.cta`, label `paywall.fontSize.ctaLabel` bold in
-    /// `paywall.color.ctaLabel` + `paywall.icon.ctaUnlock`) and "No thanks!", pinned over the scroll.
-    private var pinnedActions: some View {
-        VStack {
-            Button {
-                showsPlans = true
-            } label: {
-                HStack {
-                    if let label = AccountBlockedCopy.paywallCTA {
-                        Text(label).dsTextStyle(PaywallStyle.cta)
-                    }
-                    Image(systemName: Tokens.Icons.paywallIconCtaUnlock)
-                        .accessibilityHidden(true)
+    // MARK: Benefits
+
+    /// One page per perk (swipe), centred in the space between the header and the plans: the media card
+    /// (`paywall.size.mediaCardWidth`, `paywall.radius.mediaCard`, aspect-fill; none without a photo), the headline
+    /// `size.global.titleToContent` below it (display serif `displayMedium`, white), the description under it
+    /// (`textButton`, white, ≤ 2 lines); page dots (C-31 on media) under the pages.
+    private var benefits: some View {
+        VStack(spacing: Tokens.Sizes.globalSectionHeaderToContent) {
+            TabView(selection: Binding(get: { perkID ?? perks.first?.id }, set: { perkID = $0 })) {
+                ForEach(perks) { perk in
+                    benefitPage(perk)
+                        .tag(Optional(perk.id))
                 }
-                .foregroundStyle(Tokens.Colors.paywallColorCtaLabel)
-                .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.paywallSizeCtaHeight)
-                .background(Tokens.Colors.paywallColorCta, in: Capsule())
             }
-            .buttonStyle(.plain)
-            // The CTA's label names the app (BLOCKED in release); VoiceOver reads the plan sheet's action instead.
-            .accessibilityLabel(Text(AccountBlockedCopy.paywallCTA ?? Copy.paywallPlansSubscribe))
-            .accessibilityIdentifier("paywall.cta")
-            Button(Copy.paywallDismiss) { close() }
-                .dsTextStyle(PaywallStyle.dismiss)
-                .foregroundStyle(Tokens.Colors.paywallColorDismiss)
-                .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
-                .accessibilityIdentifier("paywall.dismiss")
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            if perks.count > 1 {
+                let index = perks.firstIndex { $0.id == (perkID ?? perks.first?.id) } ?? 0
+                PageDots(
+                    count: perks.count,
+                    index: index,
+                    onMedia: true,
+                    accessibilityValue: Copy.globalA11yPagePosition(position: String(index + 1), count: String(perks.count))
+                ) { page in perkID = perks[page].id }
+            }
         }
-        .padding(.horizontal, Tokens.Sizes.paywallSizePerkMarginH)
+        .frame(maxHeight: .infinity)
+    }
+
+    private func benefitPage(_ perk: PaywallPerk) -> some View {
+        MetricStack(alignment: .center) {
+            if let photo {
+                PhotoView(source: photo)
+                    .frame(
+                        width: Tokens.Sizes.paywallSizeMediaCardWidth,
+                        // Retro's card is ≈ 248 × 183 (PAY): no height token — the C-15 cover proportion turned landscape.
+                        height: Tokens.Sizes.paywallSizeMediaCardWidth * Tokens.Sizes.globalRowThumbWidth / Tokens.Sizes.globalRowThumbHeight
+                    )
+                    .clipShape(DSShape.rounded(Tokens.Radii.paywallRadiusMediaCard))
+                    .accessibilityHidden(true)
+            }
+            VStack {
+                Text(perk.title)
+                    .dsTextStyle(TextRole.displayMedium)
+                    .accessibilityAddTraits(.isHeader)
+                Text(perk.subtitle)
+                    .dsTextStyle(TextRole.textButton)
+                    .lineLimit(2)
+            }
+            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .capHeight(of: TextRole.displayMedium)
+            .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+            .metricGap(photo == nil ? 0 : Tokens.Sizes.globalTitleToContent, from: .bottom, to: .capTop)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Plans
+
+    @ViewBuilder
+    private var plansArea: some View {
+        switch model.plansPhase {
+        case .unavailable, .offline:
+            // The card pager is replaced by one line and the C-09 light pill.
+            VStack(spacing: Tokens.Sizes.globalSectionHeaderToContent) {
+                Text(model.plansPhase == .offline ? Copy.paywallOffline : Copy.paywallErrorProducts)
+                    .dsTextStyle(TextRole.body)
+                    .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                    .multilineTextAlignment(.center)
+                LightPill(Copy.paywallRetry) { Task { await model.loadPlans() } }
+                    .accessibilityIdentifier("paywall.retry")
+            }
+            .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+        case .loading, .loaded:
+            planPager
+        }
+    }
+
+    /// Annual (first) and Monthly cards, width = screen − 2 × `size.global.buttonMarginH`, the next card peeking after
+    /// `size.global.planCardGap`; the card in view is the selected plan.
+    private var planPager: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: Tokens.Sizes.globalPlanCardGap) {
+                ForEach([PlanOption.Period.year, PlanOption.Period.month], id: \.self) { period in
+                    PlanCard(
+                        period: period,
+                        plan: model.plan(for: period),
+                        isLoading: model.plansPhase == .loading,
+                        isPurchasing: model.isPurchasing && model.selectedPlan?.period == period
+                    ) {
+                        if let plan = model.plan(for: period) {
+                            model.select(plan)
+                            Task { await model.purchase() }
+                        }
+                    }
+                    .containerRelativeFrame(.horizontal)
+                    .id(model.plan(for: period)?.id)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .contentMargins(.horizontal, Tokens.Sizes.globalButtonMarginH, for: .scrollContent)
+        .scrollTargetBehavior(.viewAligned)
+        .scrollPosition(id: $model.selectedPlanID)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    // MARK: Footer
+
+    /// "Cancel anytime. No questions asked.", the visible plan's billing line, then Restore · Terms · Privacy (C-08 in the
+    /// footer's style: text role `caption`, `color.global.textOnMedia`, hit areas ≥ `size.global.minTouchTarget.ios`).
+    private var footer: some View {
+        VStack(spacing: 0) {
+            Text(Copy.paywallFooter)
+            if let line = model.billingLine {
+                Text(line)
+            }
+            HStack {
+                footerButton(Copy.paywallRestore) { Task { await model.restore() } }
+                    .accessibilityIdentifier("paywall.restore")
+                footerButton(Copy.paywallTerms) { open(dependencies.configuration.termsURL) }
+                    .disabled(dependencies.configuration.termsURL == nil)
+                footerButton(Copy.paywallPrivacy) { open(dependencies.configuration.privacyURL) }
+                    .disabled(dependencies.configuration.privacyURL == nil)
+            }
+        }
+        .dsTextStyle(TextRole.caption)
+        .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+        .padding(.top, Tokens.Sizes.globalSectionHeaderToContent)
+    }
+
+    private func footerButton(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .dsTextStyle(TextRole.caption)
+                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                .frame(minWidth: Tokens.Sizes.globalMinTouchTargetIos, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func open(_ url: URL?) {
+        if let url { link = BrowserLink(url: url) }
+    }
+
+    // MARK: Welcome
+
+    /// Success / restored: the benefits and plans cross-fade (`duration.global.pageTransition`) to the welcome block on
+    /// the same backdrop — headline (`displayMedium`, white), body (`textButton`, white), the C-09 light pill "Done".
+    private func welcomeBlock(_ welcome: PaywallModel.Welcome) -> some View {
+        VStack(spacing: Tokens.Sizes.globalTitleToContent) {
+            Spacer(minLength: 0)
+            VStack {
+                Text(welcome == .restored ? Copy.paywallRestoreDone : Copy.paywallWelcomeTitle)
+                    .dsTextStyle(TextRole.displayMedium)
+                    .accessibilityAddTraits(.isHeader)
+                Text(Copy.paywallWelcomeBody)
+                    .dsTextStyle(TextRole.textButton)
+            }
+            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
+            LightPill(Copy.paywallWelcomeDone) {
+                model.welcomeDismissed()
+                close()
+            }
+            .accessibilityIdentifier("paywall.welcome.done")
+            Spacer(minLength: 0)
+        }
+        .accessibilityIdentifier("paywall.welcome")
     }
 
     private func close() {
-        dependencies.router.modal = nil
+        if case .account(.paywall)? = dependencies.router.modal {
+            dependencies.router.modal = nil
+        } else {
+            dismiss()
+        }
     }
 }
 
-/// Plan sheet (`paywall.layout.planSheet`: medium detent, visible grabber, system corner radius).
-struct PlanSheet: View {
-    @Bindable var model: PaywallModel
-    /// Closes the paywall (after the welcome sheet's Done).
-    let onClose: () -> Void
+/// A plan card (`paywall.layout.planCard`): fill `color.global.surfaceLight` in both appearances, corners
+/// `radius.global.cardLarge`, padding `size.global.planCardPadding`; title + the premium pill (C-25) on a plan with a free
+/// trial; subtitle; the two bullets (no marker); price; footnote; then C-05 with the light values pinned (#000000 /
+/// #FFFFFF), `size.global.screenMargin` from the card's sides and bottom. Loading: the price and footnote are the
+/// platform indicator in `paywall.color.planTextTertiary` and the capsule is disabled.
+struct PlanCard: View {
+    let period: PlanOption.Period
+    let plan: PlanOption?
+    let isLoading: Bool
+    let isPurchasing: Bool
+    let onSubscribe: () -> Void
+
+    private var isYearly: Bool { period == .year }
 
     var body: some View {
-        VStack(spacing: Tokens.Sizes.paywallSizePlanMarginH) {
-            if let title = AccountBlockedCopy.paywallPlansTitle {
-                Text(title)
-                    .dsTextStyle(PaywallStyle.planSheetTitle)
-                    .foregroundStyle(Tokens.Colors.paywallColorTitle)
-                    .multilineTextAlignment(.center)
-            }
-            if model.plansPhase == .loading {
-                ProgressView()
-            }
-            ForEach(model.plans) { plan in
-                planCard(plan)
-            }
-            SubscribeCapsule(
-                title: Copy.paywallPlansSubscribe,
-                isWorking: model.isPurchasing,
-                isEnabled: model.plansPhase == .loaded && model.selectedPlan != nil
-            ) {
-                Task { await model.purchase() }
-            }
-            .accessibilityIdentifier("paywall.subscribe")
-            if let message = model.purchaseMessage {
-                Text(message)
-                    .dsTextStyle(PaywallStyle.legal)
-                    .foregroundStyle(Tokens.Colors.paywallColorDismiss)
-            }
-            if let line = model.billingLine {
-                Text(line)
-                    .dsTextStyle(PaywallStyle.legal)
-                    .foregroundStyle(Tokens.Colors.paywallColorDismiss)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .padding(.horizontal, Tokens.Sizes.paywallSizePlanMarginH)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(LinearGradient(colors: [Tokens.Colors.paywallColorPlanSheetTop, Tokens.Colors.paywallColorPlanSheetBottom], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-        .dsHaptic(Tokens.Haptics.globalSelect, trigger: model.selectedPlanID)
-        .sheet(isPresented: Binding(get: { model.showsWelcome }, set: { if !$0 { model.welcomeDismissed() } })) {
-            welcome
-        }
-    }
-
-    /// "Welcome to Premium!" sheet (body names the app: BLOCKED → omitted in release).
-    private var welcome: some View {
-        VStack {
-            Text(Copy.paywallWelcomeTitle)
-                .dsTextStyle(PaywallStyle.planSheetTitle)
-                .foregroundStyle(Tokens.Colors.paywallColorTitle)
-            if let body = AccountBlockedCopy.paywallWelcomeBody {
-                Text(body)
-                    .dsTextStyle(PaywallStyle.planDetail)
-                    .foregroundStyle(Tokens.Colors.paywallColorPlanDetail)
-            }
-            SubscribeCapsule(title: Copy.paywallWelcomeDone, isWorking: false, isEnabled: true) {
-                model.welcomeDismissed()
-                onClose()
-            }
-        }
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, Tokens.Sizes.paywallSizePlanMarginH)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(LinearGradient(colors: [Tokens.Colors.paywallColorPlanSheetTop, Tokens.Colors.paywallColorPlanSheetBottom], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-    }
-
-    /// Selected: fill `paywall.color.planSelected`, border `paywall.size.planBorder` in `paywall.color.planBorder`, height
-    /// `paywall.size.planSelectedHeight`; else fill `paywall.color.plan`, height `paywall.size.planHeight`. Corners
-    /// `radius.global.card` (approximation: not measured). The billed amount is the prominent price.
-    private func planCard(_ plan: PlanOption) -> some View {
-        let selected = plan.id == model.selectedPlanID
-        let shape = RoundedRectangle(cornerRadius: Tokens.Radii.globalCard)
-        return Button {
-            model.select(plan)
-        } label: {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(plan.period == .year ? Copy.paywallPlansYearlyTitle : Copy.paywallPlansMonthlyTitle)
-                        .dsTextStyle(PaywallStyle.planName)
-                        .foregroundStyle(Tokens.Colors.paywallColorTitle)
-                    if plan.period == .year, let monthly = plan.monthlyEquivalent {
-                        Text(Copy.paywallPlansYearlyDetail(monthlyEquivalent: monthly))
-                            .dsTextStyle(PaywallStyle.planDetail)
-                            .foregroundStyle(Tokens.Colors.paywallColorPlanDetail)
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading) {
+                HStack(alignment: .center) {
+                    Text(isYearly ? Copy.paywallPlansYearlyTitle : Copy.paywallPlansMonthlyTitle)
+                        .dsTextStyle(PaywallStyle.planTitle)
+                        .foregroundStyle(Tokens.Colors.paywallColorPlanText)
+                    Spacer(minLength: 0)
+                    if plan?.trialDuration != nil {
+                        PremiumPill(label: Copy.paywallPlansTrialBadge)
                     }
                 }
-                Spacer(minLength: 0)
-                Text(plan.period == .year ? Copy.paywallPlansYearlyPrice(yearlyPrice: plan.price) : Copy.paywallPlansMonthlyPrice(monthlyPrice: plan.price))
-                    .dsTextStyle(PaywallStyle.planPrice)
-                    .foregroundStyle(Tokens.Colors.paywallColorTitle)
-            }
-            .padding(.horizontal, Tokens.Sizes.paywallSizePlanMarginH)
-            .frame(maxWidth: .infinity, minHeight: selected ? Tokens.Sizes.paywallSizePlanSelectedHeight : Tokens.Sizes.paywallSizePlanHeight)
-            .background(selected ? Tokens.Colors.paywallColorPlanSelected : Tokens.Colors.paywallColorPlan, in: shape)
-            .overlay {
-                if selected {
-                    shape.strokeBorder(Tokens.Colors.paywallColorPlanBorder, lineWidth: Tokens.Sizes.paywallSizePlanBorder)
+                Text(isYearly ? Copy.paywallPlansYearlySubtitle : Copy.paywallPlansMonthlySubtitle)
+                    .dsTextStyle(PaywallStyle.planSubtitle)
+                    .foregroundStyle(Tokens.Colors.paywallColorPlanTextSecondary)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(isYearly ? Copy.paywallPlansYearlyBullet1 : Copy.paywallPlansMonthlyBullet1)
+                    Text(isYearly ? Copy.paywallPlansYearlyBullet2 : Copy.paywallPlansMonthlyBullet2)
                 }
-            }
-            .contentShape(shape)
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : [.isButton])
-    }
-}
-
-/// The plan sheet's Subscribe capsule (`paywall.size.subscribeHeight`, `paywall.color.subscribe`, label
-/// `paywall.fontSize.subscribeLabel` in `paywall.color.subscribeLabel`); native progress while purchasing (MB4).
-struct SubscribeCapsule: View {
-    let title: String
-    let isWorking: Bool
-    let isEnabled: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Group {
-                if isWorking {
-                    ProgressView()
+                .dsTextStyle(PaywallStyle.planBullet)
+                .foregroundStyle(Tokens.Colors.paywallColorPlanText)
+                if let plan, !isLoading {
+                    Text(isYearly ? Copy.paywallPlansYearlyPrice(yearlyPrice: plan.price) : Copy.paywallPlansMonthlyPrice(monthlyPrice: plan.price))
+                        .dsTextStyle(PaywallStyle.planPrice)
+                        .foregroundStyle(Tokens.Colors.paywallColorPlanText)
+                    Text(footnote(plan))
+                        .dsTextStyle(PaywallStyle.planFootnote)
+                        .foregroundStyle(Tokens.Colors.paywallColorPlanTextTertiary)
                 } else {
-                    Text(title).dsTextStyle(PaywallStyle.subscribe)
+                    ProgressView()
+                        .tint(Tokens.Colors.paywallColorPlanTextTertiary)
+                        .accessibilityLabel(Text(Copy.globalA11yLoading))
                 }
             }
-            .foregroundStyle(Tokens.Colors.paywallColorSubscribeLabel)
-            .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.paywallSizeSubscribeHeight)
-            .background(Tokens.Colors.paywallColorSubscribe, in: Capsule())
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(Tokens.Sizes.globalPlanCardPadding)
+            PrimaryButton(
+                plan?.trialDuration.map { Copy.paywallPlansTrialCta(trialDuration: $0) } ?? Copy.paywallPlansSubscribe,
+                isEnabled: plan != nil && !isLoading,
+                isBusy: isPurchasing,
+                action: onSubscribe
+            )
+            .accessibilityIdentifier("paywall.subscribe")
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            .padding(.bottom, Tokens.Sizes.globalScreenMargin)
         }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled || isWorking)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Colors.globalSurfaceLight, in: DSShape.rounded(Tokens.Radii.globalCardLarge))
+        // The card and its capsule keep their light values in both appearances (PAY, `paywall.layout.planCard`).
+        .environment(\.colorScheme, .light)
+        .accessibilityElement(children: .contain)
+    }
+
+    /// `paywall.plans.*.detail` ("Billed {price} …"), or `.trialDetail` on a plan with a free trial.
+    private func footnote(_ plan: PlanOption) -> String {
+        switch (isYearly, plan.trialDuration != nil) {
+        case (true, false): return Copy.paywallPlansYearlyDetail(yearlyPrice: plan.price)
+        case (true, true): return Copy.paywallPlansYearlyTrialDetail(yearlyPrice: plan.price)
+        case (false, false): return Copy.paywallPlansMonthlyDetail(monthlyPrice: plan.price)
+        case (false, true): return Copy.paywallPlansMonthlyTrialDetail(monthlyPrice: plan.price)
+        }
     }
 }

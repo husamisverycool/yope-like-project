@@ -109,8 +109,9 @@ export async function measure(page: Page, sel: string, props: string[] = []): Pr
       const cs = getComputedStyle(el);
       const s: Record<string, string> = {};
       for (const p of props as string[]) s[p] = cs.getPropertyValue(p);
-      const n = (v: number) => +v.toFixed(2);
-      return { box: { x: n(r.x), y: n(r.y), w: n(r.width), h: n(r.height), bottom: n(r.bottom), right: n(r.right) }, s };
+      // No named helper inside: tsx (scripts/verify.ts) would wrap it in a __name() call the page does not have.
+      const [x, y, w, h, bottom, right] = [r.x, r.y, r.width, r.height, r.bottom, r.right].map((v) => +v.toFixed(2)) as number[];
+      return { box: { x: x!, y: y!, w: w!, h: h!, bottom: bottom!, right: right! }, s };
     },
     [sel, props] as const,
   );

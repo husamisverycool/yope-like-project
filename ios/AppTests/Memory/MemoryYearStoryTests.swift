@@ -42,23 +42,32 @@ final class MemoryYearStoryTests: XCTestCase {
         let collage = YearStoryCollage(collageID: CollageID("00000000-0000-4000-8000-0000000000e1"), date: LocalDate(year: 2026, month: 6, day: 14)!, postIDs: [], imageURL: nil)
         let cards = YearStoryCard.build(data: data, groupName: "Sunday dinners", photos: [photo(1), photo(2)], collages: [collage])
         XCTAssertEqual(cards.map(\.id), [
-            "intro", "moments-setup", "moments", "busiest-month", "most-reacted-setup",
+            "intro", "look-back", "moments", "busiest-month", "most-reacted-setup",
             "most-reacted-" + MemoryIDs.post(1).rawValue, "most-reacted-" + MemoryIDs.post(2).rawValue,
-            "together-setup", "together-" + collage.collageID.rawValue, "teaser", "outro", "summary",
+            "together-setup", "together-" + collage.collageID.rawValue, "outro", "summary",
         ])
-        XCTAssertEqual(cards.filter(\.isShareable).count, 5, "only the cards that state a fact are shared")
-        XCTAssertEqual(cards[2].headline, Copy.yearStoryMomentsCount(group: "Sunday dinners", count: 42.formatted()))
-        XCTAssertEqual(cards[2].subline, Copy.yearStoryMomentsAside)
-        XCTAssertEqual(cards[3].headline, Copy.yearStoryBusiestMonthTitle(month: MemoryFormat.storyMonth(3, year: 2026)!))
+        XCTAssertEqual(
+            cards.filter(\.isShareable).map(\.id),
+            ["moments", "busiest-month", "most-reacted-" + MemoryIDs.post(1).rawValue, "most-reacted-" + MemoryIDs.post(2).rawValue,
+             "together-" + collage.collageID.rawValue, "outro", "summary"],
+            "the Share pill: the facts, the outro and the summary"
+        )
         XCTAssertEqual(cards[0].headline, Copy.yearStoryIntroTitle)
-        XCTAssertEqual(cards[0].subline, Copy.yearStoryIntroSubtitle)
+        XCTAssertEqual(cards[0].subline, Copy.yearStoryIntroSubtitle(group: "Sunday dinners", year: "2026"))
+        XCTAssertEqual(cards[1].headline, Copy.yearStoryLookBackTitle)
+        XCTAssertEqual(cards[2].headline, Copy.yearStoryMomentsCount(group: "Sunday dinners", count: MemoryFormat.number(42)))
+        XCTAssertNil(cards[2].subline)
+        XCTAssertEqual(cards[3].headline, Copy.yearStoryBusiestMonthTitle(month: MemoryFormat.storyMonth(3, year: 2026)!))
+        XCTAssertEqual(cards[7].subline, Copy.yearStoryTogetherAside)
+        XCTAssertEqual(cards[9].headline, Copy.yearStoryOutroTitle)
     }
 
-    func testMissingDataSkipsWholeSectionsAndListsStopAtListLength() {
+    func testMissingDataSkipsCardsAndListsStopAtListLength() {
         let data = YearStoryData(json: .object(["year": .number(2026)]), fallbackYear: 2026)!
         let cards = YearStoryCard.build(data: data, groupName: "g", photos: (1...7).map(photo), collages: [])
-        XCTAssertFalse(cards.contains(.momentsSetup), "no number → no moments cards")
+        XCTAssertFalse(cards.contains { $0.id == "moments" }, "no number → no moments card")
         XCTAssertFalse(cards.contains(.togetherSetup), "no everyone-days → no together cards")
+        XCTAssertTrue(cards.contains(.lookBack))
         let photos = cards.filter { if case .mostReacted = $0 { return true } else { return false } }
         XCTAssertEqual(photos.count, Int(Tokens.Counts.yearStoryListLength))
         XCTAssertEqual(cards.last, .summary)
@@ -67,17 +76,17 @@ final class MemoryYearStoryTests: XCTestCase {
     func testRankedPhotosCarryNoNumbersOrRanks() {
         let data = YearStoryData(json: .object(["year": .number(2026)]), fallbackYear: 2026)!
         let cards = YearStoryCard.build(data: data, groupName: "g", photos: (1...5).map(photo), collages: [])
-        let headlines = cards.compactMap { card -> String? in
-            if case .mostReacted = card { return card.headline }
+        let photos = cards.compactMap { card -> YearStoryPhoto? in
+            if case let .mostReacted(photo) = card { return photo }
             return nil
         }
-        XCTAssertEqual(headlines.count, 5)
-        for (position, headline) in headlines.enumerated() {
-            XCTAssertEqual(headline, Copy.yearStoryMostReactedPhoto(name: "Bea", date: MemoryFormat.storyDate(LocalDate(year: 2026, month: 2, day: 25)!)))
-            XCTAssertFalse(headline.hasPrefix(String(position + 1)), "no rank number")
-            XCTAssertFalse(headline.contains("#"))
-            XCTAssertNil(cards.first { $0.headline == headline }?.subline, "no aside with a count")
+        XCTAssertEqual(photos.count, 5)
+        for photo in photos {
+            let footer = Copy.yearStoryMostReactedPhoto(name: photo.name)
+            XCTAssertFalse(footer.contains("#"))
+            XCTAssertFalse(footer.rangeOfCharacter(from: .decimalDigits) != nil, "no rank number")
         }
+        XCTAssertTrue(cards.filter { if case .mostReacted = $0 { return true } else { return false } }.allSatisfy { $0.headline.isEmpty && $0.subline == nil })
     }
 
     func testLoadsTheFixtureStoryAndNavigatesByTaps() async {
@@ -85,8 +94,13 @@ final class MemoryYearStoryTests: XCTestCase {
         let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .loaded)
-        // intro, moments ×2, month, most-reacted setup + 3 photos, together setup + 1 day, teaser, outro, summary.
+        // intro, look back, moments, month, most-reacted setup + 3 photos, together setup + 1 day, outro, summary.
         XCTAssertEqual(model.cards.count, 13)
+        XCTAssertEqual(model.position, Copy.yearStoryPosition(position: "1", total: "12"), "position among the cards before the summary")
+        XCTAssertNotNil(model.coverURL, "the cover: the first most-reacted photo")
+        // The recap card: most-reacted first, then the story's posts, deduplicated, full rows of 4 only.
+        XCTAssertEqual(model.summary?.grid.map(\.postID), [2, 1, 3, 4, 5, 6, 7, 8].map(MemoryIDs.post))
+        XCTAssertEqual(model.summaryStyles, [.recapCard, .cover])
         let reacted = model.cards.compactMap { card -> PostID? in
             if case let .mostReacted(photo) = card { return photo.postID }
             return nil
@@ -102,7 +116,12 @@ final class MemoryYearStoryTests: XCTestCase {
         XCTAssertEqual(model.index, 1)
         for _ in 0..<20 { model.next() }
         XCTAssertEqual(model.currentCard, .summary)
+        XCTAssertNil(model.position, "the summary: page dots instead of the position pill")
+        model.summaryPage = 1
+        XCTAssertEqual(model.summaryStyle, .cover)
+        XCTAssertEqual(model.shareKey(.summary), "summary-cover", "each summary style shares its own image")
         model.replay()
+        XCTAssertEqual(model.summaryPage, 0)
         XCTAssertEqual(model.index, 0)
         model.close()
         XCTAssertTrue(model.isFinished)
@@ -217,20 +236,22 @@ final class MemoryYearStoryTests: XCTestCase {
         XCTAssertEqual(model.index, 0)
     }
 
-    func testSummaryDotColoursParseFromTheTokenText() {
-        let selected = MemoryTokenColor.components(Tokens.Layouts.YearStorySummaryDots.selectedColor)
-        XCTAssertEqual(selected, MemoryTokenColor.Components(red: 1, green: 1, blue: 1, opacity: 1))
-        let others = MemoryTokenColor.components(Tokens.Layouts.YearStorySummaryDots.unselectedColor)
-        XCTAssertEqual(others?.red ?? 0, 0.4, accuracy: 0.001)
-        XCTAssertEqual(others?.green ?? 0, 0.4, accuracy: 0.001)
-        XCTAssertEqual(others?.blue ?? 0, 0.4, accuracy: 0.001)
-        XCTAssertEqual(others?.opacity, 1)
-        let translucent = MemoryTokenColor.components("#00000080")
-        XCTAssertEqual(translucent?.red, 0)
-        XCTAssertEqual(translucent?.opacity ?? 0, 128.0 / 255.0, accuracy: 0.0001)
-        XCTAssertNil(MemoryTokenColor.components("white"))
-        XCTAssertNil(MemoryTokenColor.components("#12345"))
-        XCTAssertGreaterThan(Tokens.Layouts.YearStorySummaryDots.pitch, Tokens.Layouts.YearStorySummaryDots.diameter, "dots never touch")
+    func testTheStoryStartsPausedWhileVoiceOverRuns() async {
+        let context = MemoryTestContext()
+        context.isVoiceOverRunning = true
+        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        XCTAssertTrue(model.isPaused, "auto-advance would cut speech (WCAG 2.2.2)")
+        XCTAssertFalse(model.clockRuns)
+        XCTAssertEqual(context.sleeper.pending, 0)
+    }
+
+    func testTheRecapCardTakesFullRowsOnly() {
+        XCTAssertEqual(RecapCard.fullRows(Array(1...3)), [], "fewer than a row: no recap card")
+        XCTAssertEqual(RecapCard.fullRows(Array(1...9)), Array(1...8))
+        XCTAssertEqual(RecapCard.fullRows(Array(1...40)).count, Int(Tokens.Layouts.YearStoryRecapCard.columns * Tokens.Layouts.YearStoryRecapCard.maxRows))
+        let summary = YearStorySummary(year: 2026, groupName: "g", grid: [])
+        XCTAssertEqual(summary.styles, [.cover], "the recap card is offered only with a full row")
     }
 
     func testPreloadsTheNextCardsImages() async {
@@ -254,6 +275,7 @@ final class MemoryYearStoryTests: XCTestCase {
         model.removePost(MemoryIDs.post(1))
         XCTAssertFalse(model.cards.contains { if case .togetherDay = $0 { return true } else { return false } }, "the collage with that photo goes")
         XCTAssertFalse(model.cards.contains(.togetherSetup))
+        XCTAssertFalse(model.summary?.grid.contains { $0.postID == MemoryIDs.post(1) } ?? true, "and leaves the recap card")
         model.removePost(MemoryIDs.post(2))
         XCTAssertFalse(model.cards.contains(.mostReactedSetup), "an empty list loses its setup card")
         XCTAssertEqual(model.cards.last, .summary)
@@ -284,8 +306,11 @@ final class MemoryYearStoryTests: XCTestCase {
         let entry = YearStoryEntryModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
         await entry.refresh()
         XCTAssertEqual(entry.year, year)
-        XCTAssertEqual(entry.content?.title, Copy.yearStoryEntryTitle(year: String(year)))
+        XCTAssertEqual(entry.content?.title, Copy.yearStoryEntryTitle)
+        XCTAssertEqual(entry.content?.subtitle, Copy.yearStoryEntrySubtitle(year: String(year)))
         XCTAssertEqual(entry.content?.buttonTitle, Copy.yearStoryEntryButton)
+        XCTAssertEqual(entry.content?.icon, Tokens.Icons.globalRecap)
+        XCTAssertNotNil(entry.content?.photoPath, "the story's cover on the feed card")
 
         let none = MemoryTestContext { $0.yearStories = [] }
         let hidden = YearStoryEntryModel(groupID: MemoryIDs.group, dependencies: none.dependencies)

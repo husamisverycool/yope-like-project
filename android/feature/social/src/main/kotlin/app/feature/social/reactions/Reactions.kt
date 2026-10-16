@@ -3,6 +3,8 @@
 // references/auto/imessage/apple-support/messages-tapbacks-ios27.png (reaction row on long press),
 // references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (picker),
 // references/auto/retro/apk/retro-android-2026.10.1150-strings.txt ("Reactions" sheet).
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package app.feature.social.reactions
 
 import androidx.compose.animation.AnimatedContent

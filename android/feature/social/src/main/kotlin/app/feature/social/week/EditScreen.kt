@@ -3,6 +3,8 @@
 // title / Update, chosen-photos strip, grey header line, 4-column grid), references/auto/retro/press/tc-2023-12-retro3.png
 // phones 2–3 ("Add Message" pill, "Add a Message" modal with Done and counter), references/auto/retro/apk/
 // retro-android-2026.10.1150-strings.txt ("New Album", "Name your album", "Create Album").
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package app.feature.social.week
 
 import androidx.compose.foundation.background

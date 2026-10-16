@@ -1,105 +1,96 @@
-# Verification — `camera.sendto` (iOS)
+# Verification — `camera.sendto` (iOS, Pass 4 — Retro redesign)
 
-Choose groups, optional caption / voice note, send — `ios/App/Sources/Features/Capture/SendTo/`.
+Share Photo composer — `ios/App/Sources/Features/Capture/SendTo/SendToView.swift` (+ `SendToMessageSheet`, `SendToGroupRow`), `SendToVoice.swift`, `SendToModel.swift`, `CaptureSendCenter.swift`, `ios/App/Sources/Features/Capture/Support/CaptureComponents.swift` (`CaptureMediaHeader`).
 
-Checklist written from the spec (`design/surfaces/camera.sendto.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>.png`, then `tools/sidebyside.py` makes `design/verification/camera.sendto.png` next to the reference image(s) below.
+Checklist written from the spec (`design/surfaces/camera.sendto.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>-<light|dark>.png` (every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/camera.sendto.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t6.73-sendto-voice-tooltip.png`, `references/auto/yope/frames/a-savannahclooney-7683341732695592206-t5.73-sendto-caption-keyboard.png`, `references/auto/yope/frames/a-virgi-7686278541255642390-t56.23-sendto-three-selected-es.png`, `references/auto/yope/frames/a-chuongxetank-7694968408424582452-t7.73-posted-toast-contacts-card.png`
+Reference image(s): `references/auto/retro/store/retro-store-03.png (ST-03)`, `references/auto/retro/press/tc-2023-12-retro3.png phones 2–3 (TC-R3)`, `references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png`, `references/owner/locket-review-sendto.jpg (mechanics)`
 
-Snapshots (CI): `camera.sendto-loading.png`, `camera.sendto-loaded.png`, `camera.sendto-nothing-selected.png`, `camera.sendto-voice-coach.png`, `camera.sendto-empty.png`, `camera.sendto-offline.png`, `camera.sendto-error.png`, `camera.sendto-offline-send.png`, `camera.sendto-video-free-member.png`, `camera.sendto-sent-toast.png`
+Snapshots (CI, `ios/build/snapshots/capture/`): `camera.sendto-loaded-light.png`, `camera.sendto-loaded-dark.png`, `camera.sendto-message-sheet-light.png`, `camera.sendto-message-sheet-dark.png`, `camera.sendto-loading-light.png`, `camera.sendto-message-added-light.png`, `camera.sendto-message-sheet-empty-light.png`, `camera.sendto-nothing-selected-light.png`, `camera.sendto-voice-recording-light.png`, `camera.sendto-voice-locked-light.png`, `camera.sendto-voice-paused-light.png`, `camera.sendto-voice-attached-light.png`, `camera.sendto-sending-light.png`, `camera.sendto-empty-light.png`, `camera.sendto-offline-groups-light.png`, `camera.sendto-error-composer-kept-light.png`, `camera.sendto-video-free-member-light.png`
 
-**Summary: 52 matched · 4 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 46 matched · 3 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Header
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `size.global.headerButton` | 44 pt (SOURCED) | ✕ / download circles 44 | shared HeaderCircleButton (Components) |
-| matched | `color.global.controlOnDeep` | #101010 (SOURCED) | circle fill | HeaderCircleFill.onDeep |
-| matched | `size.global.headerInset` | 11.5 pt (SOURCED) | inset 11.5 | padding(.horizontal) |
-| matched | `icon.global.close` | ios: xmark; android: Rounded.Close (PLATFORM) | ✕ | Image |
-| matched | `icon.global.download` | ios: arrow.down.to.line; android: Rounded.Download (PLATFORM) | download | Image |
-| matched | `camera.sendto.title` | “send to...” (SOURCED) | ‘send to...’ | Copy, text role sheetTitle |
-| matched | `fontSize.global.sheetTitle` | 19.5 pt (SOURCED) | title size | DSTextStyle (title3) |
-| matched | `fontWeight.global.sheetTitle` | bold (SOURCED) | title weight | DSTextStyle |
-
-## Preview card
+## Page and header
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `camera.sendto.layout.preview` | width: 218; height: 290; top: 130; gapBelowHeader: 30.5 (SOURCED) | 218 × 290, top 130, 30.5 below header | frame + offset(y: top); header top = top − gap − 44 (centre 78) |
-| matched | `radius.global.photo` | 15 pt (SOURCED) | card corners 15 | clipShape |
-| matched | `camera.capture.hourOverlay` | “{time}” (SOURCED) | overlay on the card (capture hour) | Text, overlayTimeCamera role |
-| matched | `camera.sendto.size.captionBaselineOffset` | 31 pt (SOURCED) | caption baseline 31 under overlay baseline | custom VerticalAlignment (last → first baseline + offset) |
-| matched | `camera.sendto.fontSize.caption` | 16 pt (SOURCED) | caption 16 | DSTextStyle (callout) |
-| matched | `camera.sendto.fontWeight.caption` | semibold (SOURCED) | caption semibold | DSTextStyle |
-| matched | `camera.sendto.layout.messageField` | height: 37; insetLeading: 10; insetBottom: 14.5; gapToMic: 7.5; micDiameter: 38; insetTrailing: 8.5 (SOURCED) | field h 37, inset 10 / 14.5, mic 38, gap 7.5, trailing 8.5 | HStack paddings / frames |
-| approximated | `camera.sendto.color.messageField` | #0000007A (SOURCED) | field + mic fill #0000007A over a backdrop blur | Capsule / Circle fill; the backdrop blur radius was not measured, so the tint is drawn without a blur |
-| approximated | `camera.sendto.fontSize.messagePlaceholder` | 15 pt (SOURCED) | placeholder 15, textPrimary | TextField prompt; weight not measured → platform regular; text inset = h/2 (capsule radius, not measured) |
-| matched | `camera.sendto.caption.placeholder` | “add a message” (SOURCED) | ‘add a message’ | Copy; field label for VoiceOver |
-| matched | `icon.global.mic` | ios: mic.fill; android: Rounded.Mic (PLATFORM) | mic glyph | SendToMicButton (release); the recorder follows chat.voice.layout.recording |
-| approximated | `chat.voice.layout.recording` | start: press and hold the mic circle: recording runs while the finger is down; send: lift the finger: the message is sent; cancel: slide left while holding: the recording is discarded and nothing is sent; lock: slide up onto the lock shown above the mic circle: recording continues hands-free; locked: while locked: chat.voice.icon.pause pauses and lets you play the draft; the mic circle shows icon.global.send and sends; row: while recording, the composer row shows leading → trailing: red recording dot, elapsed time, the centred hint (‹ slide to cancel); the mic circle stays at the trailing end under the finger; dotColor: color.global.destructive; timerFormat: chat.voice.layout.durationFormat; timerColor: color.global.textPrimary; hintGlyph: icon.global.back; hintColor: color.global.textSecondary; hintCopy: chat.voice.recording.slideToCancel; lockGlyph: icon.global.lock; lockHintGlyphIos: chevron.up; lockHintGlyphAndroid: Rounded.ExpandLess; haptic: none (HIG: haptics must not disrupt the microphone) (SOURCED) | hold to record, lift keeps, slide left cancels, slide up locks; row dot · mm:ss · ‹ slide to cancel | SendToVoiceRow / SendToMicButton; cancel at half the field width and lock at one mic diameter of travel (thresholds not measured); attached note shows delete · length · play (no reference for an attached note in send-to) |
-| matched | `camera.sendto.coach.voice` | “add a voice memo on this pic” (SOURCED) | voice coach | CaptureCoachTooltip, wraps within the card, first use |
-| matched | `camera.sendto.size.captionMaxLength` | 36 (SOURCED) | caption limit 36, no counter | SendToModel.clampCaption on every change |
+| matched | `color.global.backgroundDeep` | #000000 (SOURCED) | black modal, both appearances | background + dark subtree; the cover sets `.preferredColorScheme(.dark)` (light status-bar content) |
+| matched | `camera.sendto.layout.header` | title: centred, text role sheetTitle, colour color.global.textOnMedia; its cap middle on the circles' centre line; trailing: close circle (C-11 on media): size.global.circleButton, centre 37.7 pt from the trailing edge; leading: save circle, mirrored (centre 37.7 pt from the leading edge); centreBelowSafeArea: 25.8 (SOURCED) | title centred, cap middle on the circles' line 25.8 below the safe-area top; close centre 37.7 from the trailing edge; save mirrored | `CaptureMediaHeader`: centreBelowSafeArea from the token; 37.7 from `collage.view.layout.screen.closeCentreFromTrailing` (the send-to token states it only in words) |
+| matched | `camera.sendto.title` | “Share Photo” (SOURCED) | "Share Photo"; "Sending…" while sending | `CaptureMediaHeaderTitle`, cross-fade `duration.global.crossfade` |
+| matched | `camera.sendto.sending` | “Sending…” (SOURCED) | busy title | same |
+| matched | `size.global.circleButton` | 36 pt (SOURCED) | close / save 36, #262626 | `CircleButton(style: .media)` |
+| approximated | `icon.global.close` | ios: xmark; android: Rounded.Close (PLATFORM) | glyph ≈ 9.7 pt (no token) | glyph box `size.global.iconSmall` (nearest glyph token; same as the recap preview close) |
+| matched | `icon.global.download` | ios: arrow.down.to.line; android: Rounded.Download (PLATFORM) | save glyph | same box |
 
-## Recipient rows
+## Photo, message pill, voice capsule
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `camera.sendto.layout.recipientRow` | pitch: 60; avatarCenterInset: 51.5; nameInset: 83; checkTrailingInset: 29; firstRowCenterBelowPreview: 49.5 (SOURCED) | pitch 60, avatar centre 51.5, name at 83, check trailing 29, first row centre 49.5 below card | HStack paddings derived from the tokens |
-| matched | `size.global.avatarSmall` | 32.6 pt (SOURCED) | group avatar 32.6 | frame; cover downsampled to its size off the main actor |
-| approximated | `icon.global.group` | ios: person.2.fill; android: Rounded.Group (PLATFORM) | no cover | glyph textPrimary (colour/size not specified) |
-| matched | `fontSize.global.headerTitle` | 15 pt (SOURCED) | name 15 bold | DSTextStyle (subheadline) |
-| matched | `size.global.checkCircle` | 24 pt (SOURCED) | check 24 | CaptureCheckCircle |
-| matched | `icon.global.check` | ios: checkmark.circle.fill; android: Rounded.CheckCircle (PLATFORM) | selected | selection colour |
-| matched | `color.global.selection` | #0091FF (PLATFORM) | check colour | foregroundStyle |
-| matched | `icon.global.uncheck` | ios: circle; android: Rounded.RadioButtonUnchecked (PLATFORM) | unselected | textSecondary |
-| matched | `haptic.global.select` | ios: selection; android: SEGMENT_TICK (PLATFORM) | toggle haptic | dsHaptic(trigger: selectionChanges) |
+| matched | `camera.sendto.layout.preview` | width: 297.6; maxHeight: 422.8; cornerRadius: 8.5; topBelowHeaderCircle: 20; fit: native aspect, aspect-fill; height = min(width ÷ aspect, maxHeight); centred horizontally (SOURCED) | 297.6 wide, native aspect (3:4 → 396.8), ≤ 422.8, corners 8.5, 20 below the circles | frame from the still's pixel aspect, `DSShape.rounded(8.5)`, `metricGap(topBelowHeaderCircle)` |
+| matched | `camera.sendto.layout.messageField` | message: C-09 glass pill on the photo: fill color.global.controlOnDeep, icon.global.edit + label text role pill, colour color.global.textOnMedia, height size.global.pillHeight, width hugs the label; voice: icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic; gap: size.global.pillGap; bottomInset: 20.5; align: the pair centred horizontally on the photo (SOURCED) | pill + voice capsule centred, bottom 20.5 above the photo bottom, gap pillGap | bottom overlay HStack(spacing: pillGap), padding bottomInset |
+| matched | `camera.sendto.message.add` | “Add a message” (SOURCED) | "Add a message" / "Edit message" after one | `LightPill(style: .dark, icon: icon.global.edit)`, label cross-fade |
+| matched | `camera.sendto.message.edit` | “Edit message” (SOURCED) | after a message | same |
+| matched | `size.global.iconPillWidth` | 49 pt (SOURCED) | voice capsule 49 × 37, icon.global.mic | `CapsuleLabel(icon:, style: .fill)` in the dark subtree (#262626, white glyph) |
+| matched | `camera.sendto.a11y.voice` | “Add a voice note” (SOURCED) | voice label | element label |
+| approximated | `icon.global.mic` | ios: mic; android: Outlined.Mic (PLATFORM) | recording: red mic · elapsed · ‹ Slide to cancel (chat.voice) | `SendToRecordingCapsule` replaces the pill: C-07 anatomy on #262626, text role `pill` (chat.voice uses `body` in the composer field; here the capsule's role) |
+| matched | `icon.global.lock` | ios: lock.fill; android: Rounded.Lock (PLATFORM) | lock circle pillGap above while holding | `CircleButtonFace(.media)` overlay |
+| matched | `icon.global.trash` | ios: trash; android: Outlined.Delete (PLATFORM) | paused draft: delete (destructive) | glyph button `chat.voice.a11y.discard` |
+| matched | `icon.global.play` | ios: play.fill; android: Rounded.PlayArrow (PLATFORM) | attached note: ▶ + duration (chat.voice capsule) | `SendToVoiceNoteCapsule`; delete from its context menu / VoiceOver action |
 
-## Send button
-
-| status | token / copy | reference value | element | iOS implementation |
-|---|---|---|---|---|
-| matched | `size.global.buttonHeightSheet` | 47 pt (SOURCED) | height 47 | frame |
-| matched | `size.global.buttonMarginHSheet` | 27 pt (SOURCED) | side margins 27 | width − 2 × margin |
-| matched | `camera.sendto.size.sendButtonBottom` | 41.5 pt (SOURCED) | bottom 41.5 above screen bottom | padding(.bottom) in a safe-area-ignoring stack |
-| matched | `radius.global.button` | 14 pt (SOURCED) | corners 14 | RoundedRectangle |
-| matched | `camera.sendto.send` | “send” (SOURCED) | ‘send’ | Copy, role button, onAccent |
-| matched | `camera.sendto.size.countDisc` | 18.5 pt (SOURCED) | count disc 18.5 | frame + Circle(onAccent) |
-| matched | `camera.sendto.size.countDiscGap` | 7 pt (SOURCED) | gap 7 | HStack spacing |
-| matched | `camera.sendto.fontSize.countNumber` | 11 pt (SOURCED) | number 11 | DSTextStyle (caption2), accent |
-| matched | `camera.sendto.fontWeight.countNumber` | bold (SOURCED) | number bold | DSTextStyle |
-| matched | `haptic.global.send` | ios: notification.success; android: CONFIRM (PLATFORM) | sent haptic | played when create_post succeeds (CaptureSendCenter) |
-| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | failed haptic | played on failure |
-
-## Toast and states
+## Groups
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `camera.sendto.layout.toast` | height: 49; marginHorizontal: 8.5; top: 59; cornerRadius: 20; glyph: 17; glyphInset: 19.5; glyphToText: 11 (SOURCED) | lime bar 49 high, margins 8.5, top 59, r 20, glyph 17 at 19.5, gap 11 | CaptureConfirmationToast / CaptureFailureToast |
-| matched | `camera.sendto.duration.toastVisible` | 2000 ms (SOURCED) | visible 2000 ms; in ≈117 ms on the platform default spring | confirmation toast shown for the token, also announced; enters / leaves with spring.global.platformDefault.ios + move from top (Reduce Motion cross-fade) |
-| matched | `camera.sendto.toast.postedOne` | “posted in {group}” (SOURCED) | ‘posted in {group}’ | request.confirmation |
-| matched | `camera.sendto.toast.postedMany` | “posted in your groups” (SOURCED) | ‘posted in your groups’ | request.confirmation |
-| matched | `camera.sendto.toast.saved` | “saved to your library” (SOURCED) | ‘saved to your library’ | after save |
-| matched | `camera.sendto.error.sendFailed` | “your pic didn’t send” (SOURCED) | error toast | failure toast with retry, same motion |
-| matched | `camera.sendto.error.offline` | “you’re offline” (SOURCED) | offline toast | failure toast; retried automatically when the network returns |
-| matched | `camera.sendto.error.retry` | “try again” (SOURCED) | retry text button | Button → outbox replay |
-| matched | `camera.sendto.empty.title` | “no groups yet” (SOURCED) | no groups | CaptureEmptyState; button opens AccountModal.groupCreate as a sheet over send-to (capture kept) |
-| matched | `camera.sendto.empty.detail` | “start one and share this pic with your people” (SOURCED) | detail | CaptureEmptyState |
-| matched | `camera.sendto.empty.button` | “create group” (SOURCED) | ‘create group’ | CaptureLightPill |
+| approximated | `camera.sendto.groupsLabel` | “Groups” (SOURCED) | "Groups", text role meta, textSecondary, 35.2 below the photo, at the margin | label cap top `size.global.sectionGap` (36.4, Retro's photo → section-header gap) below the photo: 35.2 exists only in the token's prose (gap reported) |
+| matched | `camera.sendto.layout.recipientRow` | label: section label above the rows: text role meta, color.global.textSecondary, 35.2 pt below the preview bottom, at size.global.screenMargin; row: C-16 people row: group cover avatar size.global.avatarPicker (circle; no cover → icon.global.group on color.global.controlOnDeep), name text role listTitle color.global.textOnMedia starting size.global.cardNameGap after the avatar (Retro avatar → name gap, C-18), trailing check size.global.checkCircle with its ink at the trailing margin; padding: 16; insets: size.global.screenMargin; divider: C-32 hairline between rows, color.global.separator dark value (#4D4D4D) on media, inside the margins; check: selected icon.global.check in color.global.selection; not selected icon.global.uncheck in color.global.textSecondary (SOURCED) | C-16 row: avatar 37 → 11 → listTitle name; check ink on the margin; 16 above/below (69); hairline between rows inside the margins | `SendToGroupRow` (PeopleRow has no avatar→name gap token nor check slot — composed locally), `HairlineDivider` (separator dark #4D4D4D) |
+| matched | `size.global.avatarPicker` | 37 pt (SOURCED) | 37 circle; no cover: group glyph on #262626 | `AvatarView(placeholderIcon: icon.global.group)` (fallback fill `control` = #262626 in the dark subtree) |
+| matched | `size.global.cardNameGap` | 11 pt (SOURCED) | 11 | leading padding of the name |
+| matched | `size.global.checkCircle` | 24 pt (SOURCED) | 24 | Image frame |
+| matched | `color.global.selection` | light: #0088FF; dark: #0091FF (PLATFORM) | selected check | foreground |
+| matched | `color.global.textSecondary` | #999999 (SOURCED) | unselected ring | foreground |
+| matched | `haptic.global.select` | ios: selection; android: SEGMENT_FREQUENT_TICK (PLATFORM) | tick on toggle | `.dsHaptic(select, trigger: selectionChanges)` |
 
-## Accessibility
+## Send capsule (C-05 on media)
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `camera.sendto.a11y.close` | “close” (SOURCED) | ✕ | label |
-| matched | `camera.sendto.a11y.save` | “save” (SOURCED) | download | label |
-| matched | `camera.sendto.a11y.voice` | “add a voice memo” (SOURCED) | mic | label (+ recording value) |
+| matched | `size.global.buttonHeight` | 60 pt (SOURCED) | 60 | PrimaryButton |
+| matched | `size.global.buttonMarginH` | 20 pt (SOURCED) | 20 | horizontal padding |
+| matched | `camera.sendto.size.sendButtonBottom` | 44.5 pt (SOURCED) | bottom 44.5 above the screen bottom | bottom padding = 44.5 − safe-area bottom (safeAreaInset) |
+| matched | `color.global.surfaceLight` | #FFFFFF (SOURCED) | white fill, black label | `PrimaryButton(surface: .media)` |
+| matched | `color.global.controlRaised` | light: #CCCCCC; dark: #4D4D4D (SOURCED) | disabled #4D4D4D, label black | PrimaryButton disabled in the dark subtree (controlRaised dark / onAccent dark) |
+| matched | `camera.sendto.send` | “Send” (SOURCED) | "Send" | label |
+| matched | `haptic.global.send` | ios: notification.success; android: CONFIRM (PLATFORM) | on posted | `CaptureSendCenter.send` |
+| matched | `haptic.global.error` | ios: notification.error; android: REJECT (PLATFORM) | on failure | same |
+
+## Add a Message sheet
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `camera.sendto.layout.messageSheet` | header: native sheet toolbar: centred title text role sheetTitle; trailing 'Done' text button (C-08, text role textButton, color.global.textPrimary); field: multi-line text, text role placeholder (17), typed color.global.textPrimary, placeholder color.global.textSecondary, on color.global.background; textInset: 22; counterTrailingInset: 20.7; counterAboveKeyboard: 22; counter: camera.sendto.fontSize.counter, monospaced digits (iOS Font.Design.monospaced; Android FontFamily.Monospace), color.global.textSecondary (SOURCED) | native page sheet following the appearance; toolbar title + Done; field from 22; counter 20.7 from the edge, 22 above the keyboard | `SendToMessageSheet` in `.sheet`, `.preferredColorScheme(system appearance)`; principal title `sheetTitle`, `TextButton` Done; padding textInset; counter paddings from the token |
+| matched | `camera.sendto.message.title` | “Add a Message” (SOURCED) | "Add a Message" | toolbar principal |
+| matched | `camera.sendto.message.done` | “Done” (SOURCED) | C-08 textButton, textPrimary | `TextButton(style: .header)` |
+| matched | `camera.sendto.caption.placeholder` | “Add a message…” (SOURCED) | placeholder textSecondary, typed textPrimary, role placeholder (17) | TextField prompt |
+| matched | `camera.sendto.fontSize.counter` | 16 pt (SOURCED) | 16, monospaced digits, callout | `CaptureType.counter` + `.fontDesign(.monospaced)` + `.monospacedDigit()` |
+| matched | `camera.sendto.message.counter` | “{count}/{max}” (SOURCED) | "58/250", read as "58 of 250" | `global.a11y.pagePosition` as its label |
+| matched | `camera.sendto.size.captionMaxLength` | 250 (SOURCED) | input stops at 250 | `clampCaption` |
+
+## States and flows
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `camera.sendto.empty.title` | “No groups yet” (SOURCED) | C-27 in the rows area → groups.create | `EmptyStateView` with the group glyph; `AccountModalDestination(.groupCreate)` sheet |
+| matched | `camera.sendto.error.sendFailed` | “Couldn't send photo” (SOURCED) | native alert: Try Again / Cancel, keeps everything | `.alert(presenting: sendFailure)`; the failed outbox draft is discarded so Try Again sends the composer's capture once |
+| matched | `camera.sendto.error.offline` | “Check your connection and try again.” (SOURCED) | offline alert message | Failure.offline.message |
+| matched | `camera.sendto.error.generic` | “There was a problem. Please try again.” (SOURCED) | other failures | Failure.sendFailed.message |
+| matched | `camera.sendto.discard.title` | “Discard photo?” (SOURCED) | asks only with a message or voice note | `needsDiscardConfirmation` → native alert, destructive "Yes, go back" |
+| matched | `camera.sendto.toast.postedOne` | “Added to {group}!” (SOURCED) | Android toast / iOS announcement | `ToastCenter.show` (C-26: announcement, nothing drawn) |
+| matched | `camera.sendto.toast.saved` | “Saved” (SOURCED) | save confirmation (iOS announcement) | same |
+| matched | `camera.sendto.a11y.save` | “Save to Camera Roll” (SOURCED) | save label | header circle |
+| matched | `camera.sendto.a11y.close` | “Close” (SOURCED) | close label | header circle |
 
 ## Notes
 
-- Presentation: full-screen cover with the system slide-up (the Yope sheet spring `spring.global.sheetPresent` is BLOCKED; documented alternative = native presentation). A cover keeps the measured positions from the screen top.
-- Groups-load failure without a cache (not in the spec's state table): offline → `camera.sendto.error.offline` + retry pill; other errors → the retry pill alone (no copy exists).
-- After editing, the field shows the typed caption (not observed in the reference).
-- The success toast belongs on the screen the member returns to (groups.list): the shell must attach `.captureSendStatus(CaptureEnvironment.shared.sendCenter)` (reported).
-- A photo reply (camera opened from photo.viewer): `PhotoReplyHandoff.replyTarget(for:)` becomes `p_reply_to_post_id` when the post goes to exactly that group; the handoff is cleared after send.
+- The groups list's own load failures (offline with nothing cached, server error) have no spec row: drawn as C-27 detail + Try Again with `camera.sendto.error.offline` / `.generic` (retro.voice.error).
+- Alerts are system-drawn; the snapshot `error-composer-kept` shows the composer state behind it.
+- The cover's `.preferredColorScheme(.dark)` (status bar) also makes the system alerts dark in light appearance; the message sheet and groups.create explicitly follow the system appearance.

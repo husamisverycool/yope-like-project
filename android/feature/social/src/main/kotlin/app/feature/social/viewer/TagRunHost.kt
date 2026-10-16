@@ -1,6 +1,8 @@
 // Surface: tagging (memory group) as hosted by photo.viewer — design/surfaces/tagging.md, photo.viewer.md (footer line 2)
 // References: references/auto/retro/press/tc-2023-07-retro-2b.jpg phone 2 (footer date line),
 // references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (" · with ", "In this photo", "Remove tag").
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package app.feature.social.viewer
 
 import androidx.compose.animation.AnimatedContent

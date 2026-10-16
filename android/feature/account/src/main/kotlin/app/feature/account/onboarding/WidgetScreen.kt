@@ -48,7 +48,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import app.data.model.Media
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
@@ -58,6 +57,7 @@ import app.feature.account.common.AccountEvent
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.OnboardingForm
 import app.feature.account.common.navigateAccount
+import app.feature.account.common.newestGroupPhoto
 import app.feature.account.shell.AccountFlow
 import app.ui.components.HeaderAction
 import app.ui.components.PrimaryButton
@@ -74,7 +74,6 @@ import app.widget.GroupPhotoWidgetReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /** What the preview tile shows: the newest photo across the person's groups and its sender's first name. */
@@ -88,15 +87,7 @@ class WidgetPreviewViewModel(private val env: AccountEnvironment) : AccountViewM
 
     init {
         viewModelScope.launch {
-            runCatching {
-                val groups = env.backend.observeMyGroups().first { it.value != null || !it.refreshing }.value.orEmpty()
-                val newest = groups.mapNotNull { g -> runCatching { env.backend.newestPost(g.id) }.getOrNull() }.maxByOrNull { it.createdAt } ?: return@runCatching
-                val media = env.backend.media(listOf(newest.mediaId)).firstOrNull() ?: return@runCatching
-                val path = media.imagePath(Media.Rendition.Display)
-                val url = env.backend.signedUrls(listOf(path))[path]
-                val name = env.backend.profiles(listOf(newest.authorId)).firstOrNull()?.firstName
-                mutable.value = WidgetPreview(url, name)
-            }
+            newestGroupPhoto(env)?.let { mutable.value = WidgetPreview(it.url, it.firstName) }
         }
     }
 }

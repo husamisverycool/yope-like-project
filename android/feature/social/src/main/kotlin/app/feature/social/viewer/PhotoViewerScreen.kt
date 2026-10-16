@@ -525,17 +525,18 @@ private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, vo
                     )
                 }
             }
-            if (post.voicePath != null) {
+            val notePath = post.voicePath
+            if (notePath != null) {
                 val duration = (post.voiceDurationMs ?: 0).toLong()
                 val voiceLabel = if (state.mine) stringRes(R.string.chat_voice_a11y_messagemine, Formats.spokenDuration(duration))
                 else stringRes(R.string.chat_voice_a11y_message, photo.author?.firstName.orEmpty(), Formats.spokenDuration(duration))
                 Spacer(Modifier.height(pitch))
                 VoiceCapsule(
                     duration,
-                    voice.elapsedOf(post.voicePath, duration),
-                    voiceStateOf(post.voicePath, voice.playback.key, voice.playback.isPlaying, voice.playback.progress, voice.loadingKey, voice.failedKeys),
+                    voice.elapsedOf(notePath, duration),
+                    voice.stateOf(notePath),
                     voiceLabel,
-                    onClick = { voice.onPlay(post.voicePath) },
+                    onClick = { voice.onPlay(notePath) },
                     onMedia = true,
                 )
             }

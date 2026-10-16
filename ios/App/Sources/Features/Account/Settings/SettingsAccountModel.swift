@@ -22,7 +22,7 @@ final class SettingsAccountModel {
     private(set) var isDeleting = false
     private(set) var isSavingProfile = false
     private(set) var isSavingPhoto = false
-    /// The last failed save (`settings.account.name.error`), shown as the message-only alert.
+    /// The last failure (`settings.account.name.error` / `.delete.error`), shown as the message-only alert.
     private(set) var profileError: String?
     private(set) var warningCount = 0
     private(set) var successCount = 0
@@ -128,6 +128,7 @@ final class SettingsAccountModel {
             warningCount += 1
             return true
         } catch {
+            profileError = Copy.settingsAccountDeleteError
             errorCount += 1
             return false
         }

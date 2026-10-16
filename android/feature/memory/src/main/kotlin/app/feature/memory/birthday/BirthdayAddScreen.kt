@@ -53,7 +53,9 @@ import app.ui.components.TextLink
 import app.ui.foundation.PageRoles
 import app.ui.foundation.endAtLastBaseline
 import app.ui.system.SystemAlertDialog
+import app.ui.text.CapTop
 import app.ui.text.TextRoles
+import app.ui.text.capTopAt
 
 /** Test tags (flow tests). */
 object BirthdayAddTags {
@@ -135,14 +137,14 @@ private fun androidx.compose.foundation.layout.ColumnScope.AddForm(
                 style = TextRoles.body,
                 color = secondary,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().paddingFrom(FirstBaseline, before = Tokens.Sizes.globalEmptyIconToTitle).endAtLastBaseline(),
+                modifier = Modifier.fillMaxWidth().capTopAt(Tokens.Sizes.globalEmptyIconToTitle, CapTop.height(TextRoles.body)).endAtLastBaseline(),
             )
             Text(
                 stringResource(R.string.birthday_add_privacy),
                 style = TextRoles.body,
                 color = secondary,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().paddingFrom(FirstBaseline, before = Tokens.Sizes.globalListGap),
+                modifier = Modifier.fillMaxWidth().capTopAt(Tokens.Sizes.globalListGap, CapTop.height(TextRoles.body)),
             )
             Spacer(Modifier.height(Tokens.Sizes.globalEmptyTitleToAction))
             BirthdayDateField(

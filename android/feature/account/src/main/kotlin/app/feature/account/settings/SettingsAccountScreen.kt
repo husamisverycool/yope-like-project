@@ -25,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -449,6 +450,7 @@ private fun EditNamePage(state: SettingsAccountUiState, actions: SettingsAccount
  * (text role `sheetTitle`, centred) and one row per choice (text role `body`, at least `settings.root.size.rowHeight`);
  * "Remove Profile Photo" in `color.global.destructive`, only with a photo.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PhotoSheet(hasPhoto: Boolean, onDismiss: () -> Unit, onLibrary: () -> Unit, onCamera: () -> Unit, onRemove: () -> Unit) {
     DsBottomSheet(onDismissRequest = onDismiss) {

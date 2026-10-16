@@ -130,12 +130,13 @@ fun fixLocale() {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 }
 
-/** A social screen as the app shows it, with test data, sample photos (fixtures/photos/) and fake services. */
+/** A social screen as the app shows it, with test data, sample photos (fixtures/photos/), fake services and the appearance under test. */
 @Composable
 fun TestScreen(
     data: SocialData,
     approximations: Boolean = true,
     services: SocialServices = testServices,
+    dark: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(
@@ -145,31 +146,10 @@ fun TestScreen(
         LocalSocialServices provides services,
         LocalApproximations provides approximations,
         LocalReduceMotionOverride provides false,
-        app.feature.social.reactions.LocalRainRandom provides kotlin.random.Random(RAIN_SEED),
-        // The memory group's "i'm in this" control reads tags through its own backend: the fake's, here.
-        app.feature.memory.common.LocalMemoryBackend provides TagBackend(data),
-        app.feature.memory.tagging.LocalCoachStore provides NoCoach,
     ) {
-        SocialRoot(content)
+        SocialRoot(dark = dark, content = content)
     }
 }
 
-private const val RAIN_SEED = 7
-
 /** Ensures [StateFlow] values are read after the view model settled. */
 fun <T> StateFlow<T>.now(): T = value
-
-/** The memory group's backend over [SocialData] for the tagging control (other calls are not used by the viewer). */
-class TagBackend(private val data: SocialData) : app.feature.memory.common.MemoryBackend by app.feature.memory.common.UnconfiguredMemoryBackend {
-    override val currentUserId: String? get() = data.currentUserId()
-    override fun isOnline(): Boolean = (data as? FakeSocialData)?.offline != true
-    override suspend fun isTagged(postId: String): Boolean = data.isTaggedByMe(postId)
-    override suspend fun tagSelf(postId: String) = data.tagSelf(postId)
-    override suspend fun untagSelf(postId: String) = data.untagSelf(postId)
-}
-
-/** The tagging coach counts as seen (tests that want it set `ViewerUiState(coach = true)`). */
-object NoCoach : app.feature.memory.tagging.CoachStore {
-    override fun dismissed(userId: String) = true
-    override fun dismiss(userId: String) = Unit
-}

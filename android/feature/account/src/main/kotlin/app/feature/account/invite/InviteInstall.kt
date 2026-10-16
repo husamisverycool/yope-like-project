@@ -78,7 +78,18 @@ object InstallReferrerReader {
 
 /** What the web service says about an invite before joining (`GET /i/<token>/preview.json`). */
 sealed interface InvitePreviewResult {
-    data class Valid(val groupName: String, val groupKind: GroupKind?, val inviterFirstName: String?) : InvitePreviewResult
+    /**
+     * The preview of a live invite: the group, the inviter, the cover and the members' avatars (signed image URLs served by
+     * the web origin; first names only — no counts, SPEC_FLAGS T7).
+     */
+    data class Valid(
+        val groupName: String,
+        val groupKind: GroupKind?,
+        val inviterFirstName: String?,
+        val coverUrl: String? = null,
+        val inviterAvatarUrl: String? = null,
+        val memberAvatars: List<String?> = emptyList(),
+    ) : InvitePreviewResult
 
     /** HTTP 410: expired or revoked (the page does not reveal which). */
     data object Unavailable : InvitePreviewResult
@@ -134,12 +145,26 @@ class HttpInvitePreviewClient(private val links: InviteLinks) : InvitePreviewCli
         private const val TIMEOUT_MS = 15_000
         private const val TOO_MANY_REQUESTS = 429
 
-        /** Parses `{group_name, group_kind, inviter_first_name, cover, members, theme}`; only what joining needs is kept. */
+        /**
+         * Parses `{group_name, group_kind, inviter_first_name, inviter_avatar_url?, cover: {url}, members: [{first_name,
+         * avatar_url}], theme}` (web/src/app.ts); what the native invite card and joining need is kept.
+         */
         fun parse(body: String): InvitePreviewResult = try {
             val json: JsonObject = Json.parseToJsonElement(body).jsonObject
             val name = json["group_name"]?.jsonPrimitive?.contentOrNull ?: return InvitePreviewResult.Error
             val kind = json["group_kind"]?.jsonPrimitive?.contentOrNull?.let { wire -> GroupKind.entries.firstOrNull { it.wire == wire } }
-            InvitePreviewResult.Valid(name, kind, json["inviter_first_name"]?.jsonPrimitive?.contentOrNull)
+            val cover = (json["cover"] as? JsonObject)?.get("url")?.jsonPrimitive?.contentOrNull
+            val members = (json["members"] as? kotlinx.serialization.json.JsonArray).orEmpty().map { m ->
+                (m as? JsonObject)?.get("avatar_url")?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull }
+            }
+            InvitePreviewResult.Valid(
+                groupName = name,
+                groupKind = kind,
+                inviterFirstName = json["inviter_first_name"]?.jsonPrimitive?.contentOrNull,
+                coverUrl = cover,
+                inviterAvatarUrl = (json["inviter_avatar_url"] as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull,
+                memberAvatars = members,
+            )
         } catch (_: Exception) {
             InvitePreviewResult.Error
         }

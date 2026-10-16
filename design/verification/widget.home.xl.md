@@ -1,52 +1,34 @@
-# Verification — `widget.home.xl` (iOS)
+# Verification — `widget.home.xl` (iOS, Pass 4 — Retro redesign)
 
-Home Screen widget — `ios/Widgets/Sources/WidgetSlots.swift`, `GroupPhotoWidget.swift`, `GroupWidgetEntry.swift`.
+Home Screen widget (systemExtraLarge) — the same view as widget.home.small (`ios/Widgets/Sources/WidgetSlots.swift`).
 
-Checklist written from the spec (`design/surfaces/widget.home.xl.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>.png`, then `tools/sidebyside.py` makes `design/verification/widget.home.xl.png` next to the reference image(s) below.
+Checklist written from the spec (`design/surfaces/widget.home.xl.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>-<light|dark>.png` (every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/widget.home.xl.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/locket/store/locket-store-03.png`, `references/auto/locket/store/locket-store-06.png`, `references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg`
+Reference image(s): `references/auto/retro/apk/widget_preview_journals.webp`, `references/auto/platform/hig-widgets-ios-dimensions.png`
 
-Snapshots (CI): `widget.home.xl-photo.png`, `widget.home.xl-photo-caption.png`, `widget.home.xl-collage.png`, `widget.home.xl-loading.png`, `widget.home.xl-empty.png`, `widget.home.xl-not-set-up.png`
+Snapshots (CI, `ios/build/snapshots/capture/`): `widget.home.xl-photo-light.png`, `widget.home.xl-photo-dark.png`, `widget.home.xl-collage-light.png`, `widget.home.xl-loading-light.png`, `widget.home.xl-empty-light.png`, `widget.home.xl-not-set-up-light.png`, `widget.home.xl-signed-out-light.png`
 
-**Summary: 28 matched · 0 approximated · 1 not matched (BLOCKED or not buildable).**
+**Summary: 12 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Values
+## Anatomy (one layout at every size, RC-11)
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `widget.home.xl.layout.size` | ipad1024x1366: 748x356; ipad834x1194: 628x300; ipad820x1180: 628x300; ipad768x1024: 540x260; ipad744x1133: 540x260 (VERIFIED) | family size | supportedFamilies; snapshots at the 393 × 852 (xl: 13" iPad) size |
-| matched | `widget.home.small.layout.photo` | fill: aspect-fill, full bleed; ios: containerBackground(for: .widget) with the image; contentMarginsDisabled; android: ImageView centerCrop (SOURCED) | photo aspect-fill as removable container background | containerBackground(for: .widget) { WidgetPhotoImage }, contentMarginsDisabled |
-| matched | `widget.home.small.size.avatar` | 24 pt (SOURCED) | avatar 24 | WidgetAvatar |
-| matched | `widget.home.small.size.avatarInset` | 6 pt (SOURCED) | 6 pt from edges | padding |
-| matched | `widget.home.small.size.avatarRing` | 1 pt (SOURCED) | 1-pt ring | strokeBorder |
-| matched | `widget.home.small.color.avatarRing` | #0000001A (SOURCED) | ring colour | strokeBorder colour |
-| matched | `widget.android.color.avatarPlaceholderTop` | #A0A0A0F5 (SOURCED) | no-avatar gradient top | LinearGradient |
-| matched | `widget.android.color.avatarPlaceholderBottom` | #828282F5 (SOURCED) | no-avatar gradient bottom | LinearGradient |
-| matched | `widget.home.small.size.captionGap` | 5 pt (SOURCED) | pill 5 after avatar | HStack spacing |
-| matched | `widget.home.small.size.captionHeight` | 23 pt (SOURCED) | pill height 23 | minHeight (grows with Dynamic Type) |
-| matched | `widget.home.small.size.captionPadding` | 7 pt (SOURCED) | padding 7 | padding(.horizontal) |
-| matched | `widget.home.small.color.captionPill` | #333333CC (SOURCED) | #333333CC | Capsule fill |
-| matched | `widget.home.small.fontSize.caption` | 12 pt (SOURCED) | 12 pt | DSTextStyle (caption) |
-| matched | `widget.home.small.fontWeight.caption` | semibold (SOURCED) | semibold | DSTextStyle |
-| matched | `widget.home.small.color.placeholderTop` | #2D2B2F (SOURCED) | loading gradient | LinearGradient |
-| matched | `widget.home.small.color.placeholderBottom` | #201E21 (SOURCED) | loading gradient | LinearGradient |
-| not matched | `widget.home.small.layout.placeholderAvatars` | diameter: 25; gap: 2.5; max: 3; inset: 6 (SOURCED) | up to 3 member avatars on the placeholder | not drawn: the App Group store holds no member avatars before the first rendition |
-| matched | `widget.home.small.color.emptyTop` | #2E2E2E (SOURCED) | empty gradient | LinearGradient |
-| matched | `widget.home.small.color.emptyBottom` | #1B1B1B (SOURCED) | empty gradient | LinearGradient |
-| matched | `widget.home.small.layout.empty` | circle: 72; ring: 82; ringStroke: 3; glyphWidth: 32; glyphHeight: 28; label: 19; labelGap: 9 (SOURCED) | md: circle 72, ring 82 / 3, glyph 32 × 28, label 19, gap 9 | WidgetEmptyStack |
-| matched | `widget.home.small.color.emptyCircle` | #FFFFFF3D (SOURCED) | circle fill | Circle fill |
-| matched | `widget.home.small.color.emptyRing` | #FFB800 (SOURCED) | #FFB800 ring | strokeBorder |
-| matched | `widget.home.small.color.emptyLabel` | #969696 (SOURCED) | label #969696 | label 9 pt under the stack at 19 pt (weight not measured: platform regular) |
-| matched | `widget.home.small.empty.noPhotos` | “No pics yet” (SOURCED) | empty text | visible label + accessibility label |
-| matched | `widget.home.small.empty.setUp` | “Tap to set up” (SOURCED) | not-set-up text | same |
-| matched | `widget.home.small.a11y.photoWithCaption` | “{name}’s photo in {group}, {caption}” (SOURCED) | label | one element, button trait |
-| matched | `widget.home.small.a11y.photo` | “{name}’s photo in {group}” (SOURCED) | label | same |
-| matched | `widget.home.small.a11y.collage` | “Photos from {group}, {date}” (SOURCED) | label ({date} medium date) | postedAt .abbreviated |
-| matched | `widget.arrival.duration.transition` | 0 ms (SOURCED) | 0 ms swap | .transition(.identity), .contentTransition(.identity) |
+| matched | `widget.home.xl.layout.size` | ipad1024x1366: 748x356; ipad834x1194: 628x300; ipad820x1180: 628x300; ipad768x1024: 540x260; ipad744x1133: 540x260 (VERIFIED) | 748 × 356 (iPad) | system container; snapshots at the 393 × 852 size |
+| matched | `widget.home.small.layout.photo` | fill: aspect-fill, full bleed; ios: containerBackground(for: .widget) with the image; contentMarginsDisabled; android: ImageView centerCrop (SOURCED) | photo / collage page full bleed as the removable container background; content margins disabled | `containerBackground(for: .widget) { WidgetContainerBackground }`, `contentMarginsDisabled()`, `widgetAccentedRenderingMode(.fullColor)` |
+| matched | `layout.global.photoScrim` | color: #000000; startAt: 0.55; startOpacity: 0; endOpacity: 0.6; direction: top → bottom (SOURCED) | transparent → black 60 % from 55 % of the height | `WidgetPhotoScrim` |
+| matched | `widget.home.small.layout.overlay` | lines: line 1: the poster's first name; line 2: the group name (collage: the group name alone, one line); align: trailing-aligned stack at the bottom-trailing corner; trailingInset: 11; lastBaselineFromBottom: 15; linePitch: 13; colour: color.global.textOnMedia; scrim: layout.global.photoScrim (SOURCED) | trailing stack: first name over group; last baseline 15, pitch 13, trailing 11, truncated at 16 | `WidgetTextStack` (baseline alignment guides; pitch scales with Caption 2) |
+| matched | `widget.home.small.fontSize.overlay` | 11 pt (SOURCED) | 11 | `WidgetType.overlay` |
+| matched | `widget.home.small.fontWeight.overlay` | regular (SOURCED) | regular | same |
+| matched | `color.global.textOnMedia` | #FFFFFF (SOURCED) | white lines | foreground |
 
-## Notes
+## States
 
-- Same widget kind for small / medium / large / extra large (one gallery description); Locket's anatomy at every size (C-20).
-- Error / offline: the last rendition stays (the provider reads the App Group store only; never the network).
-- The lg empty variant (circle 98, ring 110, glyph 43 × 36, label 21, gap 24) exists only in the notes of `widget.home.small.layout.empty`; no token → the md variant is drawn (not matched to the lg reference).
-- Spec asks for `media.display_path` at extra large; the App Group store keeps one rendition per snapshot (the widget rendition), so it is upscaled (foundation `WidgetStore` / NSE delivery would need a second file).
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| approximated | `widget.home.small.color.stateTint` | #FFFFFFD9 (SOURCED) | camera glyph 24 in a 48 box + line, white 85 %, on backgroundDeep | `WidgetStateColumn`; the 48 box from `size.global.minTouchTarget.android` (the APK's 48-dp Glance box; no capture token holds it) |
+| matched | `widget.home.small.empty.noPhotos` | “No photos yet. Tap to add one” (SOURCED) | empty | state line |
+| matched | `widget.home.small.empty.setUp` | “Tap to choose a group” (SOURCED) | not set up | state line |
+| matched | `widget.home.small.empty.signedOut` | “Log in to see your content” (SOURCED) | signed out (no group list on the device) | state line; detected by the store's group list file |
+| matched | `widget.home.small.a11y.photo` | “{name}'s photo in {group}” (SOURCED) | one element, button trait | `WidgetOverlay` label |
+| matched | `widget.home.small.a11y.collage` | “Photos from {group}, {date}” (SOURCED) | collage label {group}, {date} | same |

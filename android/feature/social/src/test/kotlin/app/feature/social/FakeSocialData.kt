@@ -16,6 +16,7 @@ import app.data.model.MemberRole
 import app.data.model.Message
 import app.data.model.MessageKind
 import app.data.model.Post
+import app.data.model.PostTag
 import app.data.model.Profile
 import app.data.model.RenderStatus
 import app.data.model.WallItem
@@ -50,7 +51,8 @@ class FakeSocialData(var me: String = ME) : SocialData {
     val posts = LinkedHashMap<String, Post>()
     val media = LinkedHashMap<String, Media>()
     val reactions = LinkedHashMap<String, MutableList<ReactionEntry>>()
-    val tags = HashSet<String>()
+    /** `post_tags`: post id → who said "I'm in this", in tag order. */
+    val tagRows = LinkedHashMap<String, MutableList<String>>()
     val walls = LinkedHashMap<String, MutableList<WallItem>>()
     val collages = LinkedHashMap<String, Collage>()
     val weeks = LinkedHashMap<String, MutableList<HistoryWeek>>()
@@ -104,11 +106,18 @@ class FakeSocialData(var me: String = ME) : SocialData {
         return messages.filter { it.groupId == groupId && (before == null || it.createdAt.isBefore(before)) }.sortedByDescending { it.createdAt }.take(PAGE)
     }
 
-    override suspend fun sendText(groupId: String, body: String, replyToPostId: String?): Message {
-        write("sendText:$body:${replyToPostId ?: ""}")
-        val m = message("m-sent-${messages.size}", groupId, me, MessageKind.Text, body = body, replyToPostId = replyToPostId, at = clock())
+    override suspend fun message(messageId: String): Message? { net("message"); return messages.firstOrNull { it.id == messageId } }
+
+    override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?): Message {
+        write("sendText:$body:${replyToPostId ?: ""}${replyToMessageId?.let { ":m=$it" } ?: ""}")
+        val m = message("m-sent-${messages.size}", groupId, me, MessageKind.Text, body = body, replyToPostId = replyToPostId, at = clock()).copy(replyToMessageId = replyToMessageId)
         messages += m
         return m
+    }
+
+    override suspend fun replies(groupId: String, postId: String): List<Message> {
+        net("replies")
+        return messages.filter { it.groupId == groupId && it.replyToPostId == postId }.sortedBy { it.createdAt }
     }
 
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int): Message {
@@ -151,9 +160,13 @@ class FakeSocialData(var me: String = ME) : SocialData {
         reactions[postId]?.removeAll { it.userId == me && it.emoji == emoji }
     }
 
-    override suspend fun isTaggedByMe(postId: String): Boolean { net("tags"); return postId in tags }
-    override suspend fun tagSelf(postId: String) { write("tagSelf:$postId"); tags += postId }
-    override suspend fun untagSelf(postId: String) { write("untagSelf:$postId"); tags -= postId }
+    override suspend fun isTaggedByMe(postId: String): Boolean { net("tags"); return tagRows[postId].orEmpty().contains(me) }
+    override suspend fun tags(postId: String): List<PostTag> {
+        net("tags")
+        return tagRows[postId].orEmpty().mapIndexed { i, u -> PostTag(postId, u, GROUP, BASE.plusSeconds(i.toLong())) }
+    }
+    override suspend fun tagSelf(postId: String) { write("tagSelf:$postId"); tagRows.getOrPut(postId) { ArrayList() }.let { if (me !in it) it += me } }
+    override suspend fun untagSelf(postId: String) { write("untagSelf:$postId"); tagRows[postId]?.remove(me) }
 
     override fun observeWall(userId: String): Flow<DataState<List<WallItem>>> = cachedFlow(wallCache, userId) { wall(userId, null, PAGE) }
     override suspend fun wall(userId: String, before: Instant?, limit: Int): List<WallItem> {

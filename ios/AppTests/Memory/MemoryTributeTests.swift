@@ -1,6 +1,8 @@
 // birthday.tribute — view-model tests: who can see the video, and when.
 @testable import App
 import AppData
+import AppModels
+import AppServices
 import DesignSystem
 import XCTest
 
@@ -49,6 +51,7 @@ final class MemoryTributeTests: XCTestCase {
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .ready)
         XCTAssertEqual(model.groupName, "Sunday dinners")
+        XCTAssertEqual(model.title, Copy.birthdayTributeTitle, "the honoree: \"Your birthday video\"")
         XCTAssertNotNil(model.videoURL)
         XCTAssertNotNil(model.posterURL)
         XCTAssertNotNil(model.player, "prepared as soon as the URL is known")
@@ -61,6 +64,7 @@ final class MemoryTributeTests: XCTestCase {
         let model = TributeModel(tributeID: MemoryIDs.tribute, dependencies: context.dependencies, saveVideo: { _ in })
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .ready)
+        XCTAssertEqual(model.title, Copy.birthdayTributeTitleMember(name: "Bea"), "members see the honoree's name")
     }
 
     func testRenderingFailedDeletedAndOffline() async {
@@ -97,20 +101,30 @@ final class MemoryTributeTests: XCTestCase {
         XCTAssertEqual(offlineModel.phase, .offline)
     }
 
-    func testDownloadSavesAndSaysSo() async {
+    func testSaveSavesAndSaysSo() async {
         let context = MemoryTestContext()
         let model = TributeModel(tributeID: MemoryIDs.tribute, dependencies: context.dependencies, saveVideo: { _ in })
         await model.loadIfNeeded()
         await model.download()
-        XCTAssertEqual(model.toast?.text, Copy.birthdayTributeSaved)
+        XCTAssertEqual(context.lastToast, Copy.birthdayTributeSaved)
         XCTAssertEqual(context.haptics, [Tokens.Haptics.globalSuccess])
 
-        struct Denied: Error {}
+        struct Broken: Error {}
+        let failing = MemoryTestContext()
+        let failingModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: failing.dependencies, saveVideo: { _ in throw Broken() })
+        await failingModel.loadIfNeeded()
+        await failingModel.download()
+        XCTAssertEqual(failing.lastToast, Copy.birthdayTributeSaveFailed)
+        XCTAssertFalse(failingModel.showsSaveDenied)
+        XCTAssertEqual(failing.haptics, [Tokens.Haptics.globalError])
+
         let denied = MemoryTestContext()
-        let deniedModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: denied.dependencies, saveVideo: { _ in throw Denied() })
+        let deniedModel = TributeModel(
+            tributeID: MemoryIDs.tribute, dependencies: denied.dependencies,
+            saveVideo: { _ in throw PhotoLibraryService.LibraryError.notAuthorized(.denied) }
+        )
         await deniedModel.loadIfNeeded()
         await deniedModel.download()
-        XCTAssertEqual(deniedModel.toast?.text, Copy.birthdayTributeSaveFailed)
-        XCTAssertEqual(denied.haptics, [Tokens.Haptics.globalError])
+        XCTAssertTrue(deniedModel.showsSaveDenied, "photo access denied: the native alert with the Settings button")
     }
 }

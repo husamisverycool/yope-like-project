@@ -94,7 +94,7 @@ scan(walk(path.join(ROOT, "ios"), [".swift"]), SWIFT_RULES);
 const androidNonUi = (f) => /android\/core\/(data|model)\//.test(f);
 scan(walk(path.join(ROOT, "android"), [".kt"]).filter((f) => !androidNonUi(f)), KOTLIN_RULES);
 scan(walk(path.join(ROOT, "android"), [".kt"]).filter(androidNonUi), [], { ui: false });
-scan(walk(path.join(ROOT, "web/src"), [".tsx", ".css"]), TS_UI_RULES);
+scan(walk(path.join(ROOT, "web/src"), [".ts", ".tsx", ".css"]), TS_UI_RULES);
 scan(walk(path.join(ROOT, "backend"), [".ts", ".sql"]), [], { ui: false });
 scan(walk(path.join(ROOT, "docs"), [".md"]).filter((f) => !f.endsWith("CONVENTIONS.md")), [], { ui: false });
 

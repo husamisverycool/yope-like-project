@@ -6,4 +6,5 @@
 !web/tsconfig.json
 !web/tsconfig.build.json
 !web/src
+!web/assets
 !config/app.json

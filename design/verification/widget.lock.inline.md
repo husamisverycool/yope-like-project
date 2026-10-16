@@ -1,22 +1,20 @@
-# Verification — `widget.lock.inline` (iOS)
+# Verification — `widget.lock.inline` (iOS, Pass 4 — Retro redesign)
 
-Lock Screen inline — `WidgetInlineSlot`.
+Lock Screen inline — `ios/Widgets/Sources/WidgetSlots.swift` (`WidgetInlineSlot`).
 
-Checklist written from the spec (`design/surfaces/widget.lock.inline.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>.png`, then `tools/sidebyside.py` makes `design/verification/widget.lock.inline.png` next to the reference image(s) below.
+Checklist written from the spec (`design/surfaces/widget.lock.inline.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>-<light|dark>.png` (every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/widget.lock.inline.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/locket/store/locket-store-03.png`
+Reference image(s): `references/auto/retro/apk/widget_preview_journals.webp`, `references/auto/platform/hig-widgets-ios-dimensions.png`
 
-Snapshots (CI): `widget.lock.inline-photo-caption.png`, `widget.lock.inline-not-set-up.png`
+Snapshots (CI, `ios/build/snapshots/capture/`): `widget.lock.inline-photo-light.png`, `widget.lock.inline-photo-dark.png`, `widget.lock.inline-collage-light.png`, `widget.lock.inline-not-set-up-light.png`
 
-**Summary: 6 matched · 0 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 4 matched · 0 approximated · 0 not matched (BLOCKED or not buildable).**
 
-## Values
+## Line
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `widget.lock.inline.layout.size` | w430h932: 257x26; w428h926: 257x26; w414h896: 248x26; w414h736: 248x26; w393h852: 234x26; w390h844: 234x26; w375h812: 225x26; w375h667: 225x26; w360h780: 225x26 (VERIFIED) | 234 × 26, system text style | Text only (system styles it) |
-| matched | `widget.home.small.empty.setUp` | “Tap to set up” (SOURCED) | not set up | Text |
-| matched | `widget.home.small.empty.noPhotos` | “No pics yet” (SOURCED) | empty | Text |
-| matched | `widget.lock.rect.layout.rendering` | mode: vibrant (monochrome, desaturated); content: opaque grayscale at full opacity; white / light gray for the most prominent content; minText: 11; margins: system (smaller on the Lock Screen) (VERIFIED) | vibrant: opaque grayscale, white prominent, min text 11 | system vibrant rendering; content drawn in textPrimary at full opacity |
-| matched | `widget.lock.rect.layout.content` | noCaptionRectangular: the sender avatar alone, in its 24-pt leading slot (Locket's small widget without a caption shows only the avatar); noCaptionInline: the sentence of widget.home.small.a11y.photo ('{name}’s photo in {group}') as the inline text (the inline widget has no avatar slot); newestIsCollage: keep showing the newest single photo's sender (avatar, and its caption if any): Locket's widget always shows one sender's newest photo and has no collage state (SOURCED) | no caption: avatar alone (rect) / photo sentence (inline); collage newest: newest single photo's sender | GroupWidgetEntryResolver.lockScreenEntry + WidgetRectangularSlot / WidgetInlineSlot |
-| matched | `widget.lock.rect.gallery.description` | “See who shared the newest pic in your group” (SOURCED) | Lock Screen kind description | separate widget kind `GroupPhotoLockWidget` |
+| matched | `widget.lock.rect.layout.rendering` | mode: vibrant (monochrome, desaturated); content: opaque grayscale at full opacity; white / light gray for the most prominent content; minText: 11; margins: system (smaller on the Lock Screen) (VERIFIED) | vibrant, white content, no colour photo | entries skip the rendition (`includesPhoto: false`); avatar full opacity |
+| matched | `widget.lock.rect.layout.content` | rectangular: C-16 people row in vibrant rendering: the newest poster's avatar size.global.avatarPicker, then name (text role listTitle) over the group name (text role listSubtitle); circular: the newest poster's avatar filling the circle (C-23); inline: one line '{name} · {group}' (copy widget.lock.inline.text); newestIsCollage: rectangular / inline show the group name alone; circular shows icon.global.camera (SOURCED) | rect: C-16 row; circular: avatar; inline: '{name} · {group}'; collage: group name / camera glyph | slot views |
+| matched | `widget.lock.inline.text` | “{name} · {group}” (SOURCED) | "{name} · {group}" | `Copy.widgetLockInlineText` with the first name |
+| matched | `widget.home.small.empty.setUp` | “Tap to choose a group” (SOURCED) | state lines; loading: empty line | same keys as the home widget |

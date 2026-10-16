@@ -3,13 +3,17 @@
 // delegate to this file, so other groups never edit it.
 //
 // The `AppRoute` cases `.chat`, `.post` and `.recap` (Screens/ChatScreen, PhotoViewerScreen, RecapScreen) are
-// social surfaces too. Entry points other groups use:
-//   walls.mine    .social(.wallMine)                         (tab bar "me")
-//   walls.browse  .social(.wallsBrowse(groupID: nil))        (tab bar "walls"; groupID = groups.screen "wall" segment)
+// social surfaces too (`.recap` = one recap's preview). Entry points other groups use:
+//   walls.mine    .social(.wallMine)                         (profile tab)
+//   walls.browse  .social(.wallsBrowse(groupID: nil))        (Friends tab; with a group id: that group's members)
 //   walls.member  .social(.wallMember(userID:))              (groups.settings member row)
-//   week.history  .social(.weekHistory(groupID:))            (group header calendar circle, profile "recaps")
+//   week.history  .social(.weekHistory(groupID:))            (groups.screen: the group's weeks)
 //   albums.list   .social(.albums(groupID:))                 (groups.screen albums entry)
-//   week.edit     .social(.weekEdit(groupID:recapID:))       (modal; normally opened from week.recap's pencil)
+//   week.recap    AppModal.social(.recaps(groupID:))         (groups.screen recaps entry → the recap list, a page sheet;
+//                                                             label `week.recap.open`)
+//   week.edit     .social(.weekEdit(groupID:recapID:))       (modal; normally opened from week.recap's thumbnail)
+// `SocialModal.presentsAsSheet` says which modals the specs present as page sheets (the shell's
+// `AppModal.presentation` decides — account group).
 import AppData
 import SwiftUI
 
@@ -31,10 +35,16 @@ enum SocialRoute: Hashable {
 
 /// Screens of the social group presented over the navigation stack.
 enum SocialModal: Hashable {
+    /// `week.recap` list (`week.recap.layout.list`).
+    case recaps(groupID: String)
     /// `week.edit` (recap editor).
     case weekEdit(groupID: String, recapID: String)
-    /// `week.edit`'s album sheet with one week's photos checked (`week.history` "Save as album").
+    /// `week.edit`'s album sheet with one week's photos selected (`week.history` "Save as Album").
     case albumFromWeek(groupID: String, weekStart: String)
+
+    /// The specs present all three as page sheets (C-29): `week.recap.layout.list.presentation`,
+    /// `week.edit.layout.composition.presentation`, week.edit "Album sheet".
+    var presentsAsSheet: Bool { true }
 }
 
 struct SocialDestination: View {
@@ -63,6 +73,8 @@ struct SocialModalDestination: View {
 
     var body: some View {
         switch modal {
+        case let .recaps(groupID):
+            WeekRecapListScreen(groupID: groupID)
         case let .weekEdit(groupID, recapID):
             WeekEditScreen(groupID: groupID, mode: .recap(RecapID(recapID)))
         case let .albumFromWeek(groupID, weekStart):
@@ -74,7 +86,7 @@ struct SocialModalDestination: View {
 }
 
 /// `week.edit` presented as an app modal (`SocialModal`), outside `week.recap` / `week.history`: it hosts its
-/// own toasts, the way those screens do for the sheet they present.
+/// own confirmations (C-26), the way those screens do for the sheet they present.
 struct WeekEditScreen: View {
     let groupID: String
     let mode: WeekEditModel.Mode

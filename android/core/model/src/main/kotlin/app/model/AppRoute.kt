@@ -20,7 +20,11 @@ sealed interface AppRoute {
     @Serializable data object PermissionPhotos : AppRoute { override val surface get() = "onboarding.permission.photos" }
     @Serializable data object PermissionContacts : AppRoute { override val surface get() = "onboarding.permission.contacts" }
     @Serializable data object OnboardingWidget : AppRoute { override val surface get() = "onboarding.widget" }
-    @Serializable data class InviteJoin(val token: String) : AppRoute { override val surface get() = "invite.web" }
+    /**
+     * invite.web (Android join path): the native invite card; [join] = continue at once (the person already chose to join
+     * before signing up — the pending invite at the end of onboarding), else "Let's go" continues.
+     */
+    @Serializable data class InviteJoin(val token: String, val join: Boolean = false) : AppRoute { override val surface get() = "invite.web" }
 
     // Groups
     @Serializable data object GroupsList : AppRoute { override val surface get() = "groups.list" }

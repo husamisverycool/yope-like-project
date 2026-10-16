@@ -190,13 +190,13 @@ private fun PickerCell(photo: EligiblePhoto, selected: Boolean, onClick: () -> U
         Modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(Tokens.Radii.globalPhoto))
+            .testTag(ContributeTags.cell(photo.postId))
             .tapClickable(role = Role.RadioButton, onClick = onClick)
             .clearAndSetSemantics {
                 contentDescription = label
                 this.selected = selected
                 role = Role.RadioButton
-            }
-            .testTag(ContributeTags.cell(photo.postId)),
+            },
     ) {
         MemoryImage(photo.thumbUrl, null, Modifier.fillMaxSize(), placeholder = Tokens.Colors.globalControl)
         if (selected) {

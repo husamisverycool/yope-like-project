@@ -1,4 +1,4 @@
-// Surface: chat.thread (with chat.composer, chat.voice, chat.reactions) — reference app: Yope (reactions: Locket).
+// Surface: chat.thread (with chat.composer, chat.voice, chat.reactions) — Retro comment rows in Messages / WhatsApp's order.
 // Reference images: listed in design/surfaces/chat.thread.md (docs/SURFACES.md); built in
 // Features/Social/UI/ChatThreadView.swift with Tokens.* / Copy.*.
 import AppData

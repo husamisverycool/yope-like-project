@@ -193,10 +193,12 @@ internal fun RecapFooter(title: String, name: String?, detail: String?, titleSty
     val baseline = Tokens.Sizes.yearStoryFooterBaseline
     Row(
         modifier.fillMaxWidth().padding(horizontal = side).semantics(mergeDescendants = true) {},
+        horizontalArrangement = Arrangement.spacedBy(side),
         verticalAlignment = Alignment.Bottom,
     ) {
-        Text(title, style = titleStyle, color = titleColor, modifier = Modifier.paddingFrom(LastBaseline, after = baseline))
-        Column(Modifier.weight(1f).paddingFrom(LastBaseline, after = baseline), horizontalAlignment = Alignment.End) {
+        // The title wraps when it is long ("Wednesday, February 25"); the trailing name keeps its width.
+        Text(title, style = titleStyle, color = titleColor, modifier = Modifier.weight(1f).paddingFrom(LastBaseline, after = baseline))
+        Column(Modifier.paddingFrom(LastBaseline, after = baseline), horizontalAlignment = Alignment.End) {
             if (name != null) Text(name, style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End)
             if (detail != null) Text(detail, style = TextRoles.meta, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End)
         }

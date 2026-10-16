@@ -207,11 +207,10 @@ class GroupsListViewModel(private val env: AccountEnvironment) : AccountViewMode
             env.backend.observeMembers(group.id).first { it.value != null || !it.refreshing }.value.orEmpty()
         }.getOrDefault(emptyList()).sortedBy { it.member.joinedAt }
         val byId = members.associateBy { it.member.userId }
-        fun firstName(userId: String?): String? = userId?.let { id ->
-            byId[id]?.profile?.firstName ?: runCatching { env.backend.profiles(listOf(id)).firstOrNull()?.firstName }.getOrNull()
-        }
+        suspend fun firstName(userId: String): String? =
+            byId[userId]?.profile?.firstName ?: runCatching { env.backend.profiles(listOf(userId)).firstOrNull()?.firstName }.getOrNull()
         val sender = newest?.takeIf { it.authorId != me }?.let { firstName(it.authorId) }
-        val creator = if (newest == null) group.createdBy?.takeIf { it != me }?.let(::firstName) else null
+        val creator = if (newest == null) group.createdBy?.takeIf { it != me }?.let { firstName(it) } else null
         val paths = listOfNotNull(group.coverPath) + members.mapNotNull { it.profile?.avatarPath }
         val urls = runCatching { env.backend.signedUrls(paths) }.getOrDefault(emptyMap())
         return RowDetail(

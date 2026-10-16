@@ -28,6 +28,8 @@ final class SettingsBlockedModel {
     private(set) var rows: [Row] = []
     private(set) var phase: Phase = .loading
     private(set) var successCount = 0
+    /// Failed unblocks: the message-only alert `safety.block.error`.
+    private(set) var errorCount = 0
 
     private let data: AccountDataSource
 
@@ -43,7 +45,7 @@ final class SettingsBlockedModel {
             rows = blocks.map { Row(block: $0, profile: byID[$0.blockedID]) }
             phase = .loaded
         } catch {
-            // Offline / error: the list already loaded stays (unblock disabled offline); else the error footer.
+            // Offline / error: the list already loaded stays (unblock disabled offline); else the error line.
             if rows.isEmpty || phase != .loaded { phase = .error }
         }
     }
@@ -58,6 +60,7 @@ final class SettingsBlockedModel {
             return true
         } catch {
             rows.insert(row, at: min(index, rows.count))
+            errorCount += 1
             return false
         }
     }

@@ -30,8 +30,8 @@ struct SettingsAccountView: View {
     @State private var choosingPhoto = false
     @State private var cameraDenied = false
     @State private var confirmDelete = false
-    @State private var deleteFailed = false
     @Environment(AccountDependencies.self) private var dependencies
+    @Environment(\.settingsPush) private var settingsPush
 
     init(model: SettingsAccountModel) {
         _model = State(initialValue: model)
@@ -105,11 +105,7 @@ struct SettingsAccountView: View {
             Button(Copy.settingsAccountAlertCancel, role: .cancel) {}
             Button(Copy.settingsAccountDeleteConfirm, role: .destructive) {
                 Task {
-                    if await model.deleteAccount() {
-                        dependencies.session.accountDeleted()
-                    } else {
-                        deleteFailed = true
-                    }
+                    if await model.deleteAccount() { dependencies.session.accountDeleted() }
                 }
             }
         } message: {
@@ -117,7 +113,7 @@ struct SettingsAccountView: View {
                  ? Copy.settingsAccountDeleteMessage + "\n\n" + Copy.settingsAccountDeleteSubscriptionNote // provenance-ok: paragraph break between two copy strings
                  : Copy.settingsAccountDeleteMessage)
         }
-        .formErrorAlert(deleteFailed ? Copy.settingsAccountDeleteError : model.profileError, trigger: deleteFailed ? model.errorCount + 1 : model.errorCount)
+        .formErrorAlert(model.profileError, trigger: model.errorCount)
         .dsHaptic(Tokens.Haptics.globalWarning, trigger: model.warningCount)
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
@@ -163,7 +159,6 @@ struct SettingsAccountView: View {
     }
 
     /// Pushes inside the Settings sheet (its own stack): the hosting `NavigationStack` handles `AppRoute`s.
-    @Environment(\.settingsPush) private var settingsPush
     private func pushInSheet(_ route: AppRoute) {
         settingsPush?(route)
     }

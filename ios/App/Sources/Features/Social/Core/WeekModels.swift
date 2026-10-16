@@ -491,6 +491,11 @@ final class WeekEditModel {
     func albumNameChanged() {
         if albumNameMissing, !albumName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { albumNameMissing = false }
     }
+
+    /// The album-save alert was dismissed.
+    func dismissAlbumError() {
+        albumError = nil
+    }
 }
 
 /// `week.history`: the group's weeks, newest first, each a strip of its photos (Retro).

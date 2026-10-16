@@ -1,39 +1,50 @@
 package app.feature.social
 
-import app.data.repo.ReactionEntry
-import app.feature.social.FakeSocialData.Companion.ANA
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.input.TextFieldValue
+import app.data.model.MessageKind
+import app.feature.social.FakeSocialData.Companion.BASE
 import app.feature.social.FakeSocialData.Companion.BEN
 import app.feature.social.FakeSocialData.Companion.GROUP
+import app.feature.social.FakeSocialData.Companion.ME
 import app.feature.social.chat.ChatContent
 import app.feature.social.chat.ChatNav
 import app.feature.social.chat.ChatState
 import app.feature.social.chat.ChatUiState
 import app.feature.social.chat.ChatViewModel
+import app.feature.social.chat.RecorderControls
 import app.feature.social.chat.Recording
-import app.feature.social.chat.VoiceControls
-import app.feature.social.data.RecordedVoice
+import app.feature.social.chat.VoiceUi
 import app.feature.social.data.VoicePlayback
-import app.feature.social.reactions.ReactionFlights
-import app.feature.social.FakeSocialData.Companion.ME
 import org.junit.Test
+import java.time.LocalDate
+import java.time.ZoneOffset
 
-/** chat.thread (+ chat.composer, chat.voice, chat.reactions) per state. */
+/** chat.thread (+ chat.composer, chat.voice, chat.reactions) per state; the primary state also in dark. */
 class ChatSnapshotTest : SnapshotBase() {
-    private val nav = ChatNav({}, {}, {}, {}, {}, {}, {}, { _, _ -> })
+    private val nav = ChatNav({}, {}, {}, {}, {}, { _, _ -> }, {})
 
-    private fun chat(state: ChatState, ui: ChatUiState = ChatUiState(), data: FakeSocialData = FakeSocialData(), playback: VoicePlayback = VoicePlayback(null, false), recorder: VoiceControls = VoiceControls(null), approximations: Boolean = true, screen: Boolean = false) =
-        snap(data, approximations, screen) { content(state, ui, playback, recorder) }
+    private fun chat(
+        state: ChatState,
+        ui: ChatUiState = ChatUiState(),
+        data: FakeSocialData = FakeSocialData(),
+        voice: VoiceUi = VoiceUi.Idle,
+        recorder: RecorderControls = RecorderControls(),
+        approximations: Boolean = true,
+        screen: Boolean = false,
+        dark: Boolean = false,
+    ) = snap(data, approximations, screen, dark) { Content(state, ui, voice, recorder) }
 
-    @androidx.compose.runtime.Composable
-    private fun content(state: ChatState, ui: ChatUiState, playback: VoicePlayback = VoicePlayback(null, false), recorder: VoiceControls = VoiceControls(null), flights: ReactionFlights = androidx.compose.runtime.remember { ReactionFlights() }) =
-        ChatContent(
-            state = state, ui = ui, nav = nav, focusMessageId = null, voice = testVoice, playback = playback, recorder = recorder,
-            onDraft = {}, onSend = {}, onRetry = {}, onLoadOlder = {}, onReact = { _, _ -> }, onUnreact = { _, _ -> }, onRetrySend = {}, onDelete = {}, onMicCard = {}, onPlay = {},
-            flights = flights,
-        )
+    @Composable
+    private fun Content(state: ChatState, ui: ChatUiState, voice: VoiceUi, recorder: RecorderControls) = ChatContent(
+        state = state, ui = ui, nav = nav, focusMessageId = null, voice = voice, recorder = recorder,
+        onDraft = {}, onSend = {}, onRetry = {}, onLoadOlder = {}, onReact = { _, _ -> }, onUnreact = { _, _ -> }, onRetrySend = {},
+        onReply = {}, onCancelReply = {}, onCopy = {}, onSave = {}, onUnsend = {}, onDeletePhoto = {}, onOpenMicSettings = {},
+        zone = ZoneOffset.UTC, today = TODAY,
+    )
 
     private fun loaded(): Pair<FakeSocialData, ChatState> {
-        val data = FakeSocialData().apply { seedChat() }
+        val data = FakeSocialData().apply { seedThread() }
         return data to ChatViewModel(data, GROUP).state.value
     }
 
@@ -42,102 +53,121 @@ class ChatSnapshotTest : SnapshotBase() {
         chat(state, data = data)
     }
 
-    /** Release builds: everything but the Activity sheet tap (`chat.reactions.layout.activitySheet` BLOCKED). */
-    @Test fun contentRelease() {
+    @Test fun contentDark() {
         val (data, state) = loaded()
-        chat(state, data = data, approximations = false)
+        chat(state, data = data, dark = true)
     }
 
     @Test fun loading() = chat(ChatState(phase = ChatState.Phase.Loading))
 
-    @Test fun emptyCreator() {
+    @Test fun empty() {
         val data = FakeSocialData().apply { seedGroup() }
-        chat(ChatState(phase = ChatState.Phase.Ready, group = data.groups[GROUP], iAmCreator = true, addedNames = listOf("Ana", "Ben")), data = data)
+        chat(ChatState(phase = ChatState.Phase.Ready, group = data.groups[GROUP]), data = data)
     }
 
-    @Test fun emptyMember() {
+    @Test fun error() {
         val data = FakeSocialData().apply { seedGroup() }
-        chat(ChatState(phase = ChatState.Phase.Ready, group = data.groups[GROUP], creatorName = "Ana", addedNames = listOf("Sam", "Ben")), data = data)
+        chat(ChatState(phase = ChatState.Phase.Error, group = data.groups[GROUP]), data = data)
     }
 
-    @Test fun error() = chat(ChatState(phase = ChatState.Phase.Error))
+    @Test fun offlineNothingCached() {
+        val data = FakeSocialData().apply { seedGroup() }
+        chat(ChatState(phase = ChatState.Phase.OfflineEmpty, group = data.groups[GROUP]), data = data)
+    }
 
-    @Test fun offlineNothingCached() = chat(ChatState(phase = ChatState.Phase.OfflineEmpty))
-
-    /** Offline with cached messages: the cached page stays (no offline banner in the spec). */
-    @Test fun offlineCached() {
-        val data = FakeSocialData().apply { seedChat() }
+    /** Offline with cached messages: the cached page stays; a send shows "Sending", then "Couldn't send. Tap to retry". */
+    @Test fun offlineCachedSendFailed() {
+        val data = FakeSocialData().apply { seedThread() }
         data.chatCache[GROUP] = data.messages.sortedByDescending { it.createdAt }
-        data.offline = true
-        chat(ChatViewModel(data, GROUP).state.value, data = data)
-    }
-
-    /** `chat.composer.layout.typingState`: the mic circle's slot shows the lime send circle. */
-    @Test fun composerTyping() {
-        val (data, state) = loaded()
-        chat(state.copy(draft = "on my way"), data = data)
-    }
-
-    /** `chat.voice.layout.recording`, holding: red dot · time · ‹ slide to cancel, the lock above the mic. */
-    @Test fun composerRecordingHolding() {
-        val (data, state) = loaded()
-        chat(state, data = data, recorder = VoiceControls(Recording.Holding(0L), elapsedMs = RECORDED_MS))
-    }
-
-    /** Locked (hands-free): pause in the hint's place, the send circle in the mic's slot. */
-    @Test fun composerRecordingLocked() {
-        val (data, state) = loaded()
-        chat(state, data = data, recorder = VoiceControls(Recording.Locked(0L), elapsedMs = RECORDED_MS))
-    }
-
-    /** Paused: the draft plays like a voice message; send sends it. */
-    @Test fun composerRecordingDraft() {
-        val (data, state) = loaded()
-        val draft = Recording.Draft(RecordedVoice(java.io.File("draft.m4a"), RECORDED_MS.toInt()), listOf(0.1f, 0.5f, 0.9f, 0.3f, 0.7f, 0.2f, 0.8f, 0.4f, 0.6f, 0.3f))
-        chat(state, data = data, recorder = VoiceControls(draft, draftPlaying = true, draftProgress = 0.4f))
-    }
-
-    /** `chat.thread.layout.failedMessage`: red "!" circle beside my bubble, the red label under it. */
-    @Test fun sendFailed() {
-        val data = FakeSocialData().apply { seedChat() }
         val vm = ChatViewModel(data, GROUP)
-        data.failNext += "sendText:running late, sorry:"
+        data.offline = true
         vm.setDraft("running late, sorry")
         vm.send()
         chat(vm.state.value, data = data)
     }
 
-    /** `chat.thread.count.emojiOnlyMax` (3) and `.dimension.bubbleMaxWidth` (256): big emoji without a bubble; long text wraps. */
-    @Test fun emojiOnlyAndLongText() {
-        val data = FakeSocialData().apply { seedChat() }
-        data.messages += FakeSocialData.message("m-8", GROUP, BEN, app.data.model.MessageKind.Text, body = "😂🔥😍", at = FakeSocialData.BASE.plusSeconds(500))
-        data.messages += FakeSocialData.message("m-9", GROUP, ME, app.data.model.MessageKind.Text, body = "okay but who is bringing the speaker on saturday because mine is dead", at = FakeSocialData.BASE.plusSeconds(560))
-        chat(ChatViewModel(data, GROUP).state.value, data = data)
+    /** In flight: `chat.thread.sending` under your message. */
+    @Test fun sending() {
+        val data = FakeSocialData().apply { seedThread() }
+        val vm = ChatViewModel(data, GROUP)
+        data.gate = kotlinx.coroutines.CompletableDeferred()
+        vm.setDraft("on my way")
+        vm.send()
+        chat(vm.state.value, data = data)
     }
 
-    @Test fun voicePermissionDenied() {
+    /** Replying: the reply bar ("Replying to Ana") above the field, placeholder "Reply…". */
+    @Test fun replying() {
+        val data = FakeSocialData().apply { seedThread() }
+        val vm = ChatViewModel(data, GROUP)
+        vm.startReply(vm.state.value.rows.first { it.message.id == "m-2" })
+        chat(vm.state.value, data = data)
+    }
+
+    /** `chat.composer.layout.typingState`: the send glyph in place of camera + mic. */
+    @Test fun composerTyping() {
         val (data, state) = loaded()
-        chat(state, ChatUiState(showMicCard = true), data)
+        chat(state, ChatUiState(draft = TextFieldValue("on my way")), data)
     }
 
+    /** `chat.voice.layout.recording`, holding: red mic · time · ‹ Slide to cancel; the lock circle over the mic. */
+    @Test fun recordingHolding() {
+        val (data, state) = loaded()
+        chat(state, ChatUiState(recording = Recording.Holding(0L)), data, recorder = RecorderControls(elapsedMs = RECORDED_MS))
+    }
+
+    /** Locked (hands-free): trash and send in the trailing glyphs. */
+    @Test fun recordingLocked() {
+        val (data, state) = loaded()
+        chat(state, ChatUiState(recording = Recording.Locked(0L)), data, recorder = RecorderControls(elapsedMs = RECORDED_MS))
+    }
+
+    /** A voice message playing: pause glyph and the elapsed time. */
     @Test fun voicePlaying() {
         val (data, state) = loaded()
-        chat(state, data = data, playback = VoicePlayback("u/u-me/voice/v1.m4a", true, 0.4f))
+        val path = state.rows.first { it.message.id == "m-7" }.message.voicePath
+        chat(state, data = data, voice = VoiceUi(VoicePlayback(path, true, PROGRESS), null, emptySet()) {})
     }
 
+    /** A voice message whose file failed to load: the error line in the capsule. */
+    @Test fun voiceError() {
+        val (data, state) = loaded()
+        val path = state.rows.first { it.message.id == "m-7" }.message.voicePath.orEmpty()
+        chat(state, data = data, voice = VoiceUi(VoicePlayback(null, false), null, setOf(path)) {})
+    }
+
+    @Test fun micPermissionDenied() {
+        val (data, state) = loaded()
+        chat(state, ChatUiState(micDenied = true), data, screen = true)
+    }
+
+    /** Long press on your own text: Reply · Copy · Unsend. */
     @Test fun contextMenuOwnMessage() {
         val (data, state) = loaded()
         chat(state, ChatUiState(menuFor = "m-5"), data, screen = true)
     }
 
-    @Test fun contextMenuOthersMessage() {
+    /** Long press on a photo: the quick-reaction row (🔥 💖 +) then Reply · Save · Report Message. */
+    @Test fun contextMenuPhoto() {
         val (data, state) = loaded()
-        chat(state, ChatUiState(menuFor = "m-3"), data, screen = true)
+        chat(state, ChatUiState(menuFor = "m-1"), data, screen = true)
     }
 
-    @Test fun deleteMessageConfirmation() {
+    @Test fun unsendConfirmation() {
         val (data, state) = loaded()
-        chat(state, ChatUiState(confirmDelete = "m-5"), data, screen = true)
+        chat(state, ChatUiState(confirmUnsend = "m-5"), data, screen = true)
+    }
+
+    /** The Reactions sheet (development order: newest first). */
+    @Test fun reactionsSheet() {
+        val (data, state) = loaded()
+        chat(state, ChatUiState(reactionsFor = "p-1"), data, screen = true)
+    }
+
+    /** Release build: the sheet in the data layer's order (`chat.reactions.layout.listOrder` BLOCKED). */
+    @Test fun reactionsSheetRelease() {
+        val (data, state) = loaded()
+        chat(state, ChatUiState(reactionsFor = "p-1"), data, screen = true, approximations = false)
     }
 
     @Test fun reactionsPicker() {
@@ -145,48 +175,40 @@ class ChatSnapshotTest : SnapshotBase() {
         chat(state, ChatUiState(pickerFor = "p-1"), data, screen = true)
     }
 
-    @Test fun reactionsActivitySheetDevelopment() {
-        val (data, state) = loaded()
-        chat(state, ChatUiState(activityFor = "p-1"), data, screen = true)
-    }
-
-    @Test fun reactionsManyStickers() {
-        val data = FakeSocialData().apply { seedChat() }
-        data.reactions["p-1"] = listOf("😍", "🔥", "😂", "🫶", "💖", "😭", "🥹").mapIndexed { i, e -> ReactionEntry(if (i % 2 == 0) ANA else BEN, e) }.toMutableList()
+    /** 1–3 emoji render at the title size; long text wraps in the text column. */
+    @Test fun emojiOnlyAndLongText() {
+        val data = FakeSocialData().apply { seedThread() }
+        data.messages += FakeSocialData.message("m-8", GROUP, BEN, MessageKind.Text, body = "😂🔥😍", at = BASE.plusSeconds(500))
+        data.messages += FakeSocialData.message("m-9", GROUP, ME, MessageKind.Text, body = "okay but who is bringing the speaker on saturday because mine is dead", at = BASE.plusSeconds(560))
         chat(ChatViewModel(data, GROUP).state.value, data = data)
     }
 
-    /** Emoji rain mid-way (`chat.reactions.easing.rain`): copies behind the messages. */
-    @Test fun reactionsRain() {
-        val (data, state) = loaded()
-        val ui = ChatUiState().apply { rain = "🔥" to 1 }
-        compose.mainClock.autoAdvance = false
-        compose.setContent { TestScreen(data) { content(state, ui) } }
-        compose.mainClock.advanceTimeBy(RAIN_FRAME_MS)
-        com.github.takahirom.roborazzi.captureScreenRoboImage()
-    }
-
-    /** A reaction mid-flight to the cluster's leading end (`chat.reactions.duration.flyToCluster`); its sticker waits for it. */
-    @Test fun reactionsFlyToCluster() {
-        val (data, state) = loaded()
-        val flights = ReactionFlights()
-        compose.mainClock.autoAdvance = false
-        compose.setContent { TestScreen(data) { content(state, ChatUiState(), flights = flights) } }
-        compose.mainClock.advanceTimeByFrame()
-        compose.runOnIdle { org.junit.Assert.assertTrue("the cluster's landing slot is known", flights.launch("p-1", "😂", androidx.compose.ui.geometry.Rect(FLIGHT_START_X, FLIGHT_START_Y, FLIGHT_START_X + FLIGHT_SIZE, FLIGHT_START_Y + FLIGHT_SIZE)))
-            androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
-        }
-        compose.mainClock.advanceTimeBy(FLIGHT_FRAME_MS)
-        com.github.takahirom.roborazzi.captureScreenRoboImage()
-    }
-
-    private companion object {
-        const val RAIN_FRAME_MS = 1_200L
+    companion object {
         const val RECORDED_MS = 7_000L
-        // Test geometry (screen px): a picker cell near the bottom of the screen.
-        const val FLIGHT_START_X = 520f
-        const val FLIGHT_START_Y = 1500f
-        const val FLIGHT_SIZE = 80f
-        const val FLIGHT_FRAME_MS = 120L
+        const val PROGRESS = 0.4f
+        val TODAY: LocalDate = LocalDate.parse("2026-10-12")
     }
+}
+
+/**
+ * A thread across two days: yesterday Ana's captioned photo with reactions and a voice note; today Ben's run of two
+ * texts, Ana's reply quoting the photo, my reply quoting Ben, my text and voice message, Ben's voice message.
+ */
+fun FakeSocialData.seedThread() {
+    seedGroup()
+    val t0 = BASE
+    val yesterday = t0.minusSeconds(86_400)
+    val photo = addPhoto("p-1", FakeSocialData.ANA, yesterday, caption = "face masks night", voicePath = "u/${FakeSocialData.ANA}/voice/p1.m4a", voiceMs = 9_000)
+    reactions["p-1"] = mutableListOf(
+        app.data.repo.ReactionEntry(BEN, "😍"),
+        app.data.repo.ReactionEntry(ME, "🔥"),
+        app.data.repo.ReactionEntry(FakeSocialData.ANA, "💖"),
+    )
+    messages += FakeSocialData.message("m-1", GROUP, FakeSocialData.ANA, MessageKind.Photo, postId = photo.id, at = yesterday)
+    messages += FakeSocialData.message("m-2", GROUP, BEN, MessageKind.Text, body = "strictly vibes only tonight", at = t0.plusSeconds(120))
+    messages += FakeSocialData.message("m-3", GROUP, BEN, MessageKind.Text, body = "who's in for sunday?", at = t0.plusSeconds(130))
+    messages += FakeSocialData.message("m-4", GROUP, FakeSocialData.ANA, MessageKind.Text, body = "obsessed with this one", replyToPostId = "p-1", at = t0.plusSeconds(200))
+    messages += FakeSocialData.message("m-5", GROUP, ME, MessageKind.Text, body = "me! bringing dessert", at = t0.plusSeconds(300)).copy(replyToMessageId = "m-3")
+    messages += FakeSocialData.message("m-6", GROUP, ME, MessageKind.Voice, voicePath = "u/$ME/voice/v1.m4a", voiceMs = 38_000, at = t0.plusSeconds(305))
+    messages += FakeSocialData.message("m-7", GROUP, BEN, MessageKind.Voice, voicePath = "u/$BEN/voice/v2.m4a", voiceMs = 12_000, at = t0.plusSeconds(400))
 }

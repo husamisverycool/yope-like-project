@@ -1,4 +1,5 @@
-// Account group — PaywallModel: state and actions of the screen in PaywallScreen.swift.
+// Account group — PaywallModel: state and actions of the paywall (PaywallScreen.swift): the benefits, the plan cards
+// (yearly first), purchase and restore outcomes.
 import AppData
 import AppModels
 import DesignSystem
@@ -15,16 +16,27 @@ final class PaywallModel {
         case offline
     }
 
+    /// What the welcome block says after a purchase or a restore.
+    enum Welcome: Equatable {
+        case purchased
+        case restored
+    }
+
     private(set) var plans: [PlanOption] = []
     private(set) var plansPhase: PlansPhase = .loading
-    /// Yearly by default (Locket's default selection).
+    /// The plan card in view; Annual first (Retro's plan pager order, `paywall.layout.planCard.pager`).
     var selectedPlanID: String?
     private(set) var isPurchasing = false
-    /// Under Subscribe: `paywall.error.purchase` / `paywall.pending`.
+    /// `paywall.error.purchase` / `paywall.pending`: the message-only alert.
     private(set) var purchaseMessage: String?
-    /// In the legal block: `paywall.restore.done` / `.none`.
+    /// `paywall.restore.done` (the welcome block) / `.none` / `paywall.offline` (the message-only alert).
     private(set) var restoreMessage: String?
-    private(set) var showsWelcome = false
+    /// The welcome block in place of the benefits and plans.
+    private(set) var welcome: Welcome?
+    /// The latest alert-worthy message (purchase failed / pending, nothing to restore, offline) and its trigger.
+    private(set) var alertMessage: String?
+    private(set) var alertCount = 0
+    var showsWelcome: Bool { welcome != nil }
     /// The history perk is listed only while the free history window is set (`free_history_days`, SPEC_FLAGS T1).
     private(set) var showsHistoryPerk = false
     private(set) var successCount = 0
@@ -70,15 +82,17 @@ final class PaywallModel {
             switch try await purchases.purchase(plan) {
             case .purchased:
                 successCount += 1
-                showsWelcome = true
+                welcome = .purchased
             case .cancelled:
                 break
             case .pending:
                 purchaseMessage = Copy.paywallPending
+                alert(Copy.paywallPending)
             }
         } catch {
             errorCount += 1
             purchaseMessage = Copy.paywallErrorPurchase
+            alert(Copy.paywallErrorPurchase)
         }
     }
 
@@ -88,17 +102,31 @@ final class PaywallModel {
             if try await purchases.restore() {
                 successCount += 1
                 restoreMessage = Copy.paywallRestoreDone
+                welcome = .restored
             } else {
                 restoreMessage = Copy.paywallRestoreNone
+                alert(Copy.paywallRestoreNone)
             }
         } catch {
             errorCount += 1
             restoreMessage = (error as? PurchasesFailure) == .offline ? Copy.paywallOffline : Copy.paywallRestoreNone
+            alert(restoreMessage ?? Copy.paywallRestoreNone)
         }
     }
 
+
+    private func alert(_ message: String) {
+        alertMessage = message
+        alertCount += 1
+    }
+
     func welcomeDismissed() {
-        showsWelcome = false
+        welcome = nil
+    }
+
+    /// The plan with this period (the card's content; nil while loading).
+    func plan(for period: PlanOption.Period) -> PlanOption? {
+        plans.first { $0.period == period }
     }
 
     /// The legal billing line of the selected plan: `paywall.legal.billing.ios` ({price}, {period}).

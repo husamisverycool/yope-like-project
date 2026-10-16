@@ -8,7 +8,9 @@ import app.data.model.MemberRole
 import app.data.realtime.GroupEvent
 import app.designsystem.generated.Tokens
 import app.feature.account.groups.CreateError
-import app.feature.account.groups.FeedItem
+import app.feature.account.groups.CreateStep
+import app.feature.account.groups.GroupPhoto
+import app.feature.account.groups.GroupWeek
 import app.feature.account.groups.GroupActions
 import app.feature.account.groups.GroupCreateViewModel
 import app.feature.account.groups.GroupFeedViewModel
@@ -16,7 +18,6 @@ import app.feature.account.groups.GroupInviteViewModel
 import app.feature.account.groups.GroupSettingsViewModel
 import app.feature.account.groups.GroupsListViewModel
 import app.feature.account.groups.RowSubtitle
-import app.feature.account.groups.SettingsSection
 import app.feature.account.testing.FakeAccountBackend
 import app.feature.account.testing.fakeEnvironment
 import app.model.AppRoute
@@ -62,14 +63,26 @@ class GroupsViewModelsTest {
         val rows = vm.state.value.rows!!
         assertEquals(listOf("g1", "g2"), rows.map { it.id })
         assertEquals("Sam", (rows[0].subtitle as RowSubtitle.SentPic).firstName)
-        assertEquals(RowSubtitle.NoPics, rows[1].subtitle)
-        assertEquals("g1", vm.state.value.cover!!.groupId)
+        // No posts in a group you created: "you created the group".
+        assertEquals(RowSubtitle.CreatedByYou, rows[1].subtitle)
+        // The member stack in joining order (me, then Sam); no count anywhere.
+        assertEquals(2, rows[0].avatars.size)
+    }
+
+    @Test fun groupCreatedBySomeoneElseNamesTheCreator() = runTest(main.dispatcher) {
+        val backend = world().apply {
+            group("g3", "Book club", createdBy = "u-sam", createdAt = now.minus(Duration.ofDays(2)))
+            member("g3", "u-sam", MemberRole.Admin)
+            member("g3", meId)
+        }
+        val vm = GroupsListViewModel(fakeEnvironment(backend))
+        assertEquals(RowSubtitle.CreatedBy("Sam"), vm.state.value.rows!!.first { it.id == "g3" }.subtitle)
     }
 
     @Test fun ownNewestPostReadsNewPic() = runTest(main.dispatcher) {
         val backend = world().apply { post("g1", meId, now.minus(Duration.ofMinutes(5))) }
         val vm = GroupsListViewModel(fakeEnvironment(backend))
-        assertTrue(vm.state.value.rows!!.first().subtitle is RowSubtitle.NewPic)
+        assertEquals(RowSubtitle.NewPic, vm.state.value.rows!!.first().subtitle)
     }
 
     @Test fun emptyErrorAndOfflineWithCache() = runTest(main.dispatcher) {
@@ -117,9 +130,12 @@ class GroupsViewModelsTest {
         val backend = FakeAccountBackend().apply { signIn() }
         val vm = GroupCreateViewModel(fakeEnvironment(backend), null)
         val events = vm.recordEvents(backgroundScope)
+        assertEquals(CreateStep.Type, vm.state.value.step)
+        // Choosing a template is choosing the kind, then step B (cover and name).
+        vm.onKind(GroupKind.Family)
+        assertEquals(CreateStep.Details, vm.state.value.step)
         assertFalse(vm.state.value.canSubmit)
         vm.onName("  Book club ")
-        vm.onKind(GroupKind.Family)
         vm.submit()
         val created = backend.groups.values.single()
         assertEquals("Book club", created.name)
@@ -127,7 +143,18 @@ class GroupsViewModelsTest {
         val nav = events.navigations().single()
         assertEquals(AppRoute.Group(created.id), nav.route)
         assertTrue(nav.popCurrent)
-        assertTrue(Tokens.Haptics.globalSuccess in events.haptics())
+        assertEquals(listOf(Tokens.Haptics.globalSelect, Tokens.Haptics.globalSuccess), events.haptics())
+    }
+
+    @Test fun templateRowOpensTheNameStepAndNamesPast80AreTooLong() = runTest(main.dispatcher) {
+        val vm = GroupCreateViewModel(fakeEnvironment(FakeAccountBackend().apply { signIn() }), null, GroupKind.Roommates)
+        assertEquals(CreateStep.Details, vm.state.value.step)
+        assertTrue(vm.state.value.kindPreset)
+        vm.backToType()
+        assertEquals(CreateStep.Details, vm.state.value.step)
+        vm.onName("x".repeat(81))
+        assertTrue(vm.state.value.tooLong)
+        assertFalse(vm.state.value.canSubmit)
     }
 
     @Test fun createFailureKeepsTheBlockedError() = runTest(main.dispatcher) {
@@ -142,6 +169,7 @@ class GroupsViewModelsTest {
     @Test fun editModePrefillsAndSaves() = runTest(main.dispatcher) {
         val backend = world()
         val vm = GroupCreateViewModel(fakeEnvironment(backend), "g1")
+        assertEquals(CreateStep.Details, vm.state.value.step)
         assertEquals("Sunday dinners", vm.state.value.name)
         vm.onName("Sunday suppers")
         vm.submit()
@@ -150,25 +178,31 @@ class GroupsViewModelsTest {
 
     // groups.invite ---------------------------------------------------------------------------------
 
-    @Test fun shareCreatesOneInviteAndReusesIt() = runTest(main.dispatcher) {
+    @Test fun linkSharingIsTurnedOnExplicitlyThenReset() = runTest(main.dispatcher) {
         val backend = world()
         val vm = GroupInviteViewModel(fakeEnvironment(backend), "g1")
-        val links = mutableListOf<String>()
-        vm.share { url, _ -> links += url }
-        vm.share { url, _ -> links += url }
+        // No live invite of yours: link off until "Turn on link sharing".
+        assertNull(vm.state.value.invite)
+        assertFalse(vm.state.value.loading)
+        assertNull(vm.link())
+        vm.turnOn()
+        val first = vm.state.value.invite!!
         assertEquals(1, backend.calls.count { it == "createInvite" })
-        assertEquals(listOf("https://invite.example.test/i/AbCdEfGhIjKlMnOpQrStUvWx"), links.distinct())
+        assertEquals("https://invite.example.test/i/" + first.token, vm.link())
+        // Reset: the old link is revoked and a new one made.
+        vm.reset()
+        assertEquals(listOf("createInvite", "revokeInvite", "createInvite"), backend.calls.filter { it == "createInvite" || it == "revokeInvite" })
         assertNotNull(vm.state.value.invite)
-        assertTrue(vm.state.value.canTurnOff)
     }
 
     @Test fun turnOffIsOptimisticWithRollback() = runTest(main.dispatcher) {
         val backend = world()
         val vm = GroupInviteViewModel(fakeEnvironment(backend), "g1")
-        vm.share { _, _ -> }
+        vm.turnOn()
         backend.failures["revokeInvite"] = DataError.Network
         val events = vm.recordEvents(backgroundScope)
         vm.askTurnOff()
+        assertTrue(vm.state.value.confirmTurnOff)
         vm.turnOff()
         assertNotNull(vm.state.value.invite)
         assertEquals(listOf(Tokens.Haptics.globalWarning, Tokens.Haptics.globalError), events.haptics())
@@ -178,6 +212,15 @@ class GroupsViewModelsTest {
         assertEquals(listOf(AccountEvent.Toast(R.string.groups_invite_link_turnedoff)), events.toasts())
     }
 
+    @Test fun readFailureIsTheErrorStateAndOfflineItsOwn() = runTest(main.dispatcher) {
+        val failing = world().apply { failures["activeInvites"] = DataError.Unexpected("x") }
+        assertTrue(GroupInviteViewModel(fakeEnvironment(failing), "g1").state.value.error)
+        val offline = world().apply { failures["activeInvites"] = DataError.Network }
+        val state = GroupInviteViewModel(fakeEnvironment(offline), "g1").state.value
+        assertTrue(state.offline)
+        assertFalse(state.error)
+    }
+
     @Test fun fullGroupShowsTheFullState() = runTest(main.dispatcher) {
         val backend = world().apply { config = config.copy(maxGroupMembers = 2) }
         assertTrue(GroupInviteViewModel(fakeEnvironment(backend), "g1").state.value.full)
@@ -185,21 +228,29 @@ class GroupsViewModelsTest {
 
     // groups.screen ---------------------------------------------------------------------------------
 
-    @Test fun feedHasPostsNewestFirstAndJoinPills() = runTest(main.dispatcher) {
+    @Test fun feedHasPhotosNewestFirstWithAuthors() = runTest(main.dispatcher) {
         val backend = world()
         val vm = GroupFeedViewModel(fakeEnvironment(backend), "g1")
-        val items = vm.state.value.items!!
-        assertTrue(items.first() is FeedItem.Photo)
-        assertEquals("dinner", (items.first() as FeedItem.Photo).post.caption)
-        assertTrue(items.any { it is FeedItem.Joined && it.firstName == "Sam" })
+        val photos = vm.state.value.photos!!
+        assertEquals("dinner", photos.first().post.caption)
+        assertEquals("Sam", photos.first().authorFirstName)
+        assertFalse(photos.first().mine)
+        assertTrue(photos.last().mine)
+        assertEquals(2, vm.state.value.memberAvatars.size)
         assertTrue(vm.state.value.isCreator)
     }
 
     @Test fun createdGroupWithoutPostsIsTheCreatedState() = runTest(main.dispatcher) {
         val vm = GroupFeedViewModel(fakeEnvironment(world()), "g2")
-        assertEquals(emptyList<FeedItem>(), vm.state.value.items)
+        assertEquals(emptyList<GroupPhoto>(), vm.state.value.photos)
         assertTrue(vm.state.value.isCreator)
-        assertEquals(emptyList<String>(), vm.state.value.otherNames)
+    }
+
+    @Test fun groupWeekStartsOnMondayInTheGroupZone() {
+        val thursday = java.time.LocalDate.of(2026, 10, 15)
+        assertEquals(java.time.LocalDate.of(2026, 10, 12), GroupWeek.start(thursday))
+        assertEquals(java.time.LocalDate.of(2026, 10, 18), GroupWeek.end(thursday))
+        assertEquals(42, GroupWeek.number(thursday))
     }
 
     @Test fun removedMemberSeesTheRemovedState() = runTest(main.dispatcher) {
@@ -209,17 +260,18 @@ class GroupsViewModelsTest {
 
     // groups.settings -------------------------------------------------------------------------------
 
-    @Test fun muteIsOptimisticAndRevertsWithTheSectionError() = runTest(main.dispatcher) {
+    @Test fun muteIsOptimisticAndRevertsWithTheErrorAlert() = runTest(main.dispatcher) {
         val backend = world().apply { failures["setMuted"] = DataError.Network }
         val vm = GroupSettingsViewModel(fakeEnvironment(backend), "g1")
         assertTrue(vm.state.value.isAdmin)
         vm.setMuted(true)
         assertFalse(vm.state.value.muted)
-        assertEquals(SettingsSection.Notifications, vm.state.value.errorIn)
+        assertTrue(vm.state.value.failed)
+        vm.dismissAlert()
         backend.failures.remove("setMuted")
         vm.setMuted(true)
         assertTrue(vm.state.value.muted)
-        assertNull(vm.state.value.errorIn)
+        assertFalse(vm.state.value.failed)
     }
 
     @Test fun invitationHoursInvalidWindowShowsItsFooter() = runTest(main.dispatcher) {
@@ -236,7 +288,7 @@ class GroupsViewModelsTest {
         val sam = vm.state.value.members!!.first { it.userId == "u-sam" }
         vm.remove(sam)
         assertTrue(vm.state.value.members!!.any { it.userId == "u-sam" })
-        assertEquals(SettingsSection.Members, vm.state.value.errorIn)
+        assertTrue(vm.state.value.failed)
     }
 
     @Test fun leaveFromSettingsGoesHome() = runTest(main.dispatcher) {

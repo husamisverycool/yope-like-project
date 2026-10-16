@@ -1,8 +1,12 @@
-// Snapshot of every memory screen in every state (docs/SCREENS_BRIEF.md rule 7), written to
-// ios/build/snapshots/memory/<surface>-<state>.png for design/verification/<surface>.md.
-// Screens run on the fixture backend; photos are real sample photos (fixtures/photos/, `MemorySamplePhotos`).
+// Snapshot of every memory screen in every state, in the light appearance, and of each surface's primary state also in
+// the dark appearance (docs/SCREENS_BRIEF.md rule 7, docs/REDESIGN_BRIEF.md "Pass 4"), written to
+// ios/build/snapshots/memory/<surface>-<state>-<light|dark>.png for design/verification/<surface>.md and the Pass 5 review.
+// Each snapshot wraps the view in the appearance under test (`.environment(\.colorScheme, …)`); media surfaces render
+// dark in both (layout.global.appearance.media), so their two files are expected to match.
+// Screens run on the fixture backend; photos and avatars are real sample photos (fixtures/photos/, `MemorySamplePhotos`).
 @testable import App
 import AppData
+import AppModels
 import DesignSystem
 import SnapshotTesting
 import SwiftUI
@@ -13,8 +17,15 @@ import XCTest
 final class MemorySnapshotTests: XCTestCase {
     // MARK: Helpers
 
+    private enum Appearance: String {
+        case light
+        case dark
+
+        var scheme: ColorScheme { self == .dark ? .dark : .light }
+    }
+
     /// Real sample photos (fixtures/photos/) for every storage path of the fixtures, cropped to each photo's own shape;
-    /// the collage is a grid of the photos it collects and the tribute poster a 16:9 photo.
+    /// the collage is a grid of the photos it collects, the tribute poster a 16:9 photo, avatars sample portraits.
     private func fillImages(_ context: MemoryTestContext) {
         let state = context.data.snapshot
         for (index, post) in state.posts.enumerated() {
@@ -34,33 +45,44 @@ final class MemorySnapshotTests: XCTestCase {
                 context.images.images[URL(string: "fixture://" + path)!] = MemorySamplePhotos.poster
             }
         }
+        for (index, profile) in state.profiles.enumerated() {
+            if let path = profile.avatarPath {
+                context.images.images[URL(string: "fixture://" + path)!] = MemorySamplePhotos.avatar(index: index)
+            }
+        }
     }
 
-    /// Records `view` as `memory/<surface>-<state>.png`.
-    @discardableResult
+    /// Records `view` as `memory/<surface>-<state>-<appearance>.png` for each appearance.
     private func record<V: View>(
-        _ view: V, _ surface: String, _ state: String, context: MemoryTestContext,
+        _ view: @autoclosure () -> V,
+        _ surface: String,
+        _ state: String,
+        context: MemoryTestContext,
+        appearances: [Appearance] = [.light],
         layout: SwiftUISnapshotLayout = .device(config: .iPhone13),
-        file: StaticString = #filePath, testName: String = #function, line: UInt = #line
-    ) -> URL? {
-        let name = surface + "-" + state
-        let content = view
-            .environment(\.memoryImageLoader, context.images)
-            .environment(\.colorScheme, .dark)
-        guard let written = SnapshotRecorder.record(content, named: name, group: "memory", layout: layout, file: file, testName: testName, line: line) else {
-            XCTFail("snapshot \(name) not written", file: file, line: line)
-            return nil
+        file: StaticString = #filePath,
+        testName: String = #function,
+        line: UInt = #line
+    ) {
+        for appearance in appearances {
+            let name = surface + "-" + state + "-" + appearance.rawValue
+            let content = view()
+                .environment(\.memoryImageLoader, context.images)
+                .environment(\.colorScheme, appearance.scheme)
+            guard let written = SnapshotRecorder.record(content, named: name, group: "memory", layout: layout, file: file, testName: testName, line: line) else {
+                XCTFail("snapshot \(name) not written", file: file, line: line)
+                continue
+            }
+            let target = written.deletingLastPathComponent().appendingPathComponent(name + ".png")
+            try? FileManager.default.removeItem(at: target)
+            do {
+                try FileManager.default.moveItem(at: written, to: target)
+            } catch {
+                XCTFail("could not name \(name): \(error)", file: file, line: line)
+                continue
+            }
+            XCTAssertGreaterThan((try? Data(contentsOf: target).count) ?? 0, 0, file: file, line: line)
         }
-        let target = written.deletingLastPathComponent().appendingPathComponent(name + ".png")
-        try? FileManager.default.removeItem(at: target)
-        do {
-            try FileManager.default.moveItem(at: written, to: target)
-        } catch {
-            XCTFail("could not name \(name): \(error)", file: file, line: line)
-            return nil
-        }
-        XCTAssertGreaterThan((try? Data(contentsOf: target).count) ?? 0, 0, file: file, line: line)
-        return target
     }
 
     private func makeContext(_ configure: (inout FixtureMemoryData.State) -> Void = { _ in }) -> MemoryTestContext {
@@ -69,86 +91,235 @@ final class MemorySnapshotTests: XCTestCase {
         return context
     }
 
+    private let both: [Appearance] = [.light, .dark]
+
     // MARK: onthisday
 
     func testOnThisDayStates() async {
+        func screen(_ model: OnThisDayModel) -> some View {
+            NavigationStack { OnThisDayScreen(groupID: MemoryIDs.group.rawValue, model: model) }
+        }
         let loading = makeContext { $0.suspended = [.onThisDay] }
-        record(OnThisDayScreen(groupID: MemoryIDs.group.rawValue, model: OnThisDayModel(groupID: MemoryIDs.group, dependencies: loading.dependencies)),
-               "onthisday", "loading", context: loading)
+        record(screen(OnThisDayModel(groupID: MemoryIDs.group, dependencies: loading.dependencies)), "onthisday", "loading", context: loading)
 
         let loaded = makeContext()
-        let model = OnThisDayModel(groupID: MemoryIDs.group, dependencies: loaded.dependencies)
+        let model = OnThisDayModel(groupID: MemoryIDs.group, dependencies: loaded.dependencies, randomIndex: { _ in 0 })
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .loaded)
-        record(OnThisDayScreen(groupID: MemoryIDs.group.rawValue, model: model), "onthisday", "single", context: loaded)
+        model.dismissIntro()
+        record(screen(model), "onthisday", "paused", context: loaded, appearances: both)
         model.next()
-        record(OnThisDayScreen(groupID: MemoryIDs.group.rawValue, model: model), "onthisday", "grid", context: loaded)
+        model.next()
+        record(screen(model), "onthisday", "paused-own-memory", context: loaded)
+        model.togglePlay()
+        record(screen(model), "onthisday", "playing", context: loaded)
+        model.stopPlaying()
+        await model.shuffle()
+        record(screen(model), "onthisday", "shuffle", context: loaded)
+
+        // The feature intro (C-29 sheet content; the sheet follows the appearance).
+        for appearance in both {
+            record(
+                FeatureIntroSheet(
+                    title: Copy.onthisdayNuxTitle,
+                    rows: [FeatureIntroRow(icon: Tokens.Icons.globalRewind, text: Copy.onthisdayNuxMessage(group: "Sunday dinners"))],
+                    buttonTitle: Copy.onthisdayNuxButton,
+                    onButton: {}
+                ),
+                "onthisday", "intro", context: loaded, appearances: [appearance], layout: .fixed(width: 390, height: 420)
+            )
+        }
+
+        let empty = makeContext()
+        let emptyModel = OnThisDayModel(groupID: MemoryIDs.group, dependencies: empty.dependencies)
+        await emptyModel.loadIfNeeded()
+        emptyModel.dismissIntro()
+        for memory in emptyModel.memories { emptyModel.removePost(memory.id) }
+        XCTAssertEqual(emptyModel.phase, .empty)
+        record(screen(emptyModel), "onthisday", "empty", context: empty)
 
         let failing = makeContext()
         failing.data.fail(.onThisDay, with: .http(status: 500))
         let errorModel = OnThisDayModel(groupID: MemoryIDs.group, dependencies: failing.dependencies)
         await errorModel.loadIfNeeded()
-        record(OnThisDayScreen(groupID: MemoryIDs.group.rawValue, model: errorModel), "onthisday", "error", context: failing)
+        record(screen(errorModel), "onthisday", "error", context: failing)
 
         let offline = makeContext()
         offline.data.fail(.onThisDay, with: .offline)
         let offlineModel = OnThisDayModel(groupID: MemoryIDs.group, dependencies: offline.dependencies)
         await offlineModel.loadIfNeeded()
-        record(OnThisDayScreen(groupID: MemoryIDs.group.rawValue, model: offlineModel), "onthisday", "offline", context: offline)
+        record(screen(offlineModel), "onthisday", "offline", context: offline)
 
-        // The group-screen entry (row look belongs to groups.screen; the plain default row).
+        // The group-screen entry (feed card default; the final look belongs to groups.screen).
         let entryModel = OnThisDayEntryModel(groupID: MemoryIDs.group, dependencies: loaded.dependencies)
         await entryModel.refresh()
-        record(OnThisDayEntry(groupID: MemoryIDs.group.rawValue, model: entryModel).padding().background(Tokens.Colors.globalBackground),
-               "onthisday", "entry", context: loaded, layout: .fixed(width: 390, height: 120))
+        XCTAssertNotNil(entryModel.content)
+        record(
+            OnThisDayEntry(groupID: MemoryIDs.group.rawValue, model: entryModel).padding().background(Tokens.Colors.globalBackground),
+            "onthisday", "entry", context: loaded, appearances: both, layout: .fixed(width: 390, height: 440)
+        )
+    }
+
+    // MARK: year.story
+
+    func testYearStoryCardsSummaryAndShareImages() async {
+        let year = LocalDate(MemoryTestContext.referenceNow, in: MemoryFormat.utc).year
+        func screen(_ model: YearStoryModel) -> YearStoryScreen {
+            YearStoryScreen(groupID: MemoryIDs.group.rawValue, year: year, model: model, revealsImmediately: true)
+        }
+        let loading = makeContext { $0.suspended = [.yearStory] }
+        record(screen(YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: loading.dependencies)), "year.story", "loading", context: loading)
+
+        let story = makeContext()
+        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: story.dependencies)
+        await model.loadIfNeeded()
+        XCTAssertEqual(model.phase, .loaded)
+        // The share images (1080 × 1920) of every shareable card and both summary styles, at the iPhone 13 frame width.
+        let frameWidth: CGFloat = 390
+        var shareNumber = 0
+        for card in model.cards where card.isShareable {
+            let styles: [YearStorySummary.Style] = card == .summary ? model.summaryStyles : [model.summaryStyle]
+            for style in styles {
+                guard let output = await YearStoryShareRenderer.render(
+                    card, width: frameWidth, summary: model.summary, summaryStyle: style, coverURL: model.coverURL,
+                    images: story.images, name: card.id + "-" + style.rawValue
+                ) else {
+                    XCTFail("share image of \(card.id) not rendered")
+                    continue
+                }
+                XCTAssertEqual(output.image.size.width * output.image.scale, Tokens.Layouts.YearStoryShareCard.width, accuracy: 1)
+                XCTAssertEqual(output.image.size.height * output.image.scale, Tokens.Layouts.YearStoryShareCard.height, accuracy: 1)
+                shareNumber += 1
+                let target = SnapshotRecorder.directory.appendingPathComponent("memory", isDirectory: true)
+                    .appendingPathComponent("year.story-share-\(String(format: "%02d", shareNumber))-\(card.id).png")
+                try? FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try? FileManager.default.removeItem(at: target)
+                try? FileManager.default.copyItem(at: output.file, to: target)
+            }
+        }
+        // Every card, paused so no timer runs while recording; the first fact card also in dark.
+        model.togglePause()
+        for position in model.cards.indices {
+            model.index = position
+            let card = model.cards[position]
+            if card == .summary {
+                for (page, style) in model.summaryStyles.enumerated() {
+                    model.summaryPage = page
+                    record(screen(model), "year.story", "summary-" + style.rawValue, context: story, appearances: page == 0 ? both : [.light])
+                }
+                model.summaryPage = 0
+            } else {
+                let state = "card-\(String(format: "%02d", position + 1))-\(Self.kind(card))"
+                record(screen(model), "year.story", state, context: story, appearances: card.id == "moments" ? both : [.light])
+            }
+        }
+        // Playing (pause glyph) on the intro.
+        model.index = 0
+        model.togglePause()
+        XCTAssertFalse(model.isPaused)
+        record(screen(model), "year.story", "playing", context: story)
+        model.stopListening()
+
+        let failing = makeContext()
+        failing.data.fail(.yearStory, with: .http(status: 500))
+        let errorModel = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: failing.dependencies)
+        await errorModel.loadIfNeeded()
+        record(screen(errorModel), "year.story", "error", context: failing)
+
+        let offline = makeContext()
+        offline.data.fail(.yearStory, with: .offline)
+        let offlineModel = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: offline.dependencies)
+        await offlineModel.loadIfNeeded()
+        record(screen(offlineModel), "year.story", "offline", context: offline)
+
+        let entryModel = YearStoryEntryModel(groupID: MemoryIDs.group, dependencies: story.dependencies)
+        await entryModel.refresh()
+        record(
+            YearStoryEntry(groupID: MemoryIDs.group.rawValue, model: entryModel).padding().background(Tokens.Colors.globalBackground),
+            "year.story", "entry", context: story, appearances: both, layout: .fixed(width: 390, height: 440)
+        )
+    }
+
+    private static func kind(_ card: YearStoryCard) -> String {
+        switch card {
+        case .intro: return "intro"
+        case .lookBack: return "look-back"
+        case .moments: return "moments"
+        case .busiestMonth: return "busiest-month"
+        case .mostReactedSetup: return "most-reacted-setup"
+        case .mostReacted: return "most-reacted-photo"
+        case .togetherSetup: return "together-setup"
+        case .togetherDay: return "together-day"
+        case .outro: return "outro"
+        case .summary: return "summary"
+        }
+    }
+
+    /// The recap card on its own (white in both appearances, L-4), as week.recap uses it.
+    func testRecapCard() {
+        let context = makeContext()
+        let photos = (0..<24).map { index in
+            RecapCardPhoto(id: String(index), source: .image(MemorySamplePhotos.photo(index: index % 9, width: 3, height: 4)), accessibilityLabel: "")
+        }
+        for appearance in both {
+            record(
+                ZStack {
+                    BlurredBackdrop(source: .image(MemorySamplePhotos.photo(index: 1, width: 4, height: 3)))
+                    RecapCard(photos: photos, title: "2026", name: "Sunday dinners", frameWidth: 390)
+                },
+                "year.story", "recap-card", context: context, appearances: [appearance], layout: .fixed(width: 390, height: 700)
+            )
+        }
     }
 
     // MARK: birthday.add
 
     func testBirthdayAddStates() async {
-        let entry = BirthdayDateEntry(pattern: "MM/dd/yyyy")
+        let entry = BirthdayEntry(pattern: "MM/dd/yyyy")
+        func screen(_ model: BirthdayAddModel) -> some View {
+            NavigationStack { BirthdayAddScreen(model: model) }
+        }
         let loading = makeContext { $0.suspended = [.myPrivateProfile] }
-        let loadingModel = BirthdayAddModel(dependencies: loading.dependencies, entry: entry)
-        record(BirthdayAddScreen(model: loadingModel), "birthday.add", "loading", context: loading)
+        record(screen(BirthdayAddModel(dependencies: loading.dependencies, entry: entry)), "birthday.add", "loading", context: loading)
 
         let add = makeContext()
         let addModel = BirthdayAddModel(dependencies: add.dependencies, entry: entry)
         await addModel.loadIfNeeded()
-        record(BirthdayAddScreen(model: addModel), "birthday.add", "empty-field", context: add)
-        addModel.dateText = "05/26/2000"
-        record(BirthdayAddScreen(model: addModel), "birthday.add", "filled", context: add)
+        record(screen(addModel), "birthday.add", "empty-field", context: add, appearances: both)
+        addModel.setText("05262000")
+        record(screen(addModel), "birthday.add", "filled", context: add)
 
         let saving = makeContext { $0.suspended = [.setBirthday] }
         let savingModel = BirthdayAddModel(dependencies: saving.dependencies, entry: entry)
         await savingModel.loadIfNeeded()
-        savingModel.dateText = "05/26/2000"
+        savingModel.setText("05262000")
         let task = Task { await savingModel.confirm() }
         _ = await memoryEventually { savingModel.isSaving }
-        record(BirthdayAddScreen(model: savingModel), "birthday.add", "saving", context: saving)
+        record(screen(savingModel), "birthday.add", "saving", context: saving)
         task.cancel()
 
         let invalid = makeContext()
         let invalidModel = BirthdayAddModel(dependencies: invalid.dependencies, entry: entry)
         await invalidModel.loadIfNeeded()
-        invalidModel.dateText = "02/30/2000"
+        invalidModel.setText("02302000")
         await invalidModel.confirm()
-        record(BirthdayAddScreen(model: invalidModel), "birthday.add", "invalid", context: invalid)
+        record(screen(invalidModel), "birthday.add", "invalid", context: invalid)
 
         let failing = makeContext()
         failing.data.fail(.setBirthday, with: .http(status: 500))
         let errorModel = BirthdayAddModel(dependencies: failing.dependencies, entry: entry)
         await errorModel.loadIfNeeded()
-        errorModel.dateText = "05/26/2000"
+        errorModel.setText("05262000")
         await errorModel.confirm()
-        record(BirthdayAddScreen(model: errorModel), "birthday.add", "error", context: failing)
+        record(screen(errorModel), "birthday.add", "error", context: failing)
 
         let offline = makeContext()
         offline.data.fail(.setBirthday, with: .offline)
         let offlineModel = BirthdayAddModel(dependencies: offline.dependencies, entry: entry)
         await offlineModel.loadIfNeeded()
-        offlineModel.dateText = "05/26/2000"
+        offlineModel.setText("05262000")
         await offlineModel.confirm()
-        record(BirthdayAddScreen(model: offlineModel), "birthday.add", "offline", context: offline)
+        record(screen(offlineModel), "birthday.add", "offline", context: offline)
 
         let saved = LocalDate(year: 2000, month: 5, day: 26)!
         let manage = makeContext {
@@ -156,9 +327,7 @@ final class MemorySnapshotTests: XCTestCase {
         }
         let manageModel = BirthdayAddModel(dependencies: manage.dependencies, entry: entry)
         await manageModel.loadIfNeeded()
-        record(BirthdayAddScreen(model: manageModel), "birthday.add", "manage", context: manage)
-        await manageModel.remove()
-        record(BirthdayAddScreen(model: manageModel), "birthday.add", "removed-toast", context: manage)
+        record(screen(manageModel), "birthday.add", "manage", context: manage, appearances: both)
     }
 
     // MARK: birthday.request
@@ -173,13 +342,13 @@ final class MemorySnapshotTests: XCTestCase {
         let open = makeContext()
         let openModel = BirthdayRequestModel(requestID: MemoryIDs.request, dependencies: open.dependencies)
         await openModel.loadIfNeeded()
-        record(screen(openModel), "birthday.request", "open", context: open)
+        record(screen(openModel), "birthday.request", "open", context: open, appearances: both)
 
         let contributed = makeContext()
         _ = try? await contributed.data.contribute(requestID: MemoryIDs.request, postID: MemoryIDs.post(2), line: "the best laugh in the group")
         let contributedModel = BirthdayRequestModel(requestID: MemoryIDs.request, dependencies: contributed.dependencies)
         await contributedModel.loadIfNeeded()
-        record(screen(contributedModel), "birthday.request", "contributed", context: contributed)
+        record(screen(contributedModel), "birthday.request", "contributed", context: contributed, appearances: both)
 
         let closed = makeContext { state in
             state.requests = state.requests.map { request in
@@ -211,8 +380,10 @@ final class MemorySnapshotTests: XCTestCase {
 
         let entryModel = BirthdayRequestsEntryModel(groupID: MemoryIDs.group, dependencies: open.dependencies)
         await entryModel.refresh()
-        record(BirthdayRequestsEntry(groupID: MemoryIDs.group.rawValue, model: entryModel).padding().background(Tokens.Colors.globalBackground),
-               "birthday.request", "entry", context: open, layout: .fixed(width: 390, height: 120))
+        record(
+            BirthdayRequestsEntry(groupID: MemoryIDs.group.rawValue, model: entryModel).padding(.vertical).background(Tokens.Colors.globalBackground),
+            "birthday.request", "entry", context: open, appearances: both, layout: .fixed(width: 390, height: 120)
+        )
     }
 
     // MARK: birthday.contribute
@@ -231,15 +402,16 @@ final class MemorySnapshotTests: XCTestCase {
         let flow = makeContext()
         let model = BirthdayContributeModel(requestID: MemoryIDs.request, dependencies: flow.dependencies)
         await model.loadIfNeeded()
-        record(screen(model), "birthday.contribute", "photo", context: flow)
+        record(screen(model), "birthday.contribute", "picker", context: flow, appearances: both)
         model.select(MemoryIDs.post(2))
-        record(screen(model), "birthday.contribute", "photo-selected", context: flow)
+        record(screen(model), "birthday.contribute", "picker-selected", context: flow)
         model.usePhoto()
-        record(screen(model), "birthday.contribute", "message", context: flow)
+        record(screen(model), "birthday.contribute", "composer", context: flow, appearances: both)
         model.line = "the best laugh in the group"
-        record(screen(model), "birthday.contribute", "message-filled", context: flow)
-        await model.submit()
-        record(screen(model), "birthday.contribute", "done", context: flow)
+        record(screen(model), "birthday.contribute", "composer-filled", context: flow)
+        for appearance in both {
+            record(BirthdayContributeMessage(model: model), "birthday.contribute", "message", context: flow, appearances: [appearance])
+        }
 
         let sending = makeContext { $0.suspended = [.contribute] }
         let sendingModel = BirthdayContributeModel(requestID: MemoryIDs.request, dependencies: sending.dependencies)
@@ -314,9 +486,18 @@ final class MemorySnapshotTests: XCTestCase {
         let ready = makeContext()
         let readyModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: ready.dependencies, saveVideo: { _ in })
         await readyModel.loadIfNeeded()
-        record(screen(readyModel), "birthday.tribute", "ready", context: ready)
-        await readyModel.download()
-        record(screen(readyModel), "birthday.tribute", "saved-toast", context: ready)
+        record(screen(readyModel), "birthday.tribute", "ready-honoree", context: ready, appearances: both)
+
+        let member = makeContext { state in
+            state.tributes = state.tributes.map { tribute in
+                var tribute = tribute
+                tribute.honoreeID = MemoryIDs.friend
+                return tribute
+            }
+        }
+        let memberModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: member.dependencies, saveVideo: { _ in })
+        await memberModel.loadIfNeeded()
+        record(screen(memberModel), "birthday.tribute", "ready-member", context: member)
 
         let rendering = makeContext { state in
             state.tributes = state.tributes.map { tribute in
@@ -352,118 +533,36 @@ final class MemorySnapshotTests: XCTestCase {
         let offlineModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: offline.dependencies, saveVideo: { _ in })
         await offlineModel.loadIfNeeded()
         record(screen(offlineModel), "birthday.tribute", "offline", context: offline)
-
-        struct Denied: Error {}
-        let denied = makeContext()
-        let deniedModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: denied.dependencies, saveVideo: { _ in throw Denied() })
-        await deniedModel.loadIfNeeded()
-        await deniedModel.download()
-        record(screen(deniedModel), "birthday.tribute", "save-failed", context: denied)
-    }
-
-    // MARK: year.story
-
-    func testYearStoryCardsSummaryAndShareImages() async {
-        let year = LocalDate(MemoryTestContext.referenceNow, in: MemoryFormat.utc).year
-        func screen(_ model: YearStoryModel) -> YearStoryScreen {
-            YearStoryScreen(groupID: MemoryIDs.group.rawValue, year: year, model: model, revealsImmediately: true)
-        }
-        let loading = makeContext { $0.suspended = [.yearStory] }
-        record(screen(YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: loading.dependencies)), "year.story", "loading", context: loading)
-
-        let story = makeContext()
-        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: story.dependencies)
-        await model.loadIfNeeded()
-        XCTAssertEqual(model.phase, .loaded)
-        // The share images first (the summary shows them), at the iPhone 13 canvas width.
-        let canvas = YearStoryGeometry.canvasSize(in: CGSize(width: 390, height: 763))
-        var shareNumber = 0
-        for card in model.shareableCards {
-            guard let output = await YearStoryShareRenderer.render(card, width: canvas.width, pixelSize: nil, images: story.images) else {
-                XCTFail("share image of \(card.id) not rendered")
-                continue
-            }
-            XCTAssertEqual(output.image.size.width * output.image.scale, Tokens.Layouts.YearStoryShareCard.width, accuracy: 1)
-            XCTAssertEqual(output.image.size.height * output.image.scale, Tokens.Layouts.YearStoryShareCard.height, accuracy: 1)
-            model.shareFiles[card.id] = output.file
-            model.shareImages[card.id] = output.image
-            shareNumber += 1
-            let target = SnapshotRecorder.directory.appendingPathComponent("memory", isDirectory: true)
-                .appendingPathComponent("year.story-share-\(shareNumber).png")
-            try? FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try? FileManager.default.removeItem(at: target)
-            try? FileManager.default.copyItem(at: output.file, to: target)
-        }
-        for position in model.cards.indices {
-            model.index = position
-            let card = model.cards[position]
-            let state = card == .summary ? "summary" : "card-\(String(format: "%02d", position + 1))-\(Self.kind(card))"
-            record(screen(model), "year.story", state, context: story)
-        }
-        // Paused (play glyph in the chrome) on the first fact card; the summary above shows its page dots.
-        if let fact = model.cards.firstIndex(where: \.isShareable) {
-            model.index = fact
-            model.togglePause()
-            XCTAssertTrue(model.isPaused)
-            record(screen(model), "year.story", "paused", context: story)
-            model.togglePause()
-        }
-
-        let failing = makeContext()
-        failing.data.fail(.yearStory, with: .http(status: 500))
-        let errorModel = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: failing.dependencies)
-        await errorModel.loadIfNeeded()
-        record(screen(errorModel), "year.story", "error", context: failing)
-
-        let offline = makeContext()
-        offline.data.fail(.yearStory, with: .offline)
-        let offlineModel = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: offline.dependencies)
-        await offlineModel.loadIfNeeded()
-        record(screen(offlineModel), "year.story", "offline", context: offline)
-
-        let entryModel = YearStoryEntryModel(groupID: MemoryIDs.group, dependencies: story.dependencies)
-        await entryModel.refresh()
-        record(YearStoryEntry(groupID: MemoryIDs.group.rawValue, model: entryModel).padding().background(Tokens.Colors.globalBackground),
-               "year.story", "entry", context: story, layout: .fixed(width: 390, height: 140))
-    }
-
-    private static func kind(_ card: YearStoryCard) -> String {
-        switch card {
-        case .intro: return "intro"
-        case .momentsSetup: return "moments-setup"
-        case .moments: return "moments"
-        case .busiestMonth: return "busiest-month"
-        case .mostReactedSetup: return "most-reacted-setup"
-        case .mostReacted: return "most-reacted-photo"
-        case .togetherSetup: return "together-setup"
-        case .togetherDay: return "together-day"
-        case .teaser: return "teaser"
-        case .outro: return "outro"
-        case .summary: return "summary"
-        }
     }
 
     // MARK: tagging
 
-    /// The toggle in the viewer's top-right slot (`photo.viewer.dimension.actionTrailing`).
-    private func slot<V: View>(_ control: V) -> some View {
-        ZStack(alignment: .topTrailing) {
-            Tokens.Colors.globalBackgroundDeep
-            control
-                .padding(.trailing, Tokens.Sizes.photoViewerDimensionActionTrailing)
-                .padding(.top, Tokens.Sizes.globalHeaderInset)
-        }
+    /// The run on the viewer footer's second line (C-22 on `color.global.backgroundDeep`), after the date.
+    private func footer(_ run: TagRun) -> some View {
+        TagRunLine(leadingText: MemoryFormat.weekdayMonthDay(LocalDate(year: 2026, month: 7, day: 1)!), run: run)
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background(Tokens.Colors.globalBackgroundDeep)
     }
 
-    func testTaggingToggleStates() async {
+    func testTaggingStates() {
         let context = makeContext()
-        let layout = SwiftUISnapshotLayout.fixed(width: 390, height: 220)
-        record(slot(SelfTagToggleControl(isOn: false, onToggle: {})), "tagging", "off", context: context, layout: layout)
-        record(slot(SelfTagToggleControl(isOn: true, onToggle: {})), "tagging", "on", context: context, layout: layout)
-        record(slot(SelfTagToggleControl(isOn: true, isPending: true, onToggle: {})), "tagging", "pending", context: context, layout: layout)
-        record(slot(SelfTagToggleControl(isOn: false, showsCoach: true, onToggle: {})), "tagging", "coach", context: context, layout: layout)
-        var toast: MemoryToastMessage? = MemoryToastMessage(text: Copy.taggingError)
-        let binding = Binding(get: { toast }, set: { toast = $0 })
-        record(slot(SelfTagToggleControl(isOn: false, onToggle: {})).memoryToast(binding), "tagging", "error-toast", context: context, layout: layout)
+        let layout = SwiftUISnapshotLayout.fixed(width: 390, height: 80)
+        record(footer(TagRun(names: [], isTagged: false) {}), "tagging", "run-untagged", context: context, appearances: both, layout: layout)
+        record(footer(TagRun(names: ["Bea", "Ana"], isTagged: true) {}), "tagging", "run-tagged", context: context, appearances: both, layout: layout)
+        record(footer(TagRun(names: ["Bea", "Caio", "Ana", "Dani", "Eli"], isTagged: true) {}), "tagging", "run-truncated", context: context, layout: layout)
+        record(footer(TagRun(names: ["Ana"], isTagged: true, isPending: true) {}), "tagging", "run-pending", context: context, layout: layout)
+
+        let people = [
+            TaggingSheetPerson(id: "b", firstName: "Bea", avatar: .image(MemorySamplePhotos.avatar(index: 1)), isMe: false),
+            TaggingSheetPerson(id: "a", firstName: "Ana", avatar: .image(MemorySamplePhotos.avatar(index: 0)), isMe: true),
+        ]
+        let sheet = SwiftUISnapshotLayout.fixed(width: 390, height: 420)
+        record(TaggingSheet(people: people, isTagged: true, onRemove: {}, onTag: {}, onClose: {}),
+               "tagging", "sheet-tagged", context: context, appearances: both, layout: sheet)
+        record(TaggingSheet(people: Array(people.prefix(1)), isTagged: false, onRemove: {}, onTag: {}, onClose: {}),
+               "tagging", "sheet-not-tagged", context: context, layout: sheet)
+        record(TaggingSheet(people: [], isTagged: false, onRemove: {}, onTag: {}, onClose: {}),
+               "tagging", "sheet-empty", context: context, layout: sheet)
     }
 }

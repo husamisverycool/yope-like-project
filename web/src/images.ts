@@ -4,19 +4,18 @@
 // Pixel sizes are token sizes times device pixel ratio: avatars at the mobile avatar size
 // (invite.web.size.avatar) at 3x, which also covers the desktop avatar and the member stack; the
 // cover at the widest viewport the mobile card is drawn in (invite.web.size.breakpoint) at 2x.
-// The backdrop (C-34) is the photo blurred to a colour field; the share image follows
-// invite.web.layout.ogImage.
+// The card's backdrop (C-34) is drawn by the page (CSS blur + dim over cover.jpg); the share image
+// follows invite.web.layout.ogImage with the same C-34 backdrop.
 
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp, { type OverlayOptions } from "sharp";
-import { BACKDROP_BLUR_OF_WIDTH, colorHex, layout, layoutNumber, num, rgba, tokens, type Rgb, type TokenName } from "./design.js";
+import { colorHex, layout, layoutNumber, num, rgba, tokens, type Rgb, type TokenName } from "./design.js";
+import { over } from "./contrastReport.js";
 
 export const COVER_MAX_WIDTH = Math.round(num("invite.web.size.breakpoint") * 2);
 export const AVATAR_PX = Math.round(num("invite.web.size.avatar") * 3);
-/** Backdrop raster width: 4 samples per σ of the blur, so the browser's upscaling of the field stays smooth. */
-export const BACKDROP_WIDTH = Math.ceil(4 / BACKDROP_BLUR_OF_WIDTH);
 
 /** Bounded decoding: refuse decompression bombs. */
 const input = (buf: Buffer) => sharp(buf, { limitInputPixels: 64_000_000, failOn: "error" });
@@ -52,26 +51,16 @@ export async function processAvatar(buf: Buffer): Promise<Buffer> {
     .toBuffer();
 }
 
-export interface Backdrop {
-  /** The colour field, BACKDROP_WIDTH wide, lossless (upscaled by the browser; JPEG blocks would show). */
-  png: Buffer;
-  /** Mean colour of the field's lower half, where the text sits (contrast reporting). */
-  under: Rgb;
-}
-
-/** C-34 backdrop: the (already re-encoded) photo blurred to a colour field. */
-export async function blurredBackdrop(jpeg: Buffer): Promise<Backdrop> {
+/**
+ * Colour under the card's text for contrast reporting: the mean of the photo's lower half (where the text sits; the
+ * mild C-34 blur leaves means unchanged) under color.global.backdropDim.
+ */
+export async function backdropTone(jpeg: Buffer): Promise<Rgb> {
   const meta = await sharp(jpeg).metadata();
-  const height = Math.max(1, Math.round((BACKDROP_WIDTH * (meta.height ?? 1)) / (meta.width ?? 1)));
-  const { data, info } = await sharp(jpeg)
-    .resize(BACKDROP_WIDTH, height, { fit: "fill" })
-    .blur({ sigma: BACKDROP_BLUR_OF_WIDTH * BACKDROP_WIDTH, precision: "float" })
-    .png()
-    .toBuffer({ resolveWithObject: true });
-  const lower = await sharp(data)
-    .extract({ left: 0, top: Math.floor(info.height / 2), width: info.width, height: Math.ceil(info.height / 2) })
-    .stats();
-  return { png: data, under: lower.channels.slice(0, 3).map((c) => c.mean) as Rgb };
+  const h = meta.height ?? 1;
+  const lower = await sharp(jpeg).extract({ left: 0, top: Math.floor(h / 2), width: meta.width ?? 1, height: Math.ceil(h / 2) }).stats();
+  const dim = rgba("color.global.backdropDim");
+  return over(dim.rgb, dim.alpha, lower.channels.slice(0, 3).map((c) => c.mean) as Rgb);
 }
 
 // ---------- share image (invite.web.layout.ogImage) ----------
@@ -111,8 +100,10 @@ const DOMAIN_SIZE = layoutNumber(N, "domain", /, ([0-9.]+) px,/);
 const DOMAIN_ALPHA = layoutNumber(N, "domain", /white ≈ ([0-9.]+) %/) / 100;
 // Rows as measured on Retro's image (inclusive pixel rows): avatar 208–290, name ink 309–348, domain ink from 369.
 const AVATAR_LAST_ROW = AVATAR_TOP + AVATAR - 1;
-const NAME_BASELINE = AVATAR_LAST_ROW + OG.avatarToName + NAME_INK; // edge below the name's last ink row
-const DOMAIN_TOP_ROW = NAME_BASELINE - 1 + OG.nameToDomain;
+const NAME_LAST_ROW = AVATAR_LAST_ROW + OG.avatarToName + NAME_INK - 1;
+/** SVG baseline: flat glyph bottoms end on the row above it, round ones overshoot into NAME_LAST_ROW (as measured). */
+const NAME_BASELINE = NAME_LAST_ROW;
+const DOMAIN_TOP_ROW = NAME_LAST_ROW + OG.nameToDomain;
 /** Widest name: the frame less the global screen margin each side (Retro shows one short username — Gap). */
 const NAME_MAX_WIDTH = OG_WIDTH - 2 * num("size.global.screenMargin");
 
@@ -169,17 +160,22 @@ export interface OgInput {
   domain: string | null;
 }
 
-/** 600 × 600 share image: blurred cover field, cover in a circle, group name (serif), domain. */
+/** 600 × 600 share image: the cover as a C-34 backdrop, the cover in a circle, group name (serif), domain. */
 export async function composeOgImage({ cover, groupName, domain }: OgInput): Promise<Buffer> {
   const [r, g, b] = rgba("color.global.backgroundDeep").rgb;
   let base: Buffer;
   let circle: Buffer;
   const mask = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${AVATAR}" height="${AVATAR}"><circle cx="${AVATAR / 2}" cy="${AVATAR / 2}" r="${AVATAR / 2}"/></svg>`);
   if (cover) {
-    // Blurred at full size: an upscaled small field shows its sample grid in a still image.
+    // C-34 backdrop: Gaussian σ size.global.backdropBlur (the image's px are the layout token's pt) under
+    // color.global.backdropDim.
+    const dim = rgba("color.global.backdropDim");
+    const [dr, dg, db] = dim.rgb;
     base = await sharp(cover)
       .resize(OG_WIDTH, OG_HEIGHT, { fit: "cover", position: "centre" })
-      .blur({ sigma: BACKDROP_BLUR_OF_WIDTH * OG_WIDTH, precision: "float" })
+      .blur({ sigma: num("size.global.backdropBlur"), precision: "float" })
+      .composite([{ input: { create: { width: OG_WIDTH, height: OG_HEIGHT, channels: 4, background: { r: dr, g: dg, b: db, alpha: dim.alpha } } } }])
+      .png()
       .toBuffer();
     circle = await sharp(cover).resize(AVATAR, AVATAR, { fit: "cover", position: "centre" }).composite([{ input: mask, blend: "dest-in" }]).png().toBuffer();
   } else {

@@ -52,7 +52,7 @@ import app.feature.memory.common.MediaMessage
 import app.feature.memory.common.MemoryFormats
 import app.feature.memory.common.MemoryImage
 import app.feature.memory.common.memoryModel
-import app.feature.memory.yearstory.Backdrop
+import app.feature.memory.common.MemoryBackdrop
 import app.ui.components.Avatar
 import app.ui.components.Capsule
 import app.ui.components.CapsuleRowSpacing
@@ -156,7 +156,7 @@ fun BirthdayRequestScreen(state: RequestState, actions: RequestActions, modifier
 private fun Ready(state: RequestState.Ready, actions: RequestActions) {
     val info = state.info
     var confirmRemove by remember { mutableStateOf(false) }
-    if (info.honoreeAvatarUrl != null) Backdrop(info.honoreeAvatarUrl)
+    if (info.honoreeAvatarUrl != null) MemoryBackdrop(info.honoreeAvatarUrl)
     BoxWithConstraints(Modifier.fillMaxSize()) {
         Column(
             Modifier

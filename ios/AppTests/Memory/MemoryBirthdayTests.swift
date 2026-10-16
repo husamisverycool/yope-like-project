@@ -6,41 +6,35 @@ import XCTest
 
 @MainActor
 final class MemoryBirthdayTests: XCTestCase {
-    // MARK: birthday.add — the date field (auth.agegate.layout.dateEntry)
+    // MARK: birthday.add — the date field (the auth.agegate entry, `BirthdayEntry`)
 
-    func testDateEntryInsertsSeparatorsInTheLocaleOrder() {
-        let us = BirthdayDateEntry(pattern: "M/d/yy")
-        XCTAssertEqual(us.pattern, "MM/dd/yyyy")
-        XCTAssertEqual(us.format("0"), "0")
-        XCTAssertEqual(us.format("052"), "05/2")
-        XCTAssertEqual(us.format("05262000"), "05/26/2000")
-        XCTAssertEqual(us.format("05/26/20001234"), "05/26/2000", "extra digits are dropped")
-        XCTAssertEqual(us.date(from: "05/26/2000")?.description, "2000-05-26")
-        XCTAssertFalse(us.isComplete("05/26/20"))
-        XCTAssertNil(us.date(from: "02/30/2000"), "not a calendar day")
-
-        let german = BirthdayDateEntry(pattern: "dd.MM.yyyy")
-        XCTAssertEqual(german.format("26052000"), "26.05.2000")
-        XCTAssertEqual(german.date(from: "26.05.2000")?.description, "2000-05-26")
-        let iso = BirthdayDateEntry(pattern: "y-MM-dd")
-        XCTAssertEqual(iso.format("20000526"), "2000-05-26")
-        XCTAssertEqual(iso.date(from: "2000-05-26")?.description, "2000-05-26")
+    func testDateFieldUsesTheAgeGateEntryRules() {
+        let model = BirthdayAddModel(dependencies: MemoryTestContext().dependencies, entry: BirthdayEntry(pattern: "MM/dd/yyyy"))
+        XCTAssertEqual(model.placeholder, Copy.authAgegateFieldPlaceholder(dateFormat: "mm/dd/yyyy"))
+        model.setText("0")
+        XCTAssertEqual(model.dateText, "0")
+        model.setText("05262000")
+        XCTAssertEqual(model.dateText, "05/26/2000", "separators inserted in the locale's order")
+        XCTAssertEqual(model.typedDate?.description, "2000-05-26")
+        XCTAssertTrue(model.canConfirm)
+        model.setText("05/26/200")
+        XCTAssertFalse(model.canConfirm, "disabled until the field holds a complete date")
     }
 
     func testBirthdayDayMonthNeverShowsTheYear() {
-        let text = MemoryFormat.birthdayDayMonth(LocalDate(year: 2000, month: 5, day: 26)!, locale: Locale(identifier: "en_GB"))
-        XCTAssertEqual(text, "26 May")
+        let text = MemoryFormat.dayMonth(LocalDate(year: 2000, month: 5, day: 26)!, locale: Locale(identifier: "en_US"))
+        XCTAssertEqual(text, "May 26")
     }
 
     // MARK: birthday.add — opt in / manage
 
     func testAddingOptsInAndCloses() async {
         let context = MemoryTestContext()
-        let model = BirthdayAddModel(dependencies: context.dependencies, entry: BirthdayDateEntry(pattern: "MM/dd/yyyy"))
+        let model = BirthdayAddModel(dependencies: context.dependencies, entry: BirthdayEntry(pattern: "MM/dd/yyyy"))
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .add)
         XCTAssertFalse(model.canConfirm, "disabled until the field holds a complete date")
-        model.dateText = "05/26/2000"
+        model.setText("05262000")
         XCTAssertTrue(model.canConfirm)
         await model.confirm()
         XCTAssertEqual(model.outcome, .added)
@@ -51,14 +45,14 @@ final class MemoryBirthdayTests: XCTestCase {
 
     func testAddErrorsAreSaidInPlace() async {
         let context = MemoryTestContext()
-        let model = BirthdayAddModel(dependencies: context.dependencies, entry: BirthdayDateEntry(pattern: "MM/dd/yyyy"))
+        let model = BirthdayAddModel(dependencies: context.dependencies, entry: BirthdayEntry(pattern: "MM/dd/yyyy"))
         await model.loadIfNeeded()
-        model.dateText = "02/30/2000"
+        model.setText("02302000")
         await model.confirm()
         XCTAssertEqual(model.inline, .invalid, "a typed day that does not exist")
         XCTAssertEqual(context.data.calls(of: .setBirthday), 0)
 
-        model.dateText = "05/26/2000"
+        model.setText("05262000")
         context.data.fail(.setBirthday, with: .api(.invalidBirthday))
         await model.confirm()
         XCTAssertEqual(model.inline, .invalid)
@@ -69,7 +63,7 @@ final class MemoryBirthdayTests: XCTestCase {
 
         context.data.fail(.setBirthday, with: .http(status: 500))
         await model.confirm()
-        XCTAssertTrue(model.showsError, "error texts above the buttons; the primary retries")
+        XCTAssertTrue(model.showsError, "the C-27 error block above the capsule; the capsule retries")
         XCTAssertNil(model.outcome)
         XCTAssertEqual(context.haptics.last, Tokens.Haptics.globalError)
     }
@@ -91,9 +85,12 @@ final class MemoryBirthdayTests: XCTestCase {
         let model = BirthdayAddModel(dependencies: context.dependencies)
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .manage(saved))
+        model.requestRemove()
+        XCTAssertTrue(model.showsRemoveConfirmation, "asks first (native confirmation)")
         await model.remove()
         XCTAssertEqual(model.phase, .add)
-        XCTAssertEqual(model.toast?.text, Copy.birthdayAddRemoved)
+        XCTAssertEqual(context.lastToast, Copy.birthdayAddRemoved)
+        XCTAssertEqual(context.haptics, [Tokens.Haptics.globalWarning, Tokens.Haptics.globalSuccess])
         XCTAssertEqual(context.data.snapshot.privateProfile?.birthdayOptIn, false)
 
         // Failure: the saved birthday comes back with the error.
@@ -106,7 +103,7 @@ final class MemoryBirthdayTests: XCTestCase {
         await failingModel.remove()
         XCTAssertEqual(failingModel.phase, .manage(saved))
         XCTAssertTrue(failingModel.showsError)
-        XCTAssertEqual(failing.haptics, [Tokens.Haptics.globalError])
+        XCTAssertEqual(failing.haptics, [Tokens.Haptics.globalWarning, Tokens.Haptics.globalError])
     }
 
     // MARK: birthday.request
@@ -120,15 +117,13 @@ final class MemoryBirthdayTests: XCTestCase {
         XCTAssertEqual(model.title, Copy.birthdayRequestTitle(name: "Bea"))
         XCTAssertEqual(model.dueText, Copy.birthdayRequestDue(date: MemoryFormat.dueDate(birthday: LocalDate(year: 2026, month: 10, day: 22)!)))
         XCTAssertNil(model.contribution)
-        XCTAssertEqual(
-            model.message,
-            Copy.birthdayRequestBody(name: "Bea") + " " + Copy.birthdayRequestEase + " " + Copy.birthdayRequestThanks
-        )
+        XCTAssertEqual(model.message, Copy.birthdayRequestBody(name: "Bea"))
+        XCTAssertNotNil(model.avatarURL, "the honoree's photo: avatar and blurred backdrop")
     }
 
-    func testDueDateIsTheDayBeforeTheBirthdayInFull() {
+    func testDueDateIsTheDayBeforeTheBirthdayWithoutTheYear() {
         let text = MemoryFormat.dueDate(birthday: LocalDate(year: 2026, month: 10, day: 22)!, locale: Locale(identifier: "en_US"))
-        XCTAssertEqual(text, "Wednesday, October 21, 2026")
+        XCTAssertEqual(text, "Wednesday, October 21", "layout.birthday.request.dueDate: weekday, month, day — never a countdown")
     }
 
     func testTheHonoreeNeverSeesTheirRequest() async {
@@ -198,10 +193,13 @@ final class MemoryBirthdayTests: XCTestCase {
         await model.loadIfNeeded()
         XCTAssertEqual(model.contribution?.postID, MemoryIDs.post(1))
         XCTAssertEqual(model.contribution?.line, "for every sunday")
+        model.requestRemove()
+        XCTAssertTrue(model.showsRemoveConfirmation, "asks first")
         await model.remove()
         XCTAssertNil(model.contribution)
         XCTAssertTrue(context.data.snapshot.contributions.isEmpty)
-        XCTAssertEqual(context.haptics, [Tokens.Haptics.globalSuccess])
+        XCTAssertEqual(context.haptics, [Tokens.Haptics.globalWarning, Tokens.Haptics.globalSuccess])
+        XCTAssertEqual(context.lastToast, Copy.birthdayRequestRemoved)
 
         // Failure: the block comes back with the inline line.
         _ = try? await context.data.contribute(requestID: MemoryIDs.request, postID: MemoryIDs.post(1), line: "again")
@@ -211,7 +209,7 @@ final class MemoryBirthdayTests: XCTestCase {
         await model.remove()
         XCTAssertEqual(model.contribution?.line, "again")
         XCTAssertEqual(model.inline, .offline)
-        XCTAssertEqual(context.haptics, [Tokens.Haptics.globalError])
+        XCTAssertEqual(context.haptics, [Tokens.Haptics.globalWarning, Tokens.Haptics.globalError])
     }
 
     // MARK: birthday.contribute
@@ -229,7 +227,7 @@ final class MemoryBirthdayTests: XCTestCase {
         XCTAssertEqual(model.groupName, "Sunday dinners")
     }
 
-    func testThreeStepsSubmitOptimisticallyAndReplace() async {
+    func testChooseComposeAndSendClosesTheSheetAndReplaces() async {
         let context = MemoryTestContext()
         let model = BirthdayContributeModel(requestID: MemoryIDs.request, dependencies: context.dependencies)
         await model.loadIfNeeded()
@@ -238,24 +236,29 @@ final class MemoryBirthdayTests: XCTestCase {
         model.select(MemoryIDs.post(2))
         XCTAssertEqual(context.haptics, [Tokens.Haptics.globalSelect], "one select haptic per change")
         model.usePhoto()
-        XCTAssertEqual(model.step, 2)
+        XCTAssertEqual(model.step, 2, "Next → the composer")
         XCTAssertFalse(model.canSubmit, "disabled until the line has a non-space character")
+        model.editMessage()
+        XCTAssertTrue(model.showsMessage, "the pill opens the 'Add a Message' modal")
         model.line = "   "
         XCTAssertFalse(model.canSubmit)
         model.line = "  the best laugh in the group  "
+        XCTAssertEqual(model.counter, Copy.birthdayContributeMessageCounter(count: "31", max: "110"))
+        model.doneEditing()
+        XCTAssertFalse(model.showsMessage)
         XCTAssertTrue(model.canSubmit)
         await model.submit()
-        XCTAssertEqual(model.step, 3)
+        XCTAssertTrue(model.didSend)
+        XCTAssertTrue(model.isFinished, "sent: the sheet closes")
         XCTAssertFalse(model.isSending)
         XCTAssertEqual(context.haptics.last, Tokens.Haptics.globalSend)
+        XCTAssertEqual(context.lastToast, Copy.birthdayContributeDoneTitle)
         let stored = context.data.snapshot.contributions
         XCTAssertEqual(stored.count, 1)
         XCTAssertEqual(stored.first?.postID, MemoryIDs.post(2))
         XCTAssertEqual(stored.first?.line, "the best laugh in the group", "trimmed before sending")
-        model.finish()
-        XCTAssertTrue(model.isFinished)
 
-        // "Retake" from the request: the current photo starts selected and the line is kept; sending replaces.
+        // "Change photo" from the request: the current photo starts selected and the line is kept; sending replaces.
         let again = BirthdayContributeModel(requestID: MemoryIDs.request, dependencies: context.dependencies)
         await again.loadIfNeeded()
         XCTAssertEqual(again.selectedID, MemoryIDs.post(2))
@@ -266,45 +269,14 @@ final class MemoryBirthdayTests: XCTestCase {
         XCTAssertEqual(context.data.snapshot.contributions.map(\.postID), [MemoryIDs.post(1)], "one contribution per person")
     }
 
-    func testSubmitFailuresRollBack() async {
+    func testCancelClosesWithoutSending() async {
         let context = MemoryTestContext()
         let model = BirthdayContributeModel(requestID: MemoryIDs.request, dependencies: context.dependencies)
         await model.loadIfNeeded()
-        model.select(MemoryIDs.post(2))
-        model.usePhoto()
-        model.line = "hello"
-
-        context.data.fail(.contribute, with: .offline)
-        await model.submit()
-        XCTAssertEqual(model.step, 2)
-        XCTAssertEqual(model.inline, .offline)
-
-        context.data.fail(.contribute, with: .http(status: 500))
-        await model.submit()
-        XCTAssertEqual(model.step, 2)
-        XCTAssertEqual(model.inline, .error)
-
-        // The tag was removed meanwhile: the server refuses the photo → back to step 1 with the line.
-        context.data.fail(.contribute, with: nil)
-        context.data.update { _ = $0.myTags.remove(MemoryIDs.post(2)) }
-        await model.submit()
-        XCTAssertEqual(model.step, 1)
-        XCTAssertEqual(model.inline, .notEligible)
-        XCTAssertEqual(context.haptics.filter { $0 == Tokens.Haptics.globalError }.count, 3)
-
-        // Past the due time: the closed state replaces the steps.
-        model.select(MemoryIDs.post(1))
-        model.usePhoto()
-        context.data.update { state in
-            state.requests = state.requests.map { request in
-                var request = request
-                request.dueAt = MemoryTestContext.referenceNow.addingTimeInterval(-1)
-                return request
-            }
-        }
-        await model.submit()
-        XCTAssertEqual(model.phase, .closed)
-        XCTAssertEqual(model.step, 1)
+        model.finish()
+        XCTAssertTrue(model.isFinished)
+        XCTAssertFalse(model.didSend)
+        XCTAssertEqual(context.data.calls(of: .contribute), 0)
     }
 
     func testEmptyPickerAndOpenGroup() async {
@@ -346,7 +318,7 @@ final class MemoryBirthdayTests: XCTestCase {
         XCTAssertEqual(model.line, "you light up every room")
 
         model.line = "you light up every room\n"
-        XCTAssertTrue(model.normalizeLine(), "a typed return ends the entry")
+        XCTAssertTrue(model.normalizeLine(), "a typed return is Done")
         XCTAssertEqual(model.line, "you light up every room")
 
         let limit = BirthdayContributeModel.lineMax
@@ -359,9 +331,6 @@ final class MemoryBirthdayTests: XCTestCase {
         model.line = String(repeating: "🎉", count: limit + 1)
         model.normalizeLine()
         XCTAssertEqual(model.line.count, limit, "counted in characters, not bytes")
-    }
-
-    func testStepperEdgeInsetComesFromTheToken() {
-        XCTAssertEqual(ContributeStepperMetrics.edgeInset, 11, accuracy: 0.001)
+        XCTAssertEqual(model.counter, Copy.birthdayContributeMessageCounter(count: "110", max: "110"))
     }
 }

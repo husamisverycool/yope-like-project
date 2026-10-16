@@ -43,10 +43,9 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.designsystem.rememberReduceMotion
 import app.feature.memory.common.MemoryFormats
+import app.feature.memory.common.MemoryBackdrop
 import app.feature.memory.common.MemoryImage
-import androidx.compose.ui.draw.blur
 import app.ui.foundation.PhotoScrimOverlay
-import app.ui.recap.RecapPreviewDefaults
 import app.ui.text.CapTop
 import app.ui.text.TextRoles
 import app.ui.text.capTopAt
@@ -121,15 +120,9 @@ internal fun BoxScope.CardBackground(card: StoryCard, recap: StoryRecap, backdro
     if (card != StoryCard.Summary) PhotoScrimOverlay()
 }
 
-/**
- * The cover (or a collage) blurred over the whole frame (`layout.global.materials.backdrop`, C-34) — the recap
- * preview's blur ([RecapPreviewDefaults.BackdropBlur]; Retro's radius is not measurable, C-34 Gap). Below API 31
- * `Modifier.blur` draws nothing and the photo shows under the scrim (year.story.md → Platform notes).
- */
+/** The cover (or a collage) as the C-34 backdrop over the whole frame (`layout.global.materials.backdrop`). */
 @Composable
-internal fun Backdrop(url: String?, software: Boolean = false, onSettled: () -> Unit = {}) {
-    MemoryImage(url, null, Modifier.fillMaxSize().blur(RecapPreviewDefaults.BackdropBlur), software = software, onSettled = onSettled)
-}
+internal fun Backdrop(url: String?, software: Boolean = false, onSettled: () -> Unit = {}) = MemoryBackdrop(url, software = software, onSettled = onSettled)
 
 /** How many images a share image of [card] (summary [style]) waits for before it is recorded. */
 internal fun exportImages(card: StoryCard, style: SummaryStyle, recap: StoryRecap): Int = when (card) {

@@ -1,72 +1,61 @@
-# Verification — `daily.capture` (iOS)
+# Verification — `daily.capture` (iOS, Pass 4 — Retro redesign)
 
-Capture with the countdown; front + back — `ios/App/Sources/Features/Capture/Daily/`.
+Daily same-moment capture — `ios/App/Sources/Features/Capture/Daily/DailyCaptureView.swift`, `DailyCountdownView.swift` (`DailyCaptureTitle`), `DailyCaptureModel.swift`, `DualImageView.swift`.
 
-Checklist written from the spec (`design/surfaces/daily.capture.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>.png`, then `tools/sidebyside.py` makes `design/verification/daily.capture.png` next to the reference image(s) below.
+Checklist written from the spec (`design/surfaces/daily.capture.md`) against the iOS code; the snapshot step is the lead's: macOS CI records `ios/build/snapshots/capture/<surface>-<state>-<light|dark>.png` (every state in light, the primary state also in dark), then `tools/sidebyside.py` makes `design/verification/daily.capture.png` next to the reference image(s) below.
 
-Reference image(s): `references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png`, `references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png`, `references/auto/bereal/help/help-21083708285725_bts-post-preview-2x.png`
+Reference image(s): `references/auto/retro/store/retro-store-03.png (ST-03)`, `references/auto/retro/press/tc-2025-12-rewind-device-a.png (RWA)`, `references/auto/retro/store/retro-store-01.png (ST-01)`, `references/auto/bereal/frames/appstore-preview-2026_t3.50s_capture.png (mechanics)`, `references/auto/bereal/frames/tiktok-bereal-7339559678604627233_t21.30s_preview-keep-smiling.png (mechanics)`
 
-Snapshots (CI): `daily.capture-loading.png`, `daily.capture-live.png`, `daily.capture-capturing.png`, `daily.capture-preview.png`, `daily.capture-preview-single-camera.png`, `daily.capture-window-closed.png`, `daily.capture-permission-denied.png`, `daily.capture-error.png`
+Snapshots (CI, `ios/build/snapshots/capture/`): `daily.capture-live-light.png`, `daily.capture-live-dark.png`, `daily.capture-preview-light.png`, `daily.capture-preview-dark.png`, `daily.capture-loading-light.png`, `daily.capture-capturing-light.png`, `daily.capture-sending-light.png`, `daily.capture-preview-single-camera-light.png`, `daily.capture-window-closed-light.png`, `daily.capture-permission-denied-light.png`, `daily.capture-error-light.png`
 
-**Summary: 30 matched · 4 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 19 matched · 1 approximated · 0 not matched (BLOCKED or not buildable).**
+
+## Header (C-29 on media)
+
+| status | token / copy | reference value | element | iOS implementation |
+|---|---|---|---|---|
+| matched | `camera.sendto.layout.header` | title: centred, text role sheetTitle, colour color.global.textOnMedia; its cap middle on the circles' centre line; trailing: close circle (C-11 on media): size.global.circleButton, centre 37.7 pt from the trailing edge; leading: save circle, mirrored (centre 37.7 pt from the leading edge); centreBelowSafeArea: 25.8 (SOURCED) | title slot cap middle 25.8 below the safe-area top; close centre 37.7 from the trailing edge | `CaptureMediaHeader` |
+| matched | `daily.capture.countdown` | “{mm}:{ss}” (SOURCED) | MM:SS, sheetTitle, monospaced digits, textOnMedia; changed digits cross-fade | `CountdownDigits` (per-digit opacity transition, `duration.global.crossfade`), ticks each second |
+| matched | `fontSize.global.sheetTitle` | 17 pt (SOURCED) | 17 semibold | `TextRole.sheetTitle` |
+| matched | `duration.global.crossfade` | 100 ms (SOURCED) | countdown → group name at closes_at | cross-fade in `DailyCaptureTitle` |
+| matched | `daily.capture.a11y.dismiss` | “Close” (SOURCED) | close label | header circle |
 
 ## Live
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `daily.capture.layout.dismiss` | centerFromLeading: 31.7; centerFromTop: 74.5 (SOURCED) | chevron centre (31.7, 74.5) | .position |
-| matched | `icon.global.chevronDown` | ios: chevron.down; android: Rounded.ExpandMore (PLATFORM) | chevron | Image, platform size |
-| matched | `daily.capture.color.text` | #FAFAFA (SOURCED) | #FAFAFA text / glyphs | foregroundStyle |
-| matched | `daily.capture.layout.countdown` | digitsTop: 92.3; gapAboveViewfinder: 16.2 (SOURCED) | digits 16.2 above the viewfinder | baseline = viewfinder top − gap |
-| matched | `daily.capture.fontSize.countdown` | 23 pt (SOURCED) | 23 pt, monospaced digits | DSTextStyle (title2) + monospacedDigit |
-| matched | `daily.capture.fontWeight.countdown` | bold (SOURCED) | bold | DSTextStyle weight (app and Lock Screen Live Activity) |
-| matched | `daily.capture.countdown` | “{mm}:{ss}” (SOURCED) | MM:SS zero-padded | CaptureFormat.countdown |
-| matched | `daily.capture.layout.countdownTick` | tick: 1000; digitOut: 100; digitIn: 300; digitFadeIn: 550; travel: 3 (SOURCED) | tick 1 s; digit out 100 / in 300 / fade 550 ms, travel 3 | TimelineView periodic; per-digit transitions (springs, platform damping); Reduce Motion cross-fade |
-| matched | `daily.capture.layout.viewfinder` | width: 378.7; sideMargin: 7; top: 124.4; aspect: 0.75; cornerRadius: 16 (SOURCED) | 3:4, side 7, top 124.4, r 16 | frame + clip |
-| matched | `daily.capture.layout.shutter` | outer: 74; ring: 4; gap: 2.75; disc: 60.5; centerFromBottom: 148 (SOURCED) | 74 / ring 4 / gap 2.75 / disc 60.5, centre 148 above bottom | CaptureShutterGraphic, surfaceLight |
-| matched | `daily.capture.layout.sideControls` | flashCenterFromLeading: 59.2; flipCenterFromTrailing: 60.1 (SOURCED) | flash 59.2 / flip 60.1 | .position |
+| matched | `daily.capture.layout.viewfinder` | aspect: 0.75; width: screen width − 2 × size.global.screenMargin; corners: radius.global.viewfinder; top: 20 pt below the header circle's bottom (camera.sendto.layout.preview.topBelowHeaderCircle); shrink: as camera.capture.layout.viewfinder (SOURCED) | 3:4, screen − 32, 20 below the close circle, corners 18; shrink rule | `viewfinderSize(in:)` + `.padding(.top, topBelowHeaderCircle)` |
+| matched | `camera.capture.layout.controlRow` | centre: the shutter, horizontally centred; sideControls: two circles of size.global.circleButtonLarge (64): library (leading), flip (trailing); sideCentre: each side circle is centred in the free space between the screen edge and the shutter's outer edge; vertical: the row is vertically centred between the viewfinder bottom and the tab bar top (daily.capture: the safe-area bottom); minimumGap: size.global.screenMargin above and below the shutter (SOURCED) | flash · shutter · flip centred between viewfinder and safe-area bottom | `CaptureControlRow` |
+| matched | `size.global.circleButtonLarge` | 64 pt (SOURCED) | flash / flip 64 #262626 | `CaptureLargeCircleButton` |
+| approximated | `camera.capture.size.shutterOuter` | 86 pt (SOURCED) | shutter 86 / 4.5 / 3 / 70 | `CaptureShutter` (gap 3.5, see camera.capture) |
+| matched | `daily.capture.a11y.flash` | “Flash” (SOURCED) | label + value | accessibilityValue On / Off |
 
 ## Capturing
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| approximated | `daily.capture.layout.captureSequence` | pressScale: 0.912; press: 133; controlsOut: 370; viewfinderFadeOut: 267; betweenShots: 500; backPhotoFadeIn: 200 (SOURCED) | press 0.912 / 133 ms, shrink by 370, black over 267, back photo fade 200 | DailyShutterStyle + dsMotion + fade overlay; the back-photo fade-in mid-sequence is not shown (CameraService returns both photos together; the preview appears in one frame) |
-| approximated | `daily.capture.size.progress` | 34.7 pt (SOURCED) | spinner 34.7 | ProgressView .large in a 34.7 frame (platform size) |
-| matched | `daily.capture.layout.prompt` | gapBelowSpinner: 11.4 (SOURCED) | prompt 11.4 below | VStack spacing |
-| approximated | `daily.capture.fontSize.prompt` | 17 pt (SOURCED) | 17 pt | DSTextStyle (body), weight not measured → regular |
-| matched | `daily.capture.prompt` | “Getting both sides” (SOURCED) | ‘Getting both sides’ | Copy |
+| matched | `daily.capture.prompt` | “Taking the front photo…” (SOURCED) | indicator (textOnMedia) → 26 → line emptyTitle textOnMedia, centred in the black frame | `CaptureMediaProgress` (MetricStack: indicator bottom → line cap top `emptyIconToTitle`) |
+| matched | `duration.global.fade` | 150 ms (SOURCED) | row out, frame to black, block in | row opacity + `ComponentMotion.fade` |
 
 ## Preview
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `daily.dualimage.layout.composition` | mainAspect: 0.75; mainRadiusRatio: 0.0455; insetWidthRatio: 0.31; insetAspect: 0.75; insetMarginRatio: 0.03; insetBorderRatio: 0.0051; insetOuterRadiusRatio: 0.126 (SOURCED) | dual image ratios | DualImageView |
-| matched | `daily.capture.layout.retake` | diameter: 34; inset: 12; glyph: 14 (SOURCED) | ✕ 34, 12 from top/trailing, glyph 14 | frames + padding; hit area minTouchTarget |
-| matched | `daily.capture.color.overlayControl` | #00000075 (SOURCED) | retake circle / chip fill #00000075 | Circle / Capsule fill |
-| matched | `daily.capture.layout.audienceChip` | height: 37.4; paddingLeading: 15.7; paddingTrailing: 18; glyphToText: 7.6; bottomInset: 12.5 (SOURCED) | h 37.4, pad 15.7 / 18, gap 7.6, 12.5 above bottom | HStack paddings |
-| approximated | `daily.capture.fontSize.chip` | 13 pt (SOURCED) | 13 pt | DSTextStyle (footnote), weight not measured |
-| matched | `daily.capture.audience` | “{group} only” (SOURCED) | ‘{group} only’ | Copy |
-| matched | `daily.capture.layout.send` | capTopBelowImage: 69; glyphGap: 11.4; glyph: 19.5 (SOURCED) | cap top 69 below image, glyph gap 11.4, glyph 19.5 | baseline = image bottom + 69 + cap height (UIFont metrics) |
-| matched | `daily.capture.fontSize.send` | 40.5 pt (SOURCED) | 40.5 | DSTextStyle (largeTitle) |
-| matched | `daily.capture.fontWeight.send` | heavy (SOURCED) | heavy | DSTextStyle |
-| matched | `daily.capture.send` | “SEND” (SOURCED) | ‘SEND’ | Copy |
-| matched | `icon.global.play` | ios: play.fill; android: Rounded.PlayArrow (PLATFORM) | triangle | Image 19.5 |
+| matched | `daily.dualimage.layout.composition` | mainAspect: 0.75; mainRadiusRatio: 0.0455; insetWidthRatio: 0.31; insetAspect: 0.75; insetMarginRatio: 0.03; insetBorderRatio: 0.0051; insetOuterRadiusRatio: 0.126 (SOURCED) | dual image in the frame, host corners 18 | `DualImageView(corners: .host(radius.global.viewfinder))` |
+| matched | `size.global.circleButtonPhoto` | 40 pt (SOURCED) | retake glass 40 at badgeInset 12 from top / trailing | `CircleButton(style: .glass)` + paddings `size.global.badgeInset` |
+| matched | `daily.capture.audience` | “{group} only” (SOURCED) | C-09 on media "{group} only" with group glyph, 20.5 above the image bottom, not interactive | `LightPillLabel(style: .dark)` |
+| matched | `daily.capture.send` | “Send” (SOURCED) | C-05 on media, bottom 44.5 from the screen bottom; busy as send-to | `PrimaryButton(surface: .media, isBusy:)` |
+| matched | `camera.sendto.error.sendFailed` | “Couldn't send photo” (SOURCED) | send failed / offline: native alert, preview kept | `.alert(presenting: sendFailure)` Try Again / Cancel |
 
-## Accessibility
+## States
 
 | status | token / copy | reference value | element | iOS implementation |
 |---|---|---|---|---|
-| matched | `daily.capture.a11y.dismiss` | “Close” (SOURCED) | chevron | label |
-| matched | `daily.capture.a11y.shutter` | “Take photo” (SOURCED) | shutter | label |
-| matched | `daily.capture.a11y.flash` | “Flash” (SOURCED) | flash + value | label/value |
-| matched | `daily.capture.a11y.flip` | “Flip camera” (SOURCED) | flip | label |
-| matched | `daily.capture.a11y.retake` | “Retake” (SOURCED) | retake | label |
-| matched | `daily.capture.a11y.send` | “Send” (SOURCED) | SEND | label |
-| matched | `daily.capture.layout.textStyleMap` | countdown: title2; prompt: body; chip: footnote; send: largeTitle (PLATFORM) | countdown title2, prompt body, chip footnote, SEND largeTitle | relativeTo |
+| matched | `camera.capture.denied.title` | “No Camera Access” (SOURCED) | permission denied: C-27 in the frame; controls hidden | `EmptyStateView` |
+| matched | `camera.capture.unavailable.title` | “Camera Unavailable” (SOURCED) | camera unavailable | `EmptyStateView` |
+| matched | `daily.dualimage.a11y.label` | “Back and front photos from {name}” (SOURCED) | image label | DualImageView label (single camera: the photo sentence) |
 
 ## Notes
 
-- Window closed / opened after: no countdown, nothing in its place; the post still carries p_invitation_id and the server decides in_window (never 'late').
-- Sequential fallback: CameraService captures back then front on the same session; if the dual capture fails the back photo alone is the answer.
-- Flip on a device without multi-cam: the main photo swaps, but the live preview stays on the back camera (the sequential session shows only the back camera before the shutter).
-- Clock skew: the data layer measures no server offset; `ServerClock.device` is used (reported).
+- The back photo does not fade in behind the progress line before the front photo: the camera service returns both photos together (simultaneous capture), so the frame stays black until the preview.
+- Status bar: the cover sets `.preferredColorScheme(.dark)` (light content); the old Yope build hid it.

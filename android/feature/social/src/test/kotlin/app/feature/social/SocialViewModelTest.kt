@@ -128,12 +128,11 @@ class SocialViewModelTest {
         assertEquals("u/$ANA/md-p-1/r/thumb.jpg", photo.media?.thumbPath)
         // Rows (who, what), never a number.
         assertEquals(listOf(ReactionEntry(BEN, "😍"), ReactionEntry(ME, "🔥"), ReactionEntry(ANA, "😍")), photo.reactions)
-        val reply = s.rows.first { it.id == "m-4" }
-        assertEquals("p-1", reply.quote?.postId)
-        assertEquals("Ana", reply.quote?.posterName)
-        assertEquals("Ana", s.creatorName)
-        assertEquals(listOf("Sam", "Ben"), s.addedNames)
-        assertEquals("r-1", s.recapId)
+        val reply = s.rows.first { it.id == "m-4" }.quote as app.feature.social.chat.Quote.Photo
+        assertEquals("p-1", reply.postId)
+        assertEquals("Ana", reply.posterName)
+        // ISO week of the quoted post in the group's zone ("Week 42").
+        assertEquals(42, reply.weekNumber)
     }
 
     @Test fun chatAppliesRealtimeInsertsUpdatesAndDeletions() = runBlocking {
@@ -255,7 +254,6 @@ class SocialViewModelTest {
         val seen = collect(vm.effects)
         vm.react("p-1", "💖")
         assertTrue(vm.state.value.rows.first { it.id == "m-1" }.reactions.contains(ReactionEntry(ME, "💖")))
-        assertTrue(seen.contains(ChatEffect.Rain("💖")))
         data.failNext += "react:p-1:🤣"
         vm.react("p-1", "🤣")
         assertFalse(vm.state.value.rows.first { it.id == "m-1" }.reactions.contains(ReactionEntry(ME, "🤣")))
@@ -318,7 +316,7 @@ class SocialViewModelTest {
     @Test fun viewerLoadsYourTagAndMarksAPhotoGone() {
         val data = FakeSocialData().apply { seedAlbums() }
         val vm = PhotoViewerViewModel(data, GROUP, "w-2", PhotoContext.Single, "w-2", null)
-        assertEquals("loaded with the photo (the control's initial state)", false, vm.state.value.current!!.tagged)
+        assertEquals("loaded with the photo: nobody tagged", emptyList<String>(), vm.state.value.current!!.tagged)
         vm.markGone("w-2")
         assertTrue(vm.state.value.current!!.gone)
     }
@@ -401,15 +399,80 @@ class SocialViewModelTest {
         assertEquals(WallState.Phase.OfflineEmpty, empty.phase)
     }
 
-    @Test fun browsePutsMeFirstThenNewestWallFirst() {
+    /** walls.browse: everyone sharing a group, never me; development order newest wall item first; search by name. */
+    @Test fun browseListsOthersNewestWallFirstAndFilters() {
         val data = FakeSocialData().apply { seedWall(BEN, 2) }
         data.walls[ANA] = mutableListOf(app.data.model.WallItem(app.data.model.WallItemKind.Post, "x", "y", null, listOf(GROUP), BASE.plusSeconds(10_000)))
-        val vm = BrowseViewModel(data)
-        assertEquals(listOf(ME, ANA, BEN), vm.state.value.people.map { it.profile.id })
-        assertEquals(ME, vm.state.value.selected)
-        vm.select(BEN)
-        assertEquals(BEN, vm.wall.value?.userId)
-        assertEquals(3, vm.wall.value!!.state.value.tiles.size)
+        val vm = BrowseViewModel(data, approximations = true)
+        assertEquals(listOf(ANA, BEN), vm.state.value.people.map { it.id })
+        vm.setQuery("ben")
+        assertEquals(listOf(BEN), vm.state.value.shown.map { it.id })
+        // Release: `walls.browse.layout.rowOrder` BLOCKED — the membership order.
+        assertEquals(listOf(ANA, BEN), BrowseViewModel(data, approximations = false).state.value.people.map { it.id })
+    }
+
+    /** The thread's reply bar: replying to a message sends `p_reply_to_message_id`; to a photo, `p_reply_to_post_id`. */
+    @Test fun chatRepliesToAMessageAndToAPhoto() {
+        val data = FakeSocialData().apply { seedChat() }
+        val vm = ChatViewModel(data, GROUP)
+        vm.startReply(vm.state.value.rows.first { it.id == "m-2" })
+        assertEquals("Ben", vm.state.value.replyTo?.name)
+        vm.setDraft("same")
+        vm.send()
+        assertTrue(data.calls.contains("sendText:same::m=m-2"))
+        assertEquals(null, vm.state.value.replyTo)
+        val quote = vm.state.value.rows.last().quote as app.feature.social.chat.Quote.Text
+        assertEquals("strictly vibes only tonight", quote.text)
+        vm.startReply(vm.state.value.rows.first { it.id == "m-1" })
+        vm.setDraft("love")
+        vm.send()
+        assertTrue(data.calls.contains("sendText:love:p-1"))
+    }
+
+    /** photo.viewer: comments are the photo's replies (oldest first); tags load with the photo; "I'm in this" is optimistic. */
+    @Test fun viewerLoadsCommentsAndTagsAndTagsYouOptimistically() {
+        val data = viewerData()
+        val vm = PhotoViewerViewModel(data, GROUP, "v-1", PhotoContext.Album, "a-v", null)
+        val photo = vm.state.value.current!!
+        assertEquals(listOf("c-1", "c-2"), photo.comments.map { it.id })
+        assertEquals(listOf(ANA, ME), photo.tagged)
+        assertTrue(vm.state.value.taggedByMe)
+        vm.setTagged(false)
+        assertFalse(vm.state.value.taggedByMe)
+        assertTrue(data.calls.contains("untagSelf:v-1"))
+        data.failNext += "tagSelf:v-1"
+        vm.setTagged(true)
+        assertFalse("reverted after the failure", vm.state.value.taggedByMe)
+    }
+
+    /** Tap to advance: past the last photo the viewer closes; tap back stops at the first. */
+    @Test fun viewerAdvancesAndClosesAfterTheLast() {
+        val data = viewerData()
+        val vm = PhotoViewerViewModel(data, GROUP, "v-2", PhotoContext.Album, "a-v", null)
+        assertEquals(1, vm.state.value.index)
+        vm.previous()
+        vm.previous()
+        assertEquals(0, vm.state.value.index)
+        vm.next(); vm.next()
+        assertEquals(2, vm.state.value.index)
+        vm.next()
+        assertTrue(vm.state.value.closed)
+    }
+
+    /** The recap list: ready and pending recaps newest first, each with its cover. */
+    @Test fun recapListShowsReadyAndPendingNewestFirst() {
+        val data = FakeSocialData().apply { seedRecaps() }
+        val s = app.feature.social.week.RecapListViewModel(data, GROUP).state.value
+        assertEquals(listOf("r-w", "r-prev", "r-old"), s.cards.map { it.recap.id })
+        assertTrue(s.cards.first().coverPath!!.endsWith("thumb.jpg"))
+    }
+
+    /** `week.recap.layout.gridFill` BLOCKED: release draws only full rows of four; development fills row by row up to 24. */
+    @Test fun recapCardCellsFollowTheFillRule() {
+        assertEquals(4, app.feature.social.week.recapCardCells(6, approximation = false))
+        assertEquals(6, app.feature.social.week.recapCardCells(6, approximation = true))
+        assertEquals(24, app.feature.social.week.recapCardCells(30, approximation = true))
+        assertEquals(0, app.feature.social.week.recapCardCells(3, approximation = false))
     }
 
     // ---- week.recap / week.edit / week.history ----

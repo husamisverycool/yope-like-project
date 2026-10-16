@@ -1,533 +1,414 @@
 /// <reference lib="dom" />
-// Verification of invite.web against Partiful (design/surfaces/invite.web.md).
+// Verification of invite.web against its spec (design/surfaces/invite.web.md, Retro's /u/[username] page).
 //
-//   npm run verify     (needs the local Supabase stack: cd backend && npm run db:start)
+//   npm run verify     (no database needed: the real app with a fixture upstream and fixtures/photos)
 //
-// Seeds two groups (light cover, dark cover) and an expired invite in the local stack, serves the
-// real app, renders it in Playwright Chromium (/opt/pw-browsers) at 390×844 CSS px @3x with an
-// iPhone user agent — the capture setup of design/research/wrapped-tribute-partiful.md — and writes
-//   design/verification/invite.web.png  side by side, ours left, Partiful right, same height:
-//       row 1  top of the page            | pf-web-private-past-01.png (link-only event, logged out)
-//       row 2  scrolled to 'Invited by'   | pf-web-private-past-02.png ('Hosted by' at the same y)
-//       row 3  not-found state            | pf-web-notfound-01.png
-//   design/verification/invite.web.md   every token: reference value vs computed style read back
-//                                         from the page, plus the WCAG contrast results.
-// Everything seeded is deleted at the end.
+// Serves the app, renders every state in Playwright Chromium (PLAYWRIGHT_BROWSERS_PATH) with the capture setups of
+// Retro's references (mobile 390 × 664 CSS px @3x iPhone UA = references/auto/retro/web/retro.app-u-nathan-iphone.png;
+// desktop 1440 × 900 @1x = retro.app-u-nathan-desktop.png), reads computed styles and boxes back from the page and
+// writes
+//   design/verification/invite.web.md    every spec value next to what renders: matched / approximated / not matched
+//   design/verification/invite.web.png   side by side (git-ignored: it contains reference crops) — ours left, Retro
+//                                         right: mobile card | iPhone capture, desktop | desktop capture, share images
+// The per-state renders (light and dark) are written by the render test: design/verification/invite.web/*.png.
 
 import fs from "node:fs";
-import type { AddressInfo } from "node:net";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { serve } from "@hono/node-server";
-import { chromium, type Page } from "playwright-core";
-import sharp, { type OverlayOptions } from "sharp";
-import { createApp } from "../src/app.js";
-import { invitePairs, statePairs, type PairResult } from "../src/contrastReport.js";
-import { num, tokens, type TokenName } from "../src/design.js";
-import { InviteService } from "../src/inviteService.js";
-import { supabaseUpstream } from "../src/supabase.js";
-import { defaultTheme, themeFromColour, type Rgb } from "../src/theme.js";
-import { titleSize } from "../src/titleFit.js";
-import { IPHONE, testConfig } from "../test/support/app.js";
-import {
-  ANON_KEY,
-  cleanup,
-  createGroup,
-  createInvite,
-  createUser,
-  deleteUser,
-  expireInvite,
-  joinGroup,
-  removeObjects,
-  SERVICE_ROLE_KEY,
-  setAvatar,
-  stackAvailable,
-  SUPABASE_URL,
-  upload,
-  type SeededGroup,
-} from "../test/support/seed.js";
+import jsQR from "jsqr";
+import type { Page } from "playwright-core";
+import sharp from "sharp";
+import { cardPairs, desktopPairs, SPEC_BACKDROP_SAMPLE, statePairs, toHex, type PairResult } from "../src/contrastReport.js";
+import { BACKDROP_BLUR_OF_WIDTH, cssEasing } from "../src/design.js";
+import { copy } from "../src/generated/copy.js";
+import { tokens as t } from "../src/generated/tokens.js";
+import { blurredBackdrop, BACKDROP_WIDTH } from "../src/images.js";
+import { ANDROID, DESKTOP, IPHONE } from "../test/support/app.js";
+import { CASES, launch, load, measure, open, photo, ROOT, serveCases, TOKENS, type Layout, type Scheme } from "../test/support/render.js";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const OUT_PNG = path.join(ROOT, "design/verification/invite.web.png");
 const OUT_MD = path.join(ROOT, "design/verification/invite.web.md");
-const REF = (f: string) => path.join(ROOT, "references/auto/partiful/web", f);
+const OUT_PNG = path.join(ROOT, "design/verification/invite.web.png");
+const REF = (f: string) => path.join(ROOT, "references/auto/retro/web", f);
+const c = copy as Record<string, string>;
 
-// ---------- test images (synthetic; no reference image is reused as content) ----------
-async function radial(w: number, h: number, inner: Rgb, outer: Rgb): Promise<Buffer> {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><defs><radialGradient id="g" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="rgb(${inner})"/><stop offset="1" stop-color="rgb(${outer})"/></radialGradient></defs><rect width="100%" height="100%" fill="url(#g)"/></svg>`;
-  return sharp(Buffer.from(svg)).jpeg().toBuffer();
-}
-
-interface Seed {
-  group: SeededGroup;
-  name: string;
-}
-
-async function seed(name: string, cover: Buffer, members: { name: string; avatar?: Rgb }[]): Promise<Seed> {
-  const users: string[] = [];
-  const paths: string[] = [];
-  for (const m of members) {
-    const id = await createUser(m.name);
-    users.push(id);
-    if (m.avatar) {
-      const p = `avatars/${id}/${crypto.randomUUID()}.jpg`;
-      await upload(p, await radial(300, 300, m.avatar, m.avatar.map((c) => c * 0.55) as Rgb));
-      await setAvatar(id, p);
-      paths.push(p);
-    }
-  }
-  const coverPath = `u/${users[0]}/covers/${crypto.randomUUID()}.jpg`;
-  await upload(coverPath, cover);
-  paths.push(coverPath);
-  const groupId = await createGroup({ name, coverPath, createdBy: users[0]! });
-  const token = await createInvite(groupId, users[0]!);
-  for (const u of users.slice(1)) await joinGroup(token, u);
-  return { name, group: { groupId, token, users, paths, memberIds: { ana: users[0]!, rui: users[1]!, anon: users[2]! } } };
-}
-
-// ---------- server ----------
-async function start(url: string) {
-  const config = testConfig({ supabase: { url, anonKey: ANON_KEY, serviceRoleKey: SERVICE_ROLE_KEY } });
-  const invites = new InviteService(supabaseUpstream({ url, anonKey: ANON_KEY, serviceRoleKey: SERVICE_ROLE_KEY, timeoutMs: 3000 }), { ttlSeconds: 60, signedUrlSeconds: 120 });
-  const app = createApp({ config, invites, log: () => {} });
-  const server = serve({ fetch: app.fetch, port: 0, hostname: "127.0.0.1" });
-  await new Promise((r) => server.once("listening", r));
-  return { server, base: `http://127.0.0.1:${(server.address() as AddressInfo).port}` };
-}
-
-// ---------- measuring ----------
-type Box = { x: number; y: number; w: number; h: number; bottom: number; right: number };
-async function measure(page: Page, sel: string): Promise<{ box: Box; s: Record<string, string> }> {
-  return page.evaluate((sel) => {
-    const el = document.querySelector(sel);
-    if (!el) throw new Error(`no element ${sel}`);
-    const r = el.getBoundingClientRect();
-    const cs = getComputedStyle(el);
-    const s: Record<string, string> = {};
-    for (const p of ["color", "background-color", "font-size", "font-weight", "line-height", "letter-spacing", "text-align", "text-transform", "border-radius", "border-top", "border-bottom", "padding-left", "padding-top", "padding-bottom", "margin-bottom", "height", "width", "max-width", "opacity", "backdrop-filter", "outline", "outline-offset", "transition", "text-decoration-line", "font-family"]) s[p] = cs.getPropertyValue(p);
-    const y = r.y + window.scrollY;
-    return { box: { x: +r.x.toFixed(2), y: +y.toFixed(2), w: +r.width.toFixed(2), h: +r.height.toFixed(2), bottom: +(y + r.height).toFixed(2), right: +(r.x + r.width).toFixed(2) }, s };
-  }, sel);
-}
-
-/** Declared value of a rule in the inline stylesheet (for states that need a pointer: :hover/:active). */
-async function ruleValue(page: Page, selector: string, prop: string): Promise<string> {
-  // A string expression: tsx's name helpers must not leak into the browser context.
-  return page.evaluate(`(() => {
-    const sel = ${JSON.stringify(selector)}, prop = ${JSON.stringify(prop)};
-    const stack = [...document.styleSheets].flatMap((s) => [...s.cssRules]);
-    while (stack.length) {
-      const r = stack.shift();
-      if (r instanceof CSSStyleRule && r.selectorText === sel) return r.style.getPropertyValue(prop);
-      if (r.cssRules) stack.push(...r.cssRules);
-    }
-    return "";
-  })()`);
-}
-
+type Status = "matched" | "approximated" | "not matched";
 interface Row {
-  token: string;
-  reference: string;
-  expected: string;
-  actual: string;
-  ok: boolean;
+  item: string;
+  spec: string;
+  rendered: string;
+  status: Status;
+  note: string;
 }
-const rows: { section: string; rows: Row[] }[] = [];
-let current: Row[] = [];
-function section(name: string) {
-  current = [];
-  rows.push({ section: name, rows: current });
-}
-const close = (a: string, b: string) => {
-  const na = parseFloat(a);
-  const nb = parseFloat(b);
-  if (!Number.isNaN(na) && !Number.isNaN(nb) && /^-?[0-9.]+(px|em)?$/.test(a.trim()) && /^-?[0-9.]+(px|em)?$/.test(b.trim())) return Math.abs(na - nb) <= 0.06;
-  return a.replace(/\s+/g, " ").trim() === b.replace(/\s+/g, " ").trim();
+const sections: { name: string; rows: Row[] }[] = [];
+let rows: Row[] = [];
+const section = (name: string) => sections.push({ name, rows: (rows = []) });
+const row = (item: string, spec: string | number, rendered: string | number, status: Status, note = "") =>
+  rows.push({ item, spec: String(spec), rendered: String(rendered), status, note });
+/** matched when equal (numbers within ±0.6 px), else not matched. */
+const check = (item: string, spec: string | number, rendered: string | number, note = "") => {
+  const a = parseFloat(String(spec));
+  const b = parseFloat(String(rendered));
+  const numeric = /^-?[0-9.]+(px)?$/.test(String(spec).trim()) && /^-?[0-9.]+(px)?$/.test(String(rendered).trim());
+  const ok = numeric ? Math.abs(a - b) <= 0.6 : String(spec) === String(rendered);
+  row(item, spec, rendered, ok ? "matched" : "not matched", note);
 };
-function check(token: string, reference: string, expected: string | number, actual: string | number) {
-  const e = String(expected);
-  const a = String(actual);
-  current.push({ token, reference, expected: e, actual: a, ok: close(e, a) });
-}
-const pxv = (n: TokenName) => `${num(n)}px`;
-const rgba = (rgb: string, a: number) => `rgba(${rgb}, ${a})`;
-const round = (n: number) => +n.toFixed(2);
+const px = (n: number) => `${+n.toFixed(2)}px`;
+/** #RRGGBB[AA] as Chromium serialises it. */
+const css = (hex: string) => {
+  const [r, g, b, a] = [1, 3, 5, 7].map((i) => parseInt(hex.slice(i, i + 2) || "ff", 16)) as [number, number, number, number];
+  if (a === 255) return `rgb(${r}, ${g}, ${b})`;
+  const two = Math.round((a / 255) * 100) / 100;
+  return `rgba(${r}, ${g}, ${b}, ${Math.round(two * 255) === a ? two : Math.round((a / 255) * 1000) / 1000})`;
+};
 
 async function main() {
-  if (!(await stackAvailable())) throw new Error(`local Supabase stack not reachable at ${SUPABASE_URL} (cd backend && npm run db:start)`);
-  const lightCover = await radial(1080, 1080, [251, 228, 242], [167, 200, 255]);
-  const darkCover = await radial(1080, 1080, [70, 24, 24], [28, 6, 6]);
-  const people = [
-    { name: "Ana Lima", avatar: [222, 112, 120] as Rgb },
-    { name: "Rui Costa" },
-    { name: "Bea Lima", avatar: [120, 170, 220] as Rgb },
-    { name: "Joana Reis", avatar: [197, 219, 118] as Rgb },
-    { name: "Tiago Lima" },
-    { name: "Marta Sousa", avatar: [212, 214, 241] as Rgb },
-    { name: "Duarte Lima", avatar: [222, 112, 214] as Rgb },
-    { name: "Inês Lima" },
-  ];
-  const seeds: Seed[] = [];
-  let expiredToken = "";
-  const extraUsers: string[] = [];
-  const { server, base } = await start(SUPABASE_URL);
-  const broken = await start("http://127.0.0.1:9");
-  const browser = await chromium.launch();
+  const servers = await serveCases();
+  const browser = await launch();
+  const url = (name: (typeof CASES)[number]["name"]) => {
+    const k = CASES.find((x) => x.name === name)!;
+    return `${servers[k.server].base}/i/${k.token}`;
+  };
+  const withPage = async <T>(layout: Layout, scheme: Scheme, fn: (p: Page) => Promise<T>, reducedMotion = true): Promise<T> => {
+    const { context, page } = await open(browser, layout, scheme);
+    if (!reducedMotion) await page.emulateMedia({ reducedMotion: "no-preference" });
+    try {
+      return await fn(page);
+    } finally {
+      await context.close();
+    }
+  };
+  let oursMobile: Buffer, oursDesktop: Buffer;
   try {
-    const light = await seed("Sunday dinners at the Limas", lightCover, people);
-    seeds.push(light);
-    const dark = await seed("Roommates", darkCover, people.slice(0, 3));
-    seeds.push(dark);
-    expiredToken = await createInvite(light.group.groupId, light.group.users[0]!);
-    await expireInvite(expiredToken);
+    // ---------- mobile card ----------
+    await withPage("mobile", "light", async (page) => {
+      await load(page, url("valid"));
+      oursMobile = await page.screenshot();
+      const m = (sel: string, props: string[] = []) => measure(page, sel, props);
+      const card = await m(".card", ["border-top-left-radius"]);
+      const hero = await m(".hero");
+      const avatar = await m(".avatar");
+      const h1 = await m(".headline", ["font-family", "font-size", "line-height", "font-weight", "color", "max-width"]);
+      const line = await m(".line.mobile-only", ["font-family", "font-size", "line-height", "letter-spacing", "color", "max-width"]);
+      const members = await m(".members");
+      const m1 = await m(".members li:nth-child(1) .member");
+      const m2 = await m(".members li:nth-child(2) .member");
+      const pill = await m(".pill", ["background-color", "color", "font-size", "font-weight", "border-top-left-radius"]);
+      const footer = await m(".footer", ["font-size", "color"]);
+      const terms = await m(".footer a:first-child");
+      const half = t["size.global.minTouchTarget.ios"] / 2 - 1;
+      const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x!, y!)?.textContent, [terms.box.x + terms.box.w / 2, terms.box.y + terms.box.h / 2 - half]);
+      const natural = await page.$eval(".backdrop", (i) => (i as HTMLImageElement).naturalWidth);
+      const inset = t["invite.web.size.cardInset"];
 
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, userAgent: IPHONE });
-    const page = await ctx.newPage();
-
-    // ---------- light page ----------
-    await page.goto(`${base}/i/${light.group.token}`, { waitUntil: "networkidle" });
-    const shotTop = await page.screenshot();
-    const m = async (s: string) => measure(page, s);
-    const html = await m("html");
-    const body = await m("body");
-    const column = await m(".column");
-    const title = await m(".title");
-    const cover = await m(".cover");
-    const field = await m(".field");
-    const members = await m(".members");
-    const head = await m(".members-head");
-    const header = await m("#members-title");
-    const viewAll = await m(".all > summary");
-    const av1 = await m(".avatars li:nth-child(1) .avatar");
-    const av3 = await m(".avatars li:nth-child(3)");
-    const initials = await m(".avatars li:nth-child(2) .initials");
-    const gate = await m(".gate");
-    const lock = await m(".gate .lock");
-    const gateTitle = await m("#gate-title");
-    const gateBody = await m(".gate-body");
-    const gateBtn = await m(".gate .btn-filled");
-    const divider = await m(".divider");
-    const link = await m(".get-app");
-    const linkText = await m(".get-app span");
-    const arrow = await m(".get-app svg");
-    const coverMean = (await sharp(Buffer.from(await (await fetch(`${base}/i/${light.group.token}/cover.jpg`)).arrayBuffer())).stats()).channels.slice(0, 3).map((c) => c.mean) as Rgb;
-    const theme = themeFromColour(coverMean);
-    const tSize = titleSize(light.name, round(title.box.w));
-
-    section("Page frame and theme");
-    check("invite.web.dimension.margin", "16 px: P3 title/poster/date x 16; CSS --spacing-screen-margin-horizontal", pxv("invite.web.dimension.margin"), `${cover.box.x}px`);
-    check("invite.web.dimension.columnMaxWidth", "720 px: CSS @media (min-width:721px) switch", pxv("invite.web.dimension.columnMaxWidth"), column.s["max-width"]!);
-    check("invite.web.layout.theme", "per-invite theme colour (P3 body rgb(167, 200, 255)); ours = mean colour of the cover", (() => { const [r, g, b] = theme.background.match(/[0-9A-F]{2}/g)!.map((h) => parseInt(h, 16)); return `rgb(${r}, ${g}, ${b})`; })(), html.s["background-color"]!);
-    check("invite.web.layout.themeTextColour", "class follows the theme (P3 .ptf-light → black text)", theme.scheme === "light" ? "rgb(0, 0, 0)" : "rgb(255, 255, 255)", body.s.color!);
-    check("invite.web.color.text.light", "rgb(0, 0, 0): P3 title colour", "rgb(0, 0, 0)", title.s.color!);
-    check("invite.web.font", "TWK Lausanne (proprietary) → platform UI font", "-apple-system, system-ui, sans-serif", body.s["font-family"]!);
-    check("invite.web.lineHeight.default", "1.4: P3 22.4 px at 16 px", `${16 * num("invite.web.lineHeight.default")}px`, field.s["line-height"]!);
-    check("invite.web.layout.text", "antialiased (CSS :root)", "antialiased", await page.evaluate(() => getComputedStyle(document.body).getPropertyValue("-webkit-font-smoothing")));
-
-    section("Title");
-    check("invite.web.dimension.titleTop", "109.1 px: P3 h1 top 169.1 − 60-px banner", pxv("invite.web.dimension.titleTop"), `${title.box.y}px`);
-    check("invite.web.fontSize.title.base / .singleLineMax / .min / count.title.maxLines / layout.title.fit", `P3 'Fun Times w/ the Ryans' → 39 px at 358 px; ours '${light.name}' at ${round(title.box.w)} px`, `${tSize}px`, title.s["font-size"]!);
-    check("invite.web.fontWeight.title", "700: P3 span.summary", "700", title.s["font-weight"]!);
-    check("invite.web.lineHeight.title", "1.2: P3 46.8/39", `${round(tSize * num("invite.web.lineHeight.title"))}px`, title.s["line-height"]!);
-    check("invite.web.letterSpacing.title", "−0.02 em: P3 −0.78 px at 39 px", `${round(tSize * num("invite.web.letterSpacing.title"))}px`, title.s["letter-spacing"]!);
-    check("invite.web.layout.title", "centre: P3 span centred in the column", "center", title.s["text-align"]!);
-    check("invite.web.dimension.titleToCover", "25.8 px: P3 262.7 → 288.6; P1 319.3 → 345", pxv("invite.web.dimension.titleToCover"), `${round(cover.box.y - title.box.bottom)}px`);
-
-    section("Cover");
-    check("invite.web.layout.cover", "full column width, own aspect: P3 358 × 358", `358px × ${round(358 * 1)}px`, `${cover.box.w}px × ${cover.box.h}px`);
-    check("invite.web.radius.cover", "0: P3 img border-radius 0px", "0px", cover.s["border-radius"]!);
-    check("invite.web.dimension.coverToNext", "16 px: P3 poster bottom 646.6 → date 662.6", pxv("invite.web.dimension.coverToNext"), `${round(field.box.y - cover.box.bottom)}px`);
-
-    section("'Invited by' row (P3 'Hosted by' row)");
-    check("invite.web.fontSize.body", "16 px: P3 'Hosted by'", pxv("invite.web.fontSize.body"), field.s["font-size"]!);
-    check("invite.web.fontWeight.body", "400: P3 'Hosted by'", "400", field.s["font-weight"]!);
-    check("invite.web.opacity.text.body", "rgba(0, 0, 0, 0.8): P3 'Hosted by'", rgba("0, 0, 0", num("invite.web.opacity.text.body")), field.s.color!);
-    check("invite.web.dimension.fieldRow.paddingV", "4 px: P1 row padding 4px 0", pxv("invite.web.dimension.fieldRow.paddingV"), field.s["padding-top"]!);
-
-    section("Member List (P3 'Guest List')");
-    check("invite.web.dimension.sectionGap", "24 px: P3 '…' button → 'Hosted by' row", pxv("invite.web.dimension.sectionGap"), `${round(members.box.y - field.box.bottom)}px`);
-    check("invite.web.fontSize.sectionHeader", "18 px: P3 H3 'Guest List'", pxv("invite.web.fontSize.sectionHeader"), header.s["font-size"]!);
-    check("invite.web.fontWeight.sectionHeader", "700: P3 H3", "700", header.s["font-weight"]!);
-    check("invite.web.lineHeight.default (header)", "25.2 px: P3 H3", "25.2px", header.s["line-height"]!);
-    check("invite.web.dimension.button.medium.height", "36 px: P3 'View all' 81.6 × 36", pxv("invite.web.dimension.button.medium.height"), `${viewAll.box.h}px`);
-    check("invite.web.dimension.button.medium.paddingH", "16 px incl. 1-px border: P3 padding 0 15px", `${num("invite.web.dimension.button.medium.paddingH") - num("invite.web.dimension.button.outlined.border")}px`, viewAll.s["padding-left"]!);
-    check("invite.web.radius.button.medium", "800 px: P3", pxv("invite.web.radius.button.medium"), viewAll.s["border-radius"]!);
-    check("invite.web.fontSize.button.medium", "14 px: P3 'View all'", pxv("invite.web.fontSize.button.medium"), viewAll.s["font-size"]!);
-    check("invite.web.fontWeight.button", "600: P3 'View all'", "600", viewAll.s["font-weight"]!);
-    check("invite.web.opacity.button.outlined.fill", "rgba(0, 0, 0, 0.05): P3", rgba("0, 0, 0", num("invite.web.opacity.button.outlined.fill")), viewAll.s["background-color"]!);
-    check("invite.web.opacity.button.outlined.border.light + dimension.button.outlined.border", "1px solid rgba(0, 0, 0, 0.25): P3", `1px solid ${rgba("0, 0, 0", num("invite.web.opacity.button.outlined.border.light"))}`, viewAll.s["border-top"]!);
-    check("invite.web.blur.button.outlined", "blur(40px): P3 'View all'", `blur(${pxv("invite.web.blur.button.outlined")})`, viewAll.s["backdrop-filter"]!);
-    check("'View all' right edge", "374 px: P3 292.4 + 81.6", "374px", `${viewAll.box.right}px`);
-    check("'View all' centred on the header row", "P3: button centred on the header block", `${round(head.box.y + (head.box.h - viewAll.box.h) / 2)}px`, `${viewAll.box.y}px`);
-    check("invite.web.dimension.headerToAvatars", "8 px: P3 count line → avatars (count line itself not copied)", pxv("invite.web.dimension.headerToAvatars"), `${round(av1.box.y - head.box.bottom)}px`);
-    check("invite.web.dimension.avatar", "48 × 48: P3 IMG", `${num("invite.web.dimension.avatar")}px × ${num("invite.web.dimension.avatar")}px`, `${av1.box.w}px × ${av1.box.h}px`);
-    check("invite.web.radius.avatar", "800 px: P3 IMG", pxv("invite.web.radius.avatar"), av1.s["border-radius"]!);
-    check("invite.web.dimension.avatarGap", "4 px: P3 avatars x 16, 68, 120", "120px", `${av3.box.x}px`);
-    check("invite.web.opacity.avatar.minimal.fill.light", "rgba(0, 0, 0, 0.1): P3 disc", rgba("0, 0, 0", num("invite.web.opacity.avatar.minimal.fill.light")), initials.s["background-color"]!);
-    check("invite.web.opacity.avatar.minimal.text", "rgba(0, 0, 0, 0.8) 16/400: P3 'XX'", `${rgba("0, 0, 0", num("invite.web.opacity.avatar.minimal.text"))} 16px 400`, `${initials.s.color} ${initials.s["font-size"]} ${initials.s["font-weight"]}`);
-
-    section("Members-only card (P3 'Restricted Access')");
-    check("invite.web.color.gateCard.light + opacity.gateCard.light", "rgba(255, 255, 255, 0.7): P3", rgba("255, 255, 255", num("invite.web.opacity.gateCard.light")), gate.s["background-color"]!);
-    check("invite.web.radius.gateCard", "4 px: P3", pxv("invite.web.radius.gateCard"), gate.s["border-radius"]!);
-    check("invite.web.dimension.gateCard.padding", "24 px: P3", pxv("invite.web.dimension.gateCard.padding"), gate.s["padding-top"]!);
-    check("card frame", "x 16, w 358: P3", "16px 358px", `${gate.box.x}px ${gate.box.w}px`);
-    check("invite.web.dimension.sectionGap (members → card)", "24 px", pxv("invite.web.dimension.sectionGap"), `${round(gate.box.y - members.box.bottom)}px`);
-    check("invite.web.dimension.gateCard.glyph + icon.lock", "64 × 64 at card top + 24: P3 svg 1364.1 (card 1340.1)", "64px × 64px at +24px", `${lock.box.w}px × ${lock.box.h}px at +${round(lock.box.y - gate.box.y)}px`);
-    check("invite.web.dimension.gateCard.glyphToTitle", "8 px: P3 1428.1 → 1436.1", pxv("invite.web.dimension.gateCard.glyphToTitle"), `${round(gateTitle.box.y - lock.box.bottom)}px`);
-    check("invite.web.fontSize.sectionHeader (card title)", "18/700: P3 'Restricted Access'", "18px 700", `${gateTitle.s["font-size"]} ${gateTitle.s["font-weight"]}`);
-    check("invite.web.dimension.gateCard.titleToBody", "4 px: P3 1461.3 → 1465.3", pxv("invite.web.dimension.gateCard.titleToBody"), `${round(gateBody.box.y - gateTitle.box.bottom)}px`);
-    check("invite.web.fontSize.detail + opacity.text.body", "14 px, rgba(0, 0, 0, 0.8), lh 19.6, centred: P3", `14px ${rgba("0, 0, 0", 0.8)} 19.6px center`, `${gateBody.s["font-size"]} ${gateBody.s.color} ${gateBody.s["line-height"]} ${gateBody.s["text-align"]}`);
-    check("invite.web.dimension.gateCard.bodyToButton", "16 px: P3 1504.5 → 1520.5", pxv("invite.web.dimension.gateCard.bodyToButton"), `${round(gateBtn.box.y - gateBody.box.bottom)}px`);
-    check("invite.web.dimension.button.large.height", "48 px: P3 'Sign in' 310 × 48", `${pxv("invite.web.dimension.button.large.height")} × 310px`, `${gateBtn.box.h}px × ${gateBtn.box.w}px`);
-    check("invite.web.radius.button.large", "4 px: P3", pxv("invite.web.radius.button.large"), gateBtn.s["border-radius"]!);
-    check("invite.web.dimension.button.large.paddingH", "24 px: P3", pxv("invite.web.dimension.button.large.paddingH"), gateBtn.s["padding-left"]!);
-    check("invite.web.color.button.filled.fill.light / .label.light", "rgb(0, 0, 0) / rgb(255, 255, 255): P3 'Sign in'", "rgb(0, 0, 0) rgb(255, 255, 255)", `${gateBtn.s["background-color"]} ${gateBtn.s.color}`);
-    check("large button label", "16/600: P3 'Sign in'", "16px 600", `${gateBtn.s["font-size"]} ${gateBtn.s["font-weight"]}`);
-    check("invite.web.duration.button.colour / .opacity + easing.button", "200 ms / 100 ms ease-out: CSS .ptf-PM45p", "background-color 0.2s ease-out, color 0.2s ease-out, opacity 0.1s ease-out", gateBtn.s.transition!);
-    check("invite.web.opacity.button.hover", "0.6: CSS --button-hover-opacity (rule read from the stylesheet)", String(num("invite.web.opacity.button.hover")), await ruleValue(page, ".btn:hover", "opacity"));
-    check("invite.web.opacity.button.active", "0.4: CSS --button-active-opacity", String(num("invite.web.opacity.button.active")), await ruleValue(page, ".btn:active", "opacity"));
-    check("invite.web.opacity.button.outlined.hover.fill", "rgba(0,0,0,.1): CSS --button-outlined-hover-background-color", rgba("0, 0, 0", num("invite.web.opacity.button.outlined.hover.fill")), await ruleValue(page, ".btn-outlined:hover", "background-color"));
-    check("invite.web.opacity.button.outlined.active.fill / .border", "rgba(0,0,0,.25) / rgba(0,0,0,.4): CSS --button-outlined-active-*", `${rgba("0, 0, 0", num("invite.web.opacity.button.outlined.active.fill"))} ${rgba("0, 0, 0", num("invite.web.opacity.button.outlined.active.border"))}`, `${await ruleValue(page, ".btn-outlined:active", "background-color")} ${await ruleValue(page, ".btn-outlined:active", "border-top-color")}`);
-
-    section("Footer (P3 / not-found footer)");
-    check("invite.web.dimension.footer.paddingTop", "24 px: not-found FOOTER padding-top; P3 footer starts at the last content", pxv("invite.web.dimension.footer.paddingTop"), `${round(divider.box.y - gate.box.bottom)}px`);
-    check("invite.web.opacity.footer.divider", "1px solid rgba(0, 0, 0, 0.1): CSS --divider-border-color", `1px solid ${rgba("0, 0, 0", num("invite.web.opacity.footer.divider"))}`, divider.s["border-bottom"]!);
-    check("invite.web.dimension.footer.contentPaddingV", "40 px: not-found divider 506.3 → logo 546.3", pxv("invite.web.dimension.footer.contentPaddingV"), `${round(link.box.y - divider.box.bottom)}px`);
-    check("footer link", "16/600, rgb text colour, no underline: not-found 'Get the app'", "16px 600 none", `${link.s["font-size"]} ${link.s["font-weight"]} ${link.s["text-decoration-line"]}`);
-    check("invite.web.dimension.footer.arrow + icon.getApp", "16 × 16: not-found svg", "16px × 16px", `${arrow.box.w}px × ${arrow.box.h}px`);
-    check("invite.web.opacity.footer.arrow", "rgba(…, 0.8): not-found svg", rgba("0, 0, 0", num("invite.web.opacity.footer.arrow")), arrow.s.color!);
-    check("invite.web.dimension.footer.linkGap", "2 px: not-found .AppFooter_getAppLink gap", pxv("invite.web.dimension.footer.linkGap"), `${round(arrow.box.x - linkText.box.right)}px`);
-    check("invite.web.layout.link", "text-decoration none: not-found links", "none", link.s["text-decoration-line"]!);
-
-    section("Focus");
-    await page.keyboard.press("Tab");
-    const focusedTag = await page.evaluate(() => document.activeElement?.tagName ?? "");
-    const focused = await m(":focus-visible");
-    check("invite.web.dimension.focus.offset + border width + text colour", "1px solid primary colour, offset 2px: CSS .BottomNav_focusedProfileImageContainer", `${focusedTag} rgb(0, 0, 0) solid 1px / 2px`, `${focusedTag} ${focused.s.outline} / ${focused.s["outline-offset"]}`);
-
-    // Row 2 of the side-by-side: 'Invited by' at the y of P3's 'Hosted by' in pf-web-private-past-02.png (≈153 px).
-    await page.evaluate((y) => {
-      (document.activeElement as HTMLElement | null)?.blur();
-      window.scrollTo(0, y);
-    }, Math.max(0, field.box.y - 153));
-    await page.waitForTimeout(200);
-    const shotMembers = await page.screenshot();
-    await page.goto(`${base}/i/${light.group.token}`, { waitUntil: "networkidle" });
-    await page.click(".all > summary");
-    const row1 = await m(".rows .row:nth-child(1)");
-    const row2 = await m(".rows .row:nth-child(2)");
-    const rowName = await m(".rows .row:nth-child(1) .row-name");
-    const rowAvatar = await m(".rows .row:nth-child(1) .avatar");
-    section("'View all' list (Partiful user-row tokens)");
-    check("invite.web.dimension.userRow.paddingV", "12 px: CSS --user-row-padding-vertical", "12px", row1.s["padding-top"]!);
-    check("invite.web.dimension.userRow.listGap", "4 px: CSS --user-list-gap", "4px", `${round(row2.box.y - row1.box.bottom)}px`);
-    check("invite.web.dimension.userRow.columnGap", "12 px: CSS --user-row-column-gap", "12px", `${round(rowName.box.x - rowAvatar.box.right)}px`);
-    check("invite.web.fontWeight.userRow.name", "16/600: P3 activity names", "16px 600", `${rowName.s["font-size"]} ${rowName.s["font-weight"]}`);
-
-    // ---------- dark page ----------
-    await page.goto(`${base}/i/${dark.group.token}`, { waitUntil: "networkidle" });
-    const dTitle = await m(".title");
-    const dGate = await m(".gate");
-    const dBtn = await m(".gate .btn-filled");
-    const dView = await m(".all > summary");
-    const dInit = await m(".avatars li:nth-child(2) .initials");
-    section("Dark theme (cover with a dark mean colour)");
-    check("invite.web.color.text.dark", "rgb(255, 255, 255): P2 title", "rgb(255, 255, 255)", dTitle.s.color!);
-    check("invite.web.color.gateCard.dark + opacity.gateCard.dark", "rgba(0, 0, 0, 0.8): P2 card", rgba("0, 0, 0", num("invite.web.opacity.gateCard.dark")), dGate.s["background-color"]!);
-    check("invite.web.color.button.filled.fill.dark / .label.dark", "rgb(255, 255, 255) / rgb(0, 0, 0): P2 'RSVP' in the card", "rgb(255, 255, 255) rgb(0, 0, 0)", `${dBtn.s["background-color"]} ${dBtn.s.color}`);
-    check("invite.web.opacity.button.outlined.border.dark", "rgba(255, 255, 255, 0.4): CSS .ptf-dark / not-found pill", `1px solid ${rgba("255, 255, 255", num("invite.web.opacity.button.outlined.border.dark"))}`, dView.s["border-top"]!);
-    check("invite.web.opacity.avatar.minimal.fill.dark", "hsla(0,0%,100%,.25): CSS .ptf-dark", rgba("255, 255, 255", num("invite.web.opacity.avatar.minimal.fill.dark")), dInit.s["background-color"]!);
-    const darkCoverMean = (await sharp(Buffer.from(await (await fetch(`${base}/i/${dark.group.token}/cover.jpg`)).arrayBuffer())).stats()).channels.slice(0, 3).map((c) => c.mean) as Rgb;
-    const darkTheme = themeFromColour(darkCoverMean);
-
-    // ---------- states ----------
-    await page.goto(`${base}/i/${"N".repeat(24)}`, { waitUntil: "networkidle" });
-    const shotNotFound = await page.screenshot();
-    const sHtml = await m("html");
-    const sSpace = await m(".header-space");
-    const sState = await m(".state");
-    const sGlyph = await m(".glyph");
-    const sTitle = await m(".state-title");
-    const sFooter = await m("footer");
-    section("Not-found state (pf-web-notfound-01.png)");
-    check("invite.web.color.theme.default", "rgb(17, 17, 17): not-found body", "rgb(17, 17, 17)", sHtml.s["background-color"]!);
-    check("invite.web.dimension.state.headerSpace", "60 px: not-found header NAV height", pxv("invite.web.dimension.state.headerSpace"), `${sSpace.box.h}px`);
-    check("invite.web.fontSize.state.glyph + lineHeight.default", "50 px, line-height 70 px: not-found visual", "50px 70px", `${sGlyph.s["font-size"]} ${sGlyph.s["line-height"]}`);
-    check("invite.web.dimension.state.glyphToTitle", "20 px: not-found visual margin-bottom", pxv("invite.web.dimension.state.glyphToTitle"), sGlyph.s["margin-bottom"]!);
-    check("invite.web.fontSize.state.title + fontWeight.state.title", "24/700, line-height 33.6: not-found H2", "24px 700 33.6px", `${sTitle.s["font-size"]} ${sTitle.s["font-weight"]} ${sTitle.s["line-height"]}`);
-    check("invite.web.layout.state.title", "uppercase, centred: not-found H2", "uppercase center", `${sTitle.s["text-transform"]} ${sTitle.s["text-align"]}`);
-    check("invite.web.layout.state", "equal auto margins: not-found 99.25 × 3", `${round(sState.box.y - sSpace.box.bottom)}px`, `${round((sFooter.box.y - sState.box.bottom) / 2)}px`);
-    check("invite.web.color.text.dark (state)", "rgb(255, 255, 255): not-found H2", "rgb(255, 255, 255)", sTitle.s.color!);
-
-    await page.goto(`${base}/i/${expiredToken}`, { waitUntil: "networkidle" });
-    const uBody = await m(".state-body");
-    const uTitle = await m(".state-title");
-    section("Link-no-longer-works state (expired invite, HTTP 410)");
-    check("invite.web.dimension.gateCard.titleToBody (state)", "4 px: CSS --non-ideal-state-description-margin-top", "4px", `${round(uBody.box.y - uTitle.box.bottom)}px`);
-    check("invite.web.fontSize.detail + opacity.text.body (state)", "14 px, white 0.8", `14px ${rgba("255, 255, 255", 0.8)}`, `${uBody.s["font-size"]} ${uBody.s.color}`);
-
-    await page.goto(`${broken.base}/i/${light.group.token}`, { waitUntil: "networkidle" });
-    const eBody = await m(".state-body");
-    const eBtn = await m(".state .btn-filled");
-    section("Error state (Supabase unreachable, HTTP 503)");
-    check("invite.web.dimension.state.bodyToAction", "24 px: CSS --non-ideal-state-button-margin-top", pxv("invite.web.dimension.state.bodyToAction"), `${round(eBtn.box.y - eBody.box.bottom)}px`);
-    check("filled button on the default (dark) theme", "white fill, black label (CSS .ptf-dark)", "rgb(255, 255, 255) rgb(0, 0, 0)", `${eBtn.s["background-color"]} ${eBtn.s.color}`);
-
-    // ---------- link preview ----------
-    const ogBuf = Buffer.from(await (await fetch(`${base}/i/${light.group.token}/og.jpg`)).arrayBuffer());
-    const og = await sharp(ogBuf).metadata();
-    const ogHtml = await (await fetch(`${base}/i/${light.group.token}`, { headers: { "user-agent": IPHONE } })).text();
-    section("Link preview");
-    check("invite.web.layout.ogImage", "1200 × 630 JPEG: pf-og-public-crawler-1200x630.jpg", "jpeg 1200 × 630", `${og.format} ${og.width} × ${og.height}`);
-    check("invite.web.layout.linkPreview", "twitter:card summary_large_image; robots noindex, nofollow (P1/P3 HTML)", "summary_large_image noindex, nofollow", `${/twitter:card" content="([^"]+)/.exec(ogHtml)?.[1]} ${/robots" content="([^"]+)/.exec(ogHtml)?.[1]}`);
-    // The fill is computed at 1/8 scale; compare it with a full-size Gaussian blur of sigma 360 (slow).
-    const ogRaw = await sharp(ogBuf).removeAlpha().raw().toBuffer();
-    const coverBuf = Buffer.from(await (await fetch(`${base}/i/${light.group.token}/cover.jpg`)).arrayBuffer());
-    const fullBlur = await sharp(await sharp(coverBuf).resize(1200, 630, { fit: "cover" }).toBuffer()).blur(num("invite.web.blur.ogImage.fill")).removeAlpha().raw().toBuffer();
-    let se = 0;
-    let n = 0;
-    for (let y = 0; y < 630; y++) for (const [x0, x1] of [[0, 180], [1020, 1200]] as const) for (let x = x0; x < x1; x++) for (let c = 0; c < 3; c++) {
-      const i = (y * 1200 + x) * 3 + c;
-      se += (ogRaw[i]! - fullBlur[i]!) ** 2;
-      n++;
-    }
-    const rmse = Math.sqrt(se / n);
-    check("invite.web.blur.ogImage.fill", `sigma 360 px at 1200 × 630 (least-squares fit, pf-og-blur-fit.csv); measured fill RMSE ${rmse.toFixed(2)}/255`, "fill RMSE vs full-size sigma-360 blur ≤ 2/255", `fill RMSE vs full-size sigma-360 blur ${rmse <= 2 ? "≤ 2/255" : "> 2/255"}`);
-
-    // ---------- side-by-side ----------
-    const tileW = 585;
-    const tileH = 1266;
-    const gap = 24;
-    const tile = (buf: Buffer) => sharp(buf).resize(tileW, tileH, { fit: "fill" }).png().toBuffer();
-    const pairs: [Buffer, string][] = [
-      [shotTop, "pf-web-private-past-01.png"],
-      [shotMembers, "pf-web-private-past-02.png"],
-      [shotNotFound, "pf-web-notfound-01.png"],
-    ];
-    const composites: OverlayOptions[] = [];
-    for (const [i, [ours, ref]] of pairs.entries()) {
-      const top = i * (tileH + gap);
-      composites.push({ input: await tile(ours), left: 0, top }, { input: await tile(fs.readFileSync(REF(ref))), left: tileW + gap, top });
-    }
-    fs.mkdirSync(path.dirname(OUT_PNG), { recursive: true });
-    await sharp({ create: { width: tileW * 2 + gap, height: pairs.length * tileH + (pairs.length - 1) * gap, channels: 3, background: { r: 255, g: 255, b: 255 } } })
-      .composite(composites)
-      .png()
-      .toFile(OUT_PNG);
-
-    // ---------- contrast ----------
-    const observed = ["#FBEBE4", "#A7C8FF", "#1C0606", "#2F2F2F", "#010019", "#FBE4F2", "#F7FBE4", "#C5DB76", "#D4D6F1", "#DE70D6"];
-    const contrastSets: { label: string; pairs: PairResult[] }[] = [
-      { label: `seeded light cover (theme ${theme.background}, title ${tSize} px)`, pairs: invitePairs(theme, tSize) },
-      { label: `seeded dark cover (theme ${darkTheme.background})`, pairs: invitePairs(darkTheme, titleSize(dark.name, 358)) },
-      { label: "no cover / default theme #111111", pairs: invitePairs(defaultTheme(), tSize) },
-      { label: "state pages (default theme)", pairs: statePairs() },
-    ];
-    const sweep = observed.map((hex) => {
-      const t = themeFromColour(hex.match(/[0-9A-F]{2}/g)!.map((h) => parseInt(h, 16)) as Rgb);
-      return { hex, scheme: t.scheme, failing: invitePairs(t, tSize).filter((p) => !p.pass) };
+      section("Mobile card (390 × 664 CSS px @3x, iPhone; viewport ≤ invite.web.size.breakpoint 840)");
+      check("`invite.web.size.cardInset` (card x, y)", `${inset}, ${inset}`, `${card.box.x}, ${card.box.y}`);
+      check("card height (full viewport − 2 × inset)", px(664 - 2 * inset), px(card.box.h));
+      check("`invite.web.radius.card`", px(t["invite.web.radius.card"]), card.s["border-top-left-radius"]!);
+      row("card fill: cover blurred to a colour field (C-34)", "blur radius not measurable (C-34 Gap)", `cover → ${BACKDROP_WIDTH}-px PNG (natural width ${natural}), Gaussian σ = ${BACKDROP_BLUR_OF_WIDTH * 100} % of its width, object-fit cover`, "approximated", "σ estimated from the fall-off of Retro's stock backdrop bg2.jpeg (≈4–6 %); see src/design.ts BACKDROP_BLUR_OF_WIDTH");
+      row("card fill fallbacks", "no cover → inviter's avatar blurred; neither → `color.global.backgroundDeep`", "as spec (renders valid-no-cover-*, valid-no-photos-*)", "matched", "the inviter is the one member whose first name is inviter_first_name (the RPC returns no inviter avatar); ambiguous → placeholder");
+      check("`invite.web.size.avatar`", `${t["invite.web.size.avatar"]} × ${t["invite.web.size.avatar"]}`, `${avatar.box.w} × ${avatar.box.h}`);
+      row("avatar position", "centred above the text block (approximated in the spec — the capture lost the photo)", `centre ${px(avatar.box.y + avatar.box.h / 2)}; space above the text ${px(hero.box.y)}–${px(hero.box.bottom)} → centre ${px(hero.box.y + hero.box.h / 2)}`, "approximated", "Retro's broken-image alt text ('athan', clipped by the 112-pt circle) puts the box top ≈ 152 CSS px → centre ≈ 208 on Retro's page; the space-centre rule gives ≈ 209 there");
+      row("headline family `font.global.display`", "display serif (Retro: Roslindale Display Narrow — commercial)", h1.s["font-family"]!, "approximated", "PLATFORM stack: New York on Apple (ui-serif), Noto Serif on Android; this Linux render uses the bundled Noto Serif. Narrower Roslindale fits more per line");
+      check("headline size `fontSize.global.displayMedium`", px(t["fontSize.global.displayMedium"]), h1.s["font-size"]!);
+      check("headline line `invite.web.lineHeight.headline`", px(t["invite.web.lineHeight.headline"]), h1.s["line-height"]!);
+      check("headline weight `fontWeight.global.displayMedium`", "400", h1.s["font-weight"]!);
+      check("headline colour (#FFFFFF, `color.global.textOnMedia`)", css(t["color.global.textOnMedia"]), h1.s.color!);
+      check("`invite.web.size.textMaxWidth` (headline)", px(t["invite.web.size.textMaxWidth"]), h1.s["max-width"]!);
+      row("line family `font.global.family`", "SF Pro (iOS) / Inter (Android)", line.s["font-family"]!, "approximated", "PLATFORM stack, no web font: SF Pro on Apple, the platform UI face elsewhere (Roboto on Android, not the app's bundled Inter)");
+      check("`invite.web.fontSize.body`", px(t["invite.web.fontSize.body"]), line.s["font-size"]!);
+      check("`invite.web.lineHeight.body`", px(t["invite.web.lineHeight.body"]), line.s["line-height"]!);
+      check("`invite.web.letterSpacing.body`", px(t["invite.web.letterSpacing.body"]), line.s["letter-spacing"]!);
+      check("`invite.web.color.body` (white 62 %)", css(t["invite.web.color.body"]), line.s.color!);
+      check("`invite.web.size.textMaxWidth` (line)", px(t["invite.web.size.textMaxWidth"]), line.s["max-width"]!);
+      check("`invite.web.size.headlineToBody` (headline → line)", px(t["invite.web.size.headlineToBody"]), px(line.box.y - h1.box.bottom));
+      check("`invite.web.size.headlineToBody` (line → members)", px(t["invite.web.size.headlineToBody"]), px(members.box.y - line.box.bottom));
+      check("members `size.global.avatarSmall`", px(t["size.global.avatarSmall"]), px(m1.box.w));
+      check("members `size.global.avatarStackOverlap` (pitch)", px(t["size.global.avatarSmall"] - t["size.global.avatarStackOverlap"]), px(m2.box.x - m1.box.x));
+      row("members: as many as fit 260, no '+N'", "13 of 30 (260 − 22.6) ÷ 19.6 + 1", "13 (unit test with 30 members)", "matched");
+      row("members: white ring (C-23)", "white ring, width not measured (C-23 Gap)", "no ring", "not matched", "as the iOS / Android components: a ring of unmeasured width is not drawn");
+      row("members: no photo (C-23)", "initials (Gap) → `icon.global.person` on `color.global.control`", "Material Rounded.Person glyph in `color.global.textSecondary` on `color.global.control` (light values)", "matched", "same fallback as the native AvatarView");
+      check("`invite.web.size.bodyToPill`", px(t["invite.web.size.bodyToPill"]), px(pill.box.y - members.box.bottom));
+      check("pill width (card − 2 × `invite.web.size.pillInset`)", px(390 - 2 * inset - 2 * t["invite.web.size.pillInset"]), px(pill.box.w), "Retro's capture: 302 (906 px ÷ 3)");
+      check("`invite.web.size.pillHeight`", px(t["invite.web.size.pillHeight"]), px(pill.box.h));
+      check("pill radius (capsule = height / 2)", px(t["invite.web.size.pillHeight"] / 2), pill.s["border-top-left-radius"]!);
+      check("`invite.web.color.pill` (white 20 %)", css(t["invite.web.color.pill"]), pill.s["background-color"]!);
+      check("pill label colour #FFFFFF", css(t["color.global.textOnMedia"]), pill.s.color!);
+      check("`invite.web.fontSize.pill`", px(t["invite.web.fontSize.pill"]), pill.s["font-size"]!);
+      check("`invite.web.fontWeight.pill` (semibold)", "600", pill.s["font-weight"]!);
+      check("`invite.web.size.pillToFooter` + `invite.web.size.footerMargin`", px(t["invite.web.size.pillToFooter"] + t["invite.web.size.footerMargin"]), px(footer.box.y - pill.box.bottom));
+      check("`invite.web.size.footerMargin` (below the footer)", px(t["invite.web.size.footerMargin"]), px(card.box.bottom - footer.box.bottom));
+      check("`invite.web.fontSize.footer`", px(t["invite.web.fontSize.footer"]), footer.s["font-size"]!);
+      check("footer colour #FFFFFF", css(t["color.global.textOnMedia"]), footer.s.color!);
+      check("footer links: 44 × 44 hit area (`size.global.minTouchTarget.ios`)", "tap 21 px above 'Terms' hits it", hit === c["invite.web.footer.terms"] ? "tap 21 px above 'Terms' hits it" : `hit ${hit}`, "a centred ::after box of max(100 %, 44 px); the 8-px text keeps its place");
+      section("Mobile card against Retro's capture (references/auto/retro/web/retro.app-u-nathan-iphone.png, px ÷ 3)");
+      const within = (pairs: [number, number][], tol: number): Status => (pairs.every(([a, b]) => Math.abs(a - b) <= tol) ? "matched" : "not matched");
+      row("pill top – bottom", "538–594 (y 1614–1782)", `${px(pill.box.y)}–${px(pill.box.bottom)}`, within([[pill.box.y, 538], [pill.box.bottom, 594]], 1));
+      row("pill x", "44 (x 132)", px(pill.box.x), within([[pill.box.x, 44]], 1));
+      row("footer", "glyphs 632.7–640 (y 1898–1920)", `line box ${px(footer.box.y)}–${px(footer.box.bottom)}`, within([[footer.box.y, 632.7], [footer.box.bottom, 640]], 1), "glyph ink sits inside the 8-px line box");
+      row("headline top", "≈ 413 (ink y 1245–1325)", px(h1.box.y), "approximated", "ours sits higher by the member stack (16 + 22.6), which Retro's /u/ page does not have (SPEC_FLAGS T7 addition)");
     });
-    // Worst case over every theme colour on the grey axis (the alpha text pairs are weakest there).
-    let worst = { grey: 0, pairs: [] as PairResult[] };
-    for (let v = 0; v <= 255; v++) {
-      const fails = invitePairs(themeFromColour([v, v, v]), tSize).filter((p) => !p.pass);
-      if (fails.length > worst.pairs.length) worst = { grey: v, pairs: fails };
+
+    // hover / busy / motion
+    await withPage(
+      "mobile",
+      "light",
+      async (page) => {
+        await load(page, url("valid"));
+        const transition = (await measure(page, ".pill", ["transition"])).s.transition!;
+        section("Mobile card — 'Let's go' states and motion");
+        check("transition `invite.web.duration.pill` + `invite.web.easing.pill`", `background-color ${t["invite.web.duration.pill"] / 1000}s ${cssEasing("invite.web.easing.pill").replace(/,\s*/g, ", ")}`, transition);
+        await page.hover(".pill");
+        await page.waitForTimeout(t["invite.web.duration.pill"] + 100);
+        check("hover `invite.web.color.pillHover` (white 30 %)", css(t["invite.web.color.pillHover"]), (await measure(page, ".pill", ["background-color"])).s["background-color"]!);
+        await page.evaluate(() => document.addEventListener("click", (e) => e.preventDefault(), true));
+        await page.click(".pill");
+        check("busy: aria-busy", "true", String(await page.getAttribute(".pill", "aria-busy")));
+        check("busy: label `invite.web.opening`", c["invite.web.opening"]!, await page.innerText(".pill"));
+        check("busy: `invite.web.opacity.pillDisabled`", String(t["invite.web.opacity.pillDisabled"]), (await measure(page, ".pill", ["opacity"])).s.opacity!);
+      },
+      false,
+    );
+    await withPage("mobile", "light", async (page) => {
+      await load(page, url("valid"));
+      check("prefers-reduced-motion: reduce removes the transition", "none (all 0s)", (await measure(page, ".pill", ["transition-duration"])).s["transition-duration"] === "0s" ? "none (all 0s)" : "still animated");
+    });
+    await withPage("mobile", "light", async (page) => {
+      await load(page, url("valid-no-photos"));
+      check("avatar placeholder `invite.web.color.avatarPlaceholder`", css(t["invite.web.color.avatarPlaceholder"]), (await measure(page, ".avatar", ["background-color"])).s["background-color"]!);
+    });
+
+    // ---------- desktop ----------
+    await withPage("desktop", "light", async (page) => {
+      await load(page, url("valid"));
+      oursDesktop = await page.screenshot();
+      const m = (sel: string, props: string[] = []) => measure(page, sel, props);
+      const qr = await m(".qr");
+      const avatar = await m(".avatar");
+      const h1 = await m(".headline", ["font-size", "line-height", "color", "font-weight"]);
+      const line = await m(".line.desktop-only", ["font-size", "line-height", "letter-spacing", "color", "max-width"]);
+      const link = await m(".link", ["font-size", "font-weight", "color"]);
+      const footer = await m(".footer", ["font-size", "line-height", "color"]);
+      const bg = await page.$eval("html", (e) => getComputedStyle(e).backgroundColor);
+      const q = t["invite.web.size.qrDesktop"];
+      const shot = await page.screenshot({ clip: { x: qr.box.x - 20, y: qr.box.y - 20, width: q + 40, height: q + 40 } });
+      const { data, info } = await sharp(shot).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      const decoded = jsQR.default(new Uint8ClampedArray(data), info.width, info.height)?.data;
+      const k = await page.$eval(".qr path", (p) => Number(/h[0-9]+v([0-9]+)/.exec(p.getAttribute("d") ?? "")?.[1]));
+
+      section("Desktop column (1440 × 900 @1x; viewport > 840)");
+      check("page background (#FFFFFF, `color.global.background` light)", css(t["color.global.background"].light), bg);
+      row("order", "spec text: avatar → headline → line → QR → link → footer", "QR (avatar in its centre) → headline → line → link → footer", "approximated", "follows the spec's own WEBD reference (capture: QR above the headline, photo inside the QR) and Retro's DOM [QR(profilePhotoURL), h1, p]; the spec's Structure list orders it otherwise — spec text to fix");
+      check("`invite.web.size.qrDesktop`", `${q} × ${q}`, `${qr.box.w} × ${qr.box.h}`);
+      row("QR modules", "black on white", `square, ${k} px each (whole pixels), centred; level H`, "approximated", "Retro's code uses rounded dot modules (style not tokenised); 231-px ink in its 250-px box = 33 × 7 px, the same whole-pixel rule");
+      check("QR content", `https://<domain>/i/<token>`, decoded === `https://invite.example.com/i/${TOKENS.valid}` ? `https://<domain>/i/<token>` : String(decoded), "decoded from the screenshot (jsQR) with the avatar over the centre");
+      check("`invite.web.size.avatarDesktop`", `${t["invite.web.size.avatarDesktop"]} × ${t["invite.web.size.avatarDesktop"]}`, `${avatar.box.w} × ${avatar.box.h}`);
+      check("avatar centred on the QR", `${px(qr.box.x + q / 2)}, ${px(qr.box.y + q / 2)}`, `${px(avatar.box.x + avatar.box.w / 2)}, ${px(avatar.box.y + avatar.box.h / 2)}`);
+      check("`invite.web.size.headlineTopDesktop`", px(t["invite.web.size.headlineTopDesktop"]), px(h1.box.y - qr.box.bottom));
+      check("`invite.web.fontSize.headlineDesktop` (line 48)", `${px(t["invite.web.fontSize.headlineDesktop"])} / ${px(t["invite.web.fontSize.headlineDesktop"])}`, `${h1.s["font-size"]} / ${h1.s["line-height"]}`);
+      check("headline colour #000000", css(t["color.global.textPrimary"].light), h1.s.color!);
+      check("`invite.web.fontSize.bodyDesktop` / `.lineHeight.bodyDesktop`", `${px(t["invite.web.fontSize.bodyDesktop"])} / ${px(t["invite.web.lineHeight.bodyDesktop"])}`, `${line.s["font-size"]} / ${line.s["line-height"]}`);
+      check("tracking `invite.web.letterSpacing.body`", px(t["invite.web.letterSpacing.body"]), line.s["letter-spacing"]!);
+      check("`invite.web.color.bodyDesktop` (black 50 %)", css(t["invite.web.color.bodyDesktop"]), line.s.color!);
+      check("`invite.web.size.bodyMaxWidthDesktop`", px(t["invite.web.size.bodyMaxWidthDesktop"]), line.s["max-width"]!);
+      check("`invite.web.size.headlineToBody`", px(t["invite.web.size.headlineToBody"]), px(line.box.y - h1.box.bottom));
+      check("`invite.web.size.bodyToQrDesktop` (line → 'Download the app')", px(t["invite.web.size.bodyToQrDesktop"]), px(link.box.y - line.box.bottom), "Retro's p margin-bottom; with the QR above, the link follows it");
+      row("'Download the app' style", "link (no style in the spec)", `C-08 text button: ${link.s["font-size"]} weight ${link.s["font-weight"]} ${link.s.color}`, "approximated", "composition: Retro's desktop shows store badges (trademarks) here");
+      check("footer text role `caption`", `${px(t["fontSize.global.caption"])} / ${px(t["lineHeight.global.caption"])}`, `${footer.s["font-size"]} / ${footer.s["line-height"]}`);
+      check("footer colour (#000000 50 %)", css(t["invite.web.color.bodyDesktop"]), footer.s.color!);
+      check("footer margin `invite.web.size.footerMargin`", px(t["invite.web.size.footerMargin"]), px(900 - footer.box.bottom));
+    });
+
+    // ---------- states and appearance ----------
+    section("States (same card / column; renders design/verification/invite.web/<state>-<layout>-<scheme>.png)");
+    for (const k of CASES) {
+      await withPage("mobile", "light", async (page) => {
+        const status = await load(page, url(k.name));
+        const h1 = await page.innerText("h1");
+        const line = (await page.$$eval(".line", (els) => els.filter((e) => getComputedStyle(e).display !== "none").map((e) => (e as HTMLElement).innerText))).join("");
+        const pill = await page.$$eval(".pill", (els) => els.filter((e) => getComputedStyle(e).display !== "none").map((e) => (e as HTMLElement).innerText).join(""));
+        const cardBg = (await measure(page, ".card", ["background-color"])).s["background-color"];
+        row(k.name, `HTTP ${k.status}`, `HTTP ${status} · “${h1}” · “${line}”${pill ? ` · pill “${pill}”` : " · no pill"}${k.name.startsWith("valid") ? "" : ` · card ${cardBg}`}`, status === k.status ? "matched" : "not matched");
+      });
     }
-    const failingGreys = [...Array(256).keys()].filter((v) => invitePairs(themeFromColour([v, v, v]), tSize).some((p) => !p.pass));
-    const failingTextGreys = [...Array(256).keys()].filter((v) => invitePairs(themeFromColour([v, v, v]), tSize).some((p) => !p.pass && p.kind !== "nontext"));
+    row("full (group has 30 members)", "not a state of this spec", "—", "not matched", "invite_preview cannot tell; join_group's group_full is shown by the App Clip / app (invite.appclip.full.*)");
+    row("loading / offline / permission-denied", "— (server-rendered; the browser's own offline page)", "—", "matched");
 
-    writeMarkdown({ light, theme, tSize, contrastSets, sweep, worst, failingGreys, failingTextGreys });
-    const failed = rows.flatMap((s) => s.rows).filter((r) => !r.ok);
-    console.log(`verify: ${rows.flatMap((s) => s.rows).length} checks, ${failed.length} mismatches → ${path.relative(ROOT, OUT_MD)}, ${path.relative(ROOT, OUT_PNG)}`);
-    for (const f of failed) console.log(`  ✗ ${f.token}: expected ${f.expected}, got ${f.actual}`);
-    process.exitCode = failed.length ? 1 : 0;
-  } finally {
-    await browser.close();
-    server.close();
-    broken.server.close();
-    for (const s of seeds) await cleanup(s.group);
-    for (const u of extraUsers) await deleteUser(u);
-    void removeObjects;
-  }
-}
-
-function writeMarkdown(d: {
-  light: Seed;
-  theme: { background: string; scheme: string };
-  tSize: number;
-  contrastSets: { label: string; pairs: PairResult[] }[];
-  sweep: { hex: string; scheme: string; failing: PairResult[] }[];
-  worst: { grey: number; pairs: PairResult[] };
-  failingGreys: number[];
-  failingTextGreys: number[];
-}) {
-  const all = rows.flatMap((s) => s.rows);
-  const cell = (s: string) => s.replace(/\|/g, "\\|");
-  let md = `# Verification — \`invite.web\`
-
-Generated by \`web/scripts/verify.ts\` (\`cd web && npm run verify\`) on ${new Date().toISOString().slice(0, 10)}.
-Our page: the real service against the local Supabase stack, rendered by Playwright Chromium (\`/opt/pw-browsers\`)
-at 390×844 CSS px @3x with an iPhone user agent — the capture setup of the research pass. Computed values are
-\`getComputedStyle\` / \`getBoundingClientRect\` read back from the page; reference values are the research's
-computed-style dumps and production CSS (\`references/auto/partiful/\`).
-
-**Result: ${all.filter((r) => r.ok).length} of ${all.length} checks match.**
-
-Side by side: [\`invite.web.png\`](invite.web.png) — ours left, Partiful right, each frame 1170×2532 px scaled to the same height:
-1. top of the page | \`references/auto/partiful/web/pf-web-private-past-01.png\` (link-only event, logged out — the closest analogue)
-2. scrolled so 'Invited by' sits where P3's 'Hosted by' sits | \`pf-web-private-past-02.png\`
-3. not-found state | \`pf-web-notfound-01.png\`
-
-Test data (synthetic images, no reference content): group "${d.light.name}", ${d.light.group.users.length} members (5 with photos),
-cover = radial gradient, theme ${d.theme.background} (${d.theme.scheme}), title ${d.tSize} px by the auto-fit rule.
-Differences that are by design (do-not-copy or no counterpart): no acquisition banner, logo, Login pill, date/time,
-timezone pills, location, description, guest counts, '+N' disc, Activity list, theme video, bottom navigation (see
-\`design/surfaces/invite.web.md\` → Do-not-copy). Font: Partiful's TWK Lausanne / PartifulGrotesk are proprietary; the
-platform UI font is used, so glyph shapes and line breaks differ.
-
-`;
-  for (const s of rows) {
-    md += `## ${s.section}\n\n| ✓ | token | reference value (evidence) | expected (from token) | computed on our page |\n|---|---|---|---|---|\n`;
-    for (const r of s.rows) md += `| ${r.ok ? "✓" : "✗"} | \`${cell(r.token)}\` | ${cell(r.reference)} | \`${cell(r.expected)}\` | \`${cell(r.actual)}\` |\n`;
-    md += "\n";
-  }
-  md += `Not rendered on the web (App Clip and App Store Connect values, verified in the iOS build): \`invite.appclip.*\` tokens.
-
-## WCAG 2.2 contrast (sourced values, not adjusted)
-
-Thresholds: \`layout.global.contrast.text\` 4.5:1, \`.largeText\` 3:1, \`.nonText\` 3:1. "Large" uses WCAG's web
-definition (≥ 24 px, or ≥ 18.66 px bold). Translucent colours are composited (source-over) on what is beneath them.
-
-`;
-  for (const set of d.contrastSets) {
-    md += `### ${set.label}\n\n| element | kind | foreground | background | ratio | needs | result |\n|---|---|---|---|---|---|---|\n`;
-    for (const p of set.pairs) md += `| ${p.element} | ${p.kind} | ${p.fg} | ${p.bg} | ${p.ratio.toFixed(2)}:1 | ${p.need}:1 | ${p.pass ? "pass" : "**FAIL**"} |\n`;
-    md += "\n";
-  }
-  md += `### Partiful's observed theme colours as our theme colour (research §5.2)\n\n| theme | text | failing pairs |\n|---|---|---|\n`;
-  for (const s of d.sweep) md += `| ${s.hex} | ${s.scheme === "light" ? "black" : "white"} | ${s.failing.length ? s.failing.map((p) => `${p.element} ${p.ratio.toFixed(2)}:1`).join("; ") : "none"} |\n`;
-  const hexGrey = (v: number) => `#${v.toString(16).padStart(2, "0").repeat(3).toUpperCase()}`;
-  const toRanges = (vals: number[]) => {
-    const out: string[] = [];
-    let start = -1;
-    for (let v = 0; v <= 256; v++) {
-      const inSet = vals.includes(v);
-      if (inSet && start < 0) start = v;
-      if (!inSet && start >= 0) {
-        out.push(start === v - 1 ? hexGrey(start) : `${hexGrey(start)}–${hexGrey(v - 1)}`);
-        start = -1;
+    section("Appearance (prefers-color-scheme)");
+    let identical = 0;
+    for (const k of CASES) {
+      for (const layout of ["mobile", "desktop"] as const) {
+        const shots: Buffer[] = [];
+        for (const scheme of ["light", "dark"] as const) {
+          shots.push(await withPage(layout, scheme, async (page) => (await load(page, url(k.name)), page.screenshot({ fullPage: true }))));
+        }
+        const [a, b] = await Promise.all(shots.map((s) => sharp(s).raw().toBuffer()));
+        if (a!.equals(b!)) identical++;
       }
     }
-    return out.join(", ") || "none";
-  };
-  const ranges = [toRanges(d.failingGreys)];
-  md += `\n### Worst case\n\nOn the grey axis, themes ${ranges[0]} fail at least one pair (mostly the outlined 'View all' border, a non-text
-pair); themes ${toRanges(d.failingTextGreys)} fail a **text** pair. The worst is ${hexGrey(d.worst.grey)}: ${d.worst.pairs.map((p) => `${p.element} ${p.ratio.toFixed(2)}:1 (needs ${p.need}:1)`).join("; ") || "none"}.
-These come from Partiful's fixed alphas (body 0.8, outlined border 0.25/0.4, avatar disc 0.1/0.25) on mid-tone theme
-colours; a cover whose mean colour is mid-tone produces them. They are reported, not corrected (CONVENTIONS: no
-adjusted values); the owner capture / decision is listed in \`design/surfaces/invite.web.md\` → Gaps.
+    row("dark renders like light", "same in both appearances (Retro's web has no dark scheme; RA-19)", `${identical} of ${CASES.length * 2} state × layout renders pixel-identical; \`color-scheme: light\``, identical === CASES.length * 2 ? "matched" : "not matched");
+
+    // ---------- link preview and behaviour ----------
+    const html = async (ua: string) => (await fetch(url("valid"), { headers: { "user-agent": ua } })).text();
+    const ios = await html(IPHONE);
+    const meta = (attr: string, name: string) => new RegExp(`<meta ${attr}="${name}" content="([^"]*)">`).exec(ios)?.[1] ?? "(absent)";
+    section("Link preview, App Clip and links (`invite.web.layout.linkPreview`)");
+    row("`<title>` = `invite.web.documentTitle`", "{app_name} - {title}", /<title>([^<]*)<\/title>/.exec(ios)![1]!, c["invite.web.documentTitle"] ? "matched" : "not matched", "BLOCKED until the owner names the app: development shows the marker, production refuses to start");
+    check("og:title / twitter:title (`invite.web.og.title`)", "Join Lima family / Join Lima family", `${meta("property", "og:title")} / ${meta("name", "twitter:title")}`);
+    check("og:description", c["invite.web.og.description"]!, meta("property", "og:description"));
+    check("og:image (+ type, width, height)", `…/og.png image/png 600 600`, `…/${meta("property", "og:image").split("/").pop()} ${meta("property", "og:image:type")} ${meta("property", "og:image:width")} ${meta("property", "og:image:height")}`);
+    check("twitter:card", "summary_large_image", meta("name", "twitter:card"));
+    check("apple-itunes-app", "app-id=…, app-clip-bundle-id=….Clip, app-clip-display=card, app-argument=<invite URL>", meta("name", "apple-itunes-app").replace(/app-id=[0-9]+/, "app-id=…").replace(/app-clip-bundle-id=[^,]+\.Clip/, "app-clip-bundle-id=….Clip").replace(/app-argument=https:\/\/[^"]+$/, "app-argument=<invite URL>"));
+    check("robots (meta)", "noindex, noimageindex", meta("name", "robots"));
+    check("robots (X-Robots-Tag)", "noindex, noimageindex", String((await fetch(url("valid"))).headers.get("x-robots-tag")));
+    const pillHref = (h: string) => /<a class="pill mobile-only" data-opens href="([^"]+)"/.exec(h)?.[1]?.replace(/&amp;/g, "&") ?? "(none)";
+    check("'Let's go' on iOS", "https://appclip.apple.com/id?p=<bundle id>.Clip&token=<token>", pillHref(ios).replace(/p=[^&]+\.Clip/, "p=<bundle id>.Clip").replace(/token=.*/, "token=<token>"));
+    check("'Let's go' on Android", "Play listing, referrer=invite_token%3D<token>", pillHref(await html(ANDROID)).replace(/^https:\/\/play\.google\.com\/store\/apps\/details\?id=[^&]+&referrer=invite_token%3D.*$/, "Play listing, referrer=invite_token%3D<token>"));
+    check("'Download the app' on desktop", "App Store / Play listing", /<a class="link hit desktop-only" href="https:\/\/(apps\.apple\.com|play\.google\.com)\//.test(await html(DESKTOP)) ? "App Store / Play listing" : "(other)");
+    check("footer links", "legal URLs (config/app.json), new tab", /<a class="hit" href="https:\/\/[^"]+" target="_blank" rel="noopener noreferrer">/.test(ios) ? "legal URLs (config/app.json), new tab" : "(other)");
+
+    // ---------- share image ----------
+    const og = Buffer.from(await (await fetch(`${servers.main.base}/i/${TOKENS.noPhotos}/og.png`)).arrayBuffer());
+    const { data, info } = await sharp(og).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const at = (x: number, y: number) => [...data.subarray((y * info.width + x) * 3, (y * info.width + x) * 3 + 3)];
+    const circle = { x0: 600, x1: -1, y0: 600, y1: -1 };
+    const ink: number[] = [];
+    let brightest = 0;
+    for (let y = 0; y < info.height; y++) {
+      let inkRow = false;
+      for (let x = 0; x < info.width; x++) {
+        const p = at(x, y);
+        if (y < 295 && Math.max(...p) > 40) Object.assign(circle, { x0: Math.min(circle.x0, x), x1: Math.max(circle.x1, x), y0: Math.min(circle.y0, y), y1: Math.max(circle.y1, y) });
+        else if (y > 295 && Math.max(...p) > 40) inkRow = true;
+        if (y > 360 && y < 420) brightest = Math.max(brightest, p[0]!);
+      }
+      if (inkRow) ink.push(y);
+    }
+    const gap = ink.findIndex((y, i) => i > 0 && y - ink[i - 1]! > 1);
+    section("Share image 600 × 600 (`invite.web.layout.ogImage`; group without a cover, “Roommates”)");
+    check("size", "600 × 600 PNG", `${info.width} × ${info.height} PNG`);
+    check("avatar circle 83 px, top 208 (Retro x 258–340, y 208–290; anti-aliased edge included)", "x 258–340, y 208–290", `x ${circle.x0}–${circle.x1}, y ${circle.y0}–${circle.y1}`);
+    check("name baseline: ink rows end at 348 (Retro 'nathan' 309–348)", 348, ink[gap - 1]!, "'Roommates' has no descender, so its last ink row is the baseline row");
+    check("domain ink from row 369 (name baseline + `nameToDomain` 21)", 369, ink[gap]!);
+    row("background", "cover blurred (C-34); no cover → `color.global.backgroundDeep`", `no cover: ${toHex(at(10, 10) as [number, number, number])}; with a cover: σ = ${BACKDROP_BLUR_OF_WIDTH * 100} % of 600 (og-cover.png)`, "approximated", "blur radius Gap; Retro's field is also darker than its photo (no darkening is sourced, none applied)");
+    row("name face", "`font.global.display`, ≈ 52 px; weight not measurable (Gap)", "Noto Serif Regular 52 px (bundled, OFL)", "approximated", "Retro's OG name reads bold; the display role's weight (regular) is used");
+    row("domain line", "`font.global.family` 20 px, white ≈ 70 % (#BBC5C9 over Retro's navy)", `Inter 20 px, #FFFFFF at 0.7 (brightest ${brightest} on black = #${brightest.toString(16).toUpperCase().repeat(3)})`, "matched", "colour over a black field; Retro's reading includes its backdrop");
+    row("cover circle when there is no cover", "not specified", "`invite.web.color.avatarPlaceholder` circle", "approximated", "the page's no-photo avatar");
+
+    // ---------- accessibility ----------
+    const backdrop = await blurredBackdrop((await sharp(photo("family-dinner-4x3.jpg")).jpeg().toBuffer()));
+    const table = (pairs: PairResult[]) =>
+      pairs.map((p) => `| ${p.element} | ${p.fg} on ${p.bg} | ${p.ratio.toFixed(2)}:1 | ${p.need}:1 (${p.kind}) | ${p.pass ? "pass" : "**FAIL**"} |`).join("\n");
+    const contrast = `## Contrast (WCAG 2.2; \`src/contrastReport.ts\`)
+
+Large text = 24 CSS px, or 18.66 CSS px bold (WCAG's 18 pt / 14 pt). Sourced values are reported, not adjusted.
+
+**Mobile card over the spec's sample backdrop ${toHex(SPEC_BACKDROP_SAMPLE)} (Retro's capture)**
+
+| pair | colours | ratio | needs | result |
+|---|---|---|---|---|
+${table(cardPairs(SPEC_BACKDROP_SAMPLE))}
+
+**Mobile card over this render's backdrop** (\`fixtures/photos/family-dinner-4x3.jpg\` blurred; mean of the lower half ${toHex(backdrop.under)})
+
+| pair | colours | ratio | needs | result |
+|---|---|---|---|---|
+${table(cardPairs(backdrop.under))}
+
+**State card (\`color.global.backgroundDeep\`)**
+
+| pair | colours | ratio | needs | result |
+|---|---|---|---|---|
+${table(statePairs())}
+
+**Desktop column (white page)**
+
+| pair | colours | ratio | needs | result |
+|---|---|---|---|---|
+${table(desktopPairs())}
+
+Spec differences: the spec lists the desktop line (black 50 % on white, 4.00:1) as passing as large text (20 px ≥ the
+token's "18 pt"); by WCAG's web definition 20 px regular is normal text, so it fails 4.5:1, as does the 14-px desktop
+footer at the same colour (not in the spec's table). The 8-px mobile footer is below any recommended size (Retro's own).
+In development the server logs the failing pairs of each invite's own backdrop.
 `;
-  fs.writeFileSync(OUT_MD, md);
+
+    // ---------- side by side ----------
+    const H = 1992;
+    const fit = async (buf: Buffer, h: number) => sharp(buf).resize({ height: h }).png().toBuffer();
+    const pair = async (a: Buffer, b: Buffer, h: number) => {
+      const [x, y] = await Promise.all([fit(a, h), fit(b, h)]);
+      const [mx, my] = await Promise.all([sharp(x).metadata(), sharp(y).metadata()]);
+      return { img: await sharp({ create: { width: mx.width! + my.width! + 40, height: h, channels: 3, background: { r: 255, g: 255, b: 255 } } }).composite([{ input: x, left: 0, top: 0 }, { input: y, left: mx.width! + 40, top: 0 }]).png().toBuffer(), width: mx.width! + my.width! + 40 };
+    };
+    const ogCover = Buffer.from(await (await fetch(`${servers.main.base}/i/${TOKENS.valid}/og.png`)).arrayBuffer());
+    const rowsImg = [
+      await pair(oursMobile!, fs.readFileSync(REF("retro.app-u-nathan-iphone.png")), H),
+      await pair(oursDesktop!, fs.readFileSync(REF("retro.app-u-nathan-desktop.png")), 900),
+      await pair(ogCover, fs.readFileSync(REF("retro.app-og-userogsquare-nathan.png")), 600),
+    ];
+    const W = Math.max(...rowsImg.map((r) => r.width));
+    let y = 0;
+    const comps = rowsImg.map((r) => {
+      const o = { input: r.img, left: 0, top: y };
+      y += (r === rowsImg[0] ? H : r === rowsImg[1] ? 900 : 600) + 40;
+      return o;
+    });
+    await sharp({ create: { width: W, height: y - 40, channels: 3, background: { r: 255, g: 255, b: 255 } } }).composite(comps).png().toFile(OUT_PNG);
+
+    // ---------- markdown ----------
+    const all = sections.flatMap((s) => s.rows);
+    const count = (s: Status) => all.filter((r) => r.status === s).length;
+    const esc = (s: string) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
+    const body = sections
+      .map((s) => `## ${s.name}\n\n| status | item | spec | renders | note |\n|---|---|---|---|---|\n${s.rows.map((r) => `| ${r.status === "matched" ? "matched" : r.status === "approximated" ? "approximated" : "**not matched**"} | ${esc(r.item)} | ${esc(r.spec)} | ${esc(r.rendered)} | ${esc(r.note)} |`).join("\n")}`)
+      .join("\n\n");
+    const md = `# Verification — \`invite.web\`
+
+Generated by \`web/scripts/verify.ts\` (\`cd web && npm run verify\`) on ${new Date().toISOString().slice(0, 10)} against
+\`design/surfaces/invite.web.md\` (Retro's \`/u/[username]\` page). The real service with a fixture upstream (sample
+photos from \`fixtures/photos\`: cover \`family-dinner-4x3.jpg\`, avatars \`avatar-01…08.jpg\`; group “Lima family”,
+inviter Ana, 8 members, Rui without a photo) rendered by Playwright Chromium (\`PLAYWRIGHT_BROWSERS_PATH\`) in the capture
+setups of Retro's references: mobile 390 × 664 CSS px @3x with an iPhone user agent
+(\`references/auto/retro/web/retro.app-u-nathan-iphone.png\`), desktop 1440 × 900 @1x (\`retro.app-u-nathan-desktop.png\`).
+Values are \`getComputedStyle\` / \`getBoundingClientRect\` read back from the page and pixels of the served images.
+
+**Result: ${count("matched")} matched, ${count("approximated")} approximated, ${count("not matched")} not matched.**
+
+Renders (git-ignored PNGs, written by \`test/render/invite.render.test.ts\` on every \`npm test\`):
+\`design/verification/invite.web/<state>-<mobile|desktop>-<light|dark>.png\` for the states ${CASES.map((k) => `\`${k.name}\``).join(", ")};
+\`valid-busy-mobile-light.png\` (“Opening…”); \`og-cover.png\`, \`og-no-cover.png\` (share images).
+Side by side: [\`invite.web.png\`](invite.web.png) (git-ignored; contains reference crops) — ours left, Retro right:
+mobile card | iPhone capture (Retro's photo did not load in its capture), desktop | desktop capture, share image | Retro's share image.
+
+By design (do-not-copy / no counterpart): no Retro mark top-left, wordmark, stock backdrops, "© Lone Palm Labs", store
+badges, page counts. Added by the spec: the members' avatar stack (SPEC_FLAGS T7). Fonts: no commercial face is used —
+the display role is the platform serif (ui-serif → New York on Apple; Noto Serif on Android and in these renders), text
+is the platform UI face; Retro's Roslindale Display Narrow is narrower, so line breaks differ.
+
+${body}
+
+${contrast}
+## Not built / open
+
+- **Backdrop blur radius** (C-34 Gap): σ = ${BACKDROP_BLUR_OF_WIDTH * 100} % of the backdrop width, an estimate from Retro's stock backdrop; needs a token
+  (\`src/design.ts\` \`BACKDROP_BLUR_OF_WIDTH\` is the one approximated constant).
+- **Member stack ring** (C-23 Gap): not drawn, as in the native components.
+- **Initials avatar** (C-23 Gap): the no-photo member shows \`icon.global.person\`; the inviter without a photo shows the
+  \`invite.web.color.avatarPlaceholder\` circle (spec).
+- **Inviter's photo**: \`invite_preview\` returns no inviter avatar; the page uses the one member whose first name equals
+  \`inviter_first_name\` and shows the placeholder when none or several match. An \`inviter_avatar_path\` field in the RPC
+  would remove the guess (backend change, not made).
+- **App mark on the card**: none (owner's mark, decision 0.2).
+- **Document title**: \`invite.web.documentTitle\` is BLOCKED until the app is named.
+- **"Full" state**: not a web state in the spec; a full group is reported by \`join_group\` in the App Clip / app.
+- **Share-image glyph coverage**: the bundled Noto Serif / Inter cover Latin, Greek and Cyrillic; other scripts and emoji in
+  a group name need system fonts in the container (fonts.conf falls back to them; the slim image has none).
+`;
+    fs.writeFileSync(OUT_MD, md);
+    console.log(`wrote ${path.relative(ROOT, OUT_MD)} (${count("matched")} matched, ${count("approximated")} approximated, ${count("not matched")} not matched) and ${path.relative(ROOT, OUT_PNG)}`);
+  } finally {
+    await browser.close();
+    await servers.close();
+  }
 }
 
 main().catch((e) => {

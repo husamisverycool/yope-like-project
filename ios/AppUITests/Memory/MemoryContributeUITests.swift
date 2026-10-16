@@ -1,4 +1,5 @@
-// birthday.request → birthday.contribute → back to the request with the member's own block.
+// birthday.request → birthday.contribute (choose a photo → the composer → "Add a Message" → "Add to video") → back on the
+// request with the member's own contribution; "Change photo" reopens the picker with the current photo selected.
 import XCTest
 
 final class MemoryContributeUITests: XCTestCase {
@@ -13,53 +14,50 @@ final class MemoryContributeUITests: XCTestCase {
         app.launch()
         _ = try MemoryUITestLaunch.waitForScreen(app, "birthday.request")
 
-        // Request: "Add Your Photo".
+        // The request card: "Add your photo".
         let cta = MemoryUITestLaunch.element(app, "birthday.request.cta")
         XCTAssertTrue(cta.waitForExistence(timeout: 10))
         cta.tap()
 
-        // Step 1: only own / self-tagged photos; nothing selected yet, so "Use Photo" waits.
+        // Step 1: only own / self-tagged photos; nothing selected yet, so "Next" waits.
         XCTAssertTrue(MemoryUITestLaunch.element(app, "birthday.contribute").waitForExistence(timeout: 10))
-        let stepper = MemoryUITestLaunch.element(app, "birthday.contribute.stepper")
-        XCTAssertTrue(stepper.waitForExistence(timeout: 10))
-        let use = MemoryUITestLaunch.element(app, "birthday.contribute.use")
-        XCTAssertTrue(use.waitForExistence(timeout: 10))
-        XCTAssertFalse(use.isEnabled)
-        XCTAssertTrue(MemoryUITestLaunch.element(app, "birthday.contribute.photo.3").exists, "four eligible photos in the fixtures")
+        let next = app.navigationBars.buttons.element(boundBy: 1)
+        XCTAssertTrue(next.waitForExistence(timeout: 10))
+        XCTAssertFalse(next.isEnabled)
+        XCTAssertTrue(MemoryUITestLaunch.element(app, "birthday.contribute.photo.3").waitForExistence(timeout: 10), "four eligible photos in the fixtures")
         XCTAssertFalse(MemoryUITestLaunch.element(app, "birthday.contribute.photo.4").exists, "others' untagged photos are not offered")
         let photo = MemoryUITestLaunch.element(app, "birthday.contribute.photo.1")
         photo.tap()
         XCTAssertTrue(photo.isSelected)
-        XCTAssertTrue(use.isEnabled)
-        use.tap()
+        XCTAssertTrue(next.isEnabled)
+        next.tap()
 
-        // Step 2: the line, then Submit (enabled once it has a non-space character).
+        // Step 2: the composer; "Add to video" waits for a line.
         let submit = MemoryUITestLaunch.element(app, "birthday.contribute.submit")
         XCTAssertTrue(submit.waitForExistence(timeout: 10))
         XCTAssertFalse(submit.isEnabled)
-        let field = MemoryUITestLaunch.element(app, "birthday.contribute.line")
-        field.tap()
+        MemoryUITestLaunch.element(app, "birthday.contribute.pill").tap()
+
+        // Step 2a: the "Add a Message" modal with the keyboard up.
+        let field = MemoryUITestLaunch.element(app, "birthday.contribute.field")
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
         field.typeText("the best laugh in the group")
+        MemoryUITestLaunch.element(app, "birthday.contribute.done").tap()
+        XCTAssertTrue(MemoryUITestLaunch.element(app, "birthday.contribute.line").waitForExistence(timeout: 5), "the line under the photo")
         XCTAssertTrue(submit.isEnabled)
         submit.tap()
 
-        // Step 3: Done → back on the request with "Your Photo".
-        let done = MemoryUITestLaunch.element(app, "birthday.contribute.done")
-        XCTAssertTrue(done.waitForExistence(timeout: 10))
-        let enabled = NSPredicate(format: "isEnabled == true")
-        expectation(for: enabled, evaluatedWith: done)
-        waitForExpectations(timeout: 10)
-        done.tap()
+        // Sent: the sheet closes; the request shows "You added a photo".
         XCTAssertTrue(MemoryUITestLaunch.element(app, "birthday.request.own").waitForExistence(timeout: 10))
         XCTAssertTrue(MemoryUITestLaunch.element(app, "birthday.request.change").exists)
-        XCTAssertFalse(MemoryUITestLaunch.element(app, "birthday.request.cta").exists, "the button is replaced by the own block")
+        XCTAssertFalse(MemoryUITestLaunch.element(app, "birthday.request.cta").exists, "the capsule is replaced by your contribution")
 
-        // Retake reopens step 1 with the current photo selected.
+        // "Change photo" reopens step 1 with the current photo selected; Cancel closes without sending.
         MemoryUITestLaunch.element(app, "birthday.request.change").tap()
         let selected = MemoryUITestLaunch.element(app, "birthday.contribute.photo.1")
         XCTAssertTrue(selected.waitForExistence(timeout: 10))
         XCTAssertTrue(selected.isSelected)
-        MemoryUITestLaunch.element(app, "birthday.contribute.close").tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(MemoryUITestLaunch.element(app, "birthday.request.own").waitForExistence(timeout: 10))
     }
 }

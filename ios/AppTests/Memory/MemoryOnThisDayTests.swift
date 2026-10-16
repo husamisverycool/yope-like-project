@@ -1,12 +1,19 @@
-// onthisday — view-model tests (design/surfaces/onthisday.md).
+// onthisday — view-model tests (design/surfaces/onthisday.md: Retro Rewind — one memory at a time, the dial, play / pause,
+// shuffle, share / save / report / delete, the feature intro, the group-screen entry).
 @testable import App
 import AppData
+import AppModels
+import AppServices
 import DesignSystem
 import XCTest
 
 @MainActor
 final class MemoryOnThisDayTests: XCTestCase {
     private let utc = TimeZone(identifier: "UTC")!
+
+    private func model(_ context: MemoryTestContext, savePhoto: @escaping @Sendable (Data) async throws -> Void = { _ in }, random: @escaping (Int) -> Int = { _ in 0 }) -> OnThisDayModel {
+        OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies, savePhoto: savePhoto, randomIndex: random)
+    }
 
     func testDayRollsOverAtTheBoundaryHourInTheGroupZone() {
         let before = Date(timeIntervalSince1970: 1_792_040_340) // 2026-10-15T04:59:00Z
@@ -19,117 +26,212 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertEqual(OnThisDayCalendar.localDate(now: lisbonFive, timeZone: lisbon).description, "2026-10-15")
     }
 
-    func testRowsAreGroupedByYearsAgoAscendingKeepingAPIOrder() {
-        let now = MemoryTestContext.referenceNow
-        func row(_ n: Int, _ years: Int) -> OnThisDayItem {
-            OnThisDayItem(postID: MemoryIDs.post(n), mediaID: MemoryFixtureIDs.media(n), authorID: MemoryIDs.me, createdAt: now, yearsAgo: years)
-        }
-        let years = OnThisDayCalendar.years([row(1, 3), row(2, 1), row(3, 3), row(4, 2)])
-        XCTAssertEqual(years.map(\.yearsAgo), [1, 2, 3])
-        XCTAssertEqual(years.last?.rows.map(\.postID), [MemoryIDs.post(1), MemoryIDs.post(3)])
-    }
-
-    func testLoadsTheDayNewestYearFirstWithOneScreenPerYear() async {
+    func testLoadsTheDayNewestFirstOneMemoryPerSlot() async {
         let context = MemoryTestContext()
-        let model = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        let model = model(context)
         XCTAssertEqual(model.phase, .idle)
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .loaded)
-        XCTAssertEqual(model.years.map(\.yearsAgo), [1, 3])
-        XCTAssertEqual(model.years[0].photos.count, 1, "one photo → the single-photo layout")
-        XCTAssertEqual(model.years[1].photos.map(\.id), [MemoryIDs.post(9), MemoryIDs.post(8), MemoryIDs.post(7)])
+        XCTAssertEqual(model.memories.map(\.id), [MemoryIDs.post(6), MemoryIDs.post(9), MemoryIDs.post(8), MemoryIDs.post(7)], "the API's order is the dial's")
         XCTAssertEqual(model.index, 0)
-        XCTAssertEqual(model.progress, 0.5, accuracy: 0.0001)
-        XCTAssertEqual(model.bannerLabel(for: model.years[0]), Copy.onthisdayBannerYearsAgoOne)
-        XCTAssertEqual(model.bannerLabel(for: model.years[1]), Copy.onthisdayBannerYearsAgoOther(count: "3"))
-        let photo = model.years[0].photos[0]
-        XCTAssertEqual(photo.authorName, "Bea")
-        XCTAssertNotNil(photo.displayURL)
-        XCTAssertNotNil(photo.thumbURL)
-        XCTAssertEqual(photo.aspectRatio ?? 0, 0.75, accuracy: 0.0001)
-        XCTAssertEqual(
-            model.meta(for: photo),
-            Copy.onthisdayMemoryMeta(
-                weekday: MemoryFormat.metaWeekday(photo.createdAt, timeZone: utc),
-                time: MemoryFormat.metaTime(photo.createdAt, timeZone: utc)
-            )
-        )
-        XCTAssertEqual(context.data.calls(of: .onThisDay), 1)
-        XCTAssertTrue(context.haptics.isEmpty, "the day plays no haptics")
+        XCTAssertEqual(model.dialSlot, 0, "the indicator starts on slot 0")
+        XCTAssertEqual(model.mode, .day)
+        let first = try? XCTUnwrap(model.current)
+        XCTAssertEqual(first?.authorName, "Bea")
+        XCTAssertNotNil(first?.displayURL)
+        XCTAssertNotNil(first?.originalURL)
+        XCTAssertEqual(model.title, MemoryFormat.memoryDate(first?.createdAt ?? Date(), timeZone: utc))
+        XCTAssertEqual(model.subtitle, Copy.onthisdaySubtitleDay(name: "Bea"))
+        XCTAssertEqual(model.dialValue, Copy.onthisdayA11yDialValue(position: "1", total: "4"))
+        XCTAssertEqual(model.photoLabel, Copy.onthisdayA11yPhoto(name: "Bea", date: model.title))
+        XCTAssertEqual(model.memories.map(\.isMine), [false, false, true, false])
+        XCTAssertEqual(model.groupName, "Sunday dinners")
+        XCTAssertTrue(context.haptics.isEmpty, "opening plays no haptic")
     }
 
-    func testTheNextYearsPhotosArePreloadedForTheCrossFade() async {
+    func testMemoryDateIsTheMediumDate() {
+        let date = Date(timeIntervalSince1970: 1_658_491_200) // 2022-07-22T12:00:00Z
+        XCTAssertEqual(MemoryFormat.memoryDate(date, timeZone: utc, locale: Locale(identifier: "en_US")), "Jul 22, 2022")
+        XCTAssertEqual(MemoryFormat.dayMonth(LocalDate(year: 2026, month: 7, day: 5)!, locale: Locale(identifier: "en_US")), "July 5")
+    }
+
+    func testTheFeatureIntroShowsOncePerAccount() async {
         let context = MemoryTestContext()
-        let model = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        let first = model(context)
+        await first.loadIfNeeded()
+        XCTAssertTrue(first.showsIntro, "the first open shows the intro")
+        first.dismissIntro()
+        XCTAssertFalse(first.showsIntro)
+        let second = model(context)
+        await second.loadIfNeeded()
+        XCTAssertFalse(second.showsIntro, "never again on this account")
+    }
+
+    func testTheDialStepsOneMemoryPerSlotWithATickAndStopsAtTheEnds() async {
+        let context = MemoryTestContext()
+        let model = model(context)
         await model.loadIfNeeded()
-        await memoryEventually { !context.images.requested.isEmpty }
-        XCTAssertTrue(context.images.requested.isEmpty, "nothing is decoded before the screen gives its pixel size")
-
-        model.imagePixelSize = 2532
-        model.preloadUpcoming()
-        let olderYear = model.years[1].photos.compactMap(\.thumbURL)
-        XCTAssertEqual(olderYear.count, 3)
-        let preloaded = await memoryEventually { context.images.requested.count == olderYear.count }
-        XCTAssertTrue(preloaded)
-        XCTAssertEqual(context.images.requested, olderYear, "the next (older) year's grid thumbnails, in order")
-
-        model.next()
-        await memoryEventually { context.images.requested.count > olderYear.count }
-        XCTAssertEqual(context.images.requested.count, olderYear.count, "the oldest year has no next year to preload")
+        XCTAssertFalse(model.previous(), "the first memory: counter-clockwise does nothing")
+        XCTAssertTrue(model.next())
+        XCTAssertTrue(model.next())
+        XCTAssertTrue(model.next())
+        XCTAssertEqual(model.index, 3)
+        XCTAssertEqual(model.dialSlot, 3)
+        XCTAssertFalse(model.next(), "the last memory: no wrap")
+        XCTAssertEqual(context.haptics, Array(repeating: Tokens.Haptics.globalSelect, count: 3), "one tick per slot crossed")
+        XCTAssertEqual(model.lastChange, .dial)
+        XCTAssertEqual(model.subtitle, Copy.onthisdaySubtitleDay(name: "Caio"))
+        XCTAssertTrue(model.previous())
+        XCTAssertEqual(model.index, 2)
+        XCTAssertTrue(model.current?.isMine == true)
     }
 
-    func testMetaIsUppercasedAbbreviatedWeekdayAndShortTime() {
-        let posix = Locale(identifier: "en_US_POSIX")
-        let date = Date(timeIntervalSince1970: 1_760_567_640) // 2025-10-15T22:34:00Z, a Wednesday
-        XCTAssertEqual(MemoryFormat.metaWeekday(date, timeZone: utc, locale: posix), "WED")
-        XCTAssertEqual(MemoryFormat.spokenWeekday(date, timeZone: utc, locale: posix), "Wednesday")
-        XCTAssertEqual(MemoryFormat.metaTime(date, timeZone: utc, locale: Locale(identifier: "en_US")).replacingOccurrences(of: "\u{202F}", with: " "), "10:34 PM")
-    }
-
-    func testTapZonesMoveBetweenYearsAndCloseAfterTheOldest() async {
+    func testPlayAdvancesEveryHoldWithATickAndStopsAfterTheLast() async {
         let context = MemoryTestContext()
-        let model = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        let model = model(context)
         await model.loadIfNeeded()
-        model.previous()
-        XCTAssertEqual(model.index, 0, "left half on the newest year does nothing")
-        model.next()
-        XCTAssertEqual(model.index, 1)
-        XCTAssertEqual(model.progress, 1, accuracy: 0.0001)
-        XCTAssertFalse(model.isFinished)
-        model.next()
-        XCTAssertTrue(model.isFinished, "right half on the oldest year closes the day")
+        model.togglePlay()
+        XCTAssertTrue(model.isPlaying)
+        let slept = await memoryEventually { context.sleeper.requested == [Tokens.Durations.onthisdayPlayHold] }
+        XCTAssertTrue(slept, "each memory stays for duration.onthisday.playHold")
+        for expected in 1...3 {
+            await memoryEventually { context.sleeper.pending == 1 }
+            context.sleeper.fire()
+            let moved = await memoryEventually { model.index == expected }
+            XCTAssertTrue(moved)
+            XCTAssertEqual(model.lastChange, .play)
+        }
+        // The last memory keeps its time, then play stops (the play glyph again).
+        await memoryEventually { context.sleeper.pending == 1 }
+        context.sleeper.fire()
+        let stopped = await memoryEventually { !model.isPlaying }
+        XCTAssertTrue(stopped)
+        XCTAssertEqual(model.index, 3)
+        XCTAssertEqual(context.haptics.filter { $0 == Tokens.Haptics.globalSelect }.count, 3, "one tick per automatic step")
+
+        // From the last memory, play starts again at the first.
+        model.togglePlay()
+        XCTAssertEqual(model.index, 0)
+        XCTAssertTrue(model.isPlaying)
+        model.togglePlay()
+        XCTAssertFalse(model.isPlaying, "the centre pauses")
+        model.stopListening()
     }
 
-    func testDeletedPhotoIsDroppedWithItsYearAndTheDayClosesWhenEmpty() async {
+    func testShuffleShowsRandomMemoriesFromTheGroupsHistoryAndGoesBackThroughThem() async {
         let context = MemoryTestContext()
-        let model = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        let model = model(context)
+        await model.loadIfNeeded()
+        await model.shuffle()
+        XCTAssertEqual(model.mode, .shuffle)
+        // The newest week (Monday 12 October) holds posts 2 and 1, chronological; the first index of each is picked.
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(2))
+        XCTAssertEqual(model.subtitle, Copy.onthisdaySubtitleShuffle(name: "Bea"))
+        XCTAssertEqual(model.index, 0)
+        XCTAssertTrue(model.next(), "a new random pick")
+        let picked = await memoryEventually { model.picks.count == 2 }
+        XCTAssertTrue(picked)
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(1), "never the same memory twice")
+        XCTAssertTrue(model.previous())
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(2), "back through the picks already shown")
+        XCTAssertEqual(context.data.calls(of: .historyWeeks), 1, "the history is read once (pages of 52 until a short page)")
+        XCTAssertEqual(context.haptics.filter { $0 == Tokens.Haptics.globalSelect }.count, 3)
+    }
+
+    func testSaveDownloadsTheOriginalAndConfirms() async {
+        let saved = SavedData()
+        let context = MemoryTestContext()
+        let model = model(context, savePhoto: { await saved.append($0) })
+        await model.loadIfNeeded()
+        await model.save()
+        let count = await saved.count
+        XCTAssertEqual(count, 1)
+        XCTAssertEqual(context.data.calls(of: .downloadData), 1, "the original, downloaded")
+        XCTAssertEqual(context.lastToast, Copy.onthisdayToastSaved)
+        XCTAssertEqual(context.haptics, [Tokens.Haptics.globalSuccess])
+
+        let denied = MemoryTestContext()
+        let deniedModel = self.model(denied, savePhoto: { _ in throw PhotoLibraryService.LibraryError.notAuthorized(.denied) })
+        await deniedModel.loadIfNeeded()
+        await deniedModel.save()
+        XCTAssertTrue(deniedModel.showsSaveDenied, "add-only access denied: the native alert that opens Settings")
+        XCTAssertEqual(denied.haptics, [Tokens.Haptics.globalError])
+
+        struct Broken: Error {}
+        let failing = MemoryTestContext()
+        let failingModel = self.model(failing, savePhoto: { _ in throw Broken() })
+        await failingModel.loadIfNeeded()
+        await failingModel.save()
+        XCTAssertFalse(failingModel.showsSaveDenied)
+        XCTAssertEqual(failing.lastToast, Copy.onthisdaySaveFailed)
+    }
+
+    func testReportOpensSafetyReportForSomeoneElsesMemoryOnly() async {
+        let context = MemoryTestContext()
+        let model = model(context)
+        await model.loadIfNeeded()
+        model.report()
+        XCTAssertEqual(context.reports.count, 1)
+        XCTAssertEqual(context.reports.first?.kind, .post)
+        XCTAssertEqual(context.reports.first?.id, MemoryIDs.post(6).rawValue)
+        XCTAssertEqual(context.reports.first?.person?.firstName, "Bea")
+        model.next()
+        model.next()
+        model.requestDelete()
+        XCTAssertNotNil(model.deleteCandidate, "your own memory: delete, not report")
+        model.report()
+        XCTAssertEqual(context.reports.count, 1)
+    }
+
+    func testDeletingYourMemoryAsksThenRemovesItFromTheDial() async {
+        let context = MemoryTestContext()
+        let model = model(context)
+        await model.loadIfNeeded()
+        model.requestDelete()
+        XCTAssertNil(model.deleteCandidate, "someone else's memory cannot be deleted")
+        model.next()
+        model.next()
+        model.requestDelete()
+        XCTAssertEqual(model.deleteCandidate?.id, MemoryIDs.post(8))
+        context.clearHaptics()
+        await model.confirmDelete()
+        XCTAssertNil(model.deleteCandidate)
+        XCTAssertEqual(context.haptics.first, Tokens.Haptics.globalWarning)
+        XCTAssertEqual(model.memories.map(\.id), [MemoryIDs.post(6), MemoryIDs.post(9), MemoryIDs.post(7)])
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(7), "the next memory shows")
+        XCTAssertEqual(context.lastToast, Copy.onthisdayToastDeleted)
+        XCTAssertEqual(context.data.calls(of: .deletePost), 1)
+        model.stopListening()
+    }
+
+    func testDeletedMemoriesLeaveTheDialAndTheEmptyBlockShowsWhenNoneRemain() async {
+        let context = MemoryTestContext()
+        let model = model(context)
         await model.loadIfNeeded()
         model.next()
         // Broadcast path: `post_deleted` on the group's private topic.
-        context.data.emitDeletion(postID: MemoryIDs.post(8), groupID: MemoryIDs.group)
-        let removed = await memoryEventually { model.years.last?.photos.count == 2 }
+        context.data.emitDeletion(postID: MemoryIDs.post(9), groupID: MemoryIDs.group)
+        let removed = await memoryEventually { model.memories.count == 3 }
         XCTAssertTrue(removed)
-        XCTAssertEqual(model.index, 1, "the year in view stays in view")
-        model.removePost(MemoryIDs.post(6))
-        XCTAssertEqual(model.years.map(\.yearsAgo), [3])
-        XCTAssertEqual(model.index, 0)
-        model.removePost(MemoryIDs.post(9))
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(8), "the memory in view was dropped: the next one shows")
+        model.removePost(MemoryIDs.post(8))
         model.removePost(MemoryIDs.post(7))
-        XCTAssertTrue(model.years.isEmpty)
-        XCTAssertTrue(model.isFinished)
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(6), "the previous one when it was the last")
+        model.removePost(MemoryIDs.post(6))
+        XCTAssertEqual(model.phase, .empty)
         model.stopListening()
     }
 
     func testErrorAndOfflineStates() async {
         let offline = MemoryTestContext()
         offline.data.fail(.onThisDay, with: .offline)
-        let offlineModel = OnThisDayModel(groupID: MemoryIDs.group, dependencies: offline.dependencies)
+        let offlineModel = model(offline)
         await offlineModel.loadIfNeeded()
         XCTAssertEqual(offlineModel.phase, .offline)
 
         let failing = MemoryTestContext()
         failing.data.fail(.onThisDay, with: .api(.notGroupMember))
-        let errorModel = OnThisDayModel(groupID: MemoryIDs.group, dependencies: failing.dependencies)
+        let errorModel = model(failing)
         await errorModel.loadIfNeeded()
         XCTAssertEqual(errorModel.phase, .error)
         failing.data.fail(.onThisDay, with: nil)
@@ -143,36 +245,52 @@ final class MemoryOnThisDayTests: XCTestCase {
 
     func testCachedDayShowsAtOnceAndStaysWhenTheRefreshIsOffline() async {
         let context = MemoryTestContext()
-        let first = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        let first = model(context)
         await first.loadIfNeeded()
         context.data.fail(.onThisDay, with: .offline)
-        let second = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        let second = model(context)
         await second.loadIfNeeded()
         XCTAssertEqual(second.phase, .loaded, "cached content first; no offline screen over it")
-        XCTAssertEqual(second.years.map(\.yearsAgo), [1, 3])
+        XCTAssertEqual(second.memories.count, 4)
     }
 
-    func testCacheDropsADeletedPhoto() async {
+    func testTheNeighboursArePreloadedForTheCrossFade() async {
         let context = MemoryTestContext()
-        let first = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
-        await first.loadIfNeeded()
-        first.removePost(MemoryIDs.post(6))
-        context.data.fail(.onThisDay, with: .offline)
-        let second = OnThisDayModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
-        await second.loadIfNeeded()
-        XCTAssertEqual(second.phase, .offline, "an entry showing a deleted photo is not served from the cache")
+        let model = model(context)
+        await model.loadIfNeeded()
+        model.imagePixelSize = 2532
+        model.preloadNeighbours()
+        let next = model.memories[1].displayURL
+        let preloaded = await memoryEventually { context.images.requested.contains { $0 == next } }
+        XCTAssertTrue(preloaded, "the next memory is decoded before the dial reaches it")
     }
 
-    func testEntryShowsTitleAndNewestLabelOnlyWhenTheDayHasRows() async {
+    func testEntryShowsTheCardOnlyWhenTheDayHasRowsAndPushesThePage() async {
         let context = MemoryTestContext()
         let entry = OnThisDayEntryModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
         await entry.refresh()
-        XCTAssertEqual(entry.content?.title, Copy.onthisdayEntryTitle(group: "Sunday dinners"))
-        XCTAssertEqual(entry.content?.subtitle, Copy.onthisdayBannerYearsAgoOne)
+        XCTAssertEqual(entry.content?.title, Copy.onthisdayEntryTitle)
+        let today = OnThisDayCalendar.localDate(now: context.now, timeZone: utc)
+        XCTAssertEqual(entry.content?.subtitle, Copy.onthisdayEntrySubtitle(date: MemoryFormat.dayMonth(today)))
+        XCTAssertEqual(entry.content?.buttonTitle, Copy.onthisdayEntryButton)
+        XCTAssertEqual(entry.content?.icon, Tokens.Icons.globalRewind)
+        XCTAssertNotNil(entry.content?.photoPath, "the newest memory's photo for the feed card")
+        entry.open()
+        XCTAssertEqual(context.openedOnThisDay, [MemoryIDs.group.rawValue], "pushed on the group's stack")
 
         let empty = MemoryTestContext { $0.onThisDay = [] }
         let hidden = OnThisDayEntryModel(groupID: MemoryIDs.group, dependencies: empty.dependencies)
         await hidden.refresh()
         XCTAssertNil(hidden.content, "empty: the entry is not shown")
+    }
+}
+
+/// Collects saved photo data across the `@Sendable` save closure.
+private actor SavedData {
+    private(set) var items: [Data] = []
+    var count: Int { items.count }
+
+    func append(_ data: Data) {
+        items.append(data)
     }
 }

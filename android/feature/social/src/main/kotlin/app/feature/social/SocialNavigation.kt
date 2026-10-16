@@ -16,7 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.toRoute
 import app.feature.social.albums.AlbumViewModel
-import app.feature.social.albums.AlbumViewScreen
+import app.feature.social.albums.AlbumViewSheet
 import app.feature.social.albums.AlbumsListScreen
 import app.feature.social.albums.AlbumsViewModel
 import app.feature.social.chat.ChatNav
@@ -37,26 +37,28 @@ import app.feature.social.walls.WallViewModel
 import app.feature.social.walls.WallsBrowseScreen
 import app.feature.social.week.HistoryNav
 import app.feature.social.week.HistoryViewModel
+import app.feature.social.week.RecapListViewModel
 import app.feature.social.week.RecapNav
 import app.feature.social.week.RecapViewModel
 import app.feature.social.week.WeekEditSheet
 import app.feature.social.week.WeekEditViewModel
 import app.feature.social.week.WeekHistoryScreen
+import app.feature.social.week.WeekRecapListSheet
 import app.feature.social.week.WeekRecapScreen
 import app.model.AppRoute
-import app.model.GroupProfileRoute
 import app.model.PhotoContext
 import app.model.PhotoViewerIn
 import app.model.SafetyReportMessageRoute
 import app.model.SocialHandoff
 import app.model.WeekAlbum
-import app.model.WeekRecapLatest
+import app.model.WeekRecapAlbum
+import app.model.WeekRecapList
 import java.time.LocalDate
 
 /** Tests (and previews) provide the data here; the app uses the data graph. */
 val LocalSocialDataOverride = staticCompositionLocalOf<SocialData?> { null }
 
-/** The social screens' data and theme around one destination. */
+/** The social screens' data and theme (system appearance) around one destination. */
 @Composable
 private fun SocialHost(content: @Composable (SocialData) -> Unit) {
     val context = LocalContext.current
@@ -68,8 +70,9 @@ private fun SocialHost(content: @Composable (SocialData) -> Unit) {
 }
 
 /**
- * Destinations of the social feature group (surface specs in design/surfaces/): chat.thread
- * (+ composer, voice, reactions), photo.viewer, walls.*, week.*, albums.*.
+ * Destinations of the social feature group (surface specs in design/surfaces/): chat.thread (+ composer, voice,
+ * reactions), photo.viewer, walls.*, week.*, albums.*. Page sheets (recap list, week.edit, albums.view) are dialog
+ * destinations whose content is the native sheet.
  */
 fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
     val nav = SocialNavigator(navController)
@@ -117,17 +120,18 @@ fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
             WallsBrowseScreen(vm, nav.walls())
         }
     }
+    dialog<WeekRecapList>(dialogProperties = SheetDialog) { entry ->
+        val route = entry.toRoute<WeekRecapList>()
+        SheetWindow()
+        SocialHost { data ->
+            val vm = viewModel(key = "recaps:${route.groupId}") { RecapListViewModel(data, route.groupId) }
+            WeekRecapListSheet(vm, nav.recap(route.groupId))
+        }
+    }
     composable<AppRoute.WeekRecap> { entry ->
         val route = entry.toRoute<AppRoute.WeekRecap>()
         SocialHost { data ->
             val vm = viewModel(key = "recap:${route.recapId}") { RecapViewModel(data, route.groupId, route.recapId) }
-            WeekRecapScreen(vm, nav.recap(route.groupId))
-        }
-    }
-    composable<WeekRecapLatest> { entry ->
-        val route = entry.toRoute<WeekRecapLatest>()
-        SocialHost { data ->
-            val vm = viewModel(key = "recap:latest:${route.groupId}") { RecapViewModel(data, route.groupId, null) }
             WeekRecapScreen(vm, nav.recap(route.groupId))
         }
     }
@@ -136,6 +140,14 @@ fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
         SheetWindow()
         SocialHost { data ->
             val vm = viewModel(key = "edit:${route.recapId}") { WeekEditViewModel(data, route.groupId, route.recapId, null, albumOnly = false) }
+            WeekEditSheet(vm, onClose = { navController.popBackStack() })
+        }
+    }
+    dialog<WeekRecapAlbum>(dialogProperties = SheetDialog) { entry ->
+        val route = entry.toRoute<WeekRecapAlbum>()
+        SheetWindow()
+        SocialHost { data ->
+            val vm = viewModel(key = "album:recap:${route.recapId}") { WeekEditViewModel(data, route.groupId, route.recapId, null, albumOnly = true) }
             WeekEditSheet(vm, onClose = { navController.popBackStack() })
         }
     }
@@ -162,17 +174,18 @@ fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
                 vm,
                 onBack = { navController.popBackStack() },
                 onAlbum = { id -> navController.navigate(AppRoute.AlbumView(route.groupId, id)) },
-                onViewRecap = { navController.navigate(WeekRecapLatest(route.groupId)) },
+                onViewRecaps = { navController.navigate(WeekRecapList(route.groupId)) },
             )
         }
     }
-    composable<AppRoute.AlbumView> { entry ->
+    dialog<AppRoute.AlbumView>(dialogProperties = SheetDialog) { entry ->
         val route = entry.toRoute<AppRoute.AlbumView>()
+        SheetWindow()
         SocialHost { data ->
             val vm = viewModel(key = "album:${route.albumId}") { AlbumViewModel(data, route.groupId, route.albumId) }
-            AlbumViewScreen(
+            AlbumViewSheet(
                 vm,
-                onBack = { navController.popBackStack() },
+                onClose = { navController.popBackStack() },
                 onPhoto = { postId -> navController.navigate(PhotoViewerIn(route.groupId, postId, PhotoContext.Album, route.albumId)) },
             )
         }
@@ -199,25 +212,26 @@ private class SocialNavigator(private val nav: NavHostController) {
         nav.navigate(if (userId == data.currentUserId()) AppRoute.WallMine else AppRoute.WallMember(userId))
     }
 
+    /** `camera.capture` for [groupId]; a photo reply rides on the camera entry for `create_post`'s `p_reply_to_post_id`. */
+    private fun camera(groupId: String?, replyToPostId: String?) {
+        nav.navigate(AppRoute.Camera(groupId))
+        if (replyToPostId != null) nav.currentBackStackEntry?.savedStateHandle?.set(SocialHandoff.REPLY_TO_POST_ID, replyToPostId)
+    }
+
     fun chat(groupId: String, data: SocialData) = ChatNav(
         back = ::back,
-        groupInfo = { nav.navigate(GroupProfileRoute(groupId)) },
-        recap = { id -> nav.navigate(AppRoute.WeekRecap(groupId, id)) },
         photo = { postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Chat, groupId)) },
         member = { userId -> person(data, userId) },
         invite = { nav.navigate(AppRoute.GroupInvite(groupId)) },
-        camera = { nav.navigate(AppRoute.Camera(groupId)) },
-        report = { messageId, authorId -> nav.navigate(SafetyReportMessageRoute(groupId, messageId, authorId)) },
+        camera = { replyTo -> camera(groupId, replyTo) },
+        reportMessage = { messageId, authorId -> nav.navigate(SafetyReportMessageRoute(groupId, messageId, authorId)) },
+        reportPost = { postId -> nav.navigate(AppRoute.SafetyReport(groupId = groupId, postId = postId)) },
     )
 
     fun viewer(data: SocialData) = ViewerNav(
         close = ::back,
         person = { userId, _ -> person(data, userId) },
-        replyWithPhoto = { groupId, postId ->
-            // camera.capture has no reply argument: the reply target rides on its entry for create_post's p_reply_to_post_id.
-            nav.navigate(AppRoute.Camera(groupId))
-            nav.currentBackStackEntry?.savedStateHandle?.set(SocialHandoff.REPLY_TO_POST_ID, postId)
-        },
+        replyWithPhoto = { groupId, postId -> camera(groupId, postId) },
         report = { groupId, postId -> nav.navigate(AppRoute.SafetyReport(groupId = groupId, postId = postId)) },
         block = { userId -> nav.navigate(AppRoute.SafetyBlock(userId)) },
     )
@@ -227,16 +241,20 @@ private class SocialNavigator(private val nav: NavHostController) {
         settings = { nav.navigate(AppRoute.Settings) },
         photo = { wallUserId, groupId, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Wall, wallUserId)) },
         collage = { groupId, invitationId -> nav.navigate(AppRoute.Collage(groupId, invitationId)) },
-        camera = { nav.navigate(AppRoute.Camera()) },
+        camera = { camera(null, null) },
         createGroup = { nav.navigate(AppRoute.GroupCreate) },
+        member = { userId -> nav.navigate(AppRoute.WallMember(userId)) },
+        report = { userId -> nav.navigate(AppRoute.SafetyReport(userId = userId)) },
+        block = { userId -> nav.navigate(AppRoute.SafetyBlock(userId)) },
     )
 
     fun recap(groupId: String) = RecapNav(
         back = ::back,
+        open = { recapId -> nav.navigate(AppRoute.WeekRecap(groupId, recapId)) },
         edit = { recapId -> nav.navigate(AppRoute.WeekEdit(groupId, recapId)) },
+        saveAsAlbum = { recapId -> nav.navigate(WeekRecapAlbum(groupId, recapId)) },
         cardPhoto = { recapId, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Recap, recapId)) },
-        weekPhoto = { weekStart, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Week, groupId, weekStart)) },
-        camera = { nav.navigate(AppRoute.Camera(groupId)) },
+        camera = { camera(groupId, null) },
     )
 
     fun history(groupId: String) = HistoryNav(
@@ -244,6 +262,6 @@ private class SocialNavigator(private val nav: NavHostController) {
         photo = { weekStart, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Week, groupId, weekStart)) },
         recap = { recapId -> nav.navigate(AppRoute.WeekRecap(groupId, recapId)) },
         saveAsAlbum = { weekStart -> nav.navigate(WeekAlbum(groupId, weekStart)) },
-        camera = { nav.navigate(AppRoute.Camera(groupId)) },
+        camera = { camera(groupId, null) },
     )
 }

@@ -117,7 +117,8 @@ struct CaptureLargeCircleButton: View {
 
 /// The header of the postcard-style composer (`camera.sendto.layout.header`, ST-03), shared by `camera.sendto` and
 /// `daily.capture`: the title centred with its cap middle on the circles' centre line, which lies
-/// `centreBelowSafeArea` (25.8) below the safe-area top; a trailing close circle (C-11 `.media`: 36, #262626) centred
+/// `centreBelowSafeArea` (25.8) below the safe-area top; a trailing close circle (C-11 `.media`: 36, #262626, glyph
+/// `size.global.iconSmall`) centred
 /// 37.7 pt from the trailing edge; optionally a leading circle mirrored (send-to's save). The title keeps clear of both
 /// circles. Place it at the top of the safe area.
 struct CaptureMediaHeader<Title: View>: View {
@@ -155,8 +156,10 @@ struct CaptureMediaHeader<Title: View>: View {
         .frame(maxWidth: .infinity, alignment: .top)
     }
 
+    /// Retro's '×' measures ≈ 9.7 pt in the 36-pt circle (ST-03) with no token: the glyph box is `size.global.iconSmall`,
+    /// the nearest glyph token, as on the recap preview's close (`RecapPreviewClose`; component gap reported).
     private func circle(_ item: HeaderAction) -> some View {
-        CircleButton(icon: item.icon, accessibilityLabel: item.accessibilityLabel, style: .media, action: item.action)
+        CircleButton(icon: item.icon, accessibilityLabel: item.accessibilityLabel, style: .media, glyphSize: Tokens.Sizes.globalIconSmall, action: item.action)
     }
 }
 

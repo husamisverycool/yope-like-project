@@ -1,40 +1,32 @@
 package app.feature.account.shell
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import app.data.repo.AuthState
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.model.AppRoute
-import app.ui.components.AppTab
-import app.ui.components.FloatingTabBar
-import app.ui.components.FloatingTabBarSlot
-import app.ui.components.TabLabels
+import app.ui.components.TabBar
+import app.ui.components.TabBarItem
+
+/** The app's four tab destinations, in `groups.list.layout.tabBar` order: camera · groups (home) · walls (people) · me (profile). */
+enum class AppTab { Camera, Groups, Walls, Me }
 
 /**
- * The app chrome: the floating tab bar (`groups.list.layout.tabBar`) over the tab destinations —
- * camera.capture (camera, the bar under the camera as on Yope's), groups.list (groups), walls.browse
- * (walls), walls.mine (me, own avatar).
- * Placed `size.global.tabBarInset` from the screen sides, above the navigation bar.
+ * The app chrome (`groups.list.layout.tabBar`, MERGE RA-7): the C-04 tab bar under the tab destinations — camera.capture
+ * (`icon.global.camera`), groups.list (`icon.global.home`), walls.browse (`icon.global.group`), walls.mine
+ * (`icon.global.wall`); icon-only, evenly distributed, page-coloured, no hairline, no labels, no unread dot (this app has no
+ * Activity tab). While the camera tab shows, the bar sits over the black camera surface (C-04 `overMedia`: selected
+ * `color.global.textOnMedia`, unselected `color.global.tabInactiveOnMedia`). TalkBack labels from copy; a tab change
+ * plays `haptic.global.tap`.
  */
 @Composable
-fun ShellTabBar(nav: NavHostController, env: AccountEnvironment, modifier: Modifier = Modifier) {
+fun ShellTabBar(nav: NavHostController, @Suppress("UNUSED_PARAMETER") env: AccountEnvironment, modifier: Modifier = Modifier) {
     val entry by nav.currentBackStackEntryAsState()
     val destination = entry?.destination
     val selected = when {
@@ -45,53 +37,40 @@ fun ShellTabBar(nav: NavHostController, env: AccountEnvironment, modifier: Modif
         destination.hasRoute<AppRoute.WallMine>() -> AppTab.Me
         else -> null
     } ?: return
-    var avatar by remember { mutableStateOf<String?>(null) }
-    val auth by env.backend.authState.collectAsState()
-    LaunchedEffect(auth) {
-        if (auth is AuthState.SignedIn) {
-            avatar = runCatching {
-                val path = env.backend.me().avatarPath
-                path?.let { env.backend.signedUrls(listOf(it))[it] }
-            }.getOrNull()
-        }
-    }
-    val labels = TabLabels(
-        camera = stringResource(R.string.groups_list_tab_camera_accessibilitylabel),
-        groups = stringResource(R.string.groups_list_tab_groups_accessibilitylabel),
-        walls = stringResource(R.string.groups_list_tab_walls_accessibilitylabel),
-        me = stringResource(R.string.groups_list_tab_me_accessibilitylabel),
+    val items = listOf(
+        TabBarItem(Tokens.Icons.globalCamera, stringResource(R.string.groups_list_tab_camera_accessibilitylabel)),
+        TabBarItem(Tokens.Icons.globalHome, stringResource(R.string.groups_list_tab_groups_accessibilitylabel)),
+        TabBarItem(Tokens.Icons.globalGroup, stringResource(R.string.groups_list_tab_walls_accessibilitylabel)),
+        TabBarItem(Tokens.Icons.globalWall, stringResource(R.string.groups_list_tab_me_accessibilitylabel)),
     )
-    FloatingTabBarSlot(
-        modifier = modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = Tokens.Sizes.globalTabBarInset),
-        content = {
-            FloatingTabBar(
-                selected = selected,
-                labels = labels,
-                meAvatar = avatar,
-                onSelect = { tab ->
-                    val route = when (tab) {
-                        AppTab.Camera -> AppRoute.Camera()
-                        AppTab.Groups -> AppRoute.GroupsList
-                        AppTab.Walls -> AppRoute.WallsBrowse
-                        AppTab.Me -> AppRoute.WallMine
-                    }
-                    when {
-                        tab == selected -> Unit
-                        tab == AppTab.Camera -> nav.navigate(route) { launchSingleTop = true }
-                        else -> {
-                            // The camera is never kept in a tab's saved state: leave it first.
-                            if (selected == AppTab.Camera) nav.popBackStack()
-                            if (nav.currentDestination?.hasRoute(route::class) != true) {
-                                nav.navigate(route) {
-                                    popUpTo(nav.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
+    TabBar(
+        items = items,
+        selectedIndex = selected.ordinal,
+        overMedia = selected == AppTab.Camera,
+        modifier = modifier,
+        onSelect = { index ->
+            val tab = AppTab.entries[index]
+            val route = when (tab) {
+                AppTab.Camera -> AppRoute.Camera()
+                AppTab.Groups -> AppRoute.GroupsList
+                AppTab.Walls -> AppRoute.WallsBrowse
+                AppTab.Me -> AppRoute.WallMine
+            }
+            when {
+                tab == selected -> Unit
+                tab == AppTab.Camera -> nav.navigate(route) { launchSingleTop = true }
+                else -> {
+                    // The camera is never kept in a tab's saved state: leave it first.
+                    if (selected == AppTab.Camera) nav.popBackStack()
+                    if (nav.currentDestination?.hasRoute(route::class) != true) {
+                        nav.navigate(route) {
+                            popUpTo(nav.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
-                },
-            )
+                }
+            }
         },
     )
 }

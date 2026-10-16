@@ -34,17 +34,54 @@ struct CollageView: View {
 
     private var preview: some View {
         RecapPreviewScreen(
-            backdrop: isReady ? model.pages[1].map { PhotoSource.image($0) } : nil,
-            pageCount: isReady ? model.pageCount : 1,
-            currentPage: Binding(get: { model.currentPage - 1 }, set: { model.currentPage = $0 + 1 }),
-            dotsAccessibilityValue: { index, count in Copy.collageViewA11yPage(page: String(index + 1), pages: String(count)) },
-            closeAccessibilityLabel: Copy.collageViewA11yClose,
-            onClose: { dismiss() }
-        ) { index in
-            pageContent(index)
-        } pill: {
+            dots: isReady && model.pageCount > 1 ? RecapPreviewDots(
+                count: model.pageCount,
+                index: model.currentPage - 1,
+                accessibilityValue: Copy.collageViewA11yPage(page: String(model.currentPage), pages: String(model.pageCount))
+            ) : nil,
+            onSelectPage: { index in model.currentPage = index + 1 }
+        ) { _ in
+            mediaPage
+                .accessibilitySortPriority(3)
+        } overlay: { geometry in
+            RecapPreviewClose(geometry: geometry, accessibilityLabel: Copy.collageViewA11yClose) { dismiss() }
+                .accessibilitySortPriority(4)
+                .accessibilityIdentifier("collage.view.close")
+        } leading: {
+            EmptyView()
+        } trailing: {
             if model.canShare, let item = model.shareItem() {
                 sharePill(item)
+                    .accessibilitySortPriority(1)
+            }
+        }
+    }
+
+    /// The media page's content: page 1 blurred (C-34 backdrop) under the swiped cards once ready; otherwise the state on
+    /// `color.global.controlOnDeep` (collage.view States).
+    @ViewBuilder
+    private var mediaPage: some View {
+        if isReady {
+            ZStack {
+                BlurredBackdrop(source: model.pages[1].map { PhotoSource.image($0) })
+                if model.pageCount > 1 {
+                    TabView(selection: $model.currentPage) {
+                        ForEach(1...model.pageCount, id: \.self) { number in
+                            pageCard(number)
+                                .tag(number)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .accessibilityIdentifier("collage.view.pages")
+                } else {
+                    pageCard(1)
+                        .accessibilityIdentifier("collage.view.pages")
+                }
+            }
+        } else {
+            ZStack {
+                Tokens.Colors.globalControlOnDeep
+                stateContent
             }
         }
     }
@@ -52,19 +89,13 @@ struct CollageView: View {
     // MARK: Pages and states
 
     @ViewBuilder
-    private func pageContent(_ index: Int) -> some View {
+    private var stateContent: some View {
         switch model.state {
-        case .idle:
+        case .idle, .ready:
             Color.clear
         case .loading:
             CaptureMediaProgress(text: Copy.collageViewLoading)
                 .accessibilityIdentifier("collage.view.loading")
-        case .ready:
-            GeometryReader { proxy in
-                card(number: index + 1, size: RecapPreviewMetrics.cardSize(in: proxy.size))
-                    .frame(width: proxy.size.width, height: proxy.size.height)
-            }
-            .accessibilityIdentifier("collage.view.pages")
         case .empty:
             EmptyStateView(
                 icon: Tokens.Icons.globalCamera,
@@ -80,6 +111,14 @@ struct CollageView: View {
         case .offline:
             errorLine(Copy.collageViewOfflineTitle)
                 .accessibilityIdentifier("collage.view.offline")
+        }
+    }
+
+    /// One page: the card box (`RecapPreviewMetrics.cardSize`) centred in the media page.
+    private func pageCard(_ number: Int) -> some View {
+        GeometryReader { proxy in
+            card(number: number, size: RecapPreviewMetrics.cardSize(in: proxy.size))
+                .frame(width: proxy.size.width, height: proxy.size.height)
         }
     }
 

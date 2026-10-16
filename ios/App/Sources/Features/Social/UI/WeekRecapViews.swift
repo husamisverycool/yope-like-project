@@ -250,7 +250,6 @@ struct WeekRecapPreviewScreen: View {
             }
         )
         .socialHidesNavigationBar()
-        .statusBarHidden(false)
         .task {
             if model.phase == .loading { await model.load() }
             await model.run()
@@ -406,9 +405,8 @@ struct RecapNote: View {
             if let editor {
                 AvatarView(source: SocialImages.source(editor.avatarPath), diameter: Tokens.Sizes.globalAvatarComment)
             }
-            (editor.map { Text($0.socialFirstName + " ").fontWeight(Tokens.FontWeights.fontWeightGlobalListTitle) } ?? Text(verbatim: "")) // provenance-ok: name and a space before the note text (data)
-                .foregroundColor(Tokens.Colors.globalTextOnMedia)
-                + Text(text).foregroundColor(Tokens.Colors.globalTextOnMedia)
+            noteText
+                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
         }
         .dsTextStyle(TextRole.body)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -416,5 +414,12 @@ struct RecapNote: View {
         .padding(.horizontal, Tokens.Sizes.weekRecapDimensionNotePaddingH)
         .background(Tokens.Colors.globalControlOnDeep, in: DSShape.rounded(Tokens.Radii.weekRecapRadiusNote))
         .accessibilityElement(children: .combine)
+    }
+
+    /// The editor's first name in the `listTitle` weight, a space, then the text.
+    private var noteText: Text {
+        guard let editor else { return Text(verbatim: text) }
+        let name = Text(verbatim: editor.socialFirstName).fontWeight(Tokens.FontWeights.fontWeightGlobalListTitle)
+        return Text("\(name) \(Text(verbatim: text))") // provenance-ok: name and note text (data) joined by a space
     }
 }
