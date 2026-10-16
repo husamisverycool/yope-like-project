@@ -38,6 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
@@ -52,6 +53,7 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
@@ -411,10 +413,19 @@ private fun ModeTitle(menu: ModeTitleActions, capMiddle: Dp, title: @Composable 
             tint = Tokens.Colors.globalTextOnMedia,
             modifier = Modifier
                 .offset(x = lead)
-                .centreAt(capMiddle + Tokens.Sizes.onthisdayModeChevronDrop - inkCentreBelowBoxCentre)
+                .drawnAt(capMiddle + Tokens.Sizes.onthisdayModeChevronDrop - inkCentreBelowBoxCentre)
                 .size(box),
         )
     }
+}
+
+/**
+ * Draws the element centred on [centreY] (from the row's top) but lays it out with no height, so the title row still
+ * ends at the date's last baseline and the subtitle keeps `dimension.onthisday.subtitleBaseline` below it.
+ */
+private fun Modifier.drawnAt(centreY: Dp): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+    layout(placeable.width, 0) { placeable.place(0, (centreY.toPx() - placeable.height / 2f).roundToInt()) }
 }
 
 /**

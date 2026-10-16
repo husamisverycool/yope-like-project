@@ -296,6 +296,20 @@ def onthisday():
     cap_mid = (tink[1] + t["firstBaseline"]) / 2
     s.dp("'•••' centred on the date's cap middle", round(cap_mid, 2), (mink[1] + mink[3]) / 2, "cap middle from the 'J' ink top and the baseline", evidence="RWA '•••' 40 pt, centred on the title's cap middle", tol=0.75)
     s.colour("`color.global.glass` (#FFFFFF1F on black)", over_black(tok("color.global.glass")), img(n).getpixel((int((mink[0] + 4) * PX), int(cy(more) * PX))))
+    # The mode chevron after the date (RWA 'May 1, 2019 ⌄', RM-18): ink width, ink gap after the date's last glyph, and
+    # the drop of its ink centre below the date's cap middle.
+    mode = j["mode"]
+    whole = ink(n, (t["left"], t["top"], t["right"], t["bottom"]), (0, 0, 0))
+    chev = ink(n, (t["right"], t["top"] - 5, min(W, mode["right"] + 20), t["bottom"] + 5), (0, 0, 0))
+    s.dp("`dimension.onthisday.modeChevron.width` (chevron ink width)", tok("dimension.onthisday.modeChevron.width"), chev and chev[2] - chev[0], "`icon.global.chevronDown`, box sized from GlyphInk so the ink is the token")
+    s.dp("`dimension.onthisday.modeChevron.gap` (date ink → chevron ink)", tok("dimension.onthisday.modeChevron.gap"), chev and chev[0] - whole[2], "",
+         approx_note="the gap is laid after the date's advance box; the last digit's right side bearing (≈ 1.5 dp at 43 sp) adds to RWA's ink-to-ink 8.7 — iOS the same (alignment guide on the text frame)")
+    s.dp("`dimension.onthisday.modeChevron.drop` (chevron ink centre below the cap middle)", tok("dimension.onthisday.modeChevron.drop"), chev and round((chev[1] + chev[3]) / 2 - cap_mid, 2), "cap middle from the 'J' ink top and the baseline")
+    s.token("`fontWeight.onthisday.modeChevron`", "iOS only (SF Symbol weight); Android draws `Icons.Rounded.ExpandMore`, whose stroke is fixed by the icon")
+    s.check("match", "mode menu (RM-18)", "tap the date: 'On this day…' → the day's memories, 'Shuffle' → as the dice; 'Pick a date…' not built",
+            "mode-menu-light.png; OnThisDayViewModelTest.modeMenuGoesBackFromShuffleToTheDay; OnThisDayFlowTest (shuffle → 'On this day…' → 'On this day · …')",
+            "DsDropdownMenu anchored under the title (outside the page Crossfade); title = Role.DropdownList + heading; no ripple",
+            "RWA chevron; Retro strings `rewind_mode_selection_sheet_*`")
     s.section("Photo and scrim")
     p = j["photo"]
     s.check("match" if (p["left"], p["top"], p["right"], p["bottom"]) == (0, 0, W, H) else "not matched", "photo full bleed (`radius.global.photo` 0)", "0, 0 → 393 × 852", f"{fmt(p['left'])}, {fmt(p['top'])} → {fmt(p['width'])} × {fmt(p['height'])}", "aspect-fill, under the status bar; `onthisday.a11y.photo` label")
@@ -360,10 +374,12 @@ def onthisday():
     s.token("`duration.onthisday.memoryChange`", "cross-fade while playing; share / random fade out (`duration.global.fade`)")
     s.check("match", "shuffle (dice)", "random memory of the whole history; subtitle 'Memories · {name}'", "OnThisDayViewModelTest + flow: 'Memories · …' after the dice", "history_weeks pages of 52 weeks, random week then random post")
     s.check("match", "feature intro once per account", "C-29 FeatureIntroSheet; never again", "intro-light.png; flow: shown on first open, `onthisday.nux` marked seen", "row glyph `icon.global.rewind` (the component needs one)")
-    s.check("match", "menu ('•••')", "Save to Camera Roll; Report Post (others) / Delete Post (yours), red", "menu-light.png (someone else's memory); delete-confirm-light.png", "DsDropdownMenu in the system appearance (RWP phone 2)")
+    s.check("match", "menu ('•••')", "yours: Save to Camera Roll + Delete Post (red); others': Report Post (red)", "menu-own-light.png; menu-light.png (someone else's memory); delete-confirm-light.png", "DsDropdownMenu in the system appearance (RWP phone 2); Save only on your own memory (owner decision 12)")
+    s.check("match", "share circle (owner decision 12)", "your own memory only; on someone else's its place stays empty", "paused-own-memory-light.png (share shown); paused-light.png (someone else's: no share, dial in place); OnThisDayViewModelTest", "alpha 0 + cleared semantics, the dial keeps its slot")
     s.section("States")
     states(s, "onthisday", [
-        ("paused", "paused", "primary state; dark = light (media page)"),
+        ("paused", "paused", "primary state; dark = light (media page); someone else's memory: no share"),
+        ("paused, your own memory", "paused-own-memory", "share circle shown"),
         ("dial step", "dial-step-2", "second memory, indicator on slot 1"),
         ("playing", "playing", "pause glyph; share and random hidden (RWP phone 1)"),
         ("shuffle", "shuffle", "'Memories · {name}'"),
@@ -373,10 +389,12 @@ def onthisday():
         ("offline", "offline", "same block"),
         ("feature intro", "intro", "C-29 sheet over the page, system appearance"),
         ("permission-denied (save)", "save-denied", "native alert, button opens Settings"),
-        ("menu", "menu", "native menu, system appearance"),
+        ("menu", "menu", "native menu, system appearance (someone else's: Report)"),
+        ("menu, your own memory", "menu-own", "Save to Camera Roll + Delete Post"),
+        ("mode menu", "mode-menu", "'On this day…' / 'Shuffle' under the title"),
         ("delete confirmation", "delete-confirm", "native confirmation"),
     ])
-    s.extra = ("\nNot built (spec, unchanged): Retro's mode menu (On this week / Pick a date / Shuffle) — the dice is shuffle. "
+    s.extra = ("\nNot built (spec): Retro's mode menu item 'Pick a date…' (its picker and subtitle were never captured). "
                "The share sheet's preview title is today's date (`layout.year.story.dateFormat`) with `onthisday.share.subtitle` "
                "as the ClipData label (Android's chooser shows the title only).\n")
     s.write(renders("onthisday"))

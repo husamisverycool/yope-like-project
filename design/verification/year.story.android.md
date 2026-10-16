@@ -89,7 +89,7 @@ Snapshots (real sample photos, `fixtures/photos/`): `year.story/card-01-intro-da
 
 | status | token / element | expected | ours | reference evidence | note |
 |---|---|---|---|---|---|
-| match | 1080 × 1920 PNG of the card in view | 1080 × 1920 | 1080 × 1920 | references/auto/wrapped/press/wrapped25-press-sharecards.png (808-810 x 1436-1437 px, 1.775); https:… | 8 images (year.story/share/): fact cards, photos, collage, outro, both summary styles |
+| match | 1080 × 1920 PNG of the card in view | 1080 × 1920 | 1080 × 1920 | references/auto/wrapped/press/wrapped25-press-sharecards.png (808-810 x 1436-1437 px, 1.775); https:… | 7 images (year.story/share/): fact cards, photos, collage, outro, both summary styles |
 | match | share sheet preview title | `year.story.entry.subtitle` ('2026 Recap') | EXTRA_TITLE '2026 Recap' (YearStoryFlowTest) |  |  |
 
 ## Behaviour
