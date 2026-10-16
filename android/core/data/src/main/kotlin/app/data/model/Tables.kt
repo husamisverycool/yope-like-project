@@ -188,13 +188,13 @@ data class Reaction(
  */
 @Serializable
 data class SelfieReaction(
+    /** The report target (`report('selfie', id, …)`); the row's key is `(post_id, user_id)`. */
+    val id: String,
     @SerialName("post_id") val postId: String,
     @SerialName("user_id") val userId: String,
     @SerialName("group_id") val groupId: String,
     @SerialName("image_path") val imagePath: String,
     @SerialName("created_at") val createdAt: Instant,
-    /** The report target (`report('selfie', id, …)`); the row's key is `(post_id, user_id)`. */
-    val id: String,
 )
 
 /** §5.11 `post_tags` ("I'm in this" self-tags). */

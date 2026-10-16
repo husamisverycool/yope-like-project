@@ -407,9 +407,12 @@ class JourneyTest {
         waitFor(mayaPhoto, LONG)
     }
 
-    /** The face stack on a photo, labelled with the first names it shows (never a count). */
+    /**
+     * The face stack on a photo: one TalkBack button labelled with the first names it shows (never a count). Matched by
+     * that label: its test tag sits inside its clearAndSetSemantics and is not in the tree (run 102).
+     */
     private fun selfieStack(vararg firstNames: String): SemanticsMatcher =
-        hasTestTag("viewer.selfies") and desc(context.getString(R.string.viewer_selfiereaction_a11y_stack, firstNames.joinToString()))
+        desc(context.getString(R.string.viewer_selfiereaction_a11y_stack, firstNames.joinToString()))
 
     private fun mayasPhotoInTheViewer(): SemanticsMatcher =
         descContaining(context.getString(R.string.photo_viewer_a11y_photo, MAYA_FIRST, MARK).substringBefore(MARK))
