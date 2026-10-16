@@ -1,96 +1,110 @@
-// Shared component — the white secondary pill (Yope "invite more friends", "try again", "enable").
+// Shared component — C-09 light pill on media (design/components.md), replacing Yope's white secondary pill.
+// Evidence: TC-REC, ST-04 ('Share', row y=2420 x882–1026), ST-03 ('Add a message' 463–819, 1743–1830); RV §4 #6, §3.7.
+//
+// The role narrowed in the redesign (design/tokens/README.md "Redesign renames": `color.global.surfaceLight`): this
+// pill is drawn over a photo or a black media surface only. On a page, use C-06 (`CapsuleButton`) or C-07
+// (`OutlineCTA`).
 import DesignSystem
 import SwiftUI
 
-/// White pill button with an optional leading SF Symbol.
+/// The pill's look without the button (for a pill inside a larger tappable element).
 ///
-/// Tokens: fill `color.global.surfaceLight`, label and glyph `color.global.onSurfaceLight` in text role `button`.
-/// - `.standard` (empty states, invite share): height `groups.screen.size.lightPillHeight`, corners
-///   `groups.screen.radius.lightPill` (account surfaces' own measurement, MERGE account A-7); the width hugs the
-///   content with `groups.list.size.avatarInset` on each side — **approximation**: Yope's inner padding was not
-///   measured (the reference pill is 205 pt wide for "invite more friends" + link glyph).
-/// - `.card` (the inline permission card's "enable"): fixed `onboarding.permission.contacts.size.cardButtonWidth` ×
-///   `.cardButtonHeight`, shape `radius.global.capsule`.
-/// The height is a minimum so the label can grow with Dynamic Type.
-struct LightPill: View {
-    enum Metrics {
-        case standard
-        case card
+/// - `.light` ('Share' on the recap preview, 'Send Postcard'-style actions on black): fill `color.global.surfaceLight`,
+///   label `color.global.onSurfaceLight`.
+/// - `.dark` ('Add a message' on the postcard photo): fill `color.global.controlOnDeep` (reads opaque in ST-03), glyph
+///   and label `color.global.textOnMedia`.
+///
+/// Label text role `pill`; width hugs the label. Height: not isolated for 'Share' (Gap) — `size.global.pillHeight`
+/// (the 37 pt measured for 'Add a message'), a minimum so the label can grow with Dynamic Type. With a glyph the
+/// spacing is C-07's measured capsule anatomy (`size.global.pillPaddingLeading`, `.pillIconGap`,
+/// `.pillPaddingTrailing`, glyph `size.global.iconSmall`); text-only side padding was not measured (Gap) — platform.
+struct LightPillLabel: View {
+    enum Style {
+        case light
+        case dark
     }
 
     let title: String
     var icon: String?
-    var metrics: Metrics = .standard
+    var style: Style = .light
+
+    init(_ title: String, icon: String? = nil, style: Style = .light) {
+        self.title = title
+        self.icon = icon
+        self.style = style
+    }
+
+    var body: some View {
+        content
+            .foregroundStyle(style == .light ? Tokens.Colors.globalOnSurfaceLight : Tokens.Colors.globalTextOnMedia)
+            .frame(minHeight: Tokens.Sizes.globalPillHeight)
+            .background(style == .light ? Tokens.Colors.globalSurfaceLight : Tokens.Colors.globalControlOnDeep, in: Capsule())
+            .contentShape(Capsule())
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if let icon {
+            HStack(spacing: Tokens.Sizes.globalPillIconGap) {
+                Glyph(icon, size: Tokens.Sizes.globalIconSmall, relativeTo: TextRole.pill.relativeTo)
+                Text(title).dsTextStyle(TextRole.pill)
+            }
+            .padding(.leading, Tokens.Sizes.globalPillPaddingLeading)
+            .padding(.trailing, Tokens.Sizes.globalPillPaddingTrailing)
+        } else {
+            Text(title)
+                .dsTextStyle(TextRole.pill)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+    }
+}
+
+/// C-09 light pill button. Pressed: platform default. Accessibility: button labelled with the visible text.
+struct LightPill: View {
+    let title: String
+    var icon: String?
+    var style: LightPillLabel.Style = .light
     var isEnabled: Bool = true
     let action: () -> Void
 
-    init(_ title: String, icon: String? = nil, metrics: Metrics = .standard, isEnabled: Bool = true, action: @escaping () -> Void) {
+    init(_ title: String, icon: String? = nil, style: LightPillLabel.Style = .light, isEnabled: Bool = true, action: @escaping () -> Void) {
         self.title = title
         self.icon = icon
-        self.metrics = metrics
+        self.style = style
         self.isEnabled = isEnabled
         self.action = action
     }
 
     var body: some View {
         Button(action: action) {
-            LightPillLabel(title, icon: icon, metrics: metrics)
+            LightPillLabel(title, icon: icon, style: style)
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+        .accessibilityLabel(Text(title))
     }
 }
 
-/// The light pill's look without the button, for a pill inside a larger tappable row (the year-story entry's
-/// "let's go" on groups.screen). Same tokens as `LightPill`.
-struct LightPillLabel: View {
-    let title: String
-    var icon: String?
-    var metrics: LightPill.Metrics = .standard
+// MARK: - Yope-era signatures (Pass 4 replaces the call sites)
 
-    init(_ title: String, icon: String? = nil, metrics: LightPill.Metrics = .standard) {
-        self.title = title
-        self.icon = icon
-        self.metrics = metrics
+extension LightPill {
+    /// Yope's pill metrics (`groups.screen.size.lightPillHeight`, the permission card's fixed button). Retro has one
+    /// pill (C-09); both cases draw it.
+    enum Metrics {
+        case standard
+        case card
     }
 
-    var body: some View {
-        label
-            .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
-            .background(Tokens.Colors.globalSurfaceLight, in: shape)
-            .contentShape(shape)
+    @available(*, deprecated, message: "Yope metrics are gone: on media use LightPill(_:icon:style:); on a page use CapsuleButton (C-06) / OutlineCTA (C-07)")
+    init(_ title: String, icon: String? = nil, metrics: Metrics, isEnabled: Bool = true, action: @escaping () -> Void) {
+        self.init(title, icon: icon, isEnabled: isEnabled, action: action)
     }
+}
 
-    @ViewBuilder
-    private var label: some View {
-        switch metrics {
-        case .standard:
-            content
-                .padding(.horizontal, Tokens.Sizes.groupsListSizeAvatarInset)
-                .frame(minHeight: Tokens.Sizes.groupsScreenSizeLightPillHeight)
-        case .card:
-            content
-                .frame(minWidth: Tokens.Sizes.onboardingPermissionContactsSizeCardButtonWidth,
-                       minHeight: Tokens.Sizes.onboardingPermissionContactsSizeCardButtonHeight)
-        }
-    }
-
-    private var content: some View {
-        HStack {
-            if let icon {
-                Image(systemName: icon)
-                    .accessibilityHidden(true)
-            }
-            Text(title)
-                .dsTextStyle(TextRole.button)
-                .multilineTextAlignment(.center)
-        }
-    }
-
-    private var shape: AnyShape {
-        switch metrics {
-        case .standard: return AnyShape(RoundedRectangle(cornerRadius: Tokens.Radii.groupsScreenRadiusLightPill))
-        case .card: return AnyShape(Capsule())
-        }
+extension LightPillLabel {
+    @available(*, deprecated, message: "Yope metrics are gone: on media use LightPillLabel(_:icon:style:); on a page use CapsuleLabel (C-06) / OutlineCTALabel (C-07)")
+    init(_ title: String, icon: String? = nil, metrics: LightPill.Metrics) {
+        self.init(title, icon: icon)
     }
 }
