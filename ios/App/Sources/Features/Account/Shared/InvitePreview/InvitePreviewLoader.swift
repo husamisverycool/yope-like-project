@@ -6,8 +6,8 @@ import AppData
 import AppModels
 import Foundation
 
-/// `preview.json` (web/src/app.ts): `group_name`, `group_kind`, `inviter_first_name`, `cover {url, width, height}`,
-/// `members [{first_name, avatar_url}]` in joining order.
+/// `preview.json` (web/src/app.ts): `group_name`, `group_kind`, `inviter_first_name`, `inviter_avatar_url`,
+/// `cover {url, width, height}`, `members [{first_name, avatar_url}]` in joining order.
 struct WebInvitePreview: Decodable, Equatable, Sendable {
     struct Cover: Decodable, Equatable, Sendable {
         var url: URL
@@ -30,15 +30,20 @@ struct WebInvitePreview: Decodable, Equatable, Sendable {
     var groupName: String
     var groupKind: String?
     var inviterFirstName: String?
+    /// The inviter's photo (signed on the web origin); nil without one.
+    var inviterAvatarURL: URL?
     var cover: Cover?
     var members: [Member]
     /// The cover's storage path when the preview came from the RPC.
     var coverPath: String? = nil
+    /// The inviter's avatar storage path when the preview came from the RPC (`inviter_avatar_path`).
+    var inviterAvatarPath: String? = nil
 
     enum CodingKeys: String, CodingKey {
         case groupName = "group_name"
         case groupKind = "group_kind"
         case inviterFirstName = "inviter_first_name"
+        case inviterAvatarURL = "inviter_avatar_url"
         case cover, members
     }
 }
@@ -50,14 +55,16 @@ extension WebInvitePreview {
             groupName: preview.groupName,
             groupKind: preview.groupKind.rawValue,
             inviterFirstName: preview.inviterFirstName,
+            inviterAvatarURL: nil,
             cover: nil,
             members: preview.members.map { Member(firstName: $0.firstName, avatarURL: nil, avatarPath: $0.avatarPath) },
-            coverPath: preview.coverPath
+            coverPath: preview.coverPath,
+            inviterAvatarPath: preview.inviterAvatarPath
         )
     }
 
-    /// The inviter among the members: the one member whose first name is the inviter's (web/src/inviteService.ts
-    /// `inviterIndex`); nil when there is no inviter name or the name is not unique.
+    /// The inviter among the members when the answer carries no inviter photo (an older web service): the one member
+    /// whose first name is the inviter's; nil when there is no inviter name or the name is not unique.
     var inviterIndex: Int? {
         guard let name = inviterFirstName else { return nil }
         let matches = members.indices.filter { members[$0].firstName == name }
@@ -76,9 +83,11 @@ extension WebInvitePreview {
         return member.avatarPath.map { PhotoSource.storage($0) }
     }
 
-    /// The inviter's photo, when there is one.
+    /// The inviter's photo, when there is one: `inviter_avatar_url` / `inviter_avatar_path`, else the matching member's.
     var inviterAvatarSource: PhotoSource? {
-        inviterIndex.flatMap { avatarSource(of: $0) }
+        if let url = inviterAvatarURL { return .url(url) }
+        if let path = inviterAvatarPath { return .storage(path) }
+        return inviterIndex.flatMap { avatarSource(of: $0) }
     }
 
     /// The card's backdrop (invite.web Structure 1): the cover, else the inviter's photo, else none

@@ -375,7 +375,7 @@ final class SocialSnapshotTests: XCTestCase {
         await own.load()
         record(PhotoViewerView(model: own, presentation: .pushed), "photo.viewer", "ready-own")
 
-        // memory's tag run under the photo: "Ben and you are in this".
+        // memory's tag run under the photo: "with Ben and Sam".
         let tagData = use(SocialDemo.makeData())
         tagData.update { $0.tags = [SocialDemo.tag(SocialDemo.p2, SocialDemo.ben, minutes: 1), SocialDemo.tag(SocialDemo.p2, SocialDemo.me, minutes: 2)] }
         let tagged = viewer(SocialDemo.p2, data: tagData)

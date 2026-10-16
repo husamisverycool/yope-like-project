@@ -167,6 +167,10 @@ protocol CaptureCollageSource: AnyObject, Sendable {
     func cachedImage(path: String) async -> UIImage?
     /// Writes the share image of a page to a local file for the share sheet.
     func shareFile(path: String) async throws -> URL
+    /// The storage path of the collage's first photo — the first visible post of `postIDs` (capture order), its display
+    /// rendition (the original until renditions exist) — for the recap-preview backdrop (collage.view, MERGE L-7); nil
+    /// when none resolves (offline, blocked, deleted).
+    func firstPhotoPath(postIDs: [PostID]) async -> String?
     var isOffline: Bool { get }
 }
 

@@ -432,7 +432,7 @@ final class ComponentSnapshotTests: XCTestCase {
                     SectionHeader(title: "Week 28", detail: "Jul 6 - 12", moreAccessibilityLabel: "More") { Button("Share") {} }
                 } content: {
                     WeekStrip(
-                        tiles: WeekStripLayout.tiles(days: days, photos: (0..<3).map { WeekStripPhoto(id: "a\($0)", date: days[$0], source: photo($0 + 40)) }, canAdd: true),
+                        tiles: WeekStripLayout.tiles(days: days, photos: (0..<3).map { WeekStripPhoto(id: "a\($0)", date: days[$0], source: self.photo($0 + 40)) }, canAdd: true),
                         accessibilityLabel: { $0.id }
                     )
                 }
@@ -440,7 +440,7 @@ final class ComponentSnapshotTests: XCTestCase {
                     SectionHeader(title: "Week 27", detail: "Jun 29 - Jul 5", moreAccessibilityLabel: "More") { Button("Share") {} }
                 } content: {
                     WeekStrip(
-                        tiles: WeekStripLayout.tiles(days: earlier, photos: (0..<5).map { WeekStripPhoto(id: "b\($0)", date: earlier[$0], source: photo($0 + 50)) }, canAdd: false),
+                        tiles: WeekStripLayout.tiles(days: earlier, photos: (0..<5).map { WeekStripPhoto(id: "b\($0)", date: earlier[$0], source: self.photo($0 + 50)) }, canAdd: false),
                         accessibilityLabel: { $0.id }
                     )
                 }
@@ -477,7 +477,7 @@ final class ComponentSnapshotTests: XCTestCase {
             ViewerPage(
                 header: {
                     ViewerHeader(
-                        name: "tim", week: "Week 28", avatar: avatar(7), position: "3 of 4",
+                        name: "tim", week: "Week 28", avatar: self.avatar(7), position: "3 of 4",
                         closeLabel: "Close", onClose: {}, moreLabel: "More"
                     ) {
                         Button("Save") {}
@@ -489,10 +489,10 @@ final class ComponentSnapshotTests: XCTestCase {
                     ViewerFooter(location: "Mexico City", date: "Jul 10")
                 },
                 content: {
-                    CommentRow(name: "elton", time: "2h", text: "this is the best one", avatar: avatar(4))
+                    CommentRow(name: "elton", time: "2h", text: "this is the best one", avatar: self.avatar(4))
                     Spacer(minLength: 0)
                     ReplyBar(
-                        text: .constant(""), placeholder: "Add a comment…", accessibilityLabel: "Comment", avatar: avatar(1),
+                        text: .constant(""), placeholder: "Add a comment…", accessibilityLabel: "Comment", avatar: self.avatar(1),
                         sendLabel: "Send", onSend: {}, moreLabel: "More", onMore: {}
                     )
                 }
@@ -521,7 +521,7 @@ final class ComponentSnapshotTests: XCTestCase {
         record("c23-avatar-sizes") {
             HStack(alignment: .bottom) {
                 ForEach(sizes.indices, id: \.self) { index in
-                    AvatarView(source: avatar(index + 1), diameter: sizes[index])
+                    AvatarView(source: self.avatar(index + 1), diameter: sizes[index])
                 }
             }
             .padding()
@@ -687,7 +687,7 @@ final class ComponentSnapshotTests: XCTestCase {
         record("c34-recap-card", surface: .media, height: 700) {
             BackdropCard(backdrop: photo(15), cornerRadius: Tokens.Radii.globalThumbnail) {
                 VStack(alignment: .leading) {
-                    PhotoGrid(items: (0..<6).map { PhotoGridItem(id: "r\($0)", source: photo($0 + 16, .square), accessibilityLabel: "") }, columns: 3)
+                    PhotoGrid(items: (0..<6).map { PhotoGridItem(id: "r\($0)", source: self.photo($0 + 16, .square), accessibilityLabel: "") }, columns: 3)
                     Text("2026").dsTextStyle(TextRole.displaySmall).foregroundStyle(Tokens.Colors.globalTextPrimary)
                 }
             } below: {

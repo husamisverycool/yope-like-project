@@ -35,6 +35,10 @@ final class CollageModel {
     private(set) var collage: Collage? = nil
     /// Page images by 1-based page number.
     private(set) var pages: [Int: UIImage] = [:]
+    /// The collage's first photo (`post_ids[0]`, display rendition) for the recap-preview backdrop (MERGE L-7).
+    private(set) var firstPhoto: UIImage? = nil
+    /// The post ids whose first photo `firstPhoto` shows (reloaded when a recompose changes them).
+    @ObservationIgnored private var firstPhotoPostIDs: [PostID]? = nil
     /// The selected page (1-based). The view calls `pageChanged()` after a swipe.
     var currentPage = 1
     private(set) var dateText = ""
@@ -88,6 +92,24 @@ final class CollageModel {
         }
         await details
         await loadPages(around: currentPage)
+        await loadFirstPhoto()
+    }
+
+    /// collage.view media page (MERGE L-7): the collage's first photo, aspect-filled and blurred; page 1's image until
+    /// that photo loads (or when it cannot be resolved — offline, blocked, deleted).
+    var backdropImage: UIImage? {
+        guard state == .ready else { return nil }
+        return firstPhoto ?? pages[1]
+    }
+
+    private func loadFirstPhoto() async {
+        guard let collage, collage.isReady, firstPhotoPostIDs != collage.postIDs else { return }
+        // A recompose that removed the first post must not keep showing it.
+        if firstPhotoPostIDs?.first != collage.postIDs.first { firstPhoto = nil }
+        guard let path = await collages.firstPhotoPath(postIDs: collage.postIDs),
+              let image = try? await collages.image(path: path) else { return }
+        firstPhotoPostIDs = collage.postIDs
+        firstPhoto = image
     }
 
     func reload() async {

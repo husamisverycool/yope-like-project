@@ -442,6 +442,13 @@ final class LiveCaptureCollages: CaptureCollageSource {
         return named
     }
 
+    func firstPhotoPath(postIDs: [PostID]) async -> String? {
+        guard let data, !postIDs.isEmpty,
+              let posts = try? await data.posts.posts(ids: postIDs),
+              let joined = try? await data.posts.withMedia(posts) else { return nil }
+        return joined.compactMap { $0.media?.imagePath(for: .display) }.first
+    }
+
     /// Storage paths use only letters, digits and `_ . / -` (docs/API.md §7), so a flattened
     /// path is a safe file name; the `<version>` folder changes on every recompose.
     private func fileURL(_ path: String) -> URL {

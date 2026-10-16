@@ -42,6 +42,15 @@ final class AccountComponentTests: XCTestCase {
         XCTAssertEqual(joined.line, Copy.inviteAppclipJoinedBody)
     }
 
+    func testInviteCardUsesTheInvitersAvatarURL() throws {
+        let json = Data(#"{"group_name":"Limas","group_kind":"friends","inviter_first_name":"Ana","inviter_avatar_url":"https://example.test/i/t/avatar/3.jpg","cover":null,"members":[{"first_name":"Ana","avatar_url":null},{"first_name":"Ana","avatar_url":null}]}"#.utf8)
+        guard case let .valid(preview) = InvitePreviewLoader.state(status: 200, data: json) else { return XCTFail("not decoded") }
+        let avatar = PhotoSource.url(try XCTUnwrap(URL(string: "https://example.test/i/t/avatar/3.jpg")))
+        XCTAssertNil(preview.inviterIndex, "two members share the name")
+        XCTAssertEqual(InviteCardContent.invite(preview).avatar, avatar, "inviter_avatar_url wins")
+        XCTAssertEqual(InviteCardContent.invite(preview).backdrop, avatar, "no cover: the inviter's photo")
+    }
+
     func testInviteCardFallsBackWithoutCoverOrInviter() {
         var preview = WebInvitePreview(
             groupName: "Limas", groupKind: nil, inviterFirstName: "Rui", cover: nil,

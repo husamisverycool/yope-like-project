@@ -347,6 +347,15 @@ final class FakeCaptureCollages: CaptureCollageSource {
 
     func cachedImage(path: String) async -> UIImage? { cachedImages[path] }
 
+    /// The first photo's storage path by the collage's first post id (nil: not resolvable).
+    var firstPhotoPaths: [PostID: String] = [:]
+    private(set) var firstPhotoRequests: [[PostID]] = []
+
+    func firstPhotoPath(postIDs: [PostID]) async -> String? {
+        firstPhotoRequests.append(postIDs)
+        return postIDs.compactMap { firstPhotoPaths[$0] }.first
+    }
+
     func shareFile(path: String) async throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent((path as NSString).lastPathComponent)
         try (images[path]?.jpegData(compressionQuality: 1) ?? Data()).write(to: url)

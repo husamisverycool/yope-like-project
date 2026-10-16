@@ -313,9 +313,10 @@ final class InMemoryAccountData: AccountDataSource {
         try await record("invitePreview")
         guard let invite = invites.first(where: { $0.token == token }),
               let group = groups.first(where: { $0.id == invite.groupID }) else { throw DataError.api(.inviteNotFound) }
-        let members = (membersByGroup[group.id] ?? []).map { InvitePreview.Member(firstName: $0.profile?.firstName, avatarPath: nil) }
-        return InvitePreview(groupName: group.name, groupKind: group.kind, coverPath: nil,
-                             inviterFirstName: profilesByID[invite.createdBy]?.firstName, members: members)
+        let members = (membersByGroup[group.id] ?? []).map { InvitePreview.Member(firstName: $0.profile?.firstName, avatarPath: $0.profile?.avatarPath) }
+        let inviter = profilesByID[invite.createdBy]
+        return InvitePreview(groupName: group.name, groupKind: group.kind, coverPath: group.coverPath,
+                             inviterFirstName: inviter?.firstName, members: members, inviterAvatarPath: inviter?.avatarPath)
     }
 
     // MARK: Photos

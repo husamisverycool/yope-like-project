@@ -215,14 +215,20 @@ public struct InvitePreview: Codable, Hashable, Sendable {
     public var groupKind: GroupKind
     public var coverPath: String?
     public var inviterFirstName: String?
+    /// The inviter's avatar (`inviter_avatar_path`, migration 20261015000016); nil without a photo or from older servers.
+    public var inviterAvatarPath: String?
     /// In joining order.
     public var members: [Member]
 
-    public init(groupName: String, groupKind: GroupKind, coverPath: String?, inviterFirstName: String?, members: [Member]) {
+    public init(
+        groupName: String, groupKind: GroupKind, coverPath: String?, inviterFirstName: String?, members: [Member],
+        inviterAvatarPath: String? = nil
+    ) {
         self.groupName = groupName
         self.groupKind = groupKind
         self.coverPath = coverPath
         self.inviterFirstName = inviterFirstName
+        self.inviterAvatarPath = inviterAvatarPath
         self.members = members
     }
 
@@ -231,6 +237,7 @@ public struct InvitePreview: Codable, Hashable, Sendable {
         case groupKind = "group_kind"
         case coverPath = "cover_path"
         case inviterFirstName = "inviter_first_name"
+        case inviterAvatarPath = "inviter_avatar_path"
         case members
     }
 }

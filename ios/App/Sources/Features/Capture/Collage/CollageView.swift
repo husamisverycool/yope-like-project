@@ -9,9 +9,9 @@ import DesignSystem
 import SwiftUI
 import UIKit
 
-/// The same-moment collage of one daily invitation in the recap preview (`RecapPreviewScreen`): page 1 blurred in the
-/// rounded media page, the current page as the card (aspect-fit, corners `outerRadiusRatio` × its width), the close
-/// circle, the dots below the page (2+ pages), and the "Share" pill once the share image exists.
+/// The same-moment collage of one daily invitation in the recap preview (`RecapPreviewScreen`): the collage's first photo
+/// blurred in the rounded media page, the current page as the card (aspect-fit, corners `outerRadiusRatio` × its width),
+/// the close circle, the dots below the page (2+ pages), and the "Share" pill once the share image exists.
 struct CollageView: View {
     @Bindable var model: CollageModel
     /// True when presented as a full-screen cover: the cover then asks for light status-bar content.
@@ -57,13 +57,16 @@ struct CollageView: View {
         }
     }
 
-    /// The media page's content: page 1 blurred (C-34 backdrop) under the swiped cards once ready; otherwise the state on
+    /// The media page's content: the first photo blurred (C-34 backdrop, MERGE L-7) under the swiped cards once ready;
+    /// otherwise the state on
     /// `color.global.controlOnDeep` (collage.view States).
     @ViewBuilder
     private var mediaPage: some View {
         if isReady {
             ZStack {
-                BlurredBackdrop(source: model.pages[1].map { PhotoSource.image($0) })
+                // C-34 backdrop: the collage's first photo, page 1's image until it loads (MERGE L-7).
+                BlurredBackdrop(source: model.backdropImage.map { PhotoSource.image($0) })
+                    .dsAnimation(ComponentMotion.fade, value: model.firstPhoto != nil)
                 if model.pageCount > 1 {
                     TabView(selection: $model.currentPage) {
                         ForEach(1...model.pageCount, id: \.self) { number in
