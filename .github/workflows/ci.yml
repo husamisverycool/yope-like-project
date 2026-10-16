@@ -76,7 +76,7 @@ jobs:
         working-directory: backend
         run: |
           npm ci
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          bash ../.github/scripts/supabase-start.sh
           npm test
 
   worker:
@@ -97,7 +97,7 @@ jobs:
         working-directory: backend
         run: |
           npm ci
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          bash ../.github/scripts/supabase-start.sh
       - name: worker tests
         working-directory: backend/worker
         run: |
@@ -122,7 +122,7 @@ jobs:
         working-directory: backend
         run: |
           npm ci
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          bash ../.github/scripts/supabase-start.sh
       - name: web tests
         working-directory: web
         run: |
@@ -160,7 +160,7 @@ jobs:
         working-directory: backend
         run: |
           npm ci
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          bash ../.github/scripts/supabase-start.sh
           supabase status -o json | jq -r '"SUPABASE_URL=\(.API_URL)", "SUPABASE_ANON_KEY=\(.ANON_KEY)", "SUPABASE_SERVICE_ROLE_KEY=\(.SERVICE_ROLE_KEY)"' >> "$GITHUB_ENV"
       - name: build, unit and snapshot tests
         working-directory: android
@@ -264,7 +264,7 @@ jobs:
         working-directory: backend
         run: |
           npm ci
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          bash ../.github/scripts/supabase-start.sh
           supabase status -o json | jq -r '"SUPABASE_URL=\(.API_URL)", "SUPABASE_ANON_KEY=\(.ANON_KEY)", "SUPABASE_SERVICE_ROLE_KEY=\(.SERVICE_ROLE_KEY)", "SUPABASE_JWT_SECRET=\(.JWT_SECRET)"' >> "$GITHUB_ENV"
       - name: swift test (unit and live-stack integration tests)
         run: |

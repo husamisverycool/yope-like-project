@@ -14,7 +14,7 @@ set -euo pipefail
   for number in "$@"; do printf '%s = "123456"\n' "$number"; done
 } >> supabase/config.toml
 npm ci
-supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+bash ../.github/scripts/supabase-start.sh
 DB=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
 docker exec "$DB" psql -U postgres -v ON_ERROR_STOP=1 \
   -c "update public.app_config set value = '13' where key = 'min_age_years'" \
