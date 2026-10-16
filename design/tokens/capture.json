@@ -153,16 +153,18 @@
       "type": "layout",
       "value": {
         "message": "C-09 glass pill on the photo: fill color.global.controlOnDeep, icon.global.edit + label text role pill, colour color.global.textOnMedia, height size.global.pillHeight, width hugs the label",
-        "voice": "icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic",
+        "voice": "icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic (locked or paused recording: icon.global.send — keeps the note); with a note attached it stays the mic: a new recording replaces the note",
         "gap": "size.global.pillGap",
         "bottomInset": 20.5,
-        "align": "the pair centred horizontally on the photo"
+        "align": "the pair centred horizontally on the photo",
+        "recording": "while recording (chat.voice.layout.recording) the message pill gives way to the recording capsule (same fill and height, C-07 paddings): holding — icon.global.mic in color.global.destructive · elapsed (text role pill, monospaced) · icon.global.back + chat.voice.recording.slideToCancel in color.global.textSecondary; locked — red mic · elapsed · C-36 live waveform · icon.global.pause (chat.voice.a11y.pauseRecording); paused — icon.global.trash in color.global.destructive · icon.global.play / .pause (preview) · C-36 draft waveform · length · icon.global.mic in color.global.destructive (chat.voice.a11y.resumeRecording) — chat.voice.layout.locked's order inside one capsule; the capsule spans the photo's width less the voice capsule, the gap and size.global.pillGap on the leading side, its waveform taking what is left",
+        "note": "an attached note: the chat.voice capsule on media (chat.voice.layout.capsule: play glyph · C-36 waveform chat.voice.dimension.waveform · duration) centred above the pill pair, size.global.pillGap above it; tap plays / pauses; its context menu (and a VoiceOver / TalkBack action) deletes it (chat.voice.a11y.discard)"
       },
       "source_app": "Retro",
       "surface": "camera.sendto",
       "element": "'Add a message' pill and the voice-note capsule along the bottom of the preview",
-      "evidence": "references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px/pt; phone screen y576–2611 = 852 pt, x171–1110 = 393 pt): 'Add a message' pill (463–819, 1743–1830) = 149 × 36.4 pt, fill #262626, pencil glyph + white label; photo bottom y1879 → pill bottom 1830: 49 px = 20.5 pt — design/components.md C-09, C-06 (icon-only capsule 49 wide, gap 8.8: references/auto/retro/store/retro-store-02.png)",
-      "method": "edge scans ÷ 2.389 px/pt; composition of C-09 and the C-06 icon-only capsule in Locket's order (message field, then voice)",
+      "evidence": "references/auto/retro/store/retro-store-03.png (App Store listing 124.0, 'Postcard' modal, 1284×2778, 2.389 px/pt; phone screen y576–2611 = 852 pt, x171–1110 = 393 pt): 'Add a message' pill (463–819, 1743–1830) = 149 × 36.4 pt, fill #262626, pencil glyph + white label; photo bottom y1879 → pill bottom 1830: 49 px = 20.5 pt — design/components.md C-09, C-06 (icon-only capsule 49 wide, gap 8.8: references/auto/retro/store/retro-store-02.png); note and recording capsules: design/surfaces/chat.voice.md (C-36 waveform, chat.voice.layout.locked), references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png (locked / paused order)",
+      "method": "edge scans ÷ 2.389 px/pt; composition of C-09 and the C-06 icon-only capsule in Locket's order (message field, then voice); the note and recording capsules compose chat.voice's capsule and locked layout on media (owner decision 16)",
       "level": "SOURCED",
       "precision": "±0.5 pt",
       "notes": "Replaces Yope's translucent field (#0000007A) and mic circle; the caption is no longer drawn on the photo (Retro shows the message in its own modal and relabels the pill 'Edit message')."
@@ -569,6 +571,23 @@
       "level": "SOURCED",
       "precision": "exact",
       "notes": "Replaces Locket's 110-dp minimum. resizeMode: Retro's provider is resizable (minResize set); exact flag string not excerpted — both axes as Locket (design/research/locket.md §2)."
+    },
+    "widget.android.layout.lockScreen": {
+      "type": "layout",
+      "value": {
+        "widgetCategory": "home_screen|keyguard",
+        "where": "the lock-screen widget hub: Android 16 QPR2+ (AOSP 'the release after Android 16 (QPR1)'), Pixel Tablet since 2024; earlier releases ignore keyguard (home screen only)",
+        "size": "about 4 x 3 cells → the Medium size class (PlatformWidgetGrid.minSize(4, 3) = 276 x 183 dp)",
+        "tap": "the same PendingIntent; the activity opens after unlock (no android:showWhenLocked)",
+        "preview": "the generated preview covers every category (Glance setWidgetPreviews default HOME_SCREEN or KEYGUARD or SEARCHBOX)"
+      },
+      "source_app": "Material 3",
+      "surface": "widget.android",
+      "element": "lock-screen placement of the Glance widget (owner decision 18: opt in)",
+      "evidence": "https://android-developers.googleblog.com/2025/03/widgets-on-lock-screen-faq.html ('Lock screen widgets will be available in AOSP for tablets and mobile starting with the release after Android 16 (QPR1)'; 'sized to approximately 4 cells wide by 3 cells tall'; 'If a widget launches an activity from the lock screen, users must authenticate to launch the activity, or the activity should declare android:showWhenLocked=\"true\"'); https://developer.android.com/reference/android/appwidget/AppWidgetProviderInfo (WIDGET_CATEGORY_KEYGUARD 'Indicates that the widget can be displayed on the keyguard', added in API level 17; widgetCategory 'A widget which is displayed on both needs to ensure that it follows the design guidelines for both widget classes'); https://raw.githubusercontent.com/androidx/androidx/androidx-main/glance/glance-appwidget/src/main/java/androidx/glance/appwidget/GlanceAppWidgetManager.kt setWidgetPreviews default widgetCategories; docs/OWNER_DECISIONS.md #18 (read 2026-10-16)",
+      "method": "transcribed from platform documentation",
+      "level": "PLATFORM",
+      "notes": "Snapshot check: feature/capture WidgetSnapshotTest widget.android_keyguard_* (the hub slot renders the Medium layout). docs/PLATFORM_CONSTRAINTS.md §4.2."
     },
     "widget.android.radius.widget": {
       "type": "radius",

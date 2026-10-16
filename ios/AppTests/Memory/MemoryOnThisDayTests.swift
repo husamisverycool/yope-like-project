@@ -138,6 +138,26 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertEqual(context.haptics.filter { $0 == Tokens.Haptics.globalSelect }.count, 3)
     }
 
+    /// The title's mode menu (Retro's Rewind mode menu): "On this day…" goes back from shuffle to the day, at the newest.
+    func testModeMenuGoesBackFromShuffleToTheDay() async {
+        let context = MemoryTestContext()
+        let model = makeModel(context)
+        await model.loadIfNeeded()
+        model.next()
+        model.showDay()
+        XCTAssertEqual(model.index, 1, "already the day: nothing changes")
+        await model.shuffle()
+        XCTAssertEqual(model.mode, .shuffle)
+        context.clearHaptics()
+        model.showDay()
+        XCTAssertEqual(model.mode, .day)
+        XCTAssertEqual(model.index, 0, "back at the newest memory of the day")
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(6))
+        XCTAssertEqual(model.subtitle, Copy.onthisdaySubtitleDay(name: "Bea"))
+        XCTAssertTrue(model.picks.isEmpty)
+        XCTAssertTrue(context.haptics.isEmpty, "the native menu plays its own feedback")
+    }
+
     /// Moves to the fixture's own memory (index 2, posted by the signed-in member) and forgets the two dial ticks.
     private func showOwnMemory(_ model: OnThisDayModel, _ context: MemoryTestContext) {
         model.next()

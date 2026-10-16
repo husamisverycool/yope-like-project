@@ -27,7 +27,9 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import java.text.Collator
 import java.time.Instant
+import java.util.Locale
 
 /** One wall tile: a photo (its thumbnail) or a same-moment collage (only `ready` ones are shown). */
 sealed interface WallTile {
@@ -247,11 +249,11 @@ data class BrowseState(
 }
 
 /**
- * `walls.browse`: everyone sharing a group with me. The order `walls.browse.layout.rowOrder` is BLOCKED: with
- * [approximations] the development approximation (newest wall item first, then name), otherwise the order the
- * memberships arrive in.
+ * `walls.browse`: everyone sharing a group with me, in the order `walls.browse.layout.rowOrder` (Apple Photos'
+ * people grid "Sort by Name": display name A to Z in the device locale's collation, ignoring case and accents; ties
+ * by profile id — [orderedByName]).
  */
-class BrowseViewModel(private val data: SocialData, private val approximations: Boolean = app.feature.social.common.BuildApproximations.ENABLED) : ViewModel() {
+class BrowseViewModel(private val data: SocialData, private val locale: Locale = Locale.getDefault()) : ViewModel() {
     private val _state = MutableStateFlow(BrowseState())
     val state: StateFlow<BrowseState> = _state.asStateFlow()
 
@@ -266,12 +268,7 @@ class BrowseViewModel(private val data: SocialData, private val approximations: 
                 val groups = data.myGroups()
                 val members = coroutineScope { groups.map { g -> async { data.members(g.id) } }.awaitAll() }.flatten()
                 val others = members.mapNotNull { it.profile }.distinctBy { it.id }.filter { it.id != me }
-                val ordered = if (app.feature.social.common.SocialBlocked.browseRowOrder || approximations) {
-                    val newest = coroutineScope {
-                        others.map { p -> async { p.id to runCatching { data.wall(p.id, null, 1).firstOrNull()?.createdAt }.getOrNull() } }.awaitAll()
-                    }.toMap()
-                    others.sortedWith(compareByDescending<Profile> { newest[it.id] ?: Instant.MIN }.thenBy { it.displayName })
-                } else others
+                val ordered = orderedByName(others, locale)
                 _state.update { it.copy(phase = BrowseState.Phase.Ready, people = ordered, alone = ordered.isEmpty()) }
             } catch (e: CancellationException) {
                 throw e
@@ -287,4 +284,14 @@ class BrowseViewModel(private val data: SocialData, private val approximations: 
         _state.update { it.copy(phase = BrowseState.Phase.Loading) }
         load()
     }
+}
+
+/**
+ * `walls.browse.layout.rowOrder`: [people] by display name, A to Z, in [locale]'s collation ignoring case and accents
+ * (`Collator` PRIMARY strength — the comparison iOS makes with `.caseInsensitive` + `.diacriticInsensitive`); equal
+ * names by profile id so the order is stable.
+ */
+fun orderedByName(people: List<Profile>, locale: Locale = Locale.getDefault()): List<Profile> {
+    val collator = Collator.getInstance(locale).apply { strength = Collator.PRIMARY }
+    return people.sortedWith { a, b -> collator.compare(a.displayName, b.displayName).takeIf { it != 0 } ?: a.id.compareTo(b.id) }
 }

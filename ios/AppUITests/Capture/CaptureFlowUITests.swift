@@ -3,9 +3,9 @@ import XCTest
 /// capture → send flows (camera.capture → camera.sendto). The simulator has no camera: the app runs
 /// with the capture fakes (`-capture-fakes`, App/Sources/Features/Capture/Support/CaptureFakes.swift).
 ///
-/// Reaching the camera needs a signed-in session and an entry into the camera from the shell
-/// (account group). Extra launch arguments for that (e.g. the account pass's signed-in UI-test
-/// scenario) are read from the environment variable `CAPTURE_UI_TEST_EXTRA_ARGS` (space-separated).
+/// Reaching the camera needs a signed-in session: the account group's in-memory scenario
+/// `-account-ui-test-scenario with-groups` (a member with groups), then the tab bar's camera item. The
+/// environment variable `CAPTURE_UI_TEST_EXTRA_ARGS` (space-separated) replaces those arguments.
 final class CaptureFlowUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
@@ -15,19 +15,23 @@ final class CaptureFlowUITests: XCTestCase {
     private func launchToCamera(_ arguments: [String] = []) throws -> XCUIApplication {
         let app = XCUIApplication()
         let extra = ProcessInfo.processInfo.environment["CAPTURE_UI_TEST_EXTRA_ARGS"]?
-            .split(separator: " ").map(String.init) ?? []
+            .split(separator: " ").map(String.init) ?? ["-account-ui-test-scenario", "with-groups"]
         app.launchArguments = ["-capture-fakes"] + arguments + extra
         app.launch()
         let camera = app.otherElements["camera.capture"]
         if camera.waitForExistence(timeout: 5) { return app }
-        // The app opens to the camera (camera.capture "In"); otherwise the tab bar's camera item.
-        let tab = app.buttons["camera"]
-        if tab.waitForExistence(timeout: 5) {
+        // The app opens to the camera (camera.capture "In"); otherwise the tab bar's camera item (its VoiceOver label,
+        // copy `groups.list.tab.camera.accessibilityLabel`).
+        let tab = app.buttons["Camera"].firstMatch
+        if tab.waitForExistence(timeout: 10) {
             tab.tap()
             if camera.waitForExistence(timeout: 5) { return app }
         }
-        throw XCTSkip("The camera is not reachable from launch: needs a signed-in UI-test scenario (CAPTURE_UI_TEST_EXTRA_ARGS) and the shell's camera entry.")
+        XCTFail("The camera is not reachable from launch: the signed-in scenario, then the tab bar's camera item.")
+        throw CameraUnreachable()
     }
+
+    private struct CameraUnreachable: Error {}
 
     @MainActor
     func testCaptureThenSendClosesTheCamera() throws {

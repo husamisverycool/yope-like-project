@@ -44,6 +44,15 @@ import app.ui.text.TextRoles
 @Immutable
 data class RecapCardPhoto(val image: Any?, val accessibilityLabel: String, val onClick: (() -> Unit)? = null)
 
+/**
+ * A caller's own grid on the card (week.recap's `week.recap.layout.gridFill`): [columns] × [rows] cells that share a
+ * photo area as wide as the card minus its padding and that width ÷ [areaAspect] tall; a short last row stays
+ * leading-aligned with the card fill after it. Null on [RecapCard] = the year card's rule (fixed `cellAspect` cells,
+ * whole rows).
+ */
+@Immutable
+data class RecapGridShape(val columns: Int, val rows: Int, val areaAspect: Float)
+
 /** The recap card's geometry (`layout.year.story.recapCard`) for a card [width] wide. */
 object RecapCardMetrics {
     private val card = Tokens.Layouts.YearStoryRecapCard
@@ -95,6 +104,7 @@ fun RecapCard(
     detail: String? = null,
     nameStyle: TextStyle = TextRoles.listTitle,
     shown: Int = RecapCardMetrics.shown(photos.size),
+    grid: RecapGridShape? = null,
     image: @Composable (photo: RecapCardPhoto, modifier: Modifier) -> Unit = { photo, m -> DsImage(photo.image, null, m, placeholder = Tokens.ColorsLight.globalControl) },
 ) {
     BoxWithConstraints(modifier) {
@@ -102,8 +112,14 @@ fun RecapCard(
         val padding = RecapCardMetrics.padding(width)
         val corner = RecapCardMetrics.corner(width)
         val gap = Tokens.Sizes.globalStripGap
-        val columns = RecapCardMetrics.columns
-        val drawn = photos.take(shown.coerceIn(0, RecapCardMetrics.columns * RecapCardMetrics.maxRows))
+        val columns = grid?.columns ?: RecapCardMetrics.columns
+        val capacity = if (grid != null) grid.columns * grid.rows else RecapCardMetrics.columns * RecapCardMetrics.maxRows
+        val drawn = photos.take(shown.coerceIn(0, capacity))
+        // A caller's grid: cells share the fixed photo area (week.recap.layout.gridFill); else fixed-aspect cells.
+        val areaWidth = width - padding * 2
+        val areaHeight = grid?.let { areaWidth / it.areaAspect }
+        val cellWidth = (areaWidth - gap * (columns - 1)) / columns
+        val cellHeight = grid?.let { (areaHeight!! - gap * (it.rows - 1)) / it.rows }
         val ink = Tokens.Colors.globalOnSurfaceLight
         Column(
             Modifier
@@ -113,21 +129,21 @@ fun RecapCard(
                 .padding(start = padding, top = padding, end = padding),
         ) {
             if (drawn.isNotEmpty()) {
-                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(corner - padding)), verticalArrangement = Arrangement.spacedBy(gap)) {
+                val area = Modifier.fillMaxWidth().then(if (areaHeight != null) Modifier.height(areaHeight) else Modifier)
+                Column(area.clip(RoundedCornerShape(corner - padding)), verticalArrangement = Arrangement.spacedBy(gap)) {
                     drawn.chunked(columns).forEach { row ->
                         Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
                             row.forEach { photo ->
+                                val cell = if (cellHeight != null) Modifier.width(cellWidth).height(cellHeight) else Modifier.weight(1f).aspectRatio(Tokens.Layouts.YearStoryRecapCard.cellAspect)
                                 image(
                                     photo,
-                                    Modifier
-                                        .weight(1f)
-                                        .aspectRatio(Tokens.Layouts.YearStoryRecapCard.cellAspect)
+                                    cell
                                         .then(if (photo.onClick != null) Modifier.tapClickable(onClick = photo.onClick) else Modifier)
                                         .clearAndSetSemantics { contentDescription = photo.accessibilityLabel },
                                 )
                             }
                             // A last row that is not full (a caller's own fill rule, e.g. week.recap's) keeps its cells' places.
-                            repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+                            if (cellHeight == null) repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                         }
                     }
                 }
@@ -159,12 +175,13 @@ fun RecapCardPage(
     name: String? = null,
     detail: String? = null,
     shown: Int = RecapCardMetrics.shown(photos.size),
+    grid: RecapGridShape? = null,
     backdrop: @Composable () -> Unit = {},
     image: @Composable (photo: RecapCardPhoto, modifier: Modifier) -> Unit = { photo, m -> DsImage(photo.image, null, m, placeholder = Tokens.ColorsLight.globalControl) },
 ) {
     BoxWithConstraints(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         backdrop()
-        RecapCard(photos, title, Modifier.width(RecapCardMetrics.width(maxWidth)), name = name, detail = detail, shown = shown, image = image)
+        RecapCard(photos, title, Modifier.width(RecapCardMetrics.width(maxWidth)), name = name, detail = detail, shown = shown, grid = grid, image = image)
     }
 }
 

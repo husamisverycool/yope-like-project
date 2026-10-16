@@ -8,8 +8,16 @@
   Description: copy widget.android.description. Label: copy widget.android.label (on the receiver).
   Preview: generated from the current content on Android 15+ (GroupPhotoWidget.providePreview);
   the static previewImage is BLOCKED (owner asset; Retro's preview art is do-not-copy).
-  Lock-screen hub eligibility (widgetCategory without keyguard, res/xml-v36) is an owner decision:
-  left at the default.
+  Lock screen (owner decision 18; token widget.android.layout.lockScreen): widgetCategory adds keyguard, so
+  the widget is offered on the lock-screen
+  widget hub where the OS has one (Android 16 QPR2+ phones, Pixel Tablet; "sized to approximately 4 cells
+  wide by 3 cells tall" — https://android-developers.googleblog.com/2025/03/widgets-on-lock-screen-faq.html;
+  WIDGET_CATEGORY_KEYGUARD "Indicates that the widget can be displayed on the keyguard", API 17 —
+  https://developer.android.com/reference/android/appwidget/AppWidgetProviderInfo). Older releases ignore the
+  flag (home screen only). The responsive layouts cover the hub's slot (4 x 3 cells → the Medium class; snapshot
+  widget.android_keyguard_*). A tap opens the app only after unlock (MainActivity has no showWhenLocked); the
+  generated preview covers every category (Glance setWidgetPreviews default:
+  HOME_SCREEN or KEYGUARD or SEARCHBOX). docs/PLATFORM_CONSTRAINTS.md §4.2.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:configure="app.widget.WidgetConfigureActivity"
@@ -23,5 +31,5 @@
     android:targetCellWidth="2"
     android:targetCellHeight="2"
     android:updatePeriodMillis="3600000"
-    android:widgetCategory="home_screen"
+    android:widgetCategory="home_screen|keyguard"
     android:widgetFeatures="reconfigurable" />

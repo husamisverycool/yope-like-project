@@ -48,14 +48,17 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
      2. the date `photo.viewer.layout.dateFormat` ("Wednesday, July 5"), text role `listSubtitle`, `color.global.textSecondary`,
         followed by " · " and the **tag run** owned by `tagging.md` (memory group, RM-9): `tagging.toggle` ("I'm in this",
         `color.global.textOnMedia`) when nobody is tagged, else `tagging.with` ("with {names}"); the run is one button;
-     3. the voice note, if any (`photo.viewer.layout.voiceNote`: voice capsule on `color.global.controlOnDeep`).
+     3. the voice note, if any (`photo.viewer.layout.voiceNote`: voice capsule on `color.global.controlOnDeep` — play
+        glyph · C-36 waveform from the post's `voice_levels`, played bars `color.global.textOnMedia`, unplayed
+        `color.global.textSecondary` · duration; owner decision 16).
      Trailing, centred on the first line: the reaction chip (`chat.reactions.layout.chip`, on `color.global.controlOnDeep`;
      hidden when empty) and the add-reaction glyph (`chat.reactions.icon.add`, `color.global.textSecondary`) at the margin
      — Retro's reaction slot (its heart like is do-not-copy).
    - **Divider** (C-32, `color.global.separator` → #4D4D4D in the forced dark appearance, `size.global.hairline`, inside the
      margins) `photo.viewer.dimension.footerToDivider` below the footer's last baseline (or the voice capsule's bottom).
    - **Comments** (`photo.viewer.layout.comments`): the group-chat replies to this photo, oldest first, as `chat.thread`
-     message rows (C-16) in `color.global.textOnMedia`; first row `photo.viewer.dimension.dividerToComments` below the divider,
+     message rows (C-16) in `color.global.textOnMedia` (a voice reply is the voice capsule on media with its waveform,
+     `chat.voice.md`); first row `photo.viewer.dimension.dividerToComments` below the divider,
      rows `size.global.listGap` apart. None → the divider and the list are left out.
 3. **Reply field** (fixed, C-13 on media): `color.global.controlOnDeep`, `size.global.commentFieldHeight`,
    `radius.global.commentField`, `size.global.screenMargin` insets, own avatar at `chat.composer.dimension.avatarInset`,
@@ -88,7 +91,7 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 | close | C-11 on media; `photo.viewer.dimension.closeCircle`, `.closeGlyph`, `color.global.controlOnDeep`, `icon.global.close`; hit `size.global.minTouchTarget.*` | `photo.viewer.a11y.close` | closes (Android back too) |
 | photo | `photo.viewer.layout.photo`, `photo.viewer.layout.advance`, `photo.viewer.layout.backZone` (BLOCKED) | `photo.viewer.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`); hints `photo.viewer.a11y.advanceHint`, `.backHint`; actions `.a11y.next`, `.a11y.previous` | tap advances; long press → menu with quick reactions |
 | caption / date lines | text roles `listTitle` / `listSubtitle`; `photo.viewer.dimension.footerFirstBaseline`, `.footerLinePitch`; `photo.viewer.layout.dateFormat` | caption, date (data) | — |
-| voice note | `photo.viewer.layout.voiceNote` (`chat.voice.layout.capsule`) | `chat.voice.a11y.*` | plays the post's voice note |
+| voice note | `photo.viewer.layout.voiceNote` (`chat.voice.layout.capsule` with C-36 on media) | `chat.voice.a11y.*` | plays the post's voice note; the played bars follow it |
 | tag run ("I'm in this" / "with {names}") | footer line 2 after " · " (`tagging.md`: text role `listSubtitle`) | `tagging.toggle`, `tagging.with` | untagged: `tag_self`; tagged: opens the "In this photo" sheet (`tagging.md`) |
 | reaction chip + add | `chat.reactions.layout.chip`, `chat.reactions.icon.add` | `chat.reactions.a11y.cluster`, `.a11y.add` | Reactions sheet / picker |
 | divider | C-32 | — | decorative |

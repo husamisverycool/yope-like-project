@@ -6,6 +6,7 @@ package app.feature.memory.onthisday
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -17,11 +18,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,13 +38,15 @@ import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -82,6 +88,7 @@ object OnThisDayTags {
     const val SHARE = "onthisday.share"
     const val SHUFFLE = "onthisday.shuffle"
     const val MORE = "onthisday.more"
+    const val MODE = "onthisday.mode"
 }
 
 /** The page's actions (one object, so the screen's signature stays readable). */
@@ -90,6 +97,8 @@ data class OnThisDayActions(
     val onTogglePlay: () -> Unit = {},
     val onAdvance: () -> Unit = {},
     val onShuffle: () -> Unit = {},
+    /** Mode menu "On this day…": back to the day's memories (from shuffle). */
+    val onShowDay: () -> Unit = {},
     val onShare: () -> Unit = {},
     val onSave: () -> Unit = {},
     val onDelete: () -> Unit = {},
@@ -204,12 +213,25 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
     val photoLabel = stringResource(R.string.onthisday_a11y_photo, memory.authorName, dateText)
     // Focus order: header → photo → controls (onthisday.md → Accessibility).
     Box(Modifier.fillMaxSize().semantics { contentDescription = photoLabel; traversalIndex = 0f })
+    // A state object, not its value: Crossfade keeps the content lambda of a shown memory until the memory changes, so the
+    // title reads the open state itself.
+    val modeMenuOpen = remember { mutableStateOf(false) }
+    val modeItems = listOf(
+        DsMenuItem(stringResource(R.string.onthisday_mode_day), actions.onShowDay),
+        DsMenuItem(stringResource(R.string.onthisday_mode_shuffle), actions.onShuffle),
+    )
     Crossfade(targetState = memory, animationSpec = fade, label = "memoryTitle") { shown ->
         val subtitle = stringResource(
             if (state.mode == MemoryMode.Shuffle) R.string.onthisday_subtitle_shuffle else R.string.onthisday_subtitle_day,
             shown.authorName,
         )
-        Header(MemoryFormats.memoryDate(shown.date), subtitle, actions.onBack, showBack = false)
+        Header(
+            MemoryFormats.memoryDate(shown.date),
+            subtitle,
+            actions.onBack,
+            showBack = false,
+            modeMenu = ModeMenu(modeMenuOpen, modeItems),
+        )
     }
     Header(null, null, actions.onBack) {
         Box {
@@ -264,7 +286,10 @@ private const val PRELOAD_AHEAD = 2
  * text role `headerTitle` in the display serif, baseline `size.global.titleTop` below the safe-area top; [subtitle]
  * (text role `textButton`, `color.onthisday.subtitle`) its baseline `dimension.onthisday.subtitleBaseline` below the
  * title's; [trailing] (the glass "•••") with its circle `size.global.headerInset` from the right edge, centred on the
- * title's cap middle.
+ * title's cap middle. With [modeMenu] the title carries the expand chevron (`icon.global.chevronDown`, ink
+ * `dimension.onthisday.modeChevron.width` wide, `dimension.onthisday.modeChevron.gap` after the title's ink, centred
+ * `dimension.onthisday.modeChevron.drop` below its cap middle — RWA 'May 1, 2019 ⌄') and a tap on either opens the
+ * mode menu (native, Material 3 menu).
  */
 @Composable
 private fun Header(
@@ -272,6 +297,7 @@ private fun Header(
     subtitle: String?,
     onBack: () -> Unit,
     showBack: Boolean = true,
+    modeMenu: ModeMenu? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val titleStyle = TextRoles.headerTitle
@@ -290,19 +316,26 @@ private fun Header(
         }
         if (title != null) {
             Column(Modifier.padding(start = titleStart, end = titleEnd)) {
-                Text(
-                    title,
-                    style = titleStyle,
-                    color = Tokens.Colors.globalTextOnMedia,
-                    modifier = Modifier
-                        .paddingFrom(FirstBaseline, before = Tokens.Sizes.globalTitleTop)
-                        .endAtLastBaseline()
-                        .semantics {
-                            heading()
-                            liveRegion = LiveRegionMode.Polite
-                        }
-                        .testTag(OnThisDayTags.TITLE),
-                )
+                val titleText = @Composable { modifier: Modifier ->
+                    Text(
+                        title,
+                        style = titleStyle,
+                        color = Tokens.Colors.globalTextOnMedia,
+                        modifier = modifier
+                            .paddingFrom(FirstBaseline, before = Tokens.Sizes.globalTitleTop)
+                            .endAtLastBaseline()
+                            .semantics {
+                                heading()
+                                liveRegion = LiveRegionMode.Polite
+                            }
+                            .testTag(OnThisDayTags.TITLE),
+                    )
+                }
+                if (modeMenu == null) {
+                    titleText(Modifier)
+                } else {
+                    ModeTitle(modeMenu, capMiddle, titleText)
+                }
                 if (subtitle != null) {
                     Text(
                         subtitle,
@@ -315,6 +348,47 @@ private fun Header(
         }
         if (trailing != null) {
             Box(Modifier.align(Alignment.TopEnd).padding(end = Tokens.Sizes.globalHeaderInset).centreAt(capMiddle)) { trailing() }
+        }
+    }
+}
+
+/** The title's mode menu: open state and items ("On this day…", "Shuffle" — Retro's Rewind mode menu). */
+private class ModeMenu(val open: MutableState<Boolean>, val items: List<DsMenuItem>)
+
+/**
+ * The date title with the expand chevron after it; the whole row opens the mode menu (Material 3 menu anchored to the
+ * title, PLATFORM). The chevron's box is sized so its ink is `dimension.onthisday.modeChevron.width` wide; it starts
+ * `dimension.onthisday.modeChevron.gap` after the title and is centred `dimension.onthisday.modeChevron.drop` below the
+ * title's cap middle ([capMiddle], from the header's top).
+ */
+@Composable
+private fun ModeTitle(menu: ModeMenu, capMiddle: Dp, title: @Composable (Modifier) -> Unit) {
+    val chevron = Tokens.Icons.globalChevronDown
+    val ink = GlyphInk.bounds(chevron)
+    val box = Tokens.Sizes.onthisdayModeChevronWidth * (chevron.viewportWidth / ink.width)
+    val lead = (Tokens.Sizes.onthisdayModeChevronGap - GlyphInk.leading(chevron, box)).coerceAtLeast(0.dp)
+    Box {
+        Row(
+            Modifier
+                // No ripple: the touch area reaches up to the header's top (the title's baseline padding); the menu
+                // itself is the feedback.
+                .clickable(interactionSource = null, indication = null, role = Role.DropdownList) { menu.open.value = true }
+                .semantics(mergeDescendants = true) { heading() }
+                .testTag(OnThisDayTags.MODE),
+        ) {
+            title(Modifier.weight(1f, fill = false))
+            Icon(
+                chevron,
+                contentDescription = null,
+                tint = Tokens.Colors.globalTextOnMedia,
+                modifier = Modifier
+                    .padding(start = lead)
+                    .centreAt(capMiddle + Tokens.Sizes.onthisdayModeChevronDrop)
+                    .size(box),
+            )
+        }
+        SystemAppearance {
+            DsDropdownMenu(menu.open.value, { menu.open.value = false }, menu.items)
         }
     }
 }

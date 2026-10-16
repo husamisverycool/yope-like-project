@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.painter.Painter
 import app.designsystem.LocalReduceMotionOverride
-import app.feature.social.common.LocalApproximations
 import app.feature.social.common.LocalPhotoOverride
 import app.feature.social.common.LocalSocialData
 import app.feature.social.common.LocalSocialServices
@@ -135,7 +134,6 @@ fun fixLocale() {
 @Composable
 fun TestScreen(
     data: SocialData,
-    approximations: Boolean = true,
     services: SocialServices = testServices,
     dark: Boolean = false,
     content: @Composable () -> Unit,
@@ -145,7 +143,6 @@ fun TestScreen(
         LocalSocialDataOverride provides data,
         LocalPhotoOverride provides TestPhotos::painter,
         LocalSocialServices provides services,
-        LocalApproximations provides approximations,
         LocalReduceMotionOverride provides false,
         // The memory group's tag run reads and writes tags through its own backend: the fake's, here.
         app.feature.memory.common.LocalMemoryBackend provides TagBackend(data),

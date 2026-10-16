@@ -223,7 +223,7 @@ describe('send_message / delete_message', () => {
     expect((await a.client.storage.from('media').createSignedUrl(voice, 60)).error).toBeNull();
   });
 
-  it('a voice message carries its 100 levels; members read them, outsiders and blocked authors do not', async () => {
+  it('a voice message carries its 100 levels; members read them, outsiders do not', async () => {
     const levels = Array.from({ length: 100 }, (_, i) => (i * 7) % 32);
     const voice = `u/${c.id}/voice/${randomUUID()}.m4a`;
     await upload(c, voice, 'audio/mp4');

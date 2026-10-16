@@ -337,6 +337,28 @@ class SocialFlowTest {
         assertTrue(data.calls.any { it.startsWith("updateRecap:$second,$first,") })
     }
 
+    /**
+     * `week.edit.a11y.moveLeft` / `.moveRight` (Chrome's tab reorder actions): TalkBack moves a strip tile one place; the
+     * first tile has no "left" action (the view-model test covers the last tile's bound through the same index rule).
+     */
+    @Test fun reorderARecapWithTalkBackActions() {
+        val data = FakeSocialData().apply { seedWeek() }
+        val vm = WeekEditViewModel(data, GROUP, "r-w", null, albumOnly = false)
+        compose.setContent { TestScreen(data) { WeekEditSheet(vm, onClose = {}) } }
+        compose.waitForIdle()
+        val order = vm.state.value.checked
+        val withActions = androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsActions.CustomActions)
+        fun actions(index: Int) = compose.onAllNodes(withActions).fetchSemanticsNodes()
+            .map { node -> node.config[androidx.compose.ui.semantics.SemanticsActions.CustomActions].map { it.label } }[index]
+        assertEquals(listOf("Move photo right"), actions(0))
+        assertEquals(listOf("Move photo left", "Move photo right"), actions(1))
+        // "Move photo right" on the first tile swaps it with the second.
+        val first = compose.onAllNodes(withActions).onFirst()
+        first.performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.CustomActions) { list -> list.single { it.label == "Move photo right" }.action() }
+        compose.waitForIdle()
+        assertEquals(listOf(order[1], order[0]) + order.drop(2), vm.state.value.checked)
+    }
+
     @Test fun saveAWeekAsANamedAlbum() {
         val data = FakeSocialData().apply { seedWeek() }
         val vm = WeekEditViewModel(data, GROUP, null, LocalDate.parse("2026-10-12"), albumOnly = true)

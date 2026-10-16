@@ -283,7 +283,9 @@ const table = {
   "chat.voice.a11y.message": "{name}'s voice message, {duration}", // Retro · chat.voice · SOURCED
   "chat.voice.a11y.messageMine": "Your voice message, {duration}", // Retro · chat.voice · SOURCED
   "chat.voice.a11y.pause": "Pause", // Retro · chat.voice · SOURCED
+  "chat.voice.a11y.pauseRecording": "Pause recording", // WhatsApp · chat.voice · SOURCED
   "chat.voice.a11y.play": "Play voice message, {duration}", // Retro · chat.voice · SOURCED
+  "chat.voice.a11y.resumeRecording": "Continue recording", // WhatsApp + Apple Messages · chat.voice · SOURCED
   "chat.voice.error.play": "Error loading voice message. Tap to retry", // Retro · chat.voice · SOURCED
   "chat.voice.error.record": "Couldn't record voice message", // Retro · chat.voice · SOURCED
   "chat.voice.permission.button": "Allow Microphone Access", // Retro · chat.voice · SOURCED
@@ -583,6 +585,8 @@ const table = {
   "onthisday.menu.delete": "Delete Post", // Retro · onthisday · SOURCED
   "onthisday.menu.report": "Report Post", // Retro · onthisday · SOURCED
   "onthisday.menu.save": "Save to Camera Roll", // Retro · onthisday · SOURCED
+  "onthisday.mode.day": "On this day…", // Retro · onthisday · SOURCED
+  "onthisday.mode.shuffle": "Shuffle", // Retro · onthisday · SOURCED
   "onthisday.nux.button": "Try it out", // Retro · onthisday · SOURCED
   "onthisday.nux.message": "On This Day is a private way to revisit what {group} shared on this date over the years. Drag the dial to take a spin through your memories.", // Retro · onthisday · SOURCED
   "onthisday.nux.title": "Introducing On This Day", // Retro · onthisday · SOURCED
@@ -822,6 +826,8 @@ const table = {
   "walls.mine.empty.title": "Welcome to Week {week_number}!", // Retro · walls.mine · SOURCED
   "walls.mine.error.title": "Error loading your weeks. Tap here to try again.", // Retro · walls.mine · SOURCED
   "week.edit.a11y.inRecap": "In recap", // Retro · week.edit · SOURCED
+  "week.edit.a11y.moveLeft": "Move photo left", // Chrome · week.edit · SOURCED
+  "week.edit.a11y.moveRight": "Move photo right", // Chrome · week.edit · SOURCED
   "week.edit.a11y.notInRecap": "Not in recap", // Retro · week.edit · SOURCED
   "week.edit.album.create": "Create Album", // Retro · week.edit · SOURCED
   "week.edit.album.namePlaceholder": "Name your album", // Retro · week.edit · SOURCED

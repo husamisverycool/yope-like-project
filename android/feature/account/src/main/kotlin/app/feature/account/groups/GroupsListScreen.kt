@@ -6,6 +6,7 @@
 // references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png and …-20260528-week22-dark-a.png (H43 / H22: title, tab bar).
 package app.feature.account.groups
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.AnnotatedString
@@ -50,6 +52,7 @@ import app.data.offline.DataState
 import app.data.realtime.GroupEvent
 import app.designsystem.R
 import app.designsystem.generated.Tokens
+import app.feature.account.R as AccountR
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
 import app.feature.account.common.AccountViewModel
@@ -275,7 +278,7 @@ fun GroupsListRoute(nav: NavController) {
  * C-15 rows (newest activity first, thumbnails `size.global.listGap` apart): cover 72 × 97 (no cover: `color.global.control`
  * with `icon.global.group`), name (one line, tail truncation), subtitle with the actor in semibold, the C-23 member stack
  * (as many as fit, no count), the "+" circle → the camera for that group; `size.global.sectionGap` below, the C-20
- * "Ideas to Get Started" header and one template row per `group_kind` (placeholder thumbnail, ≤ 2-line description, C-06
+ * "Ideas to Get Started" header and one template row per `group_kind` (the kind's cover photo, ≤ 2-line description, C-06
  * fill capsule "Create" → groups.create with that kind). Rows fade in / reorder with the house fade.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -399,19 +402,34 @@ private fun avatarsThatFit(): Int {
     return if (column < avatar) 0 else 1 + ((column - avatar) / pitch).toInt()
 }
 
-/** A template ("Ideas to Get Started"): C-15 geometry with a placeholder thumbnail and the C-06 fill capsule "Create". */
+/**
+ * A template ("Ideas to Get Started"): C-15 geometry with the kind's cover photo (`groups.list.layout.templateCovers`,
+ * owner decision 9 — people-free Unsplash photos bundled in drawable-nodpi, aspect-fill) and the C-06 fill capsule "Create".
+ */
 @Composable
 internal fun TemplateRow(kind: GroupKind, onCreate: (GroupKind) -> Unit, modifier: Modifier = Modifier) {
     val (title, detail) = kindCopy(kind)
     ThumbnailRow(
         title = title,
         subtitle = AnnotatedString(detail),
-        thumbnail = null,
+        thumbnail = painterResource(templateCover(kind)),
         onClick = { onCreate(kind) },
         modifier = modifier,
         subtitleMaxLines = 2,
         trailing = { Capsule(stringResource(R.string.groups_create_type_create), { onCreate(kind) }, style = CapsuleStyle.Fill) },
     )
+}
+
+/**
+ * The cover of a kind's template (`groups.list.layout.templateCovers`: the drawable named by the token's field for the
+ * kind; `TemplateCoverTest` keeps the names equal).
+ */
+@DrawableRes
+internal fun templateCover(kind: GroupKind): Int = when (kind) {
+    GroupKind.Friends -> AccountR.drawable.template_cover_friends
+    GroupKind.Family -> AccountR.drawable.template_cover_family
+    GroupKind.Roommates -> AccountR.drawable.template_cover_roommates
+    GroupKind.Custom -> AccountR.drawable.template_cover_custom
 }
 
 /** Title and description of a group kind's template (`groups.create.type.<kind>` / `.detail`). */

@@ -49,6 +49,26 @@
       "level": "SOURCED",
       "notes": "Retro's title when Rewind is not in 'On this week' mode (shuffle); ' · {name}' as above."
     },
+    "onthisday.mode.day": {
+      "text": "On this day…",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt rewind_mode_selection_sheet_on_this_week 'On this week…'",
+      "pattern": "retro.voice.rewind",
+      "level": "SOURCED",
+      "notes": "Mode menu item (the date title’s chevron): back to the day’s memories. Noun swap week → day, as onthisday.entry.title (MERGE RM-2)."
+    },
+    "onthisday.mode.shuffle": {
+      "text": "Shuffle",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt rewind_mode_selection_sheet_shuffle 'Shuffle'",
+      "pattern": "retro.voice.rewind",
+      "level": "SOURCED",
+      "notes": "Mode menu item: random memories from the group’s history, as the dice. Retro’s third item ‘Pick a date…’ is not built (onthisday.md Do-not-copy / Gaps)."
+    },
     "onthisday.share.subtitle": {
       "text": "Memory",
       "origin": "verbatim",

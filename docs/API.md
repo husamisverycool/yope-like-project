@@ -121,7 +121,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `invalid_waking_window` | 400 | Start/end must both be set (or both null), differ, and span at least `invitation_window_seconds`. |
 | `invalid_path` | 400 | A storage path outside `u/<your uid>/`. |
 | `invalid_caption` | 400 | Caption longer than 1000 characters. |
-| `invalid_voice` | 400 | Voice path not yours, or duration missing/≤ 0. |
+| `invalid_voice` | 400 | Voice path not yours, or duration missing/≤ 0, or voice levels malformed (not 100 values of 0–31) or sent without a voice note (`details` = `voice_levels`). |
 | `invalid_body` | 400 | Text message empty or longer than 4000 characters. |
 | `invalid_emoji` | 400 | Not an emoji (see `react`). |
 | `invalid_items` | 400 | Recap/album post list has duplicates, nulls, or posts outside the group/week. |
@@ -280,6 +280,7 @@ block with you.
 | `author_id` | uuid | = media owner |
 | `caption` | text? | ≤ 1000 chars |
 | `voice_path`, `voice_duration_ms` | text?, int? | optional voice note (both or neither) |
+| `voice_levels` | smallint[]? | the voice note's waveform: exactly 100 levels, each 0–31, sampled while recording (see §6.2 `create_post`); null when the note has none (sent before 2026-10-16 or by a client that sent none) or there is no voice note |
 | `invitation_id` | uuid? | set only when posted inside that group's open daily invitation |
 | `in_window` | boolean | true only for posts made during an open invitation. There is no "late" state: a post after the window is an ordinary post with `invitation_id = null`. |
 | `reply_to_post_id` | uuid? | a photo replying to a photo; null if the original was deleted |
@@ -300,6 +301,7 @@ Group chat. Read: members, minus authors with a block with you.
 | `body` | text? | text only, ≤ 4000 chars |
 | `post_id` | uuid? | photo messages; disappears with the post |
 | `voice_path`, `voice_duration_ms` | text?, int? | voice messages |
+| `voice_levels` | smallint[]? | voice messages only: the waveform, exactly 100 levels of 0–31 (see §6.2 `send_message`); null when the message has none |
 | `reply_to_post_id` | uuid? | reply to a specific photo; set to null if that photo is deleted (the reply stays) |
 | `reply_to_message_id` | uuid? | reply to a message; null if it was deleted |
 | `created_at` | timestamptz | |
@@ -625,7 +627,8 @@ Errors: `not_group_member`, `not_group_admin`, `invalid_argument`.
 ```
 create_post(p_media_id uuid, p_group_ids uuid[],
             p_caption text = null, p_voice_path text = null, p_voice_duration_ms int = null,
-            p_invitation_id uuid = null, p_reply_to_post_id uuid = null) → setof posts
+            p_invitation_id uuid = null, p_reply_to_post_id uuid = null,
+            p_voice_levels smallint[] = null) → setof posts
 ```
 Sends your media to one or more groups: one `posts` row and one `photo` message per
 group, all or nothing. Duplicate group ids are ignored.
@@ -636,6 +639,12 @@ group, all or nothing. Duplicate group ids are ignored.
 - `p_voice_path` must be your upload (convention `u/<uid>/<media_id>/voice.m4a`) and
   needs `p_voice_duration_ms > 0` (`invalid_voice`). The caption and voice note go on
   every group's post.
+- `p_voice_levels` (optional, needs `p_voice_path`): the note's waveform — **exactly 100
+  integers, each 0–31** (Telegram's voice waveform format: 100 five-bit values,
+  https://core.telegram.org/constructor/documentAttributeAudio). Clients reduce the input
+  levels they sampled while recording to 100 bucket peaks and scale them to 0–31
+  (design/components.md C-36). Any other count, a value outside 0–31, a null element or a
+  multi-dimensional array → `invalid_voice` (`details` = `voice_levels`).
 - `p_invitation_id`: the daily invitation being answered. For the post in that
   invitation's group, `in_window = true` and `invitation_id` are set if now is within
   `[fires_at, closes_at]`. Otherwise (window closed, another group, unknown id) the post
@@ -650,11 +659,14 @@ group.
 ```
 send_message(p_group_id uuid, p_kind message_kind, p_body text = null,
              p_voice_path text = null, p_voice_duration_ms int = null,
-             p_reply_to_post_id uuid = null, p_reply_to_message_id uuid = null) → messages
+             p_reply_to_post_id uuid = null, p_reply_to_message_id uuid = null,
+             p_voice_levels smallint[] = null) → messages
 ```
 `text`: `p_body` non-blank, ≤ 4000 (`invalid_body`). `voice`: `p_voice_path` you
 uploaded (convention `u/<uid>/voice/<uuid>.m4a`) + `p_voice_duration_ms > 0`, no body
-(`invalid_voice`). `photo` is refused (`invalid_kind`): use `create_post`. Reply targets
+(`invalid_voice`); optional `p_voice_levels`, the waveform in the format of `create_post`
+(100 integers of 0–31, else `invalid_voice`; on a `text` message → `invalid_body`).
+`photo` is refused (`invalid_kind`): use `create_post`. Reply targets
 must be in the same group and visible (`post_not_found`, `reply_group_mismatch`,
 `message_not_found`). Errors: `not_group_member`, plus the above. Jobs:
 `push.new_message`.
@@ -930,7 +942,7 @@ socket reconnects. Pushes (`push.*` jobs) wake the app and widgets.
    upload `front.jpg` (dual capture), `motion.mov` (Live Photo) and `voice.m4a` (voice
    note) when present.
 2. `insert into media { id: mediaId, kind, original_path, front_original_path?, motion_path?, width, height, front_width?, front_height?, duration_ms? }`.
-3. `create_post(p_media_id: mediaId, p_group_ids: [...], p_caption?, p_voice_path?, p_voice_duration_ms?, p_invitation_id?)`.
+3. `create_post(p_media_id: mediaId, p_group_ids: [...], p_caption?, p_voice_path?, p_voice_duration_ms?, p_voice_levels?, p_invitation_id?)`.
 4. If step 3 fails, the files and media row stay private to you. Retry, or leave them.
 
 ### 9.5 Daily invitation

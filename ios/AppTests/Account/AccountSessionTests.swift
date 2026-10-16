@@ -19,17 +19,54 @@ final class AccountSessionTests: XCTestCase {
         XCTAssertFalse(rig.router.isReady)
     }
 
-    func testOnboardedLaunchOpensTheCameraTab() {
+    func testOnboardedLaunchWithAGroupOpensTheCameraTab() async {
+        let fixture = AccountFixture()
+        fixture.familyGroup()
+        let rig = AccountSessionRig(data: fixture.data)
+        rig.onboarding.markComplete(for: fixture.me.id.rawValue)
+        rig.session.start()
+        XCTAssertEqual(rig.session.phase, .launching, "LaunchingView until the group check answers")
+        XCTAssertFalse(rig.router.isReady)
+        await waitUntil { rig.session.phase == .ready }
+        XCTAssertTrue(rig.router.isReady)
+        XCTAssertEqual(rig.shell.tab, .camera, "owner decision 13: with a group the app opens to the camera")
+    }
+
+    func testOnboardedLaunchWithoutGroupsOpensTheGroupsList() async {
         let fixture = AccountFixture()
         let rig = AccountSessionRig(data: fixture.data)
         rig.onboarding.markComplete(for: fixture.me.id.rawValue)
         rig.session.start()
-        XCTAssertEqual(rig.session.phase, .ready)
-        XCTAssertTrue(rig.router.isReady)
-        XCTAssertEqual(rig.shell.tab, .camera, "camera.capture: the app opens to the camera")
+        await waitUntil { rig.session.phase == .ready }
+        XCTAssertEqual(rig.shell.tab, .groups, "owner decision 13: no group → the groups list (Ideas to Get Started)")
+        XCTAssertTrue(fixture.data.calls.contains("myGroups"), "nothing cached: the first fetch answers")
     }
 
-    func testPendingLinkAtLaunchLandsOnGroupsAndIsApplied() {
+    func testOfflineLaunchWithNothingCachedOpensTheGroupsList() async {
+        let fixture = AccountFixture()
+        fixture.familyGroup()
+        fixture.data.failures["myGroups"] = .offline
+        let rig = AccountSessionRig(data: fixture.data)
+        rig.onboarding.markComplete(for: fixture.me.id.rawValue)
+        rig.session.start()
+        await waitUntil { rig.session.phase == .ready }
+        XCTAssertEqual(rig.shell.tab, .groups, "unknown groups count as none: the list shows its offline state")
+    }
+
+    func testSignOutDuringTheLaunchCheckLeavesTheSignUpStack() async {
+        let fixture = AccountFixture()
+        fixture.familyGroup()
+        fixture.data.latency = .milliseconds(200)
+        let rig = AccountSessionRig(data: fixture.data)
+        rig.onboarding.markComplete(for: fixture.me.id.rawValue)
+        rig.session.start()
+        await rig.session.signOut()
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        XCTAssertEqual(rig.session.phase, .signUp, "the late answer does not take the person home")
+        XCTAssertFalse(rig.router.isReady)
+    }
+
+    func testPendingLinkAtLaunchLandsOnGroupsAndIsApplied() async {
         let fixture = AccountFixture()
         let group = fixture.familyGroup()
         let rig = AccountSessionRig(data: fixture.data)
@@ -37,6 +74,7 @@ final class AccountSessionTests: XCTestCase {
         rig.router.handle(.post(groupID: group.id.rawValue, postID: "p1"))
         XCTAssertNotNil(rig.router.pendingLink, "held until the person is home")
         rig.session.start()
+        await waitUntil { rig.session.phase == .ready }
         XCTAssertEqual(rig.shell.tab, .groups)
         XCTAssertNil(rig.router.pendingLink)
         XCTAssertEqual(rig.router.path, [.group(id: group.id.rawValue), .post(groupID: group.id.rawValue, postID: "p1")])

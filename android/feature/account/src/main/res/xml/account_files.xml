@@ -2,4 +2,6 @@
 <!-- settings.account "Take Photo": the system camera writes the new profile photo here (cache, read/write grant only). -->
 <paths>
     <cache-path name="camera" path="camera/" />
+    <!-- groups.invite QR card "Share": the card image handed to the Sharesheet (read grant only). -->
+    <cache-path name="invite" path="invite/" />
 </paths>

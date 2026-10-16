@@ -319,8 +319,8 @@ data class Reactor(val userId: String, val name: String, val avatarPath: String?
  * list on the page colour, one C-16 row per person and emoji — avatar `size.global.avatarPicker` at the margin,
  * name (`listTitle`) `chat.thread.dimension.rowAvatarToText` after it, the emoji at the trailing margin in the
  * `size.global.icon` box; your rows add `chat.reactions.list.removeHint` and unreact on tap. Rows
- * `size.global.listGap` apart. Order `chat.reactions.layout.listOrder` is BLOCKED: [newestFirst] (the
- * development approximation) or the data order. Empty: `chat.reactions.empty` (C-27 title only).
+ * `size.global.listGap` apart, newest first (`chat.reactions.layout.listOrder`: [entries] arrive oldest first by
+ * `reactions.created_at`, optimistic ones appended — the list reverses them). Empty: `chat.reactions.empty` (C-27 title only).
  */
 @Composable
 fun ReactionsSheet(
@@ -329,10 +329,9 @@ fun ReactionsSheet(
     person: (String) -> Reactor,
     onUnreact: (String) -> Unit,
     onDismiss: () -> Unit,
-    newestFirst: Boolean,
     loading: Boolean = false,
 ) {
-    val rows = if (newestFirst) entries.asReversed() else entries
+    val rows = entries.asReversed()
     SystemAppearance {
         DsBottomSheet(onDismissRequest = onDismiss) {
             SheetHeader(stringRes(R.string.chat_reactions_activity_title))

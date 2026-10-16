@@ -18,6 +18,7 @@ import app.feature.account.paywall.Perk
 import app.feature.account.paywall.PlanPeriod
 import app.feature.account.paywall.PlansStatus
 import app.feature.account.paywall.PremiumResult
+import app.feature.account.paywall.TrialDuration
 import app.feature.account.paywall.periodUnit
 import app.feature.account.safety.BlockViewModel
 import app.feature.account.safety.ReportPhase
@@ -244,6 +245,82 @@ class SettingsSafetyPaywallInviteTest {
         assertEquals(PlansStatus.Unavailable, vm.state.value.status)
         vm.restore()
         assertEquals(PaywallMessage.NothingToRestore, vm.state.value.message)
+    }
+
+    @Test fun theAnnualTrialReachesTheCardAndOnlyThePurchasingPlanIsBusy() = runTest(main.dispatcher) {
+        // Owner decision 7: the fake store answers $35.99 a year with a 1-week trial, $3.99 a month.
+        val premium = FakePremium().apply { purchaseResult = PremiumResult.Cancelled }
+        val vm = PaywallViewModel(fakeEnvironment(world(), premium = premium))
+        val (yearly, monthly) = vm.state.value.orderedPlans
+        assertEquals("$35.99" to "1 week", yearly.price to yearly.trialDuration)
+        assertEquals("$3.99", monthly.price)
+        assertNull(monthly.trialDuration)
+        assertNull(vm.state.value.purchasing)
+        vm.purchase(android.app.Activity(), monthly)
+        // Cancelled by the person: nothing changes (no message, nothing busy).
+        assertNull(vm.state.value.purchasing)
+        assertNull(vm.state.value.message)
+    }
+
+    @Test fun purchaseMarksItsPlanBusyUntilTheStoreAnswers() = runTest(main.dispatcher) {
+        val answer = kotlinx.coroutines.CompletableDeferred<PremiumResult>()
+        val premium = object : app.feature.account.paywall.PremiumGateway by FakePremium() {
+            override suspend fun purchase(activity: android.app.Activity, plan: app.feature.account.paywall.PlanOption) = answer.await()
+        }
+        val env = fakeEnvironment(world()).let {
+            app.feature.account.AccountEnvironment(it.backend, it.stores, it.inviteLinks, it.invitePreview, premium, it.contacts, it.images, it.legal, it.clock, it.zone)
+        }
+        val vm = PaywallViewModel(env)
+        vm.purchase(android.app.Activity(), vm.state.value.orderedPlans.first())
+        assertEquals(PlanPeriod.Yearly, vm.state.value.purchasing)
+        // A second tap while the store sheet is up does nothing.
+        vm.purchase(android.app.Activity(), vm.state.value.orderedPlans.last())
+        assertEquals(PlanPeriod.Yearly, vm.state.value.purchasing)
+        answer.complete(PremiumResult.Failed)
+        assertNull(vm.state.value.purchasing)
+        assertEquals(PaywallMessage.PurchaseFailed, vm.state.value.message)
+    }
+
+    @Test fun restoreOutcomes() = runTest(main.dispatcher) {
+        val backend = world()
+        val premium = FakePremium()
+        val vm = PaywallViewModel(fakeEnvironment(backend, premium = premium))
+        premium.restoreResult = PremiumResult.Done to true
+        vm.restore()
+        assertEquals(PaywallWelcome.Restored, vm.state.value.welcome)
+        val again = PaywallViewModel(fakeEnvironment(backend, premium = premium))
+        premium.restoreResult = PremiumResult.Failed to false
+        again.restore()
+        assertEquals(PaywallMessage.NothingToRestore, again.state.value.message)
+        again.dismissMessage()
+        backend.onlineState.value = false
+        again.restore()
+        assertEquals(PaywallMessage.Offline, again.state.value.message)
+    }
+
+    @Test fun trialDurationIsTheStorePeriodInTheLocalesWords() {
+        assertEquals("1 week", TrialDuration.format("P1W", Locale.US))
+        assertEquals("7 days", TrialDuration.format("P7D", Locale.US))
+        assertEquals("1 month", TrialDuration.format("P1M", Locale.US))
+        assertEquals("1 week", TrialDuration.format("P1W", Locale.UK))
+        // French CLDR joins number and unit with a no-break space.
+        assertEquals("1 semaine", TrialDuration.format("P1W", Locale.FRANCE)?.replace('\u00A0', ' ')?.replace('\u202F', ' '))
+        assertNull(TrialDuration.format("P0D", Locale.US))
+        assertNull(TrialDuration.format("PT12H", Locale.US))
+        assertNull(TrialDuration.format("1 week", Locale.US))
+    }
+
+    // settings.root ----------------------------------------------------------------------------------
+
+    @Test fun trueBlackIsKeptOnTheDeviceAndFollowedByTheScreen() = runTest(main.dispatcher) {
+        val appearance = app.ui.theme.MemoryAppearanceSettings()
+        val vm = app.feature.account.settings.SettingsRootViewModel(fakeEnvironment(world(), appearance = appearance))
+        assertFalse(vm.state.value.trueBlack)
+        vm.setTrueBlack(true)
+        assertTrue(appearance.trueBlack.value)
+        assertTrue(vm.state.value.trueBlack)
+        vm.setTrueBlack(false)
+        assertFalse(vm.state.value.trueBlack)
     }
 
     @Test fun billingLinePeriodAndPlaySubscriptionCenter() {

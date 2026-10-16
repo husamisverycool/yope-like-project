@@ -1272,3 +1272,33 @@ pill fill vs backdrop 1.80:1 (non-text); desktop line black 50 % 4.00:1 at 20 px
   Settings (top + scrolled) and an album's Settings, light and dark; a raw album detail (light and dark); the album link
   sheet in dark; a `/u/` page in iPhone Safari with the photo loaded; Retro's paywall with Annual / Monthly cards;
   Retro's report sheet and block dialog; Retro's App Clip opened from a `/u/` link; the "Ideas to Get Started" "•••" menu.
+
+## Owner decision 16 — voice waveform and recording pause (V-*)
+
+Owner decision 16 (`docs/OWNER_DECISIONS.md`, 2026-10-16) adds a waveform to voice notes; the same pass adds pause /
+continue / preview to a locked recording (both platforms had none). Measurements: `design/research/voice-waveform.md`
+(tool `tools/measure_bars.py`). New: component C-36 (`design/components.md`), tokens `size.global.waveformBarWidth`,
+`.waveformBarGap`, `.waveformBarMinHeight`, `layout.global.waveform`, `chat.voice.dimension.waveform`,
+`chat.voice.layout.locked`; copy `chat.voice.a11y.pauseRecording`, `.resumeRecording`; API `voice_levels`
+(migration `20261015000017_voice_levels.sql`, docs/API.md §5.8 / §5.9 / §6.2).
+
+| id | question | references | decision | reason |
+|---|---|---|---|---|
+| V-1 | waveform at all (RS-7 said none) | Messages, WhatsApp, Telegram all draw one | C-36 in Retro's colours | owner decision 16 supersedes RS-7 |
+| V-2 | bar width / gap | Messages 2.02 / 2.07 pt (1.11 px/pt, 38 bars); WhatsApp iOS 2.63 / 1.88 pt (2.37 px/pt ±5 %) | Messages' (2.0 / 2.1) | Apple's own audio message, exact device scale; WhatsApp within 0.6 pt |
+| V-3 | bar heights | WhatsApp draft capsule: max 0.553 of the capsule, silent bars = dots; Telegram Desktop: height ∝ level ÷ the note's max | max = 0.553 × holder height, min = bar width, scaled to the note's own max | the only capsule-shaped reference (the voice capsule is a capsule); two WhatsApp images agree on dots |
+| V-4 | bar count | WhatsApp: one bubble width for every duration; Telegram Desktop: ⌊width ÷ (bar + skip)⌋, ≤ 100 | width-driven, peak per bucket | one rule for the 154-pt capsule, the recording field and the send-to capsule |
+| V-5 | waveform length | Messages 154.1 pt, WhatsApp ≈ 151 pt | 154 | both apps; 38 bars like Messages |
+| V-6 | played / unplayed / idle | WhatsApp share 0.41, Telegram 0.33; idle all unplayed (WhatsApp, Telegram Desktop) | played `textPrimary` / `textOnMedia`, unplayed `textSecondary`, idle unplayed, split bar at the progress | nearest Retro global colour (0.365 light); Telegram's unread all-accent state is a read state (tenets) |
+| V-7 | data | Telegram API: 100 five-bit values; example implementation: peak per bucket, scale max(2500, 1.8 × mean) | 100 smallint of 0…31, validated server-side, optional | same format on both platforms; unpacked for simple validation |
+| V-8 | notes without levels | Telegram Desktop: flat bars at the minimum until the file is loaded, then computed from the audio | the same | old notes and clients that send none still draw |
+| V-9 | locked recording layout | WhatsApp blog panels: field with time + live waveform; row of trash · pause / mic · send | two rows: C-13 field + controls row (bare trash, C-11 circle with red pause / mic, C-11 circle in the primary fill for send) | WhatsApp's order in Retro components (green → primary fill, red ring → C-10 red glyph) |
+| V-10 | preview of a paused draft | WhatsApp FAQ "preview a draft"; Messages "Listen to review it", "Continue Recording" | pause = platform pause; first preview closes the segment, continue starts a new one, send joins the segments | MPEG-4 is finished only by `stop()` |
+| V-11 | send-to: where the kept note's waveform goes | no reference composes a voice note with a photo | the note capsule (same as the thread, 154-pt waveform) centred `size.global.pillGap` above the message pill + mic pair; the mic records a replacement | the pair has no room for a 154-pt waveform; the message pill keeps Retro's label |
+| V-12 | live waveform direction / rate | WhatsApp panels draw the whole recording across the width (0:07 → 77 bars; 0:11 draft in its capsule) | live = the samples so far reduced like a stored note, across the available width | the only still evidence; what you see is what is sent |
+
+**Android parity (send-to).** Android's send-to voice capsule recorded press-and-hold only (no lock, no draft, no
+playback of the kept note) while iOS had lock and a stopped draft; both now follow `chat.voice.layout.locked` and the
+note capsule (rule 9: both platforms behave the same).
+
+**Not built.** Scrubbing along the waveform (WhatsApp / Messages drag to seek): the capsule stays one button (C-36 Gaps).

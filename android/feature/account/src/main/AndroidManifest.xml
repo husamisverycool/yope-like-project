@@ -5,6 +5,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- onboarding.permission.contacts / groups.invite (Android card): optional, asked in context. -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- groups.invite QR card "Save": MediaStore insert needs no permission on API 29+; API 26–28 need it (minSdk 26). -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <application>
         <!-- settings.account "Take Photo": the content:// target handed to the system camera (TakePicture). -->

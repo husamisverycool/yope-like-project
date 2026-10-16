@@ -247,29 +247,32 @@
         "corners": "radius.global.capsule",
         "fill": "page: color.global.control (iOS) / color.global.surfaceSecondary.android; on media (photo.viewer): color.global.controlOnDeep",
         "glyph": "icon.global.play (playing: icon.global.pause) at size.global.iconSmall, color.global.textPrimary",
+        "waveform": "C-36 (layout.global.waveform) chat.voice.dimension.waveform long, between the glyph and the label; idle: every bar unplayed; playing / paused part-way: played up to the progress",
         "label": "duration per chat.voice.layout.durationFormat, text role pill, color.global.textPrimary",
-        "padding": "size.global.pillPaddingLeading → glyph → size.global.pillIconGap → label → size.global.pillPaddingTrailing",
-        "width": "hugs its content (no width per duration)"
+        "padding": "size.global.pillPaddingLeading → glyph → size.global.pillIconGap → waveform → size.global.pillIconGap → label → size.global.pillPaddingTrailing",
+        "width": "hugs its content: glyph + waveform (chat.voice.dimension.waveform) + label",
+        "error": "the waveform and the label give way to chat.voice.error.play"
       },
       "source_app": "Retro",
       "surface": "chat.voice",
       "element": "voice message in the thread, and a photo's voice note in the viewer",
-      "evidence": "design/components.md C-06 (fill capsule), C-07 (outline CTA anatomy, H43), C-25 (video duration pill '1:00', PAY)",
-      "method": "composition of Retro components C-06 / C-07 / C-25 in WhatsApp's play-and-duration order",
+      "evidence": "design/components.md C-06 (fill capsule), C-07 (outline CTA anatomy, H43), C-25 (video duration pill '1:00', PAY), C-36 (voice waveform); references/auto/imessage/apple-support/messages-audio-message-ios27.png (play · waveform · duration in one row)",
+      "method": "composition of Retro components C-06 / C-07 / C-25 / C-36 in Apple Messages' play · waveform · duration order",
       "level": "SOURCED",
-      "notes": "No waveform: Retro has no waveform component and another app's bars would be another app's visual (MERGE RS-7). Closes the BLOCKED width rule (the capsule hugs its label)."
+      "notes": "Owner decision 16 adds the waveform (C-36); supersedes 'No waveform' (MERGE RS-7). The capsule still hugs its content (the waveform has a fixed length)."
     },
     "chat.voice.layout.playback": {
       "type": "layout",
       "value": {
         "tap": "the capsule toggles play / pause; one voice message plays at a time (starting another stops the first)",
         "label": "total duration when idle; elapsed time while playing or paused mid-way",
-        "end": "back to the idle state at the end"
+        "end": "back to the idle state at the end",
+        "waveform": "the played part of the waveform follows the playback (layout.global.waveform progress): split at progress × width, updated with the elapsed label"
       },
       "source_app": "Telegram + WhatsApp",
       "surface": "chat.voice",
       "element": "voice playback behaviour",
-      "evidence": "references/auto/telegram/ (blog 'Flexible Playback Speed': elapsed time while playing, Gap fill G-8); references/auto/whatsapp/help/faq-1165411581043811-play-voice-iphone.png (play / pause)",
+      "evidence": "references/auto/telegram/ (blog 'Flexible Playback Speed': elapsed time while playing, Gap fill G-8); references/auto/whatsapp/help/faq-1165411581043811-play-voice-iphone.png (play / pause); references/auto/telegram/blog/tg-blog-power-saving-playback-speed-t06.png (played bars full strength, the rest dimmed); https://github.com/telegramdesktop/tdesktop/blob/dev/Telegram/SourceFiles/history/view/media/history_view_document.cpp (split at activeWidth)",
       "method": "documented behaviour of two references",
       "level": "SOURCED"
     },
@@ -279,15 +282,16 @@
         "start": "press and hold the composer's mic glyph: recording runs while the finger is down",
         "send": "lift the finger → the voice message is sent",
         "cancel": "slide left → recording discarded",
-        "lock": "slide up onto the lock circle above the mic → keeps recording hands-free; then the send glyph sends, the trash glyph discards",
+        "lock": "slide up onto the lock circle above the mic → keeps recording hands-free (chat.voice.layout.locked)",
         "field": "while recording the field shows: icon.global.mic in color.global.destructive · elapsed time (chat.voice.layout.durationFormat, text role body, color.global.textPrimary) · icon.global.back + chat.voice.recording.slideToCancel in color.global.textSecondary",
         "lockCircle": "C-11 circle size.global.circleButton, color.global.control, icon.global.lock in color.global.textPrimary, centred over the mic glyph, size.global.pillGap above the field",
-        "haptic": "none on start / stop (HIG: do not disturb the microphone); haptic.global.send when sent"
+        "haptic": "none on start / stop / pause / continue (HIG: do not disturb the microphone); haptic.global.send when sent",
+        "pause": "locked: pause stops the recording into a draft that can be played, continued, deleted or sent (chat.voice.layout.locked); holding has no pause"
       },
       "source_app": "WhatsApp + Telegram",
       "surface": "chat.voice",
       "element": "recording a voice message",
-      "evidence": "references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('Press and hold [mic] next to the text field…', '…slide [‹] to cancel…', hands-free); references/auto/whatsapp/store/whatsapp-store-02.png (recording row); references/auto/telegram/store/telegram-store-03.png (recording row with lock)",
+      "evidence": "references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('Press and hold [mic] next to the text field…', '…slide [‹] to cancel…', hands-free); references/auto/whatsapp/store/whatsapp-store-02.png (recording row); references/auto/telegram/store/telegram-store-03.png (recording row with lock); references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png ('Pause/Resume Recording', 'Draft Preview' panels)",
       "method": "documented gestures (Gap fill G-9); drawn with Retro components (C-11, C-13, C-10 red glyph)",
       "level": "SOURCED"
     },
@@ -423,14 +427,19 @@
     },
     "chat.reactions.layout.listOrder": {
       "type": "layout",
-      "value": null,
-      "source_app": "Retro",
+      "value": {
+        "order": "newest first by reactions.created_at (the person who reacted last leads)",
+        "rows": "one row per person and emoji; a person with several emoji has one row per emoji, each at its own time",
+        "yourRows": "in their place by time (no pinning); they carry chat.reactions.list.removeHint"
+      },
+      "source_app": "Stream Chat",
       "surface": "chat.reactions",
       "element": "order of the rows in the Reactions sheet",
-      "evidence": "references/auto/whatsapp/help/faq-424198503229937-react-iphone.png (no order stated); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (Retro's sheet title only)",
-      "method": "searched: WhatsApp / Messages help pages and the reachable panels show no list with several reactors",
-      "level": "BLOCKED",
-      "notes": "Development approximation (debug builds only): newest first by reactions.created_at. Smallest capture: one screenshot of WhatsApp's (or Retro's) reaction list on a message with reactions from three people at different times."
+      "evidence": "references/auto/stream/docs-react-reactions-excerpt.txt (https://getstream.io/chat/docs/sdk/react/v12/components/message-components/reactions/: the reactions list modal 'sorts users in the reverse chronological order of their reactions', default reactionDetailsSort { created_at: -1 }); same order as this surface's chip (chat.reactions.layout.clusterOrder: newest first, Locket); references/auto/whatsapp/help/faq-424198503229937-react-iphone.png and references/auto/imessage/apple-support/page-react-with-tapbacks.png state no order",
+      "method": "read from the documentation of the chat SDK whose default 'who reacted' list ships in many apps; WhatsApp's and Messages' help pages and WABetaInfo's reaction-info capture (one reactor) show no order",
+      "level": "SOURCED",
+      "notes": "Was BLOCKED (development approximation: newest first) — the approximation is now the sourced rule. Data: reactions.created_at (docs/API.md §5.10).",
+      "precision": "exact (rule)"
     },
     "chat.reactions.layout.unreact": {
       "type": "layout",
@@ -630,14 +639,20 @@
     },
     "photo.viewer.layout.backZone": {
       "type": "layout",
-      "value": null,
+      "value": {
+        "fraction": 0.2,
+        "edge": "leading",
+        "of": "the photo's width (full screen width), measured from the leading edge",
+        "rest": "a tap anywhere else on the photo advances (photo.viewer.layout.advance)"
+      },
       "source_app": "Retro",
       "surface": "photo.viewer",
       "element": "width of the leading tap zone that goes back",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (viewer_nux_tap_back 'Tap left to go back' — no width)",
-      "method": "searched the package strings, excerpts and captures; no zone geometry",
-      "level": "BLOCKED",
-      "notes": "Development approximation (debug builds only): the leading third of the photo. Smallest capture: a 10-s screen recording of Retro's viewer tapping at several x positions (or its NUX overlay)."
+      "evidence": "references/auto/retro/web/retro.app-viewer-and-hero-js-excerpts.txt §1 (retro.app album page viewer: onClick e.clientX < .2*window.innerWidth → onPreviousClick, else onNextClick); references/auto/retro/web/retro.app-42b38811bebcd07d.css (.immersiveViewer_mediaContainer mobile width:100vw — the photo is the window's width); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (viewer_nux_tap_back 'Tap left to go back')",
+      "method": "read from Retro's own viewer script (the public album page): 0.2 × the window width, where the photo spans the window on a phone",
+      "level": "SOURCED",
+      "notes": "Was BLOCKED (development approximation: the leading third). Right-to-left layouts mirror it to the trailing edge (leading). Accessibility: 'Previous photo' / 'Next photo' actions stay.",
+      "precision": "exact (Retro web viewer; the in-app viewer's NUX names the same left-side zone)"
     },
     "photo.viewer.layout.dateFormat": {
       "type": "layout",
@@ -825,14 +840,18 @@
     },
     "walls.browse.layout.rowOrder": {
       "type": "layout",
-      "value": null,
-      "source_app": "Retro",
+      "value": {
+        "order": "by display name, A to Z, in the device locale's collation, ignoring case and accents",
+        "tie": "profile id"
+      },
+      "source_app": "Apple Photos",
       "surface": "walls.browse",
       "element": "order of people in the grid",
-      "evidence": "references/auto/retro/press/tc-2023-07-retro-1b.webp (marnie, zach, ami, ven, j, tim: key holders first — a do-not-copy rule; the rest unexplained)",
-      "method": "searched Retro's captures and package strings; no order rule",
-      "level": "BLOCKED",
-      "notes": "Development approximation (debug builds only): newest wall item first, then by name. Smallest capture: one raw screenshot of Retro's current Friends tab with 7 or more friends."
+      "evidence": "references/auto/apple-photos/apple-support/page-find-and-name-people-and-pets.txt (iPhone User Guide iOS 27, verbatim: 'Sort the People & Pets collection alphabetically or manually … Sort alphabetically: Tap Sort by Name. Sort manually: Tap Sort by Custom Order'); references/auto/apple-photos/store/photos-store-03.png (People & Pets: a grid of people with names under them and the Sort control); references/auto/retro/press/tc-2023-07-retro-1b.webp (Retro's grid: key holders first — do-not-copy; the rest shows no readable rule)",
+      "method": "Apple Photos' people grid offers two orders: by name or a hand-made order; this product has no hand-made order, so the grid is by name. Collation: iOS String.compare(options: [.caseInsensitive, .diacriticInsensitive], locale: .current), Android java.text.Collator (device locale, PRIMARY strength) — the same comparison on both",
+      "level": "SOURCED",
+      "notes": "Was BLOCKED (development approximation: newest wall item first). Same order in the per-group variant (pushed from a group).",
+      "precision": "exact (rule)"
     },
     "week.history.layout.weeks": {
       "type": "layout",
@@ -1032,14 +1051,25 @@
     },
     "week.recap.layout.gridFill": {
       "type": "layout",
-      "value": null,
+      "value": {
+        "columns": "floor(√n) for n photos, clamped to 1 … maxColumns (1 photo → 1, 9 → 3, 24 → 4: Retro's three cards)",
+        "maxColumns": 4,
+        "rows": "ceil(n ÷ columns), at most maxRows",
+        "maxRows": 6,
+        "area": "the grid always fills the card's photo area: as wide as the card minus its padding and that width ÷ areaAspect tall (3:4); cells share it: (width − (columns − 1) × gap) ÷ columns by (height − (rows − 1) × gap) ÷ rows, aspect fill; gap size.global.stripGap",
+        "areaAspect": 0.75,
+        "order": "row by row from the leading top cell, in the recap's item order",
+        "lastRow": "a short last row is leading-aligned; the places after the last photo show the card fill (color.global.surfaceLight)",
+        "beyond": "photos past maxColumns × maxRows are not drawn on the card (they stay in the recap and the viewer)"
+      },
       "source_app": "Retro",
       "surface": "week.recap",
       "element": "how the 4 × 6 collage grid is filled when the recap has fewer than 24 photos (or more)",
-      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png (only a full 24-photo yearly card is captured)",
-      "method": "searched TC-REC, ST-04, TC-H, the package strings (recap_media_gallery_max_items_reached_message 'Max items reached' — no number) and the recap Rive assets",
-      "level": "BLOCKED",
-      "notes": "Development approximation (debug builds only): cells fill row by row in item order; empty cells show the card fill; items beyond 24 are not drawn on the card (they stay in the recap and the viewer). Smallest capture: one Retro recap preview (Week style) for a week with 5 photos."
+      "evidence": "references/auto/retro/press/tc-2023-12-retro-header.png (Retro's recap card with 9 photos: 3 × 3 grid, card x 1652–2502, grid x 1666–2488 / y 417–1510 = 823 × 1094 px, aspect 0.752; cells 271 × 363, gaps 5 px); references/auto/retro/press/tc-2023-12-recaps.png phone 2 (24 photos: 4 × 6, grid 493 × 658 px, aspect 0.749 — layout.year.story.recapCard); references/auto/retro/web/retro.app-viewer-and-hero-js-excerpts.txt §2 (retro.app hero: the card with one photo filling the whole area above the footer); references/auto/retro/web/retro.app-42b38811bebcd07d.css (.mediaGrid: Retro's fixed-column CSS grid — a short last row stays leading-aligned)",
+      "method": "edge scans with python3 -I + PIL on the two renders (white card / photo boundaries, white gap runs along rows and columns); rule chosen as the smallest one that reproduces all three Retro cards (1, 9, 24 photos) with a constant 3:4 grid area",
+      "level": "SOURCED",
+      "notes": "Was BLOCKED (development approximation: 4 columns, row by row). Replaces the year card's whole-rows rule for week recaps only; layout.year.story.recapCard keeps its own rule (memory group).",
+      "precision": "exact for 1, 9 and 24 photos; other counts follow the same rule (no Retro capture of them)"
     },
     "week.recap.layout.note": {
       "type": "layout",
@@ -1137,14 +1167,24 @@
     },
     "week.edit.layout.selectionMark": {
       "type": "layout",
-      "value": null,
-      "source_app": "Retro",
+      "value": {
+        "unselected": "no mark: the photo fills the square cell",
+        "selectedInsetRatio": 0.089,
+        "selectedCornerRatio": 0.119,
+        "selectedCellFill": "color.global.control",
+        "mark": "icon.global.check in the size.global.checkCircle glyph box at the cell's top-leading corner, its circle in color.global.selection (iOS) / color.global.system.primary (Android) with the check in color.global.textOnMedia, on a color.global.textOnMedia disc markOutline wider in radius",
+        "markCentreRatio": 0.148,
+        "markOutline": 1.5,
+        "motion": "the inset and the mark change with the state cross-fade (duration.global.crossfade)"
+      },
+      "source_app": "Android photo picker",
       "surface": "week.edit",
       "element": "the in / out mark on a grid photo (position, size, colours)",
-      "evidence": "references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png (selection mark not legible at 640 × 800 px); design/components.md C-17 (Gap)",
-      "method": "searched VID-COMP frames 130–197 and the store sets; the mark is not legible",
-      "level": "BLOCKED",
-      "notes": "Development approximation (debug builds only): size.global.checkCircle at the cell's top-right corner, 6 pt in (APK uniform padding 6 ×29); icon.global.check in color.global.textOnMedia on checked, icon.global.uncheck in color.global.textOnMedia otherwise. Smallest capture: one raw screenshot of Retro's 'Add to Your Week' with 2 photos selected."
+      "evidence": "references/auto/platform/android-photopicker-selected-f200.png and …-unselected-f150.png (Android system photo picker, developer.android.com/training/data-storage/shared/photopicker Figure 1, 1 px = 1 dp: selected cell 135 dp, photo inset 12 dp each side (x 12–122, y 438–549), corner ≈ 16 dp, cell fill #DEE3EA, check circle 20 dp (#0C58CE, white check) with a ≈ 1.5-dp white outline, centre (20, 19) dp from the cell's top-left; unselected: none); references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png (Retro's composer: the chosen photo shows inset in a light frame, mark not legible)",
+      "method": "pixel scans with python3 -I + PIL on the frame: inset 12 ÷ 135 = 0.089, corner 16 ÷ 135 = 0.119 (circle fit through the bottom-left corner rows 537–549), mark centre 20 ÷ 135 = 0.148; colours mapped onto the global selection colours (system tint on iOS, M3 primary on Android) and the control fill",
+      "level": "PLATFORM",
+      "notes": "Was BLOCKED (development approximation: check circle top-right). Apple's guide figures show no selection state, so both platforms draw the platform photo picker's mark (one behaviour, rule 9); the SF Symbol checkmark.circle.fill / Rounded.CheckCircle draw it. The state is also in the cell's accessibility value (week.edit.a11y.inRecap / .notInRecap).",
+      "precision": "±1 dp at 412-dp frame; ratios ±0.01"
     },
     "week.edit.layout.reorder": {
       "type": "layout",
@@ -1332,14 +1372,82 @@
     },
     "albums.view.shadow.cover": {
       "type": "shadow",
-      "value": null,
+      "value": {
+        "color": "#000000",
+        "blur": 8.5,
+        "x": 3,
+        "y": 10,
+        "opacity": 0.25
+      },
       "source_app": "Retro",
       "surface": "albums.view",
       "element": "drop shadow under the book-like album cover",
-      "evidence": "references/auto/retro/press/tc-2024-04-journals-1.webp (soft shadow under 'CDMX'); design/tokens/global.json layout.global.elevation (album cover drop shadow — unmeasured)",
-      "method": "searched TC-J1, TC-J5 and the web album page (cover masked by /journal-overlay.webp, no CSS shadow)",
-      "level": "BLOCKED",
-      "notes": "Until captured the cover is drawn flat (release builds cannot use a BLOCKED token). Smallest capture: one raw screenshot of a Retro album sheet on a white background."
+      "evidence": "references/auto/retro/press/tc-2024-04-journals-1.webp phone 3 (Retro album sheet on white: soft shadow under the 'CDMX' cover; luminance profiles outside the cover — below 201 → 255 within 27 pt, right 216 → 255 within 20 pt, left 233 → 255 within 14 pt, above 241 → 255 within 7 pt); design/tokens/account.json groups.screen.shadow.cover (the same cover, measured by the account group); references/auto/retro/web/retro.app-42b38811bebcd07d.css (/j/ page cover: no CSS shadow — the web cover is flat)",
+      "method": "least-squares fit of an offset Gaussian-blurred box to the four edge profiles (account group, sse 0.0021): opacity 0.25 black, Gaussian σ 8.5 pt, offset x 3 pt, y 10 pt — one definition of Retro's book-cover shadow in the product",
+      "level": "SOURCED",
+      "notes": "Was BLOCKED. blur is the Gaussian σ in pt (iOS .shadow(radius:) takes it as is; Compose dropShadow / CSS take 2σ — DSShadow handles it). Light captures only; in dark the shadow is drawn the same and reads as none on the dark page (no dark capture).",
+      "precision": "σ ±1 pt, offsets ±1 pt, opacity ±0.03 (render 2024)"
+    },
+    "photo.viewer.layout.avatarRing": {
+      "type": "layout",
+      "value": {
+        "outerDiameter": "size.global.avatarHeader (ring included)",
+        "strokeWidth": 2.0,
+        "gap": 3.0,
+        "photo": "the avatar photo inside: outerDiameter − 2 × (strokeWidth + gap)",
+        "start": "12 o'clock",
+        "direction": "clockwise",
+        "sweep": "index ÷ total of the viewer's context × 360° (the position the pill names; one photo: the full circle)",
+        "caps": "round",
+        "color": "color.global.textOnMedia",
+        "motion": "changes with the page cross-fade (duration.global.crossfade)"
+      },
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "element": "progress ring around the header avatar",
+      "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg (2.209 px/pt, header 'tim' / 'Week 28' with the pill '3 of 4'): ring centre (1389.4, 323.5); white (median 254) between radii 40.09 and 44.51 px at half maximum; photo edge r 33.38 px; white from 266.7° to 183.3° clockwise (image angles, y down), dark 186°–264° — a 270° arc from 12 o'clock to 9 o'clock = 3 ÷ 4, its ends rounded (each cap reaches 3.3° past the arc = half the stroke at that radius)",
+      "method": "least-squares circle through the ring's white pixels, then a radial luminance profile over the white angles and an angular profile at r 42.3 px (python3 -I + PIL/numpy); stroke 4.42 px ÷ 2.209 = 2.0 pt; gap 6.71 px = 3.0 pt; photo Ø 66.8 px = 30.2 pt; ring outer Ø 89.0 px = 40.3 pt (size.global.avatarHeader 40.7)",
+      "level": "SOURCED",
+      "precision": "±0.3 pt (JPEG render 2023)",
+      "notes": "Retro's viewer avatar ring is the position indicator (3 of 4 → three quarters), not decoration; the components.md C-22 / C-23 'ring width not measured' gap is closed for the viewer. Decorative for VoiceOver / TalkBack: the position pill already names the position."
+    },
+    "chat.voice.dimension.waveform": {
+      "level": "SOURCED",
+      "source_app": "Apple Messages + WhatsApp",
+      "surface": "chat.voice",
+      "type": "dimension",
+      "value": 154,
+      "element": "length of a voice message's waveform (C-36) in the capsule: thread, viewer footer and comments, send-to note",
+      "evidence": "references/auto/imessage/apple-support/messages-audio-message-ios27.png waveform x205–375 = 171 px (38 bars); references/auto/whatsapp/store/whatsapp-store-02.png bars x396–760 incl. the bar under the playhead dot ≈ 34 × 10.68 px — design/research/voice-waveform.md",
+      "method": "span ÷ px/pt: 171 ÷ 1.110 = 154.1 pt (Messages); 358 ÷ 2.37 ≈ 151 pt (WhatsApp)",
+      "precision": "±3 pt",
+      "unit": "pt",
+      "notes": "Both apps draw one waveform length whatever the duration (WhatsApp blog composite: nine bubbles, one width). At size.global.waveformBarWidth + .waveformBarGap this holds 38 bars (Messages: 38)."
+    },
+    "chat.voice.layout.locked": {
+      "level": "SOURCED",
+      "source_app": "WhatsApp + Apple Messages",
+      "surface": "chat.voice",
+      "type": "layout",
+      "value": {
+        "rows": "two rows: the C-13 field, then the controls row size.global.pillGap below it, inside size.global.screenMargin",
+        "fieldRecording": "icon.global.mic in color.global.destructive at the avatar's place · elapsed time (chat.voice.layout.durationFormat, text role body, monospaced, color.global.textPrimary) · C-36 live waveform across the rest of the field to the trailing glyph inset (chat.composer.dimension.glyphInsetTrailing)",
+        "fieldPaused": "icon.global.play (previewing: icon.global.pause) in color.global.textPrimary at the avatar's place (a button) · C-36 draft waveform with the preview's progress · the draft's length (preview: elapsed), text role body, monospaced, at the trailing glyph inset",
+        "controls": "leading: icon.global.trash in color.global.destructive (bare glyph, size.global.headerButton hit) aligned with the field's leading glyph; centre: C-11 circle on the page (size.global.circleButton, color.global.control) holding icon.global.pause (recording) or icon.global.mic (paused) in color.global.destructive; trailing: C-11 circle in the primary fill (color.global.accent, icon.global.send in color.global.onAccent) aligned with the field's trailing glyph",
+        "controlsHeight": "size.global.headerButton",
+        "pause": "recording → paused: the recorder pauses; the draft's waveform and length show",
+        "continue": "paused → recording: the recording continues at the end of the draft",
+        "preview": "paused: the glyph plays / pauses the draft from its start; continuing or sending stops the preview",
+        "discard": "trash: the recording is deleted (no confirmation, as WhatsApp and Messages)",
+        "send": "send: recording or paused, the whole recording is sent",
+        "onMedia": "camera.sendto: the same order inside the recording capsule (camera.sendto.layout.messageField)",
+        "motion": "rows appear / change with duration.global.fade; the live waveform redraws per sample without animation"
+      },
+      "element": "hands-free (locked) voice recording: pause, continue, preview the draft, delete, send",
+      "evidence": "references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png ('Pause/Resume Recording': '0:07' · live waveform; trash · red pause ring · send circle. 'Draft Preview': pause glyph · waveform · '0:11'; trash · red mic · send circle); references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('tap [pause] to pause recording and preview a draft of your message before sending. Tap [mic] to continue recording.'); https://support.apple.com/guide/iphone/send-and-receive-audio-messages-iph2e42d3117/ios ('Tap [the Stop button] to pause or end your recording … Listen to review it: Tap [the Play button]. Add to the end of it: Tap [the Continue Recording button]') — design/research/voice-waveform.md",
+      "method": "composition of Retro components C-13, C-36, C-10 (red glyphs), C-11 (circles; send in C-06's primary fill) in WhatsApp's locked-recording order",
+      "precision": "layout",
+      "notes": "WhatsApp's green send circle and red ring become Retro's primary fill and red glyph (C-10). No haptics (microphone)."
     }
   }
 }

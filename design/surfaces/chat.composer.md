@@ -33,7 +33,9 @@ Decisions: `design/MERGE_DECISIONS.md` → Redesign — Social (RS-6, RS-25). Co
      field's trailing edge and the camera centred `size.global.headerIconPitch` to its left. While the field holds text both
      give way to `icon.global.send` in `color.global.textPrimary` at the mic's place.
 3. While replying, the reply bar (`chat.thread.md`) sits above the field.
-4. While recording a voice message the field's content is replaced by the recording row (`chat.voice.layout.recording`).
+4. While recording a voice message the field's content is replaced by the recording row (`chat.voice.layout.recording`);
+   a locked (hands-free) recording adds the controls row below the field — delete · pause / continue · send — and draws
+   the live or paused draft's waveform in the field (`chat.voice.layout.locked`, C-36; owner decision 16).
 
 ## Elements
 
@@ -102,7 +104,8 @@ Decisions: `design/MERGE_DECISIONS.md` → Redesign — Social (RS-6, RS-25). Co
 
 - `send_message(p_group_id, p_kind: 'text', p_body, p_reply_to_post_id?, p_reply_to_message_id?)` (docs/API.md §6.2);
   errors `invalid_body`, `not_group_member`, `post_not_found`, `message_not_found`, `reply_group_mismatch`.
-- Voice: upload `u/<uid>/voice/<uuid>.m4a`, then `send_message(p_kind: 'voice', p_voice_path, p_voice_duration_ms)` (`chat.voice.md`).
+- Voice: upload `u/<uid>/voice/<uuid>.m4a`, then `send_message(p_kind: 'voice', p_voice_path, p_voice_duration_ms,
+  p_voice_levels)` (`chat.voice.md`; 100 levels of 0…31).
 - Photo: `camera.capture` → `create_post(p_group_ids: [this group], p_reply_to_post_id?)` (§6.2, recipe §9.4).
 - Realtime: the sent message arrives through the thread's `messages` INSERT subscription (§8.1).
 

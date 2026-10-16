@@ -10,12 +10,21 @@ import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,11 +41,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -80,6 +95,7 @@ import app.ui.foundation.DsMotion
 import app.ui.foundation.PageRoles
 import app.ui.foundation.tapClickable
 import app.ui.format.Formats
+import app.ui.haptics.rememberHaptics
 import app.ui.permissions.PermissionRationale
 import app.ui.permissions.rememberPermissionRequest
 import app.ui.system.SystemAlertDialog
@@ -511,22 +527,30 @@ private fun MenuRow(icon: ImageVector, label: String, color: Color, position: Gr
 }
 
 /**
- * Three targets, centres `groups.invite.size.targetPitch` apart: a 64-pt circle (C-11 `size.global.circleButtonLarge`,
- * `color.global.control`, glyph `size.global.icon` in `color.global.textPrimary`) and its label
- * `groups.invite.size.targetLabelGap` below (text role `meta`, `color.global.textPrimary`, centred). Each is one button.
+ * Four targets in TC-J5's order — QR Code (`groups.invite.icon.qr`), Copy Link, Message (in the place of Retro's
+ * Instagram target), Share to… — centres `groups.invite.size.targetPitch` apart (narrower when four pitches do not fit
+ * the width: a quarter of it each): a 64-pt circle (C-11 `size.global.circleButtonLarge`, `color.global.control`, glyph
+ * `size.global.icon` in `color.global.textPrimary`) and its label `groups.invite.size.targetLabelGap` below (text role
+ * `meta`, `color.global.textPrimary`, centred). Each is one button.
  */
 @Composable
 private fun ShareTargets(actions: GroupInviteActions) {
-    Row(horizontalArrangement = Arrangement.Center) {
-        ShareTarget(Tokens.Icons.globalChats, stringResource(R.string.groups_invite_link_messagetarget), actions.onMessage)
-        ShareTarget(Tokens.Icons.globalLink, stringResource(R.string.groups_invite_link_copy), actions.onCopy)
-        ShareTarget(Tokens.Icons.globalShare, stringResource(R.string.groups_invite_link_share), actions.onShare)
+    BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        val pitch = minOf(Tokens.Sizes.groupsInviteSizeTargetPitch, maxWidth / SHARE_TARGETS)
+        Row(horizontalArrangement = Arrangement.Center) {
+            ShareTarget(Tokens.Icons.groupsInviteIconQr, stringResource(R.string.groups_invite_link_qr), pitch, actions.onQr)
+            ShareTarget(Tokens.Icons.globalLink, stringResource(R.string.groups_invite_link_copy), pitch, actions.onCopy)
+            ShareTarget(Tokens.Icons.globalChats, stringResource(R.string.groups_invite_link_messagetarget), pitch, actions.onMessage)
+            ShareTarget(Tokens.Icons.globalShare, stringResource(R.string.groups_invite_link_share), pitch, actions.onShare)
+        }
     }
 }
 
+/** QR Code · Copy Link · Message · Share to… (TC-J5 shows four). */
+private const val SHARE_TARGETS = 4
+
 @Composable
-private fun ShareTarget(icon: ImageVector, label: String, onClick: () -> Unit) {
-    val pitch: Dp = Tokens.Sizes.groupsInviteSizeTargetPitch
+private fun ShareTarget(icon: ImageVector, label: String, pitch: Dp, onClick: () -> Unit) {
     Column(
         Modifier.width(pitch).tapClickable(onClick = onClick).semantics(mergeDescendants = true) {},
         horizontalAlignment = Alignment.CenterHorizontally,

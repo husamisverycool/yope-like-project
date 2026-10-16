@@ -48,7 +48,8 @@ class FakeStores : AccountStores {
 class FakePremium : PremiumGateway {
     val active = MutableStateFlow(false)
     override val isActive = active
-    var plans = listOf(PlanOption(PlanPeriod.Yearly, "$35.99", null), PlanOption(PlanPeriod.Monthly, "$3.99", null))
+    /** Owner decision 7: $35.99 a year with a 1-week free trial, $3.99 a month. */
+    var plans = listOf(PlanOption(PlanPeriod.Yearly, "$35.99", null, trialDuration = "1 week"), PlanOption(PlanPeriod.Monthly, "$3.99", null))
     var purchaseResult = PremiumResult.Done
     var restoreResult: Pair<PremiumResult, Boolean> = PremiumResult.Done to false
     override suspend fun refresh(): Boolean = active.value

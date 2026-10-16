@@ -88,6 +88,36 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         com.github.takahirom.roborazzi.captureScreenRoboImage("src/test/snapshots/onthisday/menu-own-light.png")
     }
 
+    /** The date title's chevron opens Retro's mode menu: "On this day…" and "Shuffle" (RWA 'May 1, 2019 ⌄'). */
+    @Test fun modeMenu() {
+        var shuffled = 0
+        var day = 0
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            MemoryTestContent {
+                OnThisDayScreen(samplePage, OnThisDayActions(onShuffle = { shuffled++ }, onShowDay = { day++ }), isMine = { false })
+            }
+        }
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithTag(OnThisDayTags.MODE).performClick()
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithText("On this day…").assertExists()
+        compose.onNodeWithText("Shuffle").assertExists()
+        compose.onNodeWithText("Pick a date…").assertDoesNotExist()
+        compose.waitForIdle()
+        repeat(4) { compose.mainClock.advanceTimeByFrame() }
+        com.github.takahirom.roborazzi.captureScreenRoboImage("src/test/snapshots/onthisday/mode-menu-light.png")
+        compose.onNodeWithText("Shuffle").performClick()
+        compose.mainClock.advanceTimeBy(settleMillis)
+        assertEquals(1, shuffled)
+        compose.onNodeWithText("Shuffle").assertDoesNotExist()
+        compose.onNodeWithTag(OnThisDayTags.MODE).performClick()
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithText("On this day…").performClick()
+        compose.mainClock.advanceTimeBy(settleMillis)
+        assertEquals(1, day)
+    }
+
     @Test fun deleteYourOwnMemoryAsksFirst() {
         compose.mainClock.autoAdvance = false
         compose.setContent { MemoryTestContent { OnThisDayScreen(samplePage.copy(index = 3), OnThisDayActions(), isMine = { it.authorId == FakeMemoryBackend.ME }) } }
@@ -162,6 +192,13 @@ class OnThisDayFlowTest : SnapshotTest() {
         compose.onNodeWithTag(OnThisDayTags.SHUFFLE).performClick()
         compose.mainClock.advanceTimeBy(STEP_SETTLE)
         compose.onNodeWithText("Memories · ", substring = true).assertExists()
+        // The title's mode menu: "On this day…" goes back to the day's memories, at the newest one.
+        compose.onNodeWithTag(OnThisDayTags.MODE).performClick()
+        compose.mainClock.advanceTimeBy(STEP_SETTLE)
+        compose.onNodeWithText("On this day…").performClick()
+        compose.mainClock.advanceTimeBy(STEP_SETTLE)
+        compose.onNodeWithText("On this day · Ana").assertExists()
+        title.assertTextEquals("Dec 5, 2025")
         compose.onNodeWithContentDescription("Back").performClick()
         assertEquals(1, closed)
     }

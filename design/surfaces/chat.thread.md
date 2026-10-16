@@ -47,9 +47,11 @@ appearance (it is not a media surface).
        its emoji at `fontSize.global.headerTitle`.
      - **photo** — C-18 photo card (`chat.thread.layout.photoFit`: `size.global.friendCardWidth` × `.friendCardHeight`,
        `radius.global.card`, aspect fill). The post's caption follows as a text item; a voice note follows as the voice
-       capsule (`chat.voice.md`); the reaction chip follows the photo (`chat.reactions.layout.chip`,
+       capsule with its waveform (`chat.voice.md`, C-36); the reaction chip follows the photo (`chat.reactions.layout.chip`,
        `chat.reactions.dimension.chipTop` below it).
-     - **voice** — the voice capsule (`chat.voice.layout.capsule`).
+     - **voice** — the voice capsule (`chat.voice.layout.capsule`): play glyph · C-36 waveform
+       (`chat.voice.dimension.waveform`, the message's `voice_levels`; none stored → a row of dots until first played) ·
+       duration (owner decision 16).
      - **reply quote** (`chat.thread.layout.replyQuote`) above the reply it belongs to: a C-15 row for a quoted photo
        (thumbnail `size.global.rowThumbWidth` × `.rowThumbHeight`, `radius.global.thumbnail`, `chat.thread.reply.postTitle`
        over `chat.thread.reply.postWeek`), or one grey line for a quoted message ("**name** text…").
@@ -159,7 +161,8 @@ Appears / disappears with `duration.global.fade` + `easing.global.standard` (Ret
 ## Data & actions
 
 - **Reads**: `messages` (docs/API.md §5.9) — `eq(group_id).order(created_at desc).limit(50)`, older pages with
-  `lt(created_at)`; photo messages → `posts` (§5.8: caption, voice note, `reply_to_post_id`) + `media` (§5.7:
+  `lt(created_at)` (voice messages carry `voice_levels`); photo messages → `posts` (§5.8: caption, voice note with
+  `voice_levels`, `reply_to_post_id`) + `media` (§5.7:
   `display_path` for the card; `thumb_path` for quotes; originals until `renditions_ready_at`); `reactions` (§5.10) for chips;
   `profiles` (§5.1); `groups` (§5.3) for the title. Signed URLs (§7, 1 h). Week number of a quoted post: ISO week of its
   `created_at` in `groups.time_zone`.

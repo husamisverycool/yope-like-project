@@ -563,8 +563,12 @@
     <string name="chat_voice_a11y_messagemine">Your voice message, %1$s</string>
     <!-- Retro · chat.voice · new · SOURCED -->
     <string name="chat_voice_a11y_pause" formatted="false">Pause</string>
+    <!-- WhatsApp · chat.voice · adapted · SOURCED -->
+    <string name="chat_voice_a11y_pauserecording" formatted="false">Pause recording</string>
     <!-- Retro · chat.voice · new · SOURCED · args: duration -->
     <string name="chat_voice_a11y_play">Play voice message, %1$s</string>
+    <!-- WhatsApp + Apple Messages · chat.voice · adapted · SOURCED -->
+    <string name="chat_voice_a11y_resumerecording" formatted="false">Continue recording</string>
     <!-- Retro · chat.voice · adapted · SOURCED -->
     <string name="chat_voice_error_play" formatted="false">Error loading voice message. Tap to retry</string>
     <!-- Retro · chat.voice · new · SOURCED -->
@@ -1163,6 +1167,10 @@
     <string name="onthisday_menu_report" formatted="false">Report Post</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_menu_save" formatted="false">Save to Camera Roll</string>
+    <!-- Retro · onthisday · adapted · SOURCED -->
+    <string name="onthisday_mode_day" formatted="false">On this day…</string>
+    <!-- Retro · onthisday · verbatim · SOURCED -->
+    <string name="onthisday_mode_shuffle" formatted="false">Shuffle</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_nux_button" formatted="false">Try it out</string>
     <!-- Retro · onthisday · new · SOURCED · args: group -->
@@ -1641,6 +1649,10 @@
     <string name="walls_mine_error_title" formatted="false">Error loading your weeks. Tap here to try again.</string>
     <!-- Retro · week.edit · new · SOURCED -->
     <string name="week_edit_a11y_inrecap" formatted="false">In recap</string>
+    <!-- Chrome · week.edit · adapted · SOURCED -->
+    <string name="week_edit_a11y_moveleft" formatted="false">Move photo left</string>
+    <!-- Chrome · week.edit · adapted · SOURCED -->
+    <string name="week_edit_a11y_moveright" formatted="false">Move photo right</string>
     <!-- Retro · week.edit · new · SOURCED -->
     <string name="week_edit_a11y_notinrecap" formatted="false">Not in recap</string>
     <!-- Retro · week.edit · verbatim · SOURCED -->

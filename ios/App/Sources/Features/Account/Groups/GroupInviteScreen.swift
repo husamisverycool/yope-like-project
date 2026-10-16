@@ -35,6 +35,8 @@ struct GroupInviteView: View {
     @State private var pickingContact = false
     @State private var contactQuery = ""
     @State private var contactsShared = false
+    /// The QR card (owner decision 17), over the sheet as a full-screen media page.
+    @State private var qr: GroupInviteQRModel?
 
     init(model: GroupInviteModel) {
         _model = State(initialValue: model)
@@ -107,6 +109,12 @@ struct GroupInviteView: View {
         .background {
             ContactPickerPresenter(isPresented: $pickingContact) { contact in model.add(contact) }
                 .frame(width: 0, height: 0)
+        }
+        .fullScreenCover(item: $qr) { model in
+            GroupInviteQRScreen(model: model)
+                .environment(dependencies)
+                .environment(\.storageURLResolver, dependencies.storageURLResolver)
+                .toastHost(dependencies.toasts)
         }
         .alert(Text(Copy.groupsInviteLinkTurnOffTitle), isPresented: $confirmTurnOff) {
             Button(Copy.groupsInviteLinkTurnOffCancel, role: .cancel) {}
@@ -227,18 +235,23 @@ struct GroupInviteView: View {
         .padding(.horizontal, Tokens.Sizes.globalButtonMarginH)
     }
 
-    /// Message · Copy Link · Share to… — `size.global.circleButtonLarge` circles, centres `groups.invite.size.targetPitch`
-    /// apart, labels `groups.invite.size.targetLabelGap` below.
+    /// QR Code · Copy Link · Message · Share to… — TC-J5's four targets in its order (Message in the place of Retro's
+    /// Instagram target): `size.global.circleButtonLarge` circles, centres `groups.invite.size.targetPitch` apart, labels
+    /// `groups.invite.size.targetLabelGap` below.
     private var shareTargets: some View {
         HStack(alignment: .top, spacing: 0) {
-            ShareTarget(title: Copy.groupsInviteLinkMessageTarget, icon: Tokens.Icons.globalChats) {
-                Task { await sendMessage() }
+            ShareTarget(title: Copy.groupsInviteLinkQr, icon: Tokens.Icons.groupsInviteIconQr) {
+                Task { await openQR() }
             }
-            .accessibilityIdentifier("groups.invite.message")
+            .accessibilityIdentifier("groups.invite.qr")
             ShareTarget(title: Copy.groupsInviteLinkCopy, icon: Tokens.Icons.globalLink) {
                 Task { await copyLink() }
             }
             .accessibilityIdentifier("groups.invite.copy")
+            ShareTarget(title: Copy.groupsInviteLinkMessageTarget, icon: Tokens.Icons.globalChats) {
+                Task { await sendMessage() }
+            }
+            .accessibilityIdentifier("groups.invite.message")
             ShareTarget(title: Copy.groupsInviteLinkShare, icon: Tokens.Icons.globalShare) {
                 Task { await shareLink() }
             }
@@ -254,6 +267,17 @@ struct GroupInviteView: View {
         } else {
             share = ShareRequest(items: body == link.absoluteString ? [link] : [body])
         }
+    }
+
+    /// "QR Code": the card of the live link (`groups.invite.layout.qrCard`).
+    private func openQR() async {
+        guard let link = await model.linkToShare() else { return }
+        qr = GroupInviteQRModel(
+            link: link,
+            groupName: model.group?.name ?? "",
+            cover: model.group?.coverPath.map { PhotoSource.storage($0) },
+            toasts: dependencies.toasts
+        )
     }
 
     private func copyLink() async {

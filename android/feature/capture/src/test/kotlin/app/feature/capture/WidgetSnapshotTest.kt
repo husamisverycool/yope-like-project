@@ -149,6 +149,27 @@ class WidgetSnapshotTest {
         sizes.forEach { (n, s) -> snap("widget.android_${n}_signedout", render(s, "g1")) }
     }
 
+    /**
+     * The lock-screen widget hub slot (owner decision 18; token `widget.android.layout.lockScreen`): "approximately 4
+     * cells wide by 3 cells tall" → `PlatformWidgetGrid.minSize(4, 3)`, which the responsive layouts draw with the
+     * Medium class — photo with the text stack, collage, and the state column (empty, signed out).
+     */
+    @Test fun keyguardHubSlot() {
+        val hub = app.widget.PlatformWidgetGrid.minSize(4, 3)
+        assertEquals(WidgetSizeClass.Medium, WidgetSizeClass.of(hub))
+        writePhoto("g1")
+        writePhoto("g2", kind = WidgetSnapshot.Kind.Collage, seed = 3)
+        meta.prepare("g1")
+        meta.prepare("g2")
+        meta.prepare("g3")
+        meta.setContent("g3", WidgetGroupMeta.Content.NoPhotos)
+        snap("widget.android_keyguard_photo", render(hub, "g1"))
+        snap("widget.android_keyguard_collage", render(hub, "g2"))
+        snap("widget.android_keyguard_empty", render(hub, "g3"))
+        meta.setSignedOut(true)
+        snap("widget.android_keyguard_signedout", render(hub, "g1"))
+    }
+
     @Test fun stateRulesTapTargetsAndTheWidgetLabel() {
         assertEquals(WidgetEmptyState.NotSetUp, WidgetEmptyState.of(null, meta))
         assertEquals(WidgetEmptyState.NotSetUp, WidgetEmptyState.of("g1", meta)) // bound but gone

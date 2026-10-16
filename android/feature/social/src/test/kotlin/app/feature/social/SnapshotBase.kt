@@ -44,8 +44,8 @@ abstract class SnapshotBase {
      * Renders [content] in the light appearance (or [dark]) and records it; [screen] = capture every window (sheets,
      * menus, dialogs).
      */
-    fun snap(data: SocialData = FakeSocialData(), approximations: Boolean = true, screen: Boolean = false, dark: Boolean = false, content: @Composable () -> Unit) {
-        compose.setContent { TestScreen(data, approximations, dark = dark) { content() } }
+    fun snap(data: SocialData = FakeSocialData(), screen: Boolean = false, dark: Boolean = false, content: @Composable () -> Unit) {
+        compose.setContent { TestScreen(data, dark = dark) { content() } }
         compose.waitForIdle()
         if (screen) captureScreenRoboImage() else compose.onRoot().captureRoboImage()
     }

@@ -20,6 +20,7 @@ import app.feature.social.chat.ChatViewModel
 import app.feature.social.viewer.PhotoViewerViewModel
 import app.feature.social.viewer.ViewerEffect
 import app.feature.social.walls.BrowseViewModel
+import app.feature.social.walls.orderedByName
 import app.feature.social.walls.WallState
 import app.feature.social.walls.WallTile
 import app.feature.social.walls.WallViewModel
@@ -400,16 +401,22 @@ class SocialViewModelTest {
         assertEquals(WallState.Phase.OfflineEmpty, empty.phase)
     }
 
-    /** walls.browse: everyone sharing a group, never me; development order newest wall item first; search by name. */
-    @Test fun browseListsOthersNewestWallFirstAndFilters() {
+    /** walls.browse: everyone sharing a group, never me; by name A to Z (`walls.browse.layout.rowOrder`); search by name. */
+    @Test fun browseListsOthersByNameAndFilters() {
         val data = FakeSocialData().apply { seedWall(BEN, 2) }
-        data.walls[ANA] = mutableListOf(app.data.model.WallItem(app.data.model.WallItemKind.Post, "x", "y", null, listOf(GROUP), BASE.plusSeconds(10_000)))
-        val vm = BrowseViewModel(data, approximations = true)
+        // Ben has the newest wall item: the order is by name all the same.
+        data.walls[BEN] = mutableListOf(app.data.model.WallItem(app.data.model.WallItemKind.Post, "x", "y", null, listOf(GROUP), BASE.plusSeconds(10_000)))
+        val vm = BrowseViewModel(data)
         assertEquals(listOf(ANA, BEN), vm.state.value.people.map { it.id })
         vm.setQuery("ben")
         assertEquals(listOf(BEN), vm.state.value.shown.map { it.id })
-        // Release: `walls.browse.layout.rowOrder` BLOCKED — the membership order.
-        assertEquals(listOf(ANA, BEN), BrowseViewModel(data, approximations = false).state.value.people.map { it.id })
+    }
+
+    /** `walls.browse.layout.rowOrder`: the locale's collation, ignoring case and accents; equal names by id. */
+    @Test fun browseOrderIgnoresCaseAndAccentsAndBreaksTiesById() {
+        fun person(id: String, name: String) = app.data.model.Profile(id, name, null, BASE, BASE)
+        val people = listOf(person("4", "zoë"), person("3", "Émile"), person("2", "ana"), person("1", "Ana"), person("5", "Bea"))
+        assertEquals(listOf("1", "2", "5", "3", "4"), orderedByName(people, java.util.Locale.US).map { it.id })
     }
 
     /** The thread's reply bar: replying to a message sends `p_reply_to_message_id`; to a photo, `p_reply_to_post_id`. */
@@ -462,12 +469,23 @@ class SocialViewModelTest {
         assertTrue(s.cards.first().coverPath!!.endsWith("thumb.jpg"))
     }
 
-    /** `week.recap.layout.gridFill` BLOCKED: release draws only full rows of four; development fills row by row up to 24. */
-    @Test fun recapCardCellsFollowTheFillRule() {
-        assertEquals(4, app.feature.social.week.recapCardCells(6, approximation = false))
-        assertEquals(6, app.feature.social.week.recapCardCells(6, approximation = true))
-        assertEquals(24, app.feature.social.week.recapCardCells(30, approximation = true))
-        assertEquals(0, app.feature.social.week.recapCardCells(3, approximation = false))
+    /** `week.recap.layout.gridFill`: ⌊√n⌋ columns (1 … 4), ⌈n ÷ columns⌉ rows (≤ 6) — Retro's 1, 9 and 24-photo cards; beyond 24 not drawn. */
+    @Test fun recapGridFollowsTheFillRule() {
+        fun shape(n: Int) = app.feature.social.week.recapGrid(n)?.let { it.columns to it.rows }
+        assertEquals(null, shape(0))
+        assertEquals(1 to 1, shape(1))
+        assertEquals(1 to 2, shape(2))
+        assertEquals(2 to 2, shape(4))
+        assertEquals(2 to 3, shape(5))
+        assertEquals(3 to 3, shape(9))
+        assertEquals(3 to 4, shape(12))
+        assertEquals(4 to 4, shape(16))
+        assertEquals(4 to 6, shape(24))
+        assertEquals(4 to 6, shape(30))
+        assertEquals(0.75f, app.feature.social.week.recapGrid(5)!!.areaAspect)
+        assertEquals(5, app.feature.social.week.recapCardCells(5))
+        assertEquals(24, app.feature.social.week.recapCardCells(30))
+        assertEquals(0, app.feature.social.week.recapCardCells(0))
     }
 
     // ---- week.recap / week.edit / week.history ----

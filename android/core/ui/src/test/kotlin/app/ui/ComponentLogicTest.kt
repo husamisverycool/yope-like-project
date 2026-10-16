@@ -142,4 +142,21 @@ class ComponentLogicTest {
         assertNotEquals(light.surface, dark.surface)
         assertTrue(Tokens.Sizes.globalMinTouchTargetAndroid >= 48.dp)
     }
+
+    /** Settings → True Black (owner decision 21): Retro's d42.w changes the dark background / surface only. */
+    @Test fun trueBlackChangesTheDarkSchemesSurfaceOnly() {
+        val dark = appColorScheme(dark = true)
+        val trueBlack = appColorScheme(dark = true, trueBlack = true)
+        assertEquals(Tokens.ColorsDark.globalSystemSurfaceTrueBlack, trueBlack.surface)
+        assertEquals(Tokens.ColorsDark.globalSystemSurfaceTrueBlack, trueBlack.background)
+        assertEquals(androidx.compose.ui.graphics.Color(0xFF000000), trueBlack.background) // provenance-ok: asserts the token's sourced value (d42.w)
+        listOf<(androidx.compose.material3.ColorScheme) -> Any>(
+            { it.primary }, { it.onSurface }, { it.secondaryContainer }, { it.primaryContainer }, { it.error },
+            { it.surfaceContainerHigh }, { it.surfaceContainerLow }, { it.outline }, { it.onSurfaceVariant },
+        ).forEach { role -> assertEquals(role(dark), role(trueBlack)) }
+        // Light is untouched: the option names the dark theme.
+        assertEquals(appColorScheme(dark = false), appColorScheme(dark = false, trueBlack = true))
+        assertEquals(Tokens.ColorsLight.globalBackgroundAndroid, Tokens.ColorsLight.globalBackgroundAndroidTrueBlack)
+        assertNotEquals(Tokens.ColorsDark.globalBackgroundAndroid, Tokens.ColorsDark.globalBackgroundAndroidTrueBlack)
+    }
 }

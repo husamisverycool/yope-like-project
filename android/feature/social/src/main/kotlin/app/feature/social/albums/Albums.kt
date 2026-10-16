@@ -61,6 +61,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.designsystem.R
+import app.designsystem.dsShadow
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
 import app.feature.social.common.RemotePhoto
@@ -240,7 +241,7 @@ fun AlbumViewSheet(vm: AlbumViewModel, onClose: () -> Unit, onPhoto: (String) ->
 
 /**
  * The album sheet's content (`albums.view`): the cover centred `albums.view.dimension.coverTop` below the sheet top
- * (`.coverWidth` × `.coverHeight`, `radius.global.thumbnail`; its shadow `albums.view.shadow.cover` is BLOCKED → flat);
+ * (`.coverWidth` × `.coverHeight`, `radius.global.thumbnail`, Retro's book-cover drop shadow `albums.view.shadow.cover`);
  * the name (`displayMedium` serif, ≤ 2 lines) cap top `.coverToTitle` below; the meta baseline `.titleToMeta` below the
  * name's; the action row `.metaToActions` below — "Rename" filling it and, for the creator and admins, the "•••" icon
  * capsule (menu: "Delete Album", red); the grid `walls.mine.dimension.actionsToWeeks` below: 3 columns of 4:5 cells
@@ -322,6 +323,7 @@ private fun AlbumHead(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String)
             null,
             Modifier
                 .size(Tokens.Sizes.albumsViewDimensionCoverWidth, Tokens.Sizes.albumsViewDimensionCoverHeight)
+                .dsShadow(Tokens.Shadows.albumsViewShadowCover, RoundedCornerShape(Tokens.Radii.globalThumbnail))
                 .clip(RoundedCornerShape(Tokens.Radii.globalThumbnail))
                 .then(if (first != null) Modifier.tapClickable { onPhoto(first.post.id) } else Modifier)
                 .clearAndSetSemantics {

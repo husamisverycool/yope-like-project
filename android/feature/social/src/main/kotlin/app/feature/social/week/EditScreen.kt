@@ -7,6 +7,18 @@
 
 package app.feature.social.week
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
@@ -64,11 +76,8 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.designsystem.R
 import app.designsystem.generated.Tokens
-import app.feature.social.common.BuildApproximations
 import app.feature.social.common.Formats
-import app.feature.social.common.LocalApproximations
 import app.feature.social.common.RemotePhoto
-import app.feature.social.common.SocialBlocked
 import app.feature.social.common.namedHaptic
 import app.feature.social.common.photoModel
 import app.feature.social.common.stringRes
@@ -247,15 +256,22 @@ fun WeekEditContent(
 /** Grid rows drawn while loading (two rows of four C-17 placeholders, VID-COMP grey placeholders). */
 private val PLACEHOLDER_CELLS: Int get() = Tokens.Counts.weekEditCountGridColumns * 2
 
-/** One grid cell: the photo (square, aspect fill), its in / out mark (`week.edit.layout.selectionMark`, BLOCKED). */
+/**
+ * One grid cell: the photo (square, aspect fill) and its in / out mark (`week.edit.layout.selectionMark`, the Android
+ * photo picker's): not in the recap, the photo fills the cell and carries no mark; in the recap, the cell fills with
+ * `color.global.control`, the photo insets `selectedInsetRatio` × the cell width with corners `selectedCornerRatio` ×
+ * the width, and the filled check circle (`icon.global.check` in the `size.global.checkCircle` box, the circle in
+ * `color.global.system.primary`, the check in `color.global.textOnMedia` on a white disc `markOutline` wider in radius)
+ * sits centred `markCentreRatio` × the width from the top-start corner. The change cross-fades (`duration.global.crossfade`).
+ */
 @Composable
 private fun GridCell(photo: WeekPhoto, checked: Boolean, state: EditState, onToggle: () -> Unit) {
     val zone = ZoneId.systemDefault()
     val day = photo.post.createdAt.atZone(zone).toLocalDate()
     val label = stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), photo.authorName.orEmpty())
     val value = stringRes(if (checked) R.string.week_edit_a11y_inrecap else R.string.week_edit_a11y_notinrecap)
-    val mark = SocialBlocked.editSelectionMark || LocalApproximations.current
-    Box(
+    val mark = Tokens.Layouts.WeekEditLayoutSelectionMark
+    BoxWithConstraints(
         Modifier
             .aspectRatio(1f)
             .tapClickable(role = Role.Checkbox, onClick = onToggle)
@@ -265,24 +281,43 @@ private fun GridCell(photo: WeekPhoto, checked: Boolean, state: EditState, onTog
                 role = Role.Checkbox
             },
     ) {
-        RemotePhoto(photo.thumbPath, null, Modifier.fillMaxSize())
-        if (mark) {
-            Icon(
-                if (checked) Tokens.Icons.globalCheck else Tokens.Icons.globalUncheck,
-                contentDescription = null,
-                tint = Tokens.Colors.globalTextOnMedia,
-                modifier = Modifier.align(Alignment.TopEnd).padding(BuildApproximations.SELECTION_MARK_INSET).size(Tokens.Sizes.globalCheckCircle),
-            )
-        }
+        val cell = maxWidth
+        val inset by animateDpAsState(if (checked) cell * mark.selectedInsetRatio else 0.dp, DsMotion.crossfade(), label = "inset")
+        val corner by animateDpAsState(if (checked) cell * mark.selectedCornerRatio else 0.dp, DsMotion.crossfade(), label = "corner")
+        val shown by animateFloatAsState(if (checked) 1f else 0f, DsMotion.crossfade(), label = "mark")
+        Box(Modifier.fillMaxSize().graphicsLayer { alpha = shown }.background(Tokens.Colors.globalControl))
+        RemotePhoto(photo.thumbPath, null, Modifier.fillMaxSize().padding(inset).clip(RoundedCornerShape(corner)))
+        if (shown > 0f) SelectionCheck(Modifier.graphicsLayer { alpha = shown }.offset(cell * mark.markCentreRatio - Tokens.Sizes.globalCheckCircle / 2, cell * mark.markCentreRatio - Tokens.Sizes.globalCheckCircle / 2))
     }
 }
 
 /**
+ * The filled check circle of `week.edit.layout.selectionMark`: a `color.global.textOnMedia` disc `markOutline` wider
+ * in radius than the glyph's circle (the white outline, and the check itself through the glyph's cut-out), then
+ * `icon.global.check` in `color.global.system.primary`, in the `size.global.checkCircle` box. Decorative (the cell
+ * carries the state).
+ */
+@Composable
+private fun SelectionCheck(modifier: Modifier) {
+    val box = Tokens.Sizes.globalCheckCircle
+    // Material icons draw their glyph in a 24-unit box with 2 units of padding: the check circle's ink is 20 / 24 of the box.
+    val ink = box * GLYPH_INK
+    Box(modifier.size(box), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(ink + Tokens.Layouts.WeekEditLayoutSelectionMark.markOutline.dp * 2).background(Tokens.Colors.globalTextOnMedia, CircleShape))
+        Icon(Tokens.Icons.globalCheck, contentDescription = null, tint = Tokens.Colors.globalSystemPrimary, modifier = Modifier.size(box))
+    }
+}
+
+/** The Material glyph grid: a 24-unit box whose circle glyphs have a 20-unit ink (2-unit padding each side). */
+private const val GLYPH_INK = 20f / 24f // provenance-ok: Material Symbols' 24-unit grid with 2-unit padding (platform glyph geometry, not a design value)
+
+/**
  * The chosen-photos strip (C-17 photo tiles in recap order). Reorder (`week.edit.layout.reorder`, Apple / Google Photos):
  * touch and hold a tile, drag, release; the tile follows the finger, the others shift with `duration.global.stripInsert`
- * (`easing.global.standard`; snaps under Reduce Motion); haptics `week.edit.haptic.dragStart` / `.dragAlign`. The spec's
- * TalkBack "move earlier / later" actions have no copy keys yet (reported), so they are not offered. Empty strip
- * (nothing chosen): one placeholder tile.
+ * (`easing.global.standard`; snaps under Reduce Motion); haptics `week.edit.haptic.dragStart` / `.dragAlign`. TalkBack:
+ * each photo tile offers "Move photo left" / "Move photo right" (`week.edit.a11y.moveLeft` / `.moveRight`, Chrome's tab
+ * reorder actions) where it has a neighbour on that side; in a right-to-left layout "left" is later in the recap. Empty
+ * strip (nothing chosen): one placeholder tile.
  */
 @Composable
 private fun ChosenStrip(state: EditState, onMove: (String, Int) -> Unit, modifier: Modifier) {
@@ -302,6 +337,23 @@ private fun ChosenStrip(state: EditState, onMove: (String, Int) -> Unit, modifie
         DayTile.Photo(p.post.id, photoModel(p.thumbPath), Formats.weekdayShort(day), stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()))
     }
     fun itemAt(x: Float) = listState.layoutInfo.visibleItemsInfo.firstOrNull { x >= it.offset && x < it.offset + it.size }
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val moveLeft = stringRes(R.string.week_edit_a11y_moveleft)
+    val moveRight = stringRes(R.string.week_edit_a11y_moveright)
+    // TalkBack reorder actions: swap with the neighbour on that side of the screen (`week.edit.a11y.moveLeft` / `.moveRight`).
+    fun Modifier.moveActions(id: String): Modifier {
+        val index = checked.indexOf(id)
+        if (index < 0) return this
+        val earlier = index - 1
+        val later = index + 1
+        val leftTo = if (rtl) later else earlier
+        val rightTo = if (rtl) earlier else later
+        val actions = buildList {
+            if (leftTo in checked.indices) add(CustomAccessibilityAction(moveLeft) { onMove(id, leftTo); true })
+            if (rightTo in checked.indices) add(CustomAccessibilityAction(moveRight) { onMove(id, rightTo); true })
+        }
+        return if (actions.isEmpty()) this else semantics { customActions = actions }
+    }
     val dragStart = namedHaptic(Tokens.Layouts.WeekEditHapticDragStart.android, noneBelow34 = true)
     val dragAlign = namedHaptic(Tokens.Layouts.WeekEditHapticDragAlign.android)
     // Each tile handles its own touch-and-hold drag (the strip's own horizontal scroll would otherwise take the move);
@@ -344,7 +396,7 @@ private fun ChosenStrip(state: EditState, onMove: (String, Int) -> Unit, modifie
                 tile,
                 stripTileShape(index, tiles.size),
                 Modifier
-                    .then(if (id != null && tile is DayTile.Photo) Modifier.reorderable(id) else Modifier)
+                    .then(if (id != null && tile is DayTile.Photo) Modifier.moveActions(id).reorderable(id) else Modifier)
                     .then(
                         if (lifted) Modifier.zIndex(1f).graphicsLayer {
                             val info = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == id }

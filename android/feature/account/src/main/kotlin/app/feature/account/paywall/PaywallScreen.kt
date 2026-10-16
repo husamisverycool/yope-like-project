@@ -73,6 +73,7 @@ import app.ui.components.MediaPill
 import app.ui.components.PageDots
 import app.ui.components.PlanCard
 import app.ui.components.PlanCardPager
+import app.ui.components.PremiumPill
 import app.ui.components.TickOnStep
 import app.ui.foundation.DsImage
 import app.ui.foundation.DsMotion
@@ -96,6 +97,9 @@ enum class PaywallMessage(val copy: Int) {
     PurchaseFailed(R.string.paywall_error_purchase),
     Pending(R.string.paywall_pending),
     NothingToRestore(R.string.paywall_restore_none),
+
+    /** A restore that failed without a connection (as iOS: `paywall.offline`). */
+    Offline(R.string.paywall_offline),
 }
 
 /** What the success block says: bought, or restored. */
@@ -113,7 +117,8 @@ enum class Perk(val title: Int, val subtitle: Int) {
 data class PaywallUiState(
     val plans: List<PlanOption> = emptyList(),
     val status: PlansStatus = PlansStatus.Loading,
-    val purchasing: Boolean = false,
+    /** The plan being bought: its card's capsule is busy (C-05); null when no purchase runs. */
+    val purchasing: PlanPeriod? = null,
     val welcome: PaywallWelcome? = null,
     val message: PaywallMessage? = null,
     /** `public_app_config.free_history_days` set → the history perk is listed. */
@@ -167,18 +172,18 @@ class PaywallViewModel(private val env: AccountEnvironment) : AccountViewModel()
     fun dismissMessage() = mutable.update { it.copy(message = null) }
 
     fun purchase(activity: Activity?, plan: PlanOption) {
-        if (activity == null || mutable.value.purchasing) return
-        mutable.update { it.copy(purchasing = true, message = null) }
+        if (activity == null || mutable.value.purchasing != null) return
+        mutable.update { it.copy(purchasing = plan.period, message = null) }
         viewModelScope.launch {
             when (env.premium.purchase(activity, plan)) {
                 PremiumResult.Done -> {
-                    mutable.update { it.copy(purchasing = false, welcome = PaywallWelcome.Purchased) }
+                    mutable.update { it.copy(purchasing = null, welcome = PaywallWelcome.Purchased) }
                     haptic(Tokens.Haptics.globalSuccess)
                 }
-                PremiumResult.Cancelled -> mutable.update { it.copy(purchasing = false) }
-                PremiumResult.Pending -> mutable.update { it.copy(purchasing = false, message = PaywallMessage.Pending) }
+                PremiumResult.Cancelled -> mutable.update { it.copy(purchasing = null) }
+                PremiumResult.Pending -> mutable.update { it.copy(purchasing = null, message = PaywallMessage.Pending) }
                 PremiumResult.Failed, PremiumResult.NotConfigured -> {
-                    mutable.update { it.copy(purchasing = false, message = PaywallMessage.PurchaseFailed) }
+                    mutable.update { it.copy(purchasing = null, message = PaywallMessage.PurchaseFailed) }
                     haptic(Tokens.Haptics.globalError)
                 }
             }
@@ -195,7 +200,9 @@ class PaywallViewModel(private val env: AccountEnvironment) : AccountViewModel()
                 }
                 result == PremiumResult.Done || result == PremiumResult.NotConfigured -> mutable.update { it.copy(message = PaywallMessage.NothingToRestore) }
                 else -> {
-                    mutable.update { it.copy(message = PaywallMessage.NothingToRestore) }
+                    // The store did not answer: offline → `paywall.offline`, else nothing to restore (as iOS).
+                    val online = runCatching { env.backend.online.first() }.getOrDefault(true)
+                    mutable.update { it.copy(message = if (online) PaywallMessage.NothingToRestore else PaywallMessage.Offline) }
                     haptic(Tokens.Haptics.globalError)
                 }
             }
@@ -298,6 +305,8 @@ private fun Offer(state: PaywallUiState, legal: LegalLinks, actions: PaywallActi
     val plans = state.orderedPlans
     val planList = rememberLazyListState()
     val visible by remember { derivedStateOf { planList.firstVisibleItemIndex + if (planList.firstVisibleItemScrollOffset > 0) 1 else 0 } }
+    // A step on the plan pager ticks (`haptic.global.select`), as the benefit pager and iOS's plan selection do.
+    TickOnStep(visible)
     Column(Modifier.fillMaxSize()) {
         Benefits(state, Modifier.weight(1f).fillMaxWidth())
         when (state.status) {
@@ -378,25 +387,35 @@ private fun Benefits(state: PaywallUiState, modifier: Modifier) {
  * `.fontWeight.planTitle`, `paywall.color.planText`), subtitle (`paywall.fontSize.planSubtitle`, `.planTextSecondary`),
  * the two bullets (`paywall.fontSize.planBullet`, `.planText`; no marker), the price (`paywall.fontSize.planPrice` /
  * `.fontWeight.planPrice`) and the footnote (`paywall.fontSize.planFootnote`, `.planTextTertiary`) — the store's localized
- * strings; the blocks `size.global.screenMargin` apart (the card's inner spacing is not measured — Gap). Loading: price and
- * footnote replaced by the platform indicator, the capsule disabled; purchasing: the capsule busy.
+ * strings; the blocks `size.global.screenMargin` apart (the card's inner spacing is not measured — Gap). A plan with a free
+ * trial (owner decision 7: one week on the annual plan; core:billing reads it from Play's offer phases) shows the C-25
+ * premium pill `paywall.plans.trial.badge` after the title, the capsule `paywall.plans.trial.cta` ("Try 1 week free") and
+ * the footnote `.trialDetail`. Loading: price and footnote replaced by the platform indicator in
+ * `paywall.color.planTextTertiary`, the capsule disabled; purchasing: that plan's capsule busy.
  */
 @Composable
 private fun PlanCardContent(plan: PlanOption?, loadingPeriod: PlanPeriod, state: PaywallUiState, actions: PaywallActions) {
     val period = plan?.period ?: loadingPeriod
     val yearly = period == PlanPeriod.Yearly
+    val trial = plan?.trialDuration
     PlanCard(
-        stringResource(R.string.paywall_plans_subscribe),
+        if (trial != null) stringResource(R.string.paywall_plans_trial_cta, trial) else stringResource(R.string.paywall_plans_subscribe),
         { plan?.let(actions.onSubscribe) },
         actionEnabled = plan != null,
-        actionLoading = state.purchasing,
+        actionLoading = plan != null && state.purchasing == plan.period,
     ) {
         val text = Tokens.Colors.paywallColorPlanText
-        Text(
-            stringResource(if (yearly) R.string.paywall_plans_yearly_title else R.string.paywall_plans_monthly_title),
-            style = dsTextStyle(Tokens.FontSizes.paywallFontSizePlanTitle, Tokens.FontWeights.paywallFontWeightPlanTitle, Tokens.Fonts.globalFamily),
-            color = text,
-        )
+        // Title with the C-25 premium pill "FREE" at the trailing edge on a plan with a free trial (PAY: pill centred
+        // on the title line at the card's trailing padding).
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(if (yearly) R.string.paywall_plans_yearly_title else R.string.paywall_plans_monthly_title),
+                style = dsTextStyle(Tokens.FontSizes.paywallFontSizePlanTitle, Tokens.FontWeights.paywallFontWeightPlanTitle, Tokens.Fonts.globalFamily),
+                color = text,
+                modifier = Modifier.weight(1f),
+            )
+            if (trial != null) PremiumPill(stringResource(R.string.paywall_plans_trial_badge))
+        }
         Text(
             stringResource(if (yearly) R.string.paywall_plans_yearly_subtitle else R.string.paywall_plans_monthly_subtitle),
             style = dsTextStyle(Tokens.FontSizes.paywallFontSizePlanSubtitle, Tokens.FontWeights.fontWeightGlobalListSubtitle, Tokens.Fonts.globalFamily),
@@ -409,15 +428,27 @@ private fun PlanCardContent(plan: PlanOption?, loadingPeriod: PlanPeriod, state:
         }
         Column(Modifier.padding(top = Tokens.Sizes.globalScreenMargin)) {
             if (plan == null) {
-                ActivityIndicator(stringResource(R.string.global_a11y_loading), Modifier.padding(vertical = Tokens.Sizes.globalSectionHeaderToContent))
+                ActivityIndicator(
+                    stringResource(R.string.global_a11y_loading),
+                    Modifier.padding(vertical = Tokens.Sizes.globalSectionHeaderToContent),
+                    color = Tokens.Colors.paywallColorPlanTextTertiary,
+                )
             } else {
                 Text(
                     stringResource(if (yearly) R.string.paywall_plans_yearly_price else R.string.paywall_plans_monthly_price, plan.price),
                     style = dsTextStyle(Tokens.FontSizes.paywallFontSizePlanPrice, Tokens.FontWeights.paywallFontWeightPlanPrice, Tokens.Fonts.globalFamily),
                     color = text,
                 )
+                // "Billed {price} yearly", or on a plan with a free trial "And then billed {price} yearly after"
+                // (`paywall.plans.<plan>.trialDetail`: how long the trial lasts is the capsule, the price after it this line).
+                val footnote = when {
+                    trial != null && yearly -> R.string.paywall_plans_yearly_trialdetail
+                    trial != null -> R.string.paywall_plans_monthly_trialdetail
+                    yearly -> R.string.paywall_plans_yearly_detail
+                    else -> R.string.paywall_plans_monthly_detail
+                }
                 Text(
-                    stringResource(if (yearly) R.string.paywall_plans_yearly_detail else R.string.paywall_plans_monthly_detail, plan.price),
+                    stringResource(footnote, plan.price),
                     style = dsTextStyle(Tokens.FontSizes.paywallFontSizePlanFootnote, Tokens.FontWeights.fontWeightGlobalCaption, Tokens.Fonts.globalFamily),
                     color = Tokens.Colors.paywallColorPlanTextTertiary,
                 )

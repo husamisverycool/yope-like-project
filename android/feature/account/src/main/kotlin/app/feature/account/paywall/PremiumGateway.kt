@@ -10,8 +10,36 @@ import kotlinx.coroutines.flow.map
 /** A plan's billing period (ISO 8601 `P1M` / `P1Y` from the store). */
 enum class PlanPeriod { Monthly, Yearly }
 
-/** One purchasable plan; [price] is the store's localized string (never computed by us). */
-class PlanOption(val period: PlanPeriod, val price: String, internal val handle: Any?)
+/**
+ * One purchasable plan; [price] is the store's localized string (never computed by us). [trialDuration]: the free trial
+ * the purchase starts with, in the locale's words ("1 week", `{trial_duration}` of `paywall.plans.trial.cta`), or null.
+ */
+class PlanOption(val period: PlanPeriod, val price: String, internal val handle: Any?, val trialDuration: String? = null)
+
+/**
+ * `{trial_duration}`: an ISO 8601 period from the store (Play's free phase `billingPeriod`, e.g. `P1W`) in the
+ * locale's full unit names — ICU `MeasureFormat` WIDE ("1 week", "3 days"; PLATFORM, as iOS's
+ * `DateComponentsFormatter` `.full`). Null when the period is not a plain years / months / weeks / days period.
+ */
+object TrialDuration {
+    private val iso = Regex("^P(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)W)?(?:(\\d+)D)?$")
+
+    fun format(periodIso: String, locale: java.util.Locale = java.util.Locale.getDefault()): String? {
+        val match = iso.matchEntire(periodIso) ?: return null
+        val units = listOf(
+            android.icu.util.MeasureUnit.YEAR,
+            android.icu.util.MeasureUnit.MONTH,
+            android.icu.util.MeasureUnit.WEEK,
+            android.icu.util.MeasureUnit.DAY,
+        )
+        val measures = units.mapIndexedNotNull { i, unit ->
+            match.groupValues[i + 1].toIntOrNull()?.takeIf { it > 0 }?.let { android.icu.util.Measure(it, unit) }
+        }
+        if (measures.isEmpty()) return null
+        return android.icu.text.MeasureFormat.getInstance(locale, android.icu.text.MeasureFormat.FormatWidth.WIDE)
+            .formatMeasures(*measures.toTypedArray())
+    }
+}
 
 /** Result of a purchase / restore, as the paywall states need it. */
 enum class PremiumResult { Done, Cancelled, Pending, Failed, NotConfigured }
@@ -51,7 +79,9 @@ object BillingPremiumGateway : PremiumGateway {
             "P1Y" -> PlanPeriod.Yearly
             else -> null
         } ?: return@mapNotNull null
-        PlanOption(period, pkg.formattedPrice, pkg)
+        // The free trial of the offer the purchase buys (core:billing `PremiumPackage.freeTrial`; owner decision 7:
+        // one week on the annual plan, set up in Play Console as a free-trial offer — docs/OWNER_SETUP.md).
+        PlanOption(period, pkg.formattedPrice, pkg, pkg.freeTrial?.let { TrialDuration.format(it.periodIso) })
     }
 
     override suspend fun purchase(activity: Activity, plan: PlanOption): PremiumResult {

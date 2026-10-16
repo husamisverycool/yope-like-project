@@ -367,6 +367,18 @@ final class OnThisDayModel {
         await pickRandom(change: .dial, startsShuffle: true)
     }
 
+    /// Mode menu "On this day…" (Retro's Rewind mode menu): from shuffle back to the day's memories, at the newest one.
+    /// In day mode nothing changes. No haptic of its own (the menu is native).
+    func showDay() {
+        guard phase == .loaded, mode == .shuffle, !memories.isEmpty, !isPicking else { return }
+        stopPlaying()
+        mode = .day
+        picks = []
+        lastChange = .dial
+        index = 0
+        preloadNeighbours()
+    }
+
     private func pickRandom(change: Change, startsShuffle: Bool = false) async {
         guard let data = dependencies.data, !isPicking else { return }
         isPicking = true

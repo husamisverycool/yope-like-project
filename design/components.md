@@ -619,6 +619,49 @@ role `textButton` (≈17 regular) in white at reduced opacity (opacity not measu
 colours) sits on the scrim. A dial / scrubber plays `haptic.global.select` once per step (RP §3.8).
 **Evidence.** RWA, RWB (`press/tc-2025-12-rewind-device-b.jpg`), TC-RWP, ST-05; RV §4 #19; RP §3.8.
 
+## C-36 Voice waveform
+
+Owner decision 16 (`docs/OWNER_DECISIONS.md`): a voice note draws its levels as bars. Retro has no voice notes, so the
+mechanic comes from Apple Messages, WhatsApp and Telegram and the colours are Retro's (`layout.global.waveform`;
+measurements `design/research/voice-waveform.md`, tool `tools/measure_bars.py`).
+
+**Anatomy.** A row of capsule-ended bars centred on the row's middle line, inside a capsule or field that owns the
+height.
+
+| part | token |
+|---|---|
+| bar | width `size.global.waveformBarWidth` (2.0), gap `size.global.waveformBarGap` (2.1), corners = width ÷ 2 |
+| count | width-driven: ⌊(width + gap) ÷ (bar + gap)⌋, at most `layout.global.waveform.samples` (100); each bar is the peak of its bucket of the stored levels (154 pt → 38 bars) |
+| height | `size.global.waveformBarMinHeight` (2.0, a dot) … `layout.global.waveform.maxHeightRatio` (0.553) × the container's height (37-pt capsule → 20.5; 48-pt field → 26.5); a bar's height scales with its level ÷ the note's largest level |
+| played | `color.global.textPrimary` (page) / `color.global.textOnMedia` (media) |
+| unplayed | `color.global.textSecondary` #999999 (page and media, both platforms) |
+| length | set by the holder: the voice capsule `chat.voice.dimension.waveform` (154); the recording field / capsule: what is left of its width |
+
+**States.**
+
+| state | what shows |
+|---|---|
+| idle | every bar unplayed |
+| playing / paused part-way | bars left of x = progress × width played; the bar under x is split at x (Telegram) |
+| recording (live) | the samples so far, reduced like a stored note and drawn across the available width, redrawn per sample (no animation) |
+| paused draft | the draft's bars; previewing it plays like a note (progress) |
+| no stored levels (sent before the levels existed) | every bar at the minimum height (a row of dots); after the note's first play its levels are computed from the downloaded file and drawn from then on (Telegram Desktop) |
+
+**Data.** 100 levels of 0…31 per note (`docs/API.md` §5.8 / §5.9 `voice_levels`; Telegram's waveform format): the
+recorder's peak level sampled every 30 ms while recording, reduced to 100 bucket peaks and scaled by max(2500 ÷ 32767,
+1.8 × the mean bucket peak) (`layout.global.waveform.reduction`).
+
+**Accessibility.** Decorative: hidden from VoiceOver / TalkBack. The element that holds it reads the note ("Maya's voice
+message, 0:38", action play / pause); while recording, the elapsed time is the live region. Non-text contrast of the
+bars is not required (the duration carries the information); unplayed on `color.global.control` 2.52:1 light / 5.31:1 dark.
+
+**Evidence.** MSG (`imessage/apple-support/messages-audio-message-ios27.png`: 38 bars, 2.02 pt wide, 4.09 pt pitch,
+154 pt long), WA-S (`whatsapp/store/whatsapp-store-02.png`: 2.63 / 4.51 pt, silent bars are dots, idle all grey), WA-B2
+(`whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png`: bars up to 0.553 of the draft capsule; played / unplayed share
+0.41), TG-V (`telegram/blog/tg-blog-power-saving-playback-speed-t06.png`: share 0.33), TG-D (Telegram Desktop
+`PaintWaveform`: width-driven count, peak per bucket, split bar, flat fallback), TG-API (100 five-bit values).
+**Do-not-copy.** WhatsApp's playhead dot and green, Telegram's accent and unread state, Apple's blue bubble.
+
 ---
 
 ## Do-not-copy (visual)

@@ -28,6 +28,18 @@ enum GroupKindCopy {
         }
     }
 
+    /// The "Ideas to Get Started" cover of a kind (`groups.list.layout.templateCovers`, owner decision 9): the name of
+    /// its image set in the app's asset catalog (ios/App/Resources/Assets.xcassets).
+    static func coverAsset(_ kind: GroupKind?) -> String {
+        typealias Covers = Tokens.Layouts.GroupsListLayoutTemplateCovers
+        switch kind {
+        case .family: return Covers.family
+        case .roommates: return Covers.roommates
+        case .custom, .unknown: return Covers.custom
+        case .friends, .none: return Covers.friends
+        }
+    }
+
     /// `groups.screen.created.invite.*`
     static func createdInvite(_ kind: GroupKind?) -> String {
         switch kind {

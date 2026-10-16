@@ -44,9 +44,17 @@ targets:
       Release: Config/App.xcconfig
     sources:
       - path: App/Sources
+      # Asset catalog: the "Ideas to Get Started" template covers (groups.list.layout.templateCovers, owner decision 9).
+      - path: App/Resources
       # config/app.json is the single source of app configuration; bundled as app.json.
       - path: ../config/app.json
         buildPhase: resources
+    settings:
+      base:
+        # The catalog holds no app icon or accent colour yet (the icon is the owner's, docs/OWNER_SETUP.md): no names to
+        # look up, so actool does not fail on a missing "AppIcon" set.
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: ""
     dependencies:
       - target: Widgets
       - target: NotificationService
@@ -170,7 +178,7 @@ schemes:
       gatherCoverageData: false
       targets:
         - name: AppTests
-        # Built with every test run; launched on demand (UI tests need a booted simulator session).
+        # Built with every test run; they run in their own scheme below (CI job "ios ui tests").
         - name: AppUITests
           skipped: true
     profile:
@@ -179,3 +187,16 @@ schemes:
       config: Debug
     archive:
       config: Release
+
+  # The UI tests (ios/AppUITests): the app launched on the simulator with DEBUG launch arguments that select in-process
+  # fakes (no backend on the macOS runner: it has no Docker). CI job "ios ui tests".
+  AppUITests:
+    build:
+      targets:
+        App: [run, test]
+        AppUITests: [test]
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - name: AppUITests

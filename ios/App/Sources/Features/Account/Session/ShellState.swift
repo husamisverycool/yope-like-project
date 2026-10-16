@@ -1,6 +1,6 @@
 // Account group — the home shell's tab state. The C-04 tab bar (groups.list.layout.tabBar) switches between the camera
-// (camera.capture: "the app opens to the camera", tab bar under it, structure item 6) and the groups list; walls and me
-// push their screens on the main stack.
+// (camera.capture: "the app opens to the camera" when the person is in a group — owner decision 13, `AccountSession` —
+// tab bar under it, structure item 6) and the groups list; walls and me push their screens on the main stack.
 import Foundation
 import Observation
 

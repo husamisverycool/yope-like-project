@@ -45,7 +45,10 @@ import app.ui.foundation.tapClickable
 import app.feature.memory.yearstory.RecapCard
 import app.feature.memory.yearstory.RecapCardMetrics
 import app.feature.memory.yearstory.RecapCardPhoto
+import app.feature.memory.yearstory.RecapGridShape
 import app.ui.text.TextRoles
+import kotlin.math.floor
+import kotlin.math.sqrt
 
 /*
  * week.recap's preview composes three groups' definitions (lead decision, MERGE RS-17 / L-4):
@@ -56,24 +59,31 @@ import app.ui.text.TextRoles
  */
 
 /**
- * How many of [count] photos the card draws (4 columns × up to 6 rows, `layout.year.story.recapCard`). The fill rule
- * for counts that do not fill a row is `week.recap.layout.gridFill` (BLOCKED): with [approximation] the development
- * approximation (row by row, a short last row keeps its blank places, beyond 24 not drawn); otherwise the year card's
- * own rule (whole rows only — `RecapCardMetrics.shown`).
+ * The card's grid for [count] photos (`week.recap.layout.gridFill`, Retro's cards with 1, 9 and 24 photos): ⌊√n⌋
+ * columns (1 … `maxColumns`), ⌈n ÷ columns⌉ rows (at most `maxRows`), sharing a photo area as wide as the card minus
+ * its padding and that width ÷ `areaAspect` tall; null without photos.
  */
-fun recapCardCells(count: Int, approximation: Boolean): Int =
-    if (approximation) count.coerceAtMost(RecapCardMetrics.columns * RecapCardMetrics.maxRows) else RecapCardMetrics.shown(count)
+fun recapGrid(count: Int): RecapGridShape? {
+    if (count <= 0) return null
+    val fill = Tokens.Layouts.WeekRecapLayoutGridFill
+    val columns = floor(sqrt(count.toDouble())).toInt().coerceIn(1, fill.maxColumns.toInt())
+    val rows = ((count + columns - 1) / columns).coerceAtMost(fill.maxRows.toInt())
+    return RecapGridShape(columns, rows, fill.areaAspect)
+}
+
+/** How many of [count] photos the card draws: all of them up to the grid's places (the rest stay in the recap and the viewer). */
+fun recapCardCells(count: Int): Int = recapGrid(count)?.let { minOf(count, it.columns * it.rows) } ?: 0
 
 /**
  * Page 1 with a note: the memory group's [RecapCard] at `widthRatio` of the page and, `week.recap.dimension.noteGap`
  * under it, the note box the card's width — the two centred together in the page (`week.recap.layout.note`).
  */
 @Composable
-fun BoxScope.RecapCardWithNote(photos: List<RecapCardPhoto>, title: String, name: String, detail: String, shown: Int, note: RecapNote) {
+fun BoxScope.RecapCardWithNote(photos: List<RecapCardPhoto>, title: String, name: String, detail: String, shown: Int, grid: RecapGridShape?, note: RecapNote) {
     BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         val width = RecapCardMetrics.width(maxWidth)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            RecapCard(photos, title, Modifier.width(width), name = name, detail = detail, shown = shown)
+            RecapCard(photos, title, Modifier.width(width), name = name, detail = detail, shown = shown, grid = grid)
             Spacer(Modifier.height(Tokens.Sizes.weekRecapDimensionNoteGap))
             NoteBox(note, Modifier.width(width))
         }

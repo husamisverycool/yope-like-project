@@ -37,12 +37,6 @@ val LocalSocialServices = staticCompositionLocalOf { SocialServices.Default }
 val LocalPhotoOverride = staticCompositionLocalOf<((String) -> Painter?)?> { null }
 
 /**
- * Whether elements with a BLOCKED value show their development approximation
- * ([BuildApproximations]; tests render the release behaviour by providing false).
- */
-val LocalApproximations = staticCompositionLocalOf { BuildApproximations.ENABLED }
-
-/**
  * The appearance outside a media surface: menus, alerts and sheets presented over the viewer or the recap
  * preview follow the system appearance (`photo.viewer.layout.appearance` → sheets), while the media
  * surface itself is dark in both. Null = not inside a media surface.
@@ -73,10 +67,6 @@ fun SystemAppearance(content: @Composable () -> Unit) {
     val outer = LocalOuterDark.current
     if (outer == null) content() else AppTheme(dark = outer, content = content)
 }
-
-/** Whether an element gated by a BLOCKED value shows: once [unblocked] ([SocialBlocked]), or as the development approximation. */
-@Composable
-fun shows(unblocked: Boolean): Boolean = unblocked || LocalApproximations.current
 
 /** `stringResource` for the generated copy (`app.designsystem.R.string.*`). */
 @Composable

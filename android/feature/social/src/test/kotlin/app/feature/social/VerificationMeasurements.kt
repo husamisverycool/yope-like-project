@@ -293,7 +293,7 @@ class VerificationMeasurements {
         box("member.avatar", tag("wall.avatar"))
         box("member.more", desc("More Options", false))
         val people = FakeSocialData().apply { seedPeople() }
-        val browse = BrowseViewModel(people, approximations = false).state.value
+        val browse = BrowseViewModel(people).state.value
         for (dark in listOf(false, true)) {
             val p = if (dark) "dark." else ""
             render(people, dark) { WallsBrowseContent(browse, wallNav, {}, {}) }

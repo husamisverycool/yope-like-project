@@ -226,6 +226,16 @@ class OnThisDayViewModel(
     /** The dice: a random memory from the group's whole history; the subtitle switches to "Memories · {name}". */
     fun shuffle() = pickRandom(append = false)
 
+    /**
+     * Mode menu "On this day…" (Retro's Rewind mode menu): back from shuffle to the day's memories, at the newest one.
+     * In day mode it changes nothing. No haptic of its own (the menu plays the tap).
+     */
+    fun showDay() {
+        val page = _state.value as? OnThisDayState.Page ?: return
+        if (page.mode != MemoryMode.Shuffle || day.isEmpty()) return
+        _state.value = page.copy(memories = day, index = 0, mode = MemoryMode.Day, playing = false, picking = false)
+    }
+
     private fun pickRandom(append: Boolean) {
         val page = _state.value as? OnThisDayState.Page ?: return
         if (page.picking) return

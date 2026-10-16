@@ -5,6 +5,14 @@
 // tc-2025-12-rewind-panels.png (native menu with red destructive items).
 package app.feature.social.viewer
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
+import app.ui.foundation.DsMotion
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -82,9 +90,7 @@ import app.feature.social.chat.MessageField
 import app.feature.social.chat.VoiceCapsule
 import app.feature.social.chat.VoiceUi
 import app.feature.social.chat.voiceStateOf
-import app.feature.social.common.BuildApproximations
 import app.feature.social.common.Formats
-import app.feature.social.common.LocalApproximations
 import app.feature.social.common.LocalSocialData
 import app.feature.social.common.LocalSocialServices
 import app.feature.social.common.MediaAppearance
@@ -95,7 +101,6 @@ import app.feature.memory.tagging.TaggedPerson
 import app.feature.social.common.PhotoSaveUi
 import app.feature.social.common.RemotePhoto
 import app.ui.media.DualImage
-import app.feature.social.common.SocialBlocked
 import app.feature.social.common.SystemAppearance
 import app.feature.social.common.announce
 import app.feature.social.common.rememberPhotoSaver
@@ -308,7 +313,7 @@ private fun ViewerHeaderRow(state: ViewerState, nav: ViewerNav) {
                 .semantics(mergeDescendants = true) { heading() },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            PersonAvatar(photo?.author?.avatarPath, Tokens.Sizes.globalAvatarHeader, Modifier.testTag("viewer.avatar"))
+            ViewerAvatarRing(photo?.author?.avatarPath, state.index, state.photos.size, Modifier.testTag("viewer.avatar"))
             Spacer(Modifier.width(Tokens.Sizes.photoViewerDimensionHeaderAvatarToText))
             Column {
                 Text(photo?.author?.displayName.orEmpty(), style = TextRoles.listTitle, color = Tokens.Colors.globalTextOnMedia, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.endAtLastBaseline())
@@ -328,6 +333,41 @@ private fun ViewerHeaderRow(state: ViewerState, nav: ViewerNav) {
         CloseCircle(stringRes(R.string.photo_viewer_a11y_close), nav.close)
     }
 }
+
+/**
+ * The header avatar with Retro's progress ring (`photo.viewer.layout.avatarRing`, TC-2B "3 of 4" → three quarters):
+ * `size.global.avatarHeader` across the ring; a `color.global.textOnMedia` arc `strokeWidth` wide with round caps,
+ * from 12 o'clock clockwise through ([index] + 1) ÷ [total] of the circle (one photo: the full circle); the photo
+ * `gap` inside it. The arc changes with the page cross-fade. Decorative: the position pill names the position.
+ */
+@Composable
+private fun ViewerAvatarRing(path: String?, index: Int, total: Int, modifier: Modifier = Modifier) {
+    val ring = Tokens.Layouts.PhotoViewerLayoutAvatarRing
+    val outer = Tokens.Sizes.globalAvatarHeader
+    val stroke = ring.strokeWidth.dp
+    val fraction = if (total <= 0) 1f else ((index + 1).toFloat() / total).coerceIn(0f, 1f)
+    val sweep by animateFloatAsState(FULL_TURN * fraction, DsMotion.crossfade(), label = "ring")
+    Box(modifier.size(outer), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.matchParentSize()) {
+            val width = stroke.toPx()
+            val inset = width / 2
+            drawArc(
+                color = Tokens.Colors.globalTextOnMedia,
+                startAngle = TWELVE_O_CLOCK,
+                sweepAngle = sweep,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = Size(size.width - width, size.height - width),
+                style = Stroke(width = width, cap = StrokeCap.Round),
+            )
+        }
+        PersonAvatar(path, outer - (stroke + ring.gap.dp) * 2)
+    }
+}
+
+/** A full turn and the 12 o'clock start of a clockwise arc in Compose's angle system (0° = 3 o'clock, clockwise). */
+private const val FULL_TURN = 360f // provenance-ok: geometry (a circle), not a design value
+private const val TWELVE_O_CLOCK = -90f // provenance-ok: geometry (12 o'clock in Compose's arc angles), photo.viewer.layout.avatarRing start
 
 /**
  * The viewer's close (C-11 on media at the measured size): `photo.viewer.dimension.closeCircle` in
@@ -357,7 +397,7 @@ private fun CloseCircle(label: String, onClick: () -> Unit) {
 /**
  * The photo (`photo.viewer.layout.photo`): full width, its own aspect, never cropped, square corners, scaled down and
  * letterboxed when taller than [area]; the thumbnail shows until the display rendition loads. Tap = advance (the
- * leading `photo.viewer.layout.backZone` — BLOCKED — goes back); long press = the context menu with the
+ * leading `photo.viewer.layout.backZone` — 20 % — goes back); long press = the context menu with the
  * quick-reaction row. TalkBack: label, hints and next / previous custom actions.
  */
 @Composable
@@ -384,7 +424,8 @@ private fun PhotoArea(
     }
     val next by rememberUpdatedState(onNext)
     val previous by rememberUpdatedState(onPrevious)
-    val backZone = if (SocialBlocked.viewerBackZone || LocalApproximations.current) BuildApproximations.BACK_ZONE_FRACTION else 0f
+    // `photo.viewer.layout.backZone` (Retro's viewer): a tap in the leading 20 % of the photo goes back.
+    val backZone = Tokens.Layouts.PhotoViewerLayoutBackZone.fraction
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val date = photo.post?.let { Formats.viewerDate(it.createdAt, photo.zone ?: java.time.ZoneId.systemDefault()) }.orEmpty()
     val label = if (state.mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, photo.author?.firstName.orEmpty(), date)
@@ -738,7 +779,6 @@ private fun ViewerDialogs(
                 person = { id -> photo.people[id].let { Reactor(id, it?.firstName.orEmpty(), it?.avatarPath) } },
                 onUnreact = onUnreact,
                 onDismiss = { ui.reactions = false },
-                newestFirst = SocialBlocked.reactionListOrder || LocalApproximations.current,
             )
         }
         if (ui.confirmDelete) {

@@ -141,6 +141,72 @@ jobs:
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug testDebugUnitTest
 
+  android-e2e:
+    name: android e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    needs: detect
+    if: needs.detect.outputs.android == 'true' && needs.detect.outputs.backend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      # reactivecircus/android-emulator-runner README: hardware acceleration on the Linux runners needs the KVM group.
+      - name: enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: install Android platform 37 (Compose 1.12 needs compileSdk 37; targetSdk stays 36)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0"
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: start Supabase (migrations applied) with the journey's test settings
+        working-directory: backend
+        run: |
+          # Test OTPs for the journey's two fictional numbers (+1 201 555 0101 / 0102, JourneyTest.kt), CI only: they
+          # are never committed to config.toml, which `supabase config push` sends to the hosted project, where they
+          # would let anyone sign in as these numbers.
+          printf '\n[auth.sms.test_otp]\n12015550101 = "123456"\n12015550102 = "123456"\n' >> supabase/config.toml
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          # The age gate fails closed until the owner sets min_age_years (docs/OWNER_SETUP.md); the test stack sets one.
+          DB=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+          docker exec "$DB" psql -U postgres -v ON_ERROR_STOP=1 -c "update public.app_config set value = '13' where key = 'min_age_years'"
+          supabase migration list --local || true
+          ANON=$(supabase status -o json | jq -r '.ANON_KEY // empty')
+          test -n "$ANON"
+          echo "E2E_ANON_KEY=$ANON" >> "$GITHUB_ENV"
+      - name: build the app and the journey
+        working-directory: android
+        run: ./gradlew --no-daemon :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: journey on the emulator (API 35, Google APIs)
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          cores: 4
+          ram-size: 4096M
+          disk-size: 6000M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: android
+          script: bash ../.github/scripts/android-e2e.sh
+      - name: upload screenshots, semantics dumps, logcat and the test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-e2e
+          path: android/build/e2e
+          if-no-files-found: warn
+
   ios-core:
     name: ios AppCore (swift test on Linux)
     runs-on: ubuntu-24.04
@@ -184,4 +250,41 @@ jobs:
           path: |
             ios/xcodebuild.log
             ios/build/snapshots
+          if-no-files-found: ignore
+
+  ios-ui:
+    name: ios ui tests
+    runs-on: macos-15
+    timeout-minutes: 75
+    needs: detect
+    if: needs.detect.outputs.ios == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: select newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+      - run: brew install xcodegen
+      - name: generate project
+        working-directory: ios
+        run: xcodegen generate
+      # The macOS runner has no Docker, so no backend: each UI test launches the app with DEBUG launch arguments that
+      # select in-process fakes (-account-ui-test-scenario, -capture-fakes, -SocialFakes, -MemoryFixtures).
+      - name: UI tests on the simulator
+        working-directory: ios
+        run: |
+          SIM=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in sorted(d.items(), reverse=True) if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          xcrun simctl boot "$SIM" || true
+          set -o pipefail
+          xcodebuild -project App.xcodeproj -scheme AppUITests -destination "id=$SIM" -derivedDataPath build -resultBundlePath build/UITests.xcresult CODE_SIGNING_ALLOWED=NO test 2>&1 | tee xcodebuild-ui.log | grep -E "error:|Test Case|Test Suite|Executed|skipped|BUILD|\*\*" || true
+          grep -q "\*\* TEST SUCCEEDED \*\*" xcodebuild-ui.log
+      - name: upload the log and the result bundle (screenshots of failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ui-results
+          path: |
+            ios/xcodebuild-ui.log
+            ios/build/UITests.xcresult
           if-no-files-found: ignore

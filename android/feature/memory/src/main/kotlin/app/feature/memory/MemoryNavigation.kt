@@ -177,6 +177,7 @@ fun OnThisDayDestination(
             onTogglePlay = vm::togglePlay,
             onAdvance = vm::advance,
             onShuffle = vm::shuffle,
+            onShowDay = vm::showDay,
             onShare = vm::share,
             onSave = {
                 val legacy = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q

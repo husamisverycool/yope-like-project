@@ -9,9 +9,9 @@ final class AccountFlowUITests: XCTestCase {
     }
 
     @MainActor
-    private func launch(_ scenario: String) -> XCUIApplication {
+    private func launch(_ scenario: String, _ extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-account-ui-test-scenario", scenario]
+        app.launchArguments = ["-account-ui-test-scenario", scenario] + extra
         app.launch()
         return app
     }
@@ -139,6 +139,51 @@ final class AccountFlowUITests: XCTestCase {
         XCTAssertTrue(element(app, "groups.screen").waitForExistence(timeout: 5))
         XCTAssertTrue(element(app, "groups.screen.created").waitForExistence(timeout: 5), "a new group starts with the invite prompt")
         XCTAssertFalse(element(app, "groups.create").exists, "the sheet closed")
+
+        // groups.invite: link sharing starts off; turning it on shows the link menu and the share targets.
+        tap("groups.screen.invite", in: app)
+        XCTAssertTrue(element(app, "groups.invite").waitForExistence(timeout: 5), "the invite sheet")
+        tap("groups.invite.turnOn", in: app)
+        XCTAssertTrue(element(app, "groups.invite.copy").waitForExistence(timeout: 5), "link on: QR Code · Copy Link · Message · Share")
+        XCTAssertTrue(element(app, "groups.invite.reset").exists, "link on: the Reset link row")
+
+        // The QR card (owner decision 17): over the sheet, closed by its close circle.
+        tap("groups.invite.qr", in: app)
+        XCTAssertTrue(element(app, "groups.invite.qr.card").waitForExistence(timeout: 5), "the QR card of the link")
+        XCTAssertTrue(element(app, "groups.invite.qr.save").exists, "Save")
+        XCTAssertTrue(element(app, "groups.invite.qr.share").exists, "Share")
+        tap("groups.invite.qr.close", in: app)
+        XCTAssertTrue(element(app, "groups.invite.copy").waitForExistence(timeout: 5), "back on the invite sheet")
+    }
+
+    // MARK: Settings
+
+    @MainActor
+    func testSettingsFromTheWallThenSignOut() {
+        let app = launch("signed-in", ["-SocialFakes"])
+        XCTAssertTrue(element(app, "groups.list").waitForExistence(timeout: 10))
+        // The tab bar's me item (VoiceOver label, copy `groups.list.tab.me.accessibilityLabel`) → walls.mine.
+        let me = app.buttons["Profile"].firstMatch
+        XCTAssertTrue(me.waitForExistence(timeout: 5))
+        me.tap()
+        XCTAssertTrue(element(app, "walls.mine").waitForExistence(timeout: 10))
+        // The gear capsule (copy `walls.mine.a11y.settings`) → settings.root.
+        let gear = app.buttons["Settings"].firstMatch
+        XCTAssertTrue(gear.waitForExistence(timeout: 5))
+        gear.tap()
+        XCTAssertTrue(element(app, "settings.root").waitForExistence(timeout: 10), "settings")
+
+        let signOut = element(app, "settings.root.signOut")
+        for _ in 0..<8 where !(signOut.exists && signOut.isHittable) {
+            element(app, "settings.root").swipeUp()
+        }
+        XCTAssertTrue(signOut.isHittable, "Sign Out at the end of settings")
+        signOut.tap()
+        // The native confirmation (copy `settings.root.signOut.confirm`).
+        let confirm = app.alerts.buttons["Yes, sign out"].firstMatch
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5), "Sign out?")
+        confirm.tap()
+        XCTAssertTrue(element(app, "auth.phone").waitForExistence(timeout: 10), "signed out: the sign-up landing")
     }
 
     @MainActor

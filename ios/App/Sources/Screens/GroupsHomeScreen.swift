@@ -221,10 +221,11 @@ struct GroupRowPlaceholder: View {
     }
 }
 
-/// A template row of "Ideas to Get Started" (JED; C-15 geometry): the thumbnail as a `color.global.control`
-/// placeholder (Retro's template photos are its own), the kind's title (text role `listTitle`) and description (text
-/// role `listSubtitle`, `color.global.textSecondary`, ≤ 2 lines) `size.global.rowThumbGap` after it, and the fill
-/// capsule C-06 "Create" at the right margin. The row and the capsule both open groups.create at its name step with the
+/// A template row of "Ideas to Get Started" (JED; C-15 geometry): the kind's cover photo
+/// (`groups.list.layout.templateCovers`, owner decision 9: people-free sample photos bundled in the asset catalog;
+/// aspect-fill, `radius.global.thumbnail`), the kind's title (text role `listTitle`) and description (text role
+/// `listSubtitle`, `color.global.textSecondary`, ≤ 2 lines) `size.global.rowThumbGap` after it, and the fill capsule
+/// C-06 "Create" at the right margin. The row and the capsule both open groups.create at its name step with the
 /// kind chosen. Accessibility: the row is one button (title + description); the capsule a separate one.
 struct GroupTemplateRow: View {
     let kind: GroupKind
@@ -234,9 +235,13 @@ struct GroupTemplateRow: View {
         HStack(spacing: Tokens.Sizes.globalRowThumbGap) {
             Button(action: action) {
                 HStack(spacing: Tokens.Sizes.globalRowThumbGap) {
-                    Tokens.Colors.globalControl
+                    Image(GroupKindCopy.coverAsset(kind))
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
                         .frame(width: Tokens.Sizes.globalRowThumbWidth, height: Tokens.Sizes.globalRowThumbHeight)
+                        .background(Tokens.Colors.globalControl)
                         .clipShape(DSShape.rounded(Tokens.Radii.globalThumbnail))
+                        .accessibilityHidden(true)
                     VStack(alignment: .leading) {
                         Text(GroupKindCopy.title(kind))
                             .dsTextStyle(TextRole.listTitle)

@@ -197,18 +197,45 @@ struct OnThisDayScreen: View {
         }
     }
 
+    /// The mode menu (and its chevron) belong to a loaded page.
+    private var showsModeMenu: Bool { model.phase == .loaded && model.current != nil }
+
+    /// The chevron's room after the title: `dimension.onthisday.modeChevron.gap` + `.width`.
+    private static let modeChevronReserve = Tokens.Sizes.onthisdayModeChevronGap + Tokens.Sizes.onthisdayModeChevronWidth
+
+    /// The date title with, on a loaded page, the expand chevron after it (RWA 'May 1, 2019 ⌄': ink
+    /// `dimension.onthisday.modeChevron.width` wide, `dimension.onthisday.modeChevron.gap` after the title, centred
+    /// `dimension.onthisday.modeChevron.drop` below its cap middle). Title and chevron open the mode menu; for VoiceOver the
+    /// menu is the title (header, pop-up button).
     private var titleLine: some View {
         Text(model.phase == .loaded ? model.title : "")
             .dsTextRole(TextRole.headerTitle)
             .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+            .accessibilityHidden(true)
+            .overlay(alignment: Alignment(horizontal: .trailing, vertical: .capMiddle)) {
+                if showsModeMenu {
+                    ModeChevron()
+                        .alignmentGuide(HorizontalAlignment.trailing) { dimensions in
+                            dimensions[HorizontalAlignment.leading] - Tokens.Sizes.onthisdayModeChevronGap
+                        }
+                        .alignmentGuide(.capMiddle) { dimensions in
+                            dimensions[VerticalAlignment.center] - Tokens.Sizes.onthisdayModeChevronDrop
+                        }
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                if showsModeMenu {
+                    modeMenu
+                }
+            }
             .padding(.leading, titleLeading)
-            .padding(.trailing, Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalCircleButtonPhoto + Tokens.Sizes.globalHeaderGap)
+            .padding(
+                .trailing,
+                Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalCircleButtonPhoto + Tokens.Sizes.globalHeaderGap
+                    + (showsModeMenu ? Self.modeChevronReserve : 0)
+            )
             .frame(maxWidth: .infinity, alignment: .leading)
             .dsAnimation(ComponentMotion.crossfade, value: model.title)
-            .accessibilityAddTraits(.isHeader)
-            .accessibilityHidden(model.phase != .loaded)
-            .accessibilitySortPriority(8)
-            .accessibilityIdentifier("onthisday.title")
             .overlay(alignment: Alignment(horizontal: .leading, vertical: .capMiddle)) {
                 backButton
                     .padding(.leading, Tokens.Sizes.globalBackInset)
@@ -235,6 +262,27 @@ struct OnThisDayScreen: View {
         .accessibilityLabel(Text(Copy.onthisdayA11yBack))
         .accessibilitySortPriority(9)
         .accessibilityIdentifier("onthisday.back")
+    }
+
+    /// Retro's Rewind mode menu (native pull-down, PLATFORM): "On this day…" (back to the day's memories) and "Shuffle"
+    /// (the dice). Its invisible label covers the title and reaches over the chevron; it carries the title for VoiceOver.
+    private var modeMenu: some View {
+        Menu {
+            Button(Copy.onthisdayModeDay) {
+                model.showDay()
+            }
+            Button(Copy.onthisdayModeShuffle) {
+                Task { await model.shuffle() }
+            }
+        } label: {
+            Color.clear
+                .contentShape(Rectangle())
+        }
+        .padding(.trailing, -Self.modeChevronReserve)
+        .accessibilityLabel(Text(model.title))
+        .accessibilityAddTraits(.isHeader)
+        .accessibilitySortPriority(8)
+        .accessibilityIdentifier("onthisday.title")
     }
 
     /// D. The native menu: save and delete (your memory; delete destructive) or report (someone else's, destructive). Saving
@@ -316,6 +364,21 @@ struct OnThisDayScreen: View {
         .simultaneousGesture(TapGesture().onEnded { model.stopPlaying() })
         .accessibilityLabel(Text(Copy.onthisdayA11yShare))
         .accessibilityIdentifier("onthisday.share")
+    }
+}
+
+/// The expand chevron after the date title (`icon.global.chevronDown`, `color.global.textOnMedia`): the symbol scaled so its
+/// ink is `dimension.onthisday.modeChevron.width` wide, at `fontWeight.onthisday.modeChevron` (the HIG's weight match with
+/// the title). Decorative: the mode menu carries the label.
+private struct ModeChevron: View {
+    var body: some View {
+        Image(systemName: Tokens.Icons.globalChevronDown)
+            .resizable()
+            .scaledToFit()
+            .fontWeight(Tokens.FontWeights.fontWeightOnthisdayModeChevron)
+            .frame(width: Tokens.Sizes.onthisdayModeChevronWidth)
+            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+            .accessibilityHidden(true)
     }
 }
 

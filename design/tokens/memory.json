@@ -1040,6 +1040,54 @@
       "level": "SOURCED",
       "notes": "Redesign (MERGE RM-12): Tribute's navy badge fill (#11202FC7) and bold weights replaced by Retro's scrim and weights; geometry kept (mechanics). White on the band over a white photo = white on #666666: 5.74:1. The worker maps weight 600 to Roboto Medium (nearest file) — hand-off: vendor Inter (OFL, font.global.family Android) for the caption.",
       "precision": "exact ratios of the demo's CSS (VERIFIED-grade measurement of a web demo; the demo's px sizes do not scale with the frame, so the ratios hold for the frame size above)"
+    },
+    "dimension.onthisday.modeChevron.width": {
+      "type": "dimension",
+      "value": 19.7,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "expand chevron after the date title (opens the mode menu): ink width",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt): 'May 1, 2019 ⌄' chevron ink (pixels with every channel > 235) x570-628, y320-355",
+      "method": "59 px ÷ 3.000 px/pt; the glyph (icon.global.chevronDown) is sized so its ink is this wide (ink 19.7 × 12.0 pt, aspect 1.64)",
+      "level": "SOURCED",
+      "precision": "±0.3 pt",
+      "notes": "Stroke ≈ 4.3 pt (20 px vertical cut of an arm at ≈ 50°). Android Rounded.ExpandMore draws its ink 11.18 of 24 units wide, stroke 2.0 units (0.18 of the ink width; Retro 0.22)."
+    },
+    "dimension.onthisday.modeChevron.gap": {
+      "type": "dimension",
+      "value": 8.7,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "date title ink → expand chevron ink",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt): last digit '9' ink right x544, chevron ink left x570 (title row y250-420)",
+      "method": "26 px ÷ 3.000 px/pt",
+      "level": "SOURCED",
+      "precision": "±0.3 pt"
+    },
+    "dimension.onthisday.modeChevron.drop": {
+      "type": "dimension",
+      "value": 2.0,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "element": "expand chevron ink centre below the date title’s cap middle",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RAW iOS 1320x2868, 3.000 px/pt): cap tops / baselines of the flat glyphs 'M' y287-377 and '1' y286-376 → cap middle y331.5; chevron ink y320-355 → centre y337.5",
+      "method": "6 px ÷ 3.000 px/pt",
+      "level": "SOURCED",
+      "precision": "±0.3 pt"
+    },
+    "fontWeight.onthisday.modeChevron": {
+      "type": "fontWeight",
+      "value": "medium",
+      "source_app": "Apple HIG",
+      "surface": "onthisday",
+      "element": "symbol weight of the expand chevron (iOS SF Symbol)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/sf-symbols (read 2026-10-16 through developer.apple.com/tutorials/data/design/human-interface-guidelines/sf-symbols.json): “Each of the nine symbol weights — from ultralight to black — corresponds to a weight of the San Francisco system font, helping you achieve precise weight matching between symbols and adjacent text”; adjacent text = the date title in the display role, the Roboto Serif Title instance at wght 530 (design/MERGE_DECISIONS.md L-8) → nearest named weight medium (500)",
+      "method": "HIG rule applied to the title’s weight axis value",
+      "level": "PLATFORM",
+      "notes": "Retro’s own stroke (≈ 4.3 pt at a 19.7-pt ink width) reads heavier; Android draws Rounded.ExpandMore, whose stroke is fixed by the icon."
     }
   }
 }

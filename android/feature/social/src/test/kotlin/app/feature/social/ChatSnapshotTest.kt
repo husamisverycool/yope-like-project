@@ -32,10 +32,9 @@ class ChatSnapshotTest : SnapshotBase() {
         data: FakeSocialData = FakeSocialData(),
         voice: VoiceUi = VoiceUi.Idle,
         recorder: RecorderControls = RecorderControls(),
-        approximations: Boolean = true,
         screen: Boolean = false,
         dark: Boolean = false,
-    ) = snap(data, approximations, screen, dark) { Content(state, ui, voice, recorder) }
+    ) = snap(data, screen, dark) { Content(state, ui, voice, recorder) }
 
     @Composable
     private fun Content(state: ChatState, ui: ChatUiState, voice: VoiceUi, recorder: RecorderControls) = ChatContent(
@@ -174,16 +173,10 @@ class ChatSnapshotTest : SnapshotBase() {
         chat(state, ChatUiState(confirmUnsend = "m-5"), data, screen = true)
     }
 
-    /** The Reactions sheet (development order: newest first). */
+    /** The Reactions sheet, newest first (`chat.reactions.layout.listOrder`). */
     @Test fun reactionsSheet() {
         val (data, state) = loaded()
         chat(state, ChatUiState(reactionsFor = "p-1"), data, screen = true)
-    }
-
-    /** Release build: the sheet in the data layer's order (`chat.reactions.layout.listOrder` BLOCKED). */
-    @Test fun reactionsSheetRelease() {
-        val (data, state) = loaded()
-        chat(state, ChatUiState(reactionsFor = "p-1"), data, screen = true, approximations = false)
     }
 
     @Test fun reactionsPicker() {

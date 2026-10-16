@@ -24,8 +24,8 @@ import org.junit.Test
 class ViewerSnapshotTest : SnapshotBase() {
     private val nav = ViewerNav({}, { _, _ -> }, { _, _ -> }, { _, _ -> }, {})
 
-    private fun viewer(state: ViewerState, ui: ViewerUiState = ViewerUiState(), data: FakeSocialData = viewerData(), screen: Boolean = false, approximations: Boolean = true, dark: Boolean = false) =
-        snap(data, approximations, screen, dark) {
+    private fun viewer(state: ViewerState, ui: ViewerUiState = ViewerUiState(), data: FakeSocialData = viewerData(), screen: Boolean = false, dark: Boolean = false) =
+        snap(data, screen, dark) {
             PhotoViewerContent(state, ui, nav, VoiceUi.Idle, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
 

@@ -5,27 +5,5 @@ import SwiftUI
 
 /// BLOCKED values: available in DEBUG builds only, so a release build that uses one fails to compile.
 public enum BlockedTokens {
-    public enum Layouts {
-        /// Retro · chat.reactions · order of the rows in the Reactions sheet · BLOCKED
-        /// token: `chat.reactions.layout.listOrder`
-        public static var chatReactionsLayoutListOrder: Never { fatalError("BLOCKED token chat.reactions.layout.listOrder") }
-        /// Retro · photo.viewer · width of the leading tap zone that goes back · BLOCKED
-        /// token: `photo.viewer.layout.backZone`
-        public static var photoViewerLayoutBackZone: Never { fatalError("BLOCKED token photo.viewer.layout.backZone") }
-        /// Retro · walls.browse · order of people in the grid · BLOCKED
-        /// token: `walls.browse.layout.rowOrder`
-        public static var wallsBrowseLayoutRowOrder: Never { fatalError("BLOCKED token walls.browse.layout.rowOrder") }
-        /// Retro · week.edit · the in / out mark on a grid photo (position, size, colours) · BLOCKED
-        /// token: `week.edit.layout.selectionMark`
-        public static var weekEditLayoutSelectionMark: Never { fatalError("BLOCKED token week.edit.layout.selectionMark") }
-        /// Retro · week.recap · how the 4 × 6 collage grid is filled when the recap has fewer than 24 photos (or more) · BLOCKED
-        /// token: `week.recap.layout.gridFill`
-        public static var weekRecapLayoutGridFill: Never { fatalError("BLOCKED token week.recap.layout.gridFill") }
-    }
-    public enum Shadows {
-        /// Retro · albums.view · drop shadow under the book-like album cover · BLOCKED
-        /// token: `albums.view.shadow.cover`
-        public static var albumsViewShadowCover: Never { fatalError("BLOCKED token albums.view.shadow.cover") }
-    }
 }
 #endif

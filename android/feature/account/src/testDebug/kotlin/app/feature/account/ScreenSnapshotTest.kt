@@ -15,6 +15,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -163,13 +165,14 @@ class ScreenSnapshotTest {
         state: String,
         dark: Boolean = false,
         settleMs: Long = FRAME_MS,
+        trueBlack: Boolean = false,
         act: (() -> Unit)? = null,
         content: @Composable () -> Unit,
     ) {
         compose.mainClock.autoAdvance = false
         compose.setContent {
             CompositionLocalProvider(LocalAccountEnvironment provides fakeEnvironment(), LocalReduceMotionOverride provides false) {
-                AppTheme(dark = dark) { content() }
+                AppTheme(dark = dark, trueBlack = trueBlack) { content() }
             }
         }
         compose.mainClock.advanceTimeBy(FRAME_MS)
@@ -340,6 +343,8 @@ class ScreenSnapshotTest {
     @Test fun listLoading() = snap("groups.list", "loading", content = list(GroupsListUiState()))
     @Test fun listDefault() = snap("groups.list", "default", content = list(GroupsListUiState(rows = rows, refreshing = false)))
     @Test fun listDefaultDark() = snap("groups.list", "default", dark = true, content = list(GroupsListUiState(rows = rows, refreshing = false)))
+    /** Settings → True Black on (Android, owner decision 21): the dark page in `color.global.background.android.trueBlack`. */
+    @Test fun listDefaultTrueBlack() = snap("groups.list", "default-trueBlack", dark = true, trueBlack = true, content = list(GroupsListUiState(rows = rows, refreshing = false)))
     @Test fun listEmpty() = snap("groups.list", "empty", content = list(GroupsListUiState(rows = emptyList(), refreshing = false)))
     @Test fun listError() = snap("groups.list", "error", content = list(GroupsListUiState(refreshing = false, error = DataError.Unexpected("x"))))
     @Test fun listOffline() = snap("groups.list", "offline", content = list(GroupsListUiState(refreshing = false, error = DataError.Network)))
@@ -475,6 +480,13 @@ class ScreenSnapshotTest {
     private fun root(state: SettingsRootUiState, permissions: List<PermissionRow> = granted) = @Composable { SettingsRootScreen(state, legal, permissions, "1.0 (1)", SettingsRootActions()) }
     @Test fun settingsRoot() = snap("settings.root", "default", content = root(rootState))
     @Test fun settingsRootDark() = snap("settings.root", "default", dark = true, content = root(rootState))
+    /** The Appearance section with True Black on, in the true-black dark appearance it selects (owner decision 21). */
+    @Test fun settingsRootTrueBlack() = snap("settings.root", "trueBlack-scrolled", dark = true, trueBlack = true, act = {
+        compose.onNodeWithText(context.getString(R.string.settings_root_trueblack)).performScrollTo()
+    }) { root(rootState.copy(trueBlack = true))() }
+    @Test fun settingsRootTrueBlackOffDark() = snap("settings.root", "appearance-scrolled", dark = true, act = {
+        compose.onNodeWithText(context.getString(R.string.settings_root_trueblack)).performScrollTo()
+    }) { root(rootState)() }
     @Test fun settingsRootLoading() = snap("settings.root", "subscriptionLoading", content = root(rootState.copy(subscription = SubscriptionState.Loading)))
     @Test fun settingsRootSubscriber() = snap("settings.root", "subscriber-annual", content = root(rootState.copy(subscription = SubscriptionState.Annual)))
     @Test fun settingsRootDenied() = snap("settings.root", "permissionsDenied-scrolled", act = { compose.onNodeWithText(context.getString(R.string.settings_root_permissions_notifications)).performScrollTo() }) {
@@ -567,7 +579,8 @@ class ScreenSnapshotTest {
     @Test fun blockError() = snap("safety.block", "failed", content = block(BlockUiState("Sam", error = true)))
 
     // paywall ---------------------------------------------------------------------------------------
-    private val plans = listOf(PlanOption(PlanPeriod.Monthly, "$3.99", null), PlanOption(PlanPeriod.Yearly, "$35.99", null))
+    /** Owner decision 7: $3.99 a month; $35.99 a year with a 1-week free trial (Play's free-trial offer, the locale's words). */
+    private val plans = listOf(PlanOption(PlanPeriod.Monthly, "$3.99", null), PlanOption(PlanPeriod.Yearly, "$35.99", null, trialDuration = "1 week"))
     private val ready = PaywallUiState(plans = plans, status = PlansStatus.Ready, media = photo("friends-beach-hug-4x5"))
     private fun paywall(state: PaywallUiState) = @Composable { PaywallScreen(state, legal, PaywallActions()) }
     @Test fun paywallLoading() = snap("paywall", "loading", content = paywall(PaywallUiState(media = photo("friends-beach-hug-4x5"))))
@@ -576,7 +589,13 @@ class ScreenSnapshotTest {
     @Test fun paywallNoMedia() = snap("paywall", "default-noPhoto-historyLimited", content = paywall(ready.copy(media = null, historyLimited = true)))
     @Test fun paywallUnavailable() = snap("paywall", "productsUnavailable", content = paywall(PaywallUiState(status = PlansStatus.Unavailable, media = photo("friends-beach-hug-4x5"))))
     @Test fun paywallOffline() = snap("paywall", "offline", content = paywall(PaywallUiState(status = PlansStatus.Offline, media = photo("friends-beach-hug-4x5"))))
-    @Test fun paywallPurchasing() = snap("paywall", "purchasing", content = paywall(ready.copy(purchasing = true)))
+    @Test fun paywallNoTrial() = snap("paywall", "default-noTrial", content = paywall(ready.copy(plans = plans.map { PlanOption(it.period, it.price, null) })))
+    /** The Monthly card in view (the plan pager's second card; its billing line follows in the footer). */
+    @Test fun paywallMonthly() = snap("paywall", "monthly", act = {
+        compose.onAllNodes(androidx.compose.ui.test.hasScrollToIndexAction()).onLast().performScrollToIndex(1)
+    }, content = paywall(ready))
+    @Test fun paywallPurchasing() = snap("paywall", "purchasing", content = paywall(ready.copy(purchasing = PlanPeriod.Yearly)))
+    @Test fun paywallRestoreOffline() = snap("paywall", "restoreOffline", content = paywall(ready.copy(message = PaywallMessage.Offline)))
     @Test fun paywallFailed() = snap("paywall", "purchaseFailed", content = paywall(ready.copy(message = PaywallMessage.PurchaseFailed)))
     @Test fun paywallPending() = snap("paywall", "pending", content = paywall(ready.copy(message = PaywallMessage.Pending)))
     @Test fun paywallRestoreNone() = snap("paywall", "nothingToRestore", content = paywall(ready.copy(message = PaywallMessage.NothingToRestore)))

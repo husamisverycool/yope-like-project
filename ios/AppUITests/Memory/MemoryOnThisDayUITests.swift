@@ -1,5 +1,5 @@
 // onthisday: the feature intro once, the Rewind page with the dial's play / pause (share and random hide while playing;
-// share shows only on your own memory — owner decision 12), the dice (shuffle) and the back chevron.
+// share shows only on your own memory — owner decision 12), the dice (shuffle), the title's mode menu and the back chevron.
 import XCTest
 
 final class MemoryOnThisDayUITests: XCTestCase {
@@ -47,6 +47,16 @@ final class MemoryOnThisDayUITests: XCTestCase {
         expectation(for: switched, evaluatedWith: subtitle)
         waitForExpectations(timeout: 10)
         XCTAssertTrue(title.exists)
+
+        // The title's mode menu: "On this day…" goes back to the day's memories.
+        title.tap()
+        let dayItem = app.buttons["On this day…"]
+        XCTAssertTrue(dayItem.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Shuffle"].exists)
+        dayItem.tap()
+        let back = NSPredicate(format: "label == %@", daySubtitle)
+        expectation(for: back, evaluatedWith: subtitle)
+        waitForExpectations(timeout: 10)
 
         MemoryUITestLaunch.element(app, "onthisday.back").tap()
         XCTAssertFalse(MemoryUITestLaunch.element(app, "onthisday").waitForExistence(timeout: 2))

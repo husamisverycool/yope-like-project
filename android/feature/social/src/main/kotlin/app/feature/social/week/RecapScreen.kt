@@ -45,10 +45,8 @@ import app.data.model.RenderStatus
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
-import app.feature.social.common.LocalApproximations
 import app.feature.social.common.MediaAppearance
 import app.feature.social.common.RemotePhoto
-import app.feature.social.common.SocialBlocked
 import app.feature.social.common.photoModel
 import app.feature.memory.yearstory.RecapCardMetrics
 import app.feature.memory.yearstory.RecapCardPage
@@ -227,7 +225,6 @@ fun WeekRecapPreview(state: RecapState, nav: RecapNav, onRetry: () -> Unit, init
     val groupName = state.group?.name.orEmpty()
     val cover = state.card.firstOrNull()?.thumbPath
     val ready = state.phase == RecapState.Phase.Ready && recap != null
-    val approximation = SocialBlocked.recapGridFill || LocalApproximations.current
     val photos = state.card.map { p ->
         val date = Formats.viewerDate(p.post.createdAt, state.zone)
         RecapCardPhoto(photoModel(p.thumbPath), stringRes(R.string.photo_viewer_a11y_photo, p.authorName.orEmpty(), date)) { recap?.let { nav.cardPhoto(it.id, p.post.id) } }
@@ -252,10 +249,12 @@ fun WeekRecapPreview(state: RecapState, nav: RecapNav, onRetry: () -> Unit, init
                 state.phase == RecapState.Phase.Pending -> FrameLine(stringRes(R.string.week_recap_pending), null)
                 !ready -> FrameLine(stringRes(R.string.week_recap_error_title), onRetry)
                 index == 0 -> {
-                    val shown = recapCardCells(photos.size, approximation)
+                    // `week.recap.layout.gridFill`: the grid's shape follows the photo count and always fills the card's photo area.
+                    val grid = recapGrid(photos.size)
+                    val shown = recapCardCells(photos.size)
                     val labelled = Modifier.semantics { contentDescription = cardLabel }
-                    if (note != null) Box(labelled) { RecapCardWithNote(photos, title, groupName, range, shown, note) }
-                    else RecapCardPage(photos, title, labelled, name = groupName, detail = range, shown = shown)
+                    if (note != null) Box(labelled) { RecapCardWithNote(photos, title, groupName, range, shown, grid, note) }
+                    else RecapCardPage(photos, title, labelled, name = groupName, detail = range, shown = shown, grid = grid)
                 }
                 else -> RecapCoverPage(title, Modifier.semantics { contentDescription = cardLabel }, name = groupName, detail = range) {
                     RemotePhoto(cover, null, Modifier.fillMaxSize(), placeholder = Tokens.Colors.globalControlOnDeep)

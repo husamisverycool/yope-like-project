@@ -1638,6 +1638,46 @@
       "evidence": "references/auto/retro/press/tc-2024-04-journals-1.webp (book-like cover)",
       "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
+    },
+    "week.edit.a11y.moveLeft": {
+      "text": "Move photo left",
+      "origin": "adapted",
+      "source_app": "Chrome",
+      "surface": "week.edit",
+      "evidence": "references/auto/platform/chromium-tab-reorder-a11y-strings-excerpt.txt (Chrome for Android, IDS_ACCESSIBILITY_TAB_MOVEMENT_LEFT 'Move tab left' — the accessibility action that swaps a tab with its neighbour to reorder the tab grid)",
+      "pattern": "retro.voice.menu-labels (Sentence case action labels)",
+      "level": "SOURCED",
+      "notes": "Noun swap: tab → photo. Custom accessibility action on a strip tile of the recap editor (VoiceOver / TalkBack): swaps the photo with its neighbour on that side of the screen (in right-to-left layouts 'left' is later in the recap). Offered only where a neighbour exists."
+    },
+    "week.edit.a11y.moveRight": {
+      "text": "Move photo right",
+      "origin": "adapted",
+      "source_app": "Chrome",
+      "surface": "week.edit",
+      "evidence": "references/auto/platform/chromium-tab-reorder-a11y-strings-excerpt.txt (Chrome for Android, IDS_ACCESSIBILITY_TAB_MOVEMENT_RIGHT 'Move tab right' — the accessibility action that swaps a tab with its neighbour to reorder the tab grid)",
+      "pattern": "retro.voice.menu-labels (Sentence case action labels)",
+      "level": "SOURCED",
+      "notes": "Noun swap: tab → photo. Custom accessibility action on a strip tile of the recap editor (VoiceOver / TalkBack): swaps the photo with its neighbour on that side of the screen (in right-to-left layouts 'left' is later in the recap). Offered only where a neighbour exists."
+    },
+    "chat.voice.a11y.pauseRecording": {
+      "text": "Pause recording",
+      "origin": "adapted",
+      "source_app": "WhatsApp",
+      "surface": "chat.voice",
+      "evidence": "references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('if you’re recording hands-free, tap [pause] to pause recording and preview a draft of your message before sending')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "Owner decision 16: label of the locked recording's pause control (chat.voice.layout.locked). Sentence case per retro.voice.button; no brand term."
+    },
+    "chat.voice.a11y.resumeRecording": {
+      "text": "Continue recording",
+      "origin": "adapted",
+      "source_app": "WhatsApp + Apple Messages",
+      "surface": "chat.voice",
+      "evidence": "references/auto/whatsapp/help/faq-657157755756612-send-voice-iphone.png ('Tap [mic] to continue recording.'); https://support.apple.com/guide/iphone/send-and-receive-audio-messages-iph2e42d3117/ios ('Add to the end of it: Tap [the Continue Recording button]')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "Owner decision 16: label of the paused draft's continue control (chat.voice.layout.locked). Apple's Title Case button name in Retro's sentence case."
     }
   }
 }

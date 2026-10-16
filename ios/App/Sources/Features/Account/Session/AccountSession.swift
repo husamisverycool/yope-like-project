@@ -1,6 +1,7 @@
 // Account group — the root flow: signed out → sign-up (auth.phone → auth.code) → onboarding (auth.agegate →
 // auth.profile → onboarding.permission.notifications → onboarding.widget) → home (groups.list). Links that arrive
-// meanwhile wait in `AppRouter.pendingLink`; `router.setReady(true)` applies them once the person is home.
+// meanwhile wait in `AppRouter.pendingLink`; `router.setReady(true)` applies them once the person is home. A launch with
+// a session lands on the camera only when the person is in a group (owner decision 13; Android `RootGate`).
 import AppData
 import AppModels
 import DesignSystem
@@ -53,6 +54,8 @@ final class AccountSession {
     @ObservationIgnored private(set) var autoJoinToken: String?
     @ObservationIgnored private var signedInUser: UserID?
     @ObservationIgnored private var authTask: Task<Void, Never>?
+    /// The launch's group check (`.launching` until it answers).
+    @ObservationIgnored private var launchTask: Task<Void, Never>?
 
     let data: AccountDataSource
     let router: AppRouter
@@ -99,12 +102,28 @@ final class AccountSession {
         }
         signedInUser = user
         if onboarding.isComplete(for: user.rawValue) {
-            // camera.capture "In: app launch (the app opens to the camera)".
-            becomeReady(user, landing: .camera)
+            // Owner decision 13: with at least one group the app opens to the camera (camera.capture "In: app launch");
+            // with none, to the groups list and its "Ideas to Get Started" (groups.list "In") — a camera with nobody to
+            // send to is a dead end. `.launching` (LaunchingView) covers the window until the answer, so no wrong screen
+            // flashes.
+            launchTask?.cancel()
+            launchTask = Task { [weak self] in
+                guard let self else { return }
+                let landing: AppTab = await self.hasGroups() ? .camera : .groups
+                guard !Task.isCancelled, self.phase == .launching, self.signedInUser == user else { return }
+                self.becomeReady(user, landing: landing)
+            }
         } else {
             phase = .signUp
             Task { await resolve(user) }
         }
+    }
+
+    /// Whether the person is in a group: the cached list when there is one, else the first fetch; a failed fetch (offline,
+    /// nothing cached) counts as none — the groups list then shows its own offline state.
+    func hasGroups() async -> Bool {
+        if let cached = await data.cachedGroups() { return !cached.isEmpty }
+        return ((try? await data.myGroups()) ?? []).isEmpty == false
     }
 
     private func observeAuthState() {
@@ -229,8 +248,9 @@ final class AccountSession {
 
     // MARK: Home
 
-    /// Home. `landing`: the camera when the app launches with a session (camera.capture "In"), the groups list after
-    /// sign-in or onboarding (auth.code "success (returning)", onboarding.widget "Out"). A pending link wins.
+    /// Home. `landing`: the camera when the app launches with a session and the person is in a group (camera.capture
+    /// "In", owner decision 13), the groups list otherwise and after sign-in or onboarding (auth.code "success
+    /// (returning)", onboarding.widget "Out"). A pending link wins.
     private func becomeReady(_ user: UserID, landing: AppTab = .groups) {
         signedInUser = user
         onboarding.markComplete(for: user.rawValue)
@@ -270,6 +290,8 @@ final class AccountSession {
     }
 
     private func showSignedOut() {
+        launchTask?.cancel()
+        launchTask = nil
         signedInUser = nil
         autoJoinToken = nil
         root = .phone

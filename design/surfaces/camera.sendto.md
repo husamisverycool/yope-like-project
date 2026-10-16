@@ -34,6 +34,13 @@ Full-screen modal on `color.global.backgroundDeep` in both appearances ("postcar
    `color.global.textOnMedia`, height `size.global.pillHeight`, paddings `size.global.pillPaddingLeading` /
    `.pillPaddingTrailing`, icon gap `size.global.pillIconGap`) then, `size.global.pillGap` after it, the **voice
    capsule** (icon-only, `size.global.iconPillWidth` × `size.global.pillHeight`, same fill, `icon.global.mic`).
+   Recording (`chat.voice.md`) swaps the message pill for the **recording capsule** (`camera.sendto.layout.messageField`
+   `.recording`): holding — red mic · elapsed · "‹ Slide to cancel"; locked — red mic · elapsed · C-36 live waveform ·
+   pause (`chat.voice.a11y.pauseRecording`); paused — trash · preview play / pause · C-36 draft waveform · length · red
+   mic (`chat.voice.a11y.resumeRecording`); the voice capsule shows `icon.global.send` and keeps the note. A kept note
+   is the **note capsule** (`.note`: the `chat.voice` capsule on media — play glyph · C-36 waveform
+   `chat.voice.dimension.waveform` · duration) centred `size.global.pillGap` above the pill pair; the voice capsule stays
+   the mic (a new recording replaces the note). Owner decision 16.
 3. **Groups** (`camera.sendto.layout.recipientRow`): label `camera.sendto.groupsLabel` — text role `meta`,
    `color.global.textSecondary`, 35.2 pt below the photo, at `size.global.screenMargin`. Then one **row per group**
    (C-16): group cover in a `size.global.avatarPicker` circle (no cover: `icon.global.group` on
@@ -66,7 +73,9 @@ in `color.global.textSecondary` (Android `.textSecondary.android`); counter `cam
 | preview | photo frame · `camera.sendto.layout.preview` | — (own photo: decorative) | Live Photo plays on long press (PHLivePhotoView); video plays muted in a loop |
 | message pill | C-09 on media · `camera.sendto.layout.messageField`, `icon.global.edit`, text role `pill` | `camera.sendto.message.add`; after a message `camera.sendto.message.edit` | opens the "Add a Message" sheet |
 | message sheet | C-29 page sheet · `camera.sendto.layout.messageSheet`, `camera.sendto.fontSize.counter` | `.message.title`, `.message.done`, `.caption.placeholder`, `.message.counter` ({count}, {max} = `camera.sendto.size.captionMaxLength` 250) | input stops at 250 characters; "Done" (or swipe down) keeps the text; an empty field clears the message |
-| voice capsule | C-06 icon-only capsule on media · `size.global.iconPillWidth`, `color.global.controlOnDeep`, `icon.global.mic` | a11y `camera.sendto.a11y.voice` | records an optional voice note with the `chat.voice` recorder (microphone asked here at first use); the note goes on every chosen group's post |
+| voice capsule | C-06 icon-only capsule on media · `size.global.iconPillWidth`, `color.global.controlOnDeep`, `icon.global.mic` (locked / paused: `icon.global.send`) | a11y `camera.sendto.a11y.voice` | records an optional voice note with the `chat.voice` recorder (hold, slide to cancel, lock; microphone asked here at first use); the note goes on every chosen group's post |
+| recording capsule | `camera.sendto.layout.messageField` `.recording` (C-06 fill on media + C-36 + C-10 red glyphs) | `chat.voice.recording.slideToCancel`, `chat.voice.a11y.pauseRecording`, `.resumeRecording`, `.discard`, `.play` / `.pause` | holding / locked / paused draft (`chat.voice.layout.locked` order) |
+| note capsule | `chat.voice.layout.capsule` on media (C-36 waveform `chat.voice.dimension.waveform`) · `camera.sendto.layout.messageField` `.note` | `chat.voice.a11y.play` / `.pause`; action `chat.voice.a11y.discard` | tap plays / pauses the note; context menu / accessibility action deletes it |
 | groups label | text role `meta`, `color.global.textSecondary` | `camera.sendto.groupsLabel` | header trait |
 | group row | C-16 · `camera.sendto.layout.recipientRow`, `size.global.avatarPicker`, `size.global.checkCircle`, `icon.global.check` / `.uncheck`, `color.global.selection` | group name (data) | tap toggles (multi-select). Preselected: the group from context (`app://camera?group=`, group screen, chat); without context, all of the member's groups (owner to confirm) |
 | send | C-05 on media · `size.global.buttonHeight`, `size.global.buttonMarginH`, `camera.sendto.size.sendButtonBottom`, `color.global.surfaceLight` / `.onSurfaceLight` | `camera.sendto.send` | disabled with no group selected; tap → busy (C-05 busy: the label is replaced by the platform activity indicator in `color.global.onSurfaceLight`), title "Sending…", upload + `create_post`; success → the modal closes, `haptic.global.send`, Android toast `.toast.postedOne` / `.postedMany` (iOS announcement) |
@@ -127,7 +136,8 @@ while the microphone records (HIG).
 
 - Reads: `groups` + own `group_members` rows (names, `cover_path` signed URLs).
 - Writes (docs/API.md recipe 9.4): upload `u/<uid>/<media_id>/original.<ext>` (+ `motion.mov`, `voice.m4a`), insert
-  `media`, `create_post(p_media_id, p_group_ids, p_caption?, p_voice_path?, p_voice_duration_ms?, p_reply_to_post_id?)`.
+  `media`, `create_post(p_media_id, p_group_ids, p_caption?, p_voice_path?, p_voice_duration_ms?, p_voice_levels?,
+  p_reply_to_post_id?)` (`p_voice_levels`: the note's 100 levels of 0…31, C-36).
   `p_caption` = the message (≤ 250 here; API ≤ 1000). Errors: `premium_required`, `not_group_member`, `already_posted`,
   `invalid_caption`, `invalid_voice`, `no_groups`.
 - In: `camera.capture` (capture or library pick). Out: back to the screen the camera was opened from; `groups.create`

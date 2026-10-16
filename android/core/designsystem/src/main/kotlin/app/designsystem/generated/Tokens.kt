@@ -430,6 +430,8 @@ object Tokens {
         val fontWeightGlobalTileDay: FontWeight = FontWeight(600)
         /** Retro · global · weekday label on a photo tile ('Mon'), white over the bottom scrim, centred, baseline 13.4 above the tile bottom · SOURCED — token `fontWeight.global.tileLabel` */
         val fontWeightGlobalTileLabel: FontWeight = FontWeight(600)
+        /** Apple HIG · onthisday · symbol weight of the expand chevron (iOS SF Symbol) · PLATFORM — token `fontWeight.onthisday.modeChevron` */
+        val fontWeightOnthisdayModeChevron: FontWeight = FontWeight(500)
         /** Retro · invite.web · mobile page: pill label weight · SOURCED — token `invite.web.fontWeight.pill` */
         val inviteWebFontWeightPill: FontWeight = FontWeight(600)
         /** Retro · paywall · plan card price weight · SOURCED — token `paywall.fontWeight.planPrice` */
@@ -656,10 +658,12 @@ object Tokens {
         /** Retro · camera.sendto · 'Add a message' pill and the voice-note capsule along the bottom of the preview · SOURCED — token `camera.sendto.layout.messageField` */
         object CameraSendtoLayoutMessageField {
             const val message: String = "C-09 glass pill on the photo: fill color.global.controlOnDeep, icon.global.edit + label text role pill, colour color.global.textOnMedia, height size.global.pillHeight, width hugs the label"
-            const val voice: String = "icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic"
+            const val voice: String = "icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic (locked or paused recording: icon.global.send — keeps the note); with a note attached it stays the mic: a new recording replaces the note"
             const val gap: String = "size.global.pillGap"
             const val bottomInset: Float = 20.5f
             const val align: String = "the pair centred horizontally on the photo"
+            const val recording: String = "while recording (chat.voice.layout.recording) the message pill gives way to the recording capsule (same fill and height, C-07 paddings): holding — icon.global.mic in color.global.destructive · elapsed (text role pill, monospaced) · icon.global.back + chat.voice.recording.slideToCancel in color.global.textSecondary; locked — red mic · elapsed · C-36 live waveform · icon.global.pause (chat.voice.a11y.pauseRecording); paused — icon.global.trash in color.global.destructive · icon.global.play / .pause (preview) · C-36 draft waveform · length · icon.global.mic in color.global.destructive (chat.voice.a11y.resumeRecording) — chat.voice.layout.locked's order inside one capsule; the capsule spans the photo's width less the voice capsule, the gap and size.global.pillGap on the leading side, its waveform taking what is left"
+            const val note: String = "an attached note: the chat.voice capsule on media (chat.voice.layout.capsule: play glyph · C-36 waveform chat.voice.dimension.waveform · duration) centred above the pill pair, size.global.pillGap above it; tap plays / pauses; its context menu (and a VoiceOver / TalkBack action) deletes it (chat.voice.a11y.discard)"
         }
         /** Retro · camera.sendto · 'Add a Message' sheet (message entry; follows the appearance like every sheet over media) · SOURCED — token `camera.sendto.layout.messageSheet` */
         object CameraSendtoLayoutMessageSheet {
@@ -720,6 +724,12 @@ object Tokens {
             const val row: String = "C-16 people row: avatar size.global.avatarPicker, name text role listTitle, trailing the emoji in the size.global.icon box; one row per person and emoji"
             const val mine: String = "your rows carry chat.reactions.list.removeHint as a second line (listSubtitle, color.global.textSecondary); tapping one unreacts"
             const val empty: String = "chat.reactions.empty (C-27 title only)"
+        }
+        /** Stream Chat · chat.reactions · order of the rows in the Reactions sheet · SOURCED — token `chat.reactions.layout.listOrder` */
+        object ChatReactionsLayoutListOrder {
+            const val order: String = "newest first by reactions.created_at (the person who reacted last leads)"
+            const val rows: String = "one row per person and emoji; a person with several emoji has one row per emoji, each at its own time"
+            const val yourRows: String = "in their place by time (no pinning); they carry chat.reactions.list.removeHint"
         }
         /** Locket + WhatsApp · chat.reactions · full emoji picker · SOURCED — token `chat.reactions.layout.picker` */
         object ChatReactionsLayoutPicker {
@@ -785,9 +795,11 @@ object Tokens {
             const val corners: String = "radius.global.capsule"
             const val fill: String = "page: color.global.control (iOS) / color.global.surfaceSecondary.android; on media (photo.viewer): color.global.controlOnDeep"
             const val glyph: String = "icon.global.play (playing: icon.global.pause) at size.global.iconSmall, color.global.textPrimary"
+            const val waveform: String = "C-36 (layout.global.waveform) chat.voice.dimension.waveform long, between the glyph and the label; idle: every bar unplayed; playing / paused part-way: played up to the progress"
             const val label: String = "duration per chat.voice.layout.durationFormat, text role pill, color.global.textPrimary"
-            const val padding: String = "size.global.pillPaddingLeading → glyph → size.global.pillIconGap → label → size.global.pillPaddingTrailing"
-            const val width: String = "hugs its content (no width per duration)"
+            const val padding: String = "size.global.pillPaddingLeading → glyph → size.global.pillIconGap → waveform → size.global.pillIconGap → label → size.global.pillPaddingTrailing"
+            const val width: String = "hugs its content: glyph + waveform (chat.voice.dimension.waveform) + label"
+            const val error: String = "the waveform and the label give way to chat.voice.error.play"
         }
         /** Retro · chat.voice · duration label of a voice message · SOURCED — token `chat.voice.layout.durationFormat` */
         object ChatVoiceLayoutDurationFormat {
@@ -795,21 +807,38 @@ object Tokens {
             const val example: String = "0:38"
             const val digits: String = "monospaced"
         }
+        /** WhatsApp + Apple Messages · chat.voice · hands-free (locked) voice recording: pause, continue, preview the draft, delete, send · SOURCED — token `chat.voice.layout.locked` */
+        object ChatVoiceLayoutLocked {
+            const val rows: String = "two rows: the C-13 field, then the controls row size.global.pillGap below it, inside size.global.screenMargin"
+            const val fieldRecording: String = "icon.global.mic in color.global.destructive at the avatar's place · elapsed time (chat.voice.layout.durationFormat, text role body, monospaced, color.global.textPrimary) · C-36 live waveform across the rest of the field to the trailing glyph inset (chat.composer.dimension.glyphInsetTrailing)"
+            const val fieldPaused: String = "icon.global.play (previewing: icon.global.pause) in color.global.textPrimary at the avatar's place (a button) · C-36 draft waveform with the preview's progress · the draft's length (preview: elapsed), text role body, monospaced, at the trailing glyph inset"
+            const val controls: String = "leading: icon.global.trash in color.global.destructive (bare glyph, size.global.headerButton hit) aligned with the field's leading glyph; centre: C-11 circle on the page (size.global.circleButton, color.global.control) holding icon.global.pause (recording) or icon.global.mic (paused) in color.global.destructive; trailing: C-11 circle in the primary fill (color.global.accent, icon.global.send in color.global.onAccent) aligned with the field's trailing glyph"
+            const val controlsHeight: String = "size.global.headerButton"
+            const val pause: String = "recording → paused: the recorder pauses; the draft's waveform and length show"
+            const val `continue`: String = "paused → recording: the recording continues at the end of the draft"
+            const val preview: String = "paused: the glyph plays / pauses the draft from its start; continuing or sending stops the preview"
+            const val discard: String = "trash: the recording is deleted (no confirmation, as WhatsApp and Messages)"
+            const val send: String = "send: recording or paused, the whole recording is sent"
+            const val onMedia: String = "camera.sendto: the same order inside the recording capsule (camera.sendto.layout.messageField)"
+            const val motion: String = "rows appear / change with duration.global.fade; the live waveform redraws per sample without animation"
+        }
         /** Telegram + WhatsApp · chat.voice · voice playback behaviour · SOURCED — token `chat.voice.layout.playback` */
         object ChatVoiceLayoutPlayback {
             const val tap: String = "the capsule toggles play / pause; one voice message plays at a time (starting another stops the first)"
             const val label: String = "total duration when idle; elapsed time while playing or paused mid-way"
             const val end: String = "back to the idle state at the end"
+            const val waveform: String = "the played part of the waveform follows the playback (layout.global.waveform progress): split at progress × width, updated with the elapsed label"
         }
         /** WhatsApp + Telegram · chat.voice · recording a voice message · SOURCED — token `chat.voice.layout.recording` */
         object ChatVoiceLayoutRecording {
             const val start: String = "press and hold the composer's mic glyph: recording runs while the finger is down"
             const val send: String = "lift the finger → the voice message is sent"
             const val cancel: String = "slide left → recording discarded"
-            const val lock: String = "slide up onto the lock circle above the mic → keeps recording hands-free; then the send glyph sends, the trash glyph discards"
+            const val lock: String = "slide up onto the lock circle above the mic → keeps recording hands-free (chat.voice.layout.locked)"
             const val field: String = "while recording the field shows: icon.global.mic in color.global.destructive · elapsed time (chat.voice.layout.durationFormat, text role body, color.global.textPrimary) · icon.global.back + chat.voice.recording.slideToCancel in color.global.textSecondary"
             const val lockCircle: String = "C-11 circle size.global.circleButton, color.global.control, icon.global.lock in color.global.textPrimary, centred over the mic glyph, size.global.pillGap above the field"
-            const val haptic: String = "none on start / stop (HIG: do not disturb the microphone); haptic.global.send when sent"
+            const val haptic: String = "none on start / stop / pause / continue (HIG: do not disturb the microphone); haptic.global.send when sent"
+            const val pause: String = "locked: pause stops the recording into a draft that can be played, continued, deleted or sent (chat.voice.layout.locked); holding has no pause"
         }
         /** Meta developer docs (standards: accessibility thresholds, share-image specs) · collage.share · the image handed to the share sheet · VERIFIED — token `collage.share.layout.export` */
         object CollageShareLayoutExport {
@@ -1280,6 +1309,25 @@ object Tokens {
         object GlobalVariableWeightAndroid {
             const val body: Float = 450f
         }
+        /** WhatsApp + Telegram + Apple Messages · global · C-36 voice waveform: geometry, colours, states and the level data behind the bars · SOURCED — token `layout.global.waveform` */
+        object GlobalWaveform {
+            const val component: String = "C-36: a row of capsule-ended bars (corners = bar width / 2), size.global.waveformBarWidth wide, size.global.waveformBarGap apart, centred on the row's middle"
+            const val maxHeightRatio: Float = 0.553f
+            const val maxHeight: String = "the tallest bar = maxHeightRatio × the height of the capsule or field that holds the waveform (37-pt capsule → 20.5 pt; 48-pt field → 26.5 pt)"
+            const val barCount: String = "width-driven: floor((width + gap) / (barWidth + gap)), at most samples; bar i = the peak of its bucket of the stored levels"
+            const val height: String = "size.global.waveformBarMinHeight + (maxHeight − minHeight) × level ÷ the note's largest level"
+            const val played: String = "color.global.textPrimary on a page, color.global.textOnMedia on media (the capsule's own glyph colour)"
+            const val unplayed: String = "color.global.textSecondary (both platforms, both appearances, page and media)"
+            const val idle: String = "every bar unplayed"
+            const val progress: String = "while playing or paused part-way: bars left of x = progress × width are played; the bar under x is split at x"
+            const val samples: Float = 100f
+            const val levelMax: Float = 31f
+            const val reduction: String = "100 buckets of the recorder's peak samples (peak per bucket; fewer samples than buckets repeat samples); scale = max(2500 / 32767, 1.8 × mean bucket peak); level = min(31, floor(peak × 31 ÷ scale))"
+            const val sampling: String = "the recorder's peak level every 30 ms while recording (none while paused)"
+            const val live: String = "while recording and while a draft is paused: the samples so far, reduced and drawn by the same rules across the available width"
+            const val fallback: String = "no stored levels: every bar at minHeight; once the note's audio is on the device (after its first play) its levels are computed from the file with the same reduction and drawn from then on"
+            const val accessibility: String = "decorative: hidden from VoiceOver / TalkBack; the note's element reads its duration and play state"
+        }
         /** Retro · onthisday · bottom control row of the Rewind page · SOURCED — token `layout.onthisday.controls` */
         object OnthisdayControls {
             const val order: String = "share circle, dial, random circle"
@@ -1452,6 +1500,26 @@ object Tokens {
             const val android: String = "DsTheme(dark = true) around the viewer"
             const val sheets: String = "menus, alerts and sheets presented over it follow the system appearance"
         }
+        /** Retro · photo.viewer · progress ring around the header avatar · SOURCED — token `photo.viewer.layout.avatarRing` */
+        object PhotoViewerLayoutAvatarRing {
+            const val outerDiameter: String = "size.global.avatarHeader (ring included)"
+            const val strokeWidth: Float = 2f
+            const val gap: Float = 3f
+            const val photo: String = "the avatar photo inside: outerDiameter − 2 × (strokeWidth + gap)"
+            const val start: String = "12 o'clock"
+            const val direction: String = "clockwise"
+            const val sweep: String = "index ÷ total of the viewer's context × 360° (the position the pill names; one photo: the full circle)"
+            const val caps: String = "round"
+            const val color: String = "color.global.textOnMedia"
+            const val motion: String = "changes with the page cross-fade (duration.global.crossfade)"
+        }
+        /** Retro · photo.viewer · width of the leading tap zone that goes back · SOURCED — token `photo.viewer.layout.backZone` */
+        object PhotoViewerLayoutBackZone {
+            const val fraction: Float = 0.2f
+            const val edge: String = "leading"
+            const val of: String = "the photo's width (full screen width), measured from the leading edge"
+            const val rest: String = "a tap anywhere else on the photo advances (photo.viewer.layout.advance)"
+        }
         /** Retro · photo.viewer · replies listed under the photo · SOURCED — token `photo.viewer.layout.comments` */
         object PhotoViewerLayoutComments {
             const val content: String = "replies to this photo in the group chat (messages with reply_to_post_id = this post), oldest first"
@@ -1561,6 +1629,11 @@ object Tokens {
             const val people: String = "everyone who shares at least one group with you, without you; order walls.browse.layout.rowOrder"
             const val search: String = "C-12 search field above the grid filters by name"
         }
+        /** Apple Photos · walls.browse · order of people in the grid · SOURCED — token `walls.browse.layout.rowOrder` */
+        object WallsBrowseLayoutRowOrder {
+            const val order: String = "by display name, A to Z, in the device locale's collation, ignoring case and accents"
+            const val tie: String = "profile id"
+        }
         /** Retro · walls.mine · profile header of a wall (C-19 adapted) · SOURCED — token `walls.mine.layout.header` */
         object WallsMineLayoutHeader {
             const val name: String = "display name in the display serif, text role headerTitle (C-19), baseline size.global.titleTop below the top safe area (walls.mine) or on the C-02 back-chevron line (walls.member); one line, tail truncation"
@@ -1612,6 +1685,17 @@ object Tokens {
             const val haptics: String = "week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change"
             const val reduceMotion: String = "the drag tracks the finger; the shifts cross-fade (layout.global.reduceMotion)"
         }
+        /** Android photo picker · week.edit · the in / out mark on a grid photo (position, size, colours) · PLATFORM — token `week.edit.layout.selectionMark` */
+        object WeekEditLayoutSelectionMark {
+            const val unselected: String = "no mark: the photo fills the square cell"
+            const val selectedInsetRatio: Float = 0.089f
+            const val selectedCornerRatio: Float = 0.119f
+            const val selectedCellFill: String = "color.global.control"
+            const val mark: String = "icon.global.check in the size.global.checkCircle glyph box at the cell's top-leading corner, its circle in color.global.selection (iOS) / color.global.system.primary (Android) with the check in color.global.textOnMedia, on a color.global.textOnMedia disc markOutline wider in radius"
+            const val markCentreRatio: Float = 0.148f
+            const val markOutline: Float = 1.5f
+            const val motion: String = "the inset and the mark change with the state cross-fade (duration.global.crossfade)"
+        }
         /** Retro · week.history · the current week's strip (empty-day, add and placeholder tiles) · SOURCED — token `week.history.layout.currentWeek` */
         object WeekHistoryLayoutCurrentWeek {
             const val empty: String = "no photos yet: the add tile first, then one empty-day tile per day Monday → Sunday (dated: month / day / weekday)"
@@ -1632,6 +1716,18 @@ object Tokens {
             const val section: String = "C-20 header: week.history.header.title + the date range (locale interval Monday–Sunday; omitted for the current week without photos) + icon.global.more → week.history.layout.weekMenu; C-17 strip under it"
             const val strip: String = "one photo tile per post in time order (several photos on a day = several tiles), weekday label from created_at; current week per week.history.layout.currentWeek"
             const val limit: String = "if app_config free_history_days limits browsing (owner), the list ends there with no message"
+        }
+        /** Retro · week.recap · how the 4 × 6 collage grid is filled when the recap has fewer than 24 photos (or more) · SOURCED — token `week.recap.layout.gridFill` */
+        object WeekRecapLayoutGridFill {
+            const val columns: String = "floor(√n) for n photos, clamped to 1 … maxColumns (1 photo → 1, 9 → 3, 24 → 4: Retro's three cards)"
+            const val maxColumns: Float = 4f
+            const val rows: String = "ceil(n ÷ columns), at most maxRows"
+            const val maxRows: Float = 6f
+            const val area: String = "the grid always fills the card's photo area: as wide as the card minus its padding and that width ÷ areaAspect tall (3:4); cells share it: (width − (columns − 1) × gap) ÷ columns by (height − (rows − 1) × gap) ÷ rows, aspect fill; gap size.global.stripGap"
+            const val areaAspect: Float = 0.75f
+            const val order: String = "row by row from the leading top cell, in the recap's item order"
+            const val lastRow: String = "a short last row is leading-aligned; the places after the last photo show the card fill (color.global.surfaceLight)"
+            const val beyond: String = "photos past maxColumns × maxRows are not drawn on the card (they stay in the recap and the viewer)"
         }
         /** Retro · week.recap · list of the group's recaps (Retro 'Create Recap') · SOURCED — token `week.recap.layout.list` */
         object WeekRecapLayoutList {
@@ -1661,6 +1757,14 @@ object Tokens {
             const val frame: String = "the recap-preview media page of collage.view.layout.screen (capture group, ST-04 2026): full width, safe-area top to mediaPageBottomFromScreenBottom, corners mediaPageCornerRadius, the cover photo blurred inside (layout.global.materials.backdrop); its close circle (C-11 on media) at closeCentreFromTrailing / closeCentreBelowPageTop"
             const val pages: String = "week.recap.layout.pages, swiped sideways inside the frame; page dots (C-31, on media) centred dimension.year.story.dots.offset below the frame (memory group)"
             const val bottomRow: String = "centre at collage.view.layout.screen bottomRowCentreFromScreenBottom: leading the select-photos thumbnail (week.recap.dimension.selectThumb square, corners week.recap.radius.selectThumb, week.recap.dimension.selectThumbBorder border in color.global.surfaceLight, the recap's first item, aspect fill) at size.global.buttonMarginH → week.edit; trailing the C-09 light pill week.recap.saveAsAlbum laid out as collage.share.layout.pill (height, paddingHorizontal, trailingInset) → album sheet"
+        }
+        /** Material 3 · widget.android · lock-screen placement of the Glance widget (owner decision 18: opt in) · PLATFORM — token `widget.android.layout.lockScreen` */
+        object WidgetAndroidLayoutLockScreen {
+            const val widgetCategory: String = "home_screen|keyguard"
+            const val where: String = "the lock-screen widget hub: Android 16 QPR2+ (AOSP 'the release after Android 16 (QPR1)'), Pixel Tablet since 2024; earlier releases ignore keyguard (home screen only)"
+            const val size: String = "about 4 x 3 cells → the Medium size class (PlatformWidgetGrid.minSize(4, 3) = 276 x 183 dp)"
+            const val tap: String = "the same PendingIntent; the activity opens after unlock (no android:showWhenLocked)"
+            const val preview: String = "the generated preview covers every category (Glance setWidgetPreviews default HOME_SCREEN or KEYGUARD or SEARCHBOX)"
         }
         /** Retro · widget.android · AppWidgetProviderInfo of the Glance widget (default 2 × 2, resizable down to 100 dp) · SOURCED — token `widget.android.layout.provider` */
         object WidgetAndroidLayoutProvider {
@@ -1862,6 +1966,8 @@ object Tokens {
         val widgetAndroidRadiusWidget: Dp = 22.dp
     }
     object Shadows {
+        /** Retro · albums.view · drop shadow under the book-like album cover · SOURCED — token `albums.view.shadow.cover` */
+        val albumsViewShadowCover: DSShadow = DSShadow(color = Color(0x40000000), blur = 8.5.dp, x = 3.dp, y = 10.dp)
         /** Retro · groups.screen · drop shadow of the 'book' cover (Retro's one shadow on a non-photo surface; also used by the cover on groups.invite and groups.create) · SOURCED — token `groups.screen.shadow.cover` */
         val groupsScreenShadowCover: DSShadow = DSShadow(color = Color(0x40000000), blur = 8.5.dp, x = 3.dp, y = 10.dp)
     }
@@ -1916,6 +2022,8 @@ object Tokens {
         val chatThreadDimensionRowAvatarToText: Dp = 16.7.dp
         /** Retro · chat.thread · message row: baseline of the name / time line → baseline of the first text line (and text line → text line) · SOURCED — token `chat.thread.dimension.rowLinePitch` */
         val chatThreadDimensionRowLinePitch: Dp = 19.dp
+        /** Apple Messages + WhatsApp · chat.voice · length of a voice message's waveform (C-36) in the capsule: thread, viewer footer and comments, send-to note · SOURCED — token `chat.voice.dimension.waveform` */
+        val chatVoiceDimensionWaveform: Dp = 154.dp
         /** Apple HIG · daily.liveactivity · Lock Screen presentation margin · VERIFIED — token `daily.liveactivity.size.lockScreenMargin` */
         val dailyLiveactivitySizeLockScreenMargin: Dp = 14.dp
         /** Retro · birthday.contribute · counter baseline → top of the keyboard · SOURCED — token `dimension.birthday.contribute.counterAboveKeyboard` */
@@ -1966,6 +2074,12 @@ object Tokens {
         val onthisdayDialTickShort: Dp = 11.8.dp
         /** Retro · onthisday · width (stroke) of every tick and of the indicator · SOURCED — token `dimension.onthisday.dial.tickWidth` */
         val onthisdayDialTickWidth: Dp = 3.2.dp
+        /** Retro · onthisday · expand chevron ink centre below the date title’s cap middle · SOURCED — token `dimension.onthisday.modeChevron.drop` */
+        val onthisdayModeChevronDrop: Dp = 2.dp
+        /** Retro · onthisday · date title ink → expand chevron ink · SOURCED — token `dimension.onthisday.modeChevron.gap` */
+        val onthisdayModeChevronGap: Dp = 8.7.dp
+        /** Retro · onthisday · expand chevron after the date title (opens the mode menu): ink width · SOURCED — token `dimension.onthisday.modeChevron.width` */
+        val onthisdayModeChevronWidth: Dp = 19.7.dp
         /** Retro · onthisday · date title baseline → subtitle baseline · SOURCED — token `dimension.onthisday.subtitleBaseline` */
         val onthisdaySubtitleBaseline: Dp = 26.4.dp
         /** Retro · year.story · frame bottom → page-dot centre (summary pager only) · SOURCED — token `dimension.year.story.dots.offset` */
@@ -2214,6 +2328,12 @@ object Tokens {
         val globalTitleToContent: Dp = 30.dp
         /** Retro · global · safe-area top → baseline of the display title on a root screen · SOURCED — token `size.global.titleTop` */
         val globalTitleTop: Dp = 64.dp
+        /** Apple Messages · global · C-36 voice waveform: space between two bars · SOURCED — token `size.global.waveformBarGap` */
+        val globalWaveformBarGap: Dp = 2.1.dp
+        /** WhatsApp · global · C-36 voice waveform: height of a silent bar (a dot: height = bar width) · SOURCED — token `size.global.waveformBarMinHeight` */
+        val globalWaveformBarMinHeight: Dp = 2.dp
+        /** Apple Messages · global · C-36 voice waveform: width of one bar · SOURCED — token `size.global.waveformBarWidth` */
+        val globalWaveformBarWidth: Dp = 2.dp
         /** Retro · walls.browse · people grid: avatar centre → avatar centre of the next column (three columns, centred on the screen) · SOURCED — token `walls.browse.dimension.columnPitch` */
         val wallsBrowseDimensionColumnPitch: Dp = 124.3.dp
         /** Retro · walls.browse · people grid: avatar bottom → name baseline · SOURCED — token `walls.browse.dimension.nameBaseline` */

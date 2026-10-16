@@ -47,8 +47,9 @@ class YearStoryViewModelTest {
         val photos = vm().story.cards.filterIsInstance<StoryCard.MostReactedPhoto>()
         assertEquals(listOf("p-r1", "p-r2", "p-r3", "p-r4", "p-r5"), photos.map { it.postId })
         assertEquals(StoryCard.MostReactedPhoto("p-r1", "https://signed.test/u/u-ana/m-p-r1/r/display.jpg", "Ana", LocalDate.of(2026, 2, 25)), photos.first())
-        // The card carries no number or rank: its fields are the photo, the first name and the date.
-        assertEquals(listOf("postId", "url", "name", "date"), StoryCard.MostReactedPhoto::class.java.declaredFields.map { it.name }.filterNot { it.startsWith("$") })
+        // The card carries no number or rank: its fields are the photo, the first name, the date and whether it is yours
+        // (owner decision 12: only your own photo offers Share).
+        assertEquals(listOf("postId", "url", "name", "date", "isMine"), StoryCard.MostReactedPhoto::class.java.declaredFields.map { it.name }.filterNot { it.startsWith("$") })
     }
 
     @Test fun photosHiddenByABlockAreSkippedNotReplaced() {

@@ -335,8 +335,18 @@ final class AccountSnapshotTests: XCTestCase {
         let ready = GroupInviteModel(groupID: group.id, data: fixture.data, domain: "example.test")
         await ready.load()
         record(GroupInviteView(model: ready), "groups.invite", "link-off")
-        _ = await ready.linkToShare()
+        let link = await ready.linkToShare()
         record(GroupInviteView(model: ready), "groups.invite", "link-on", appearances: AccountSnapshot.both)
+
+        // The QR card (owner decision 17): the recap preview over the group's cover, the card, Save and Share.
+        if let link {
+            let qr = GroupInviteQRModel(link: link, groupName: group.name, cover: image("grandma-hug-4x3"), toasts: dependencies.toasts)
+            record(GroupInviteQRScreen(model: qr), "groups.invite", "qr", appearances: AccountSnapshot.both)
+            let noCover = GroupInviteQRModel(link: link, groupName: group.name, cover: nil, toasts: dependencies.toasts)
+            record(GroupInviteQRScreen(model: noCover), "groups.invite", "qr-noCover")
+        } else {
+            XCTFail("the fixture's invite has a link")
+        }
 
         ready.add(LocalContact(id: "c1", displayName: "Rui Costa", phoneNumbers: [PhoneNumber("+351912345678")].compactMap { $0 }))
         ready.add(LocalContact(id: "c2", displayName: "Marta Lima", phoneNumbers: [PhoneNumber("+351912345679")].compactMap { $0 }))

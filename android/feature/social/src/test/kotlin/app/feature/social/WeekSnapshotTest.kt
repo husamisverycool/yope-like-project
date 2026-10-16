@@ -108,7 +108,44 @@ class WeekSnapshotTest : SnapshotBase() {
         return data to RecapViewModel(data, GROUP, "r-w").state.value
     }
 
-    /** Page 1: the white recap card with six photos (development fill: row by row) and the note. */
+    /** A recap of [count] photos without a note (week of 12 October; photos past the week's seven are added the same week). */
+    private fun previewOf(count: Int): Pair<FakeSocialData, RecapState> {
+        val data = FakeSocialData().apply {
+            seedWeek()
+            val monday = LocalDate.parse("2026-10-12")
+            val extra = (8..count).map { i ->
+                addPhoto("w-$i", listOf(FakeSocialData.ME, FakeSocialData.ANA, FakeSocialData.BEN)[i % 3], monday.plusDays((i % 7).toLong()).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().plusSeconds(3_600L * (i / 7))).id
+            }
+            recaps["r-n"] = recap("r-n", monday, ((1..7).map { "w-$it" } + extra).take(count))
+        }
+        return data to RecapViewModel(data, GROUP, "r-n").state.value
+    }
+
+    /** `week.recap.layout.gridFill`: one photo fills the card's photo area (retro.app hero card). */
+    @Test fun recapPreviewOne() {
+        val (data, state) = previewOf(1)
+        snap(data) { WeekRecapPreview(state, recapNav, {}) }
+    }
+
+    /** Five photos: 2 columns × 3 rows, the short last row leading-aligned with the card fill after it. */
+    @Test fun recapPreviewFive() {
+        val (data, state) = previewOf(5)
+        snap(data) { WeekRecapPreview(state, recapNav, {}) }
+    }
+
+    /** Nine photos: 3 × 3 over the same 3:4 area (Retro TC-H). */
+    @Test fun recapPreviewNine() {
+        val (data, state) = previewOf(9)
+        snap(data) { WeekRecapPreview(state, recapNav, {}) }
+    }
+
+    /** Twenty-four photos: 4 × 6 (Retro TC-REC); more would not be drawn on the card. */
+    @Test fun recapPreviewFull() {
+        val (data, state) = previewOf(24)
+        snap(data) { WeekRecapPreview(state, recapNav, {}) }
+    }
+
+    /** Page 1: the white recap card with six photos (`week.recap.layout.gridFill`: 2 × 3) and the note. */
     @Test fun recapPreview() {
         val (data, state) = preview()
         snap(data) { WeekRecapPreview(state, recapNav, {}) }
@@ -119,11 +156,6 @@ class WeekSnapshotTest : SnapshotBase() {
         snap(data, dark = true) { WeekRecapPreview(state, recapNav, {}) }
     }
 
-    /** Release build: `week.recap.layout.gridFill` BLOCKED — only full rows of four. */
-    @Test fun recapPreviewRelease() {
-        val (data, state) = preview()
-        snap(data, approximations = false) { WeekRecapPreview(state, recapNav, {}) }
-    }
 
     /** Page 2: the cover full-bleed under the scrim. */
     @Test fun recapPreviewCover() {
@@ -145,8 +177,8 @@ class WeekSnapshotTest : SnapshotBase() {
         return data to vm.state.value
     }
 
-    private fun edit(state: EditState, data: FakeSocialData, dark: Boolean = false, approximations: Boolean = true) =
-        snap(data, approximations = approximations, screen = true, dark = dark) { SheetOverPage { WeekEditContent(state, {}, {}, {}, { _, _ -> }, {}, {}) } }
+    private fun edit(state: EditState, data: FakeSocialData, dark: Boolean = false) =
+        snap(data, screen = true, dark = dark) { SheetOverPage { WeekEditContent(state, {}, {}, {}, { _, _ -> }, {}, {}) } }
 
     @Test fun editReady() {
         val (data, state) = editState()
@@ -156,12 +188,6 @@ class WeekSnapshotTest : SnapshotBase() {
     @Test fun editReadyDark() {
         val (data, state) = editState()
         edit(state, data, dark = true)
-    }
-
-    /** Release build: `week.edit.layout.selectionMark` BLOCKED — no mark on the grid cells. */
-    @Test fun editReadyRelease() {
-        val (data, state) = editState()
-        edit(state, data, approximations = false)
     }
 
     @Test fun editLoading() = edit(EditState(), FakeSocialData())

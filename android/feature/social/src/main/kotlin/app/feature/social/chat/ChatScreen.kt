@@ -83,7 +83,6 @@ import app.data.model.MessageKind
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
-import app.feature.social.common.LocalApproximations
 import app.feature.social.common.LocalSocialData
 import app.feature.social.common.LocalSocialServices
 import app.feature.social.common.PersonAvatar
@@ -91,7 +90,6 @@ import app.feature.social.common.PhotoSaveUi
 import app.feature.social.common.RemotePhoto
 import app.feature.social.common.photoModel
 import app.ui.media.DualImage
-import app.feature.social.common.SocialBlocked
 import app.feature.social.common.announce
 import app.feature.social.common.rememberPhotoSaver
 import app.feature.social.common.stringRes
@@ -584,7 +582,6 @@ private fun ThreadDialogs(
             person = { id -> reactor(state, id) },
             onUnreact = { e -> onUnreact(postId, e) },
             onDismiss = { ui.reactionsFor = null },
-            newestFirst = SocialBlocked.reactionListOrder || LocalApproximations.current,
         )
     }
     ui.confirmUnsend?.let { id ->

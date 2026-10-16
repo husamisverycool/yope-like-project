@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -24,13 +25,14 @@ import app.ui.foundation.PageRoles
 
 /**
  * C-28 activity indicator: the platform's `CircularProgressIndicator` (`easing.global.native.activityIndicator`,
- * PLATFORM; Retro's own spinner not captured — Gap) in secondary text (on media `color.global.textSecondary`).
+ * PLATFORM; Retro's own spinner not captured — Gap) in secondary text (on media `color.global.textSecondary`), or
+ * [color] where a surface spec names another token (the paywall's plan card: `paywall.color.planTextTertiary`).
  * Announced politely with [contentDescription] (copy, "Loading").
  */
 @Composable
-fun ActivityIndicator(contentDescription: String?, modifier: Modifier = Modifier, onMedia: Boolean = false) {
+fun ActivityIndicator(contentDescription: String?, modifier: Modifier = Modifier, onMedia: Boolean = false, color: Color? = null) {
     CircularProgressIndicator(
-        color = PageRoles.secondaryText(onMedia),
+        color = color ?: PageRoles.secondaryText(onMedia),
         modifier = modifier.semantics {
             liveRegion = LiveRegionMode.Polite
             if (contentDescription != null) this.contentDescription = contentDescription

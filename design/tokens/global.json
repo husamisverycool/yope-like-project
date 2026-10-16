@@ -3426,6 +3426,73 @@
       "element": "minimum contrast ratio: UI components and graphical objects against adjacent colors",
       "evidence": "https://www.w3.org/TR/WCAG22/ (Recommendation 2024-12-12) SC 1.4.3 / 1.4.11; HIG Accessibility table (MERGE_DECISIONS Foundations)",
       "method": "documented thresholds"
+    },
+    "size.global.waveformBarWidth": {
+      "level": "SOURCED",
+      "source_app": "Apple Messages",
+      "surface": "global",
+      "type": "dimension",
+      "value": 2.0,
+      "element": "C-36 voice waveform: width of one bar",
+      "evidence": "references/auto/imessage/apple-support/messages-audio-message-ios27.png audio message bars x205–375, y764–793 (38 bars, coverage width median 2.26 px); cross-check references/auto/whatsapp/store/whatsapp-store-02.png bars x413–760 (6.24 px = 2.63 pt) — design/research/voice-waveform.md",
+      "method": "tools/measure_bars.py (sub-pixel width by coverage) ÷ 1.110 px/pt (display x22–467 = 446 px for a 402-pt iPhone)",
+      "precision": "±0.3 pt (1 px at 1.11 px/pt; WhatsApp 2.63 pt)",
+      "unit": "pt",
+      "notes": "Owner decision 16. Apple's own audio message is the platform reference; WhatsApp's iOS bubble agrees within 0.6 pt."
+    },
+    "size.global.waveformBarGap": {
+      "level": "SOURCED",
+      "source_app": "Apple Messages",
+      "surface": "global",
+      "type": "dimension",
+      "value": 2.1,
+      "element": "C-36 voice waveform: space between two bars",
+      "evidence": "references/auto/imessage/apple-support/messages-audio-message-ios27.png: pitch 4.539 px over 38 bars (coverage centroids) = 4.09 pt, minus the 2.02-pt bar; cross-check references/auto/whatsapp/store/whatsapp-store-02.png pitch 10.68 px = 4.51 pt, gap 1.88 pt — design/research/voice-waveform.md",
+      "method": "pitch (first to last bar centroid ÷ 37) ÷ 1.110 px/pt − bar width",
+      "precision": "±0.1 pt (pitch over 38 bars); WhatsApp 1.88",
+      "unit": "pt"
+    },
+    "size.global.waveformBarMinHeight": {
+      "level": "SOURCED",
+      "source_app": "WhatsApp",
+      "surface": "global",
+      "type": "dimension",
+      "value": 2.0,
+      "element": "C-36 voice waveform: height of a silent bar (a dot: height = bar width)",
+      "evidence": "references/auto/whatsapp/store/whatsapp-store-02.png silent bars 5.8–5.9 px high vs 6.24 px wide; references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png draft capsule silent bars 2.5–2.8 px vs 2.94 px wide (x576–853, y806–862) — design/research/voice-waveform.md",
+      "method": "min bar height ÷ bar width by coverage (tools/measure_bars.py) = 0.93–0.95 → a dot of the bar width (size.global.waveformBarWidth)",
+      "precision": "±0.3 pt",
+      "unit": "pt",
+      "notes": "Apple's 3.5-pt minimum (MSG, 1.1 px/pt) is within its 1-px precision of a short capsule; WhatsApp's two higher-resolution images both show dots."
+    },
+    "layout.global.waveform": {
+      "level": "SOURCED",
+      "source_app": "WhatsApp + Telegram + Apple Messages",
+      "surface": "global",
+      "type": "layout",
+      "value": {
+        "component": "C-36: a row of capsule-ended bars (corners = bar width / 2), size.global.waveformBarWidth wide, size.global.waveformBarGap apart, centred on the row's middle",
+        "maxHeightRatio": 0.553,
+        "maxHeight": "the tallest bar = maxHeightRatio × the height of the capsule or field that holds the waveform (37-pt capsule → 20.5 pt; 48-pt field → 26.5 pt)",
+        "barCount": "width-driven: floor((width + gap) / (barWidth + gap)), at most samples; bar i = the peak of its bucket of the stored levels",
+        "height": "size.global.waveformBarMinHeight + (maxHeight − minHeight) × level ÷ the note's largest level",
+        "played": "color.global.textPrimary on a page, color.global.textOnMedia on media (the capsule's own glyph colour)",
+        "unplayed": "color.global.textSecondary (both platforms, both appearances, page and media)",
+        "idle": "every bar unplayed",
+        "progress": "while playing or paused part-way: bars left of x = progress × width are played; the bar under x is split at x",
+        "samples": 100,
+        "levelMax": 31,
+        "reduction": "100 buckets of the recorder's peak samples (peak per bucket; fewer samples than buckets repeat samples); scale = max(2500 / 32767, 1.8 × mean bucket peak); level = min(31, floor(peak × 31 ÷ scale))",
+        "sampling": "the recorder's peak level every 30 ms while recording (none while paused)",
+        "live": "while recording and while a draft is paused: the samples so far, reduced and drawn by the same rules across the available width",
+        "fallback": "no stored levels: every bar at minHeight; once the note's audio is on the device (after its first play) its levels are computed from the file with the same reduction and drawn from then on",
+        "accessibility": "decorative: hidden from VoiceOver / TalkBack; the note's element reads its duration and play state"
+      },
+      "element": "C-36 voice waveform: geometry, colours, states and the level data behind the bars",
+      "evidence": "maxHeightRatio: references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-updates.png draft capsule 58.4 px (coverage, x862/865) with bars up to 32.3 px; width-driven count: references/auto/whatsapp/blog/whatsapp-blog-2022-03-voice-bubbles.png (nine bubbles, one width for 0:09…9:31) and https://github.com/telegramdesktop/tdesktop/blob/dev/Telegram/SourceFiles/history/view/media/history_view_document.cpp PaintWaveform ('barCount = std::min(availableWidth / (barWidth + st::msgWaveformSkip), wfSize)', peak per bucket, 'barHeight = st::msgWaveformMin + barValue', split bar at activeWidth, 'value = wf ? wf->at(i) : 0', Local::countVoiceWaveform when loaded; accessed 2026-10-16); colours: played (125,127,126) / unplayed (195,196,196) on (243,243,243) in the same WhatsApp draft, Telegram blog frame references/auto/telegram/blog/tg-blog-power-saving-playback-speed-t06.png played ≈(166,110,188) / unplayed ≈(225,204,235); idle: references/auto/whatsapp/store/whatsapp-store-02.png (all bars grey); samples / levelMax / reduction: https://core.telegram.org/constructor/documentAttributeAudio ('Waveform: consists in a series of bitpacked 5-bit values', example implementation getWaveform2: resultSamples = 100, peak = max(2500, sum × 1.8 / 100), value = MIN(31, sample × 31 / peak)); live: the WhatsApp recording panel (0:07, 77 bars across the width) — design/research/voice-waveform.md",
+      "method": "measured ratios (tools/measure_bars.py) and documented rules of three references; colours mapped onto Retro's global colours by the unplayed bar's contrast share (references 0.33–0.41; textSecondary on control 0.365 light, 0.53 dark)",
+      "precision": "maxHeightRatio ±0.02 (1 px of 58.4); colour share: light inside the reference band, dark 0.12 above it",
+      "notes": "Owner decision 16 (docs/OWNER_DECISIONS.md). Supersedes 'no waveform' (MERGE RS-7). Bars and their colours are Retro's (no WhatsApp green, Telegram accent, Apple blue, playhead dot or unread state). Data format = docs/API.md §5.8 / §5.9 voice_levels."
     }
   }
 }

@@ -499,6 +499,9 @@ public enum Tokens {
         /// Retro · global · weekday label on a photo tile ('Mon'), white over the bottom scrim, centred, baseline 13.4 above the tile bottom · SOURCED
         /// token: `fontWeight.global.tileLabel`
         public static let fontWeightGlobalTileLabel: Font.Weight = .semibold
+        /// Apple HIG · onthisday · symbol weight of the expand chevron (iOS SF Symbol) · PLATFORM
+        /// token: `fontWeight.onthisday.modeChevron`
+        public static let fontWeightOnthisdayModeChevron: Font.Weight = .medium
         /// Retro · invite.web · mobile page: pill label weight · SOURCED
         /// token: `invite.web.fontWeight.pill`
         public static let inviteWebFontWeightPill: Font.Weight = .semibold
@@ -799,10 +802,12 @@ public enum Tokens {
         /// token: `camera.sendto.layout.messageField`
         public enum CameraSendtoLayoutMessageField {
             public static let message: String = "C-09 glass pill on the photo: fill color.global.controlOnDeep, icon.global.edit + label text role pill, colour color.global.textOnMedia, height size.global.pillHeight, width hugs the label"
-            public static let voice: String = "icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic"
+            public static let voice: String = "icon-only capsule after it: width size.global.iconPillWidth, height size.global.pillHeight, same fill, icon.global.mic (locked or paused recording: icon.global.send — keeps the note); with a note attached it stays the mic: a new recording replaces the note"
             public static let gap: String = "size.global.pillGap"
             public static let bottomInset: CGFloat = 20.5
             public static let align: String = "the pair centred horizontally on the photo"
+            public static let recording: String = "while recording (chat.voice.layout.recording) the message pill gives way to the recording capsule (same fill and height, C-07 paddings): holding — icon.global.mic in color.global.destructive · elapsed (text role pill, monospaced) · icon.global.back + chat.voice.recording.slideToCancel in color.global.textSecondary; locked — red mic · elapsed · C-36 live waveform · icon.global.pause (chat.voice.a11y.pauseRecording); paused — icon.global.trash in color.global.destructive · icon.global.play / .pause (preview) · C-36 draft waveform · length · icon.global.mic in color.global.destructive (chat.voice.a11y.resumeRecording) — chat.voice.layout.locked's order inside one capsule; the capsule spans the photo's width less the voice capsule, the gap and size.global.pillGap on the leading side, its waveform taking what is left"
+            public static let note: String = "an attached note: the chat.voice capsule on media (chat.voice.layout.capsule: play glyph · C-36 waveform chat.voice.dimension.waveform · duration) centred above the pill pair, size.global.pillGap above it; tap plays / pauses; its context menu (and a VoiceOver / TalkBack action) deletes it (chat.voice.a11y.discard)"
         }
         /// Retro · camera.sendto · 'Add a Message' sheet (message entry; follows the appearance like every sheet over media) · SOURCED
         /// token: `camera.sendto.layout.messageSheet`
@@ -871,6 +876,13 @@ public enum Tokens {
             public static let row: String = "C-16 people row: avatar size.global.avatarPicker, name text role listTitle, trailing the emoji in the size.global.icon box; one row per person and emoji"
             public static let mine: String = "your rows carry chat.reactions.list.removeHint as a second line (listSubtitle, color.global.textSecondary); tapping one unreacts"
             public static let empty: String = "chat.reactions.empty (C-27 title only)"
+        }
+        /// Stream Chat · chat.reactions · order of the rows in the Reactions sheet · SOURCED
+        /// token: `chat.reactions.layout.listOrder`
+        public enum ChatReactionsLayoutListOrder {
+            public static let order: String = "newest first by reactions.created_at (the person who reacted last leads)"
+            public static let rows: String = "one row per person and emoji; a person with several emoji has one row per emoji, each at its own time"
+            public static let yourRows: String = "in their place by time (no pinning); they carry chat.reactions.list.removeHint"
         }
         /// Locket + WhatsApp · chat.reactions · full emoji picker · SOURCED
         /// token: `chat.reactions.layout.picker`
@@ -945,9 +957,11 @@ public enum Tokens {
             public static let corners: String = "radius.global.capsule"
             public static let fill: String = "page: color.global.control (iOS) / color.global.surfaceSecondary.android; on media (photo.viewer): color.global.controlOnDeep"
             public static let glyph: String = "icon.global.play (playing: icon.global.pause) at size.global.iconSmall, color.global.textPrimary"
+            public static let waveform: String = "C-36 (layout.global.waveform) chat.voice.dimension.waveform long, between the glyph and the label; idle: every bar unplayed; playing / paused part-way: played up to the progress"
             public static let label: String = "duration per chat.voice.layout.durationFormat, text role pill, color.global.textPrimary"
-            public static let padding: String = "size.global.pillPaddingLeading → glyph → size.global.pillIconGap → label → size.global.pillPaddingTrailing"
-            public static let width: String = "hugs its content (no width per duration)"
+            public static let padding: String = "size.global.pillPaddingLeading → glyph → size.global.pillIconGap → waveform → size.global.pillIconGap → label → size.global.pillPaddingTrailing"
+            public static let width: String = "hugs its content: glyph + waveform (chat.voice.dimension.waveform) + label"
+            public static let error: String = "the waveform and the label give way to chat.voice.error.play"
         }
         /// Retro · chat.voice · duration label of a voice message · SOURCED
         /// token: `chat.voice.layout.durationFormat`
@@ -956,12 +970,29 @@ public enum Tokens {
             public static let example: String = "0:38"
             public static let digits: String = "monospaced"
         }
+        /// WhatsApp + Apple Messages · chat.voice · hands-free (locked) voice recording: pause, continue, preview the draft, delete, send · SOURCED
+        /// token: `chat.voice.layout.locked`
+        public enum ChatVoiceLayoutLocked {
+            public static let rows: String = "two rows: the C-13 field, then the controls row size.global.pillGap below it, inside size.global.screenMargin"
+            public static let fieldRecording: String = "icon.global.mic in color.global.destructive at the avatar's place · elapsed time (chat.voice.layout.durationFormat, text role body, monospaced, color.global.textPrimary) · C-36 live waveform across the rest of the field to the trailing glyph inset (chat.composer.dimension.glyphInsetTrailing)"
+            public static let fieldPaused: String = "icon.global.play (previewing: icon.global.pause) in color.global.textPrimary at the avatar's place (a button) · C-36 draft waveform with the preview's progress · the draft's length (preview: elapsed), text role body, monospaced, at the trailing glyph inset"
+            public static let controls: String = "leading: icon.global.trash in color.global.destructive (bare glyph, size.global.headerButton hit) aligned with the field's leading glyph; centre: C-11 circle on the page (size.global.circleButton, color.global.control) holding icon.global.pause (recording) or icon.global.mic (paused) in color.global.destructive; trailing: C-11 circle in the primary fill (color.global.accent, icon.global.send in color.global.onAccent) aligned with the field's trailing glyph"
+            public static let controlsHeight: String = "size.global.headerButton"
+            public static let pause: String = "recording → paused: the recorder pauses; the draft's waveform and length show"
+            public static let `continue`: String = "paused → recording: the recording continues at the end of the draft"
+            public static let preview: String = "paused: the glyph plays / pauses the draft from its start; continuing or sending stops the preview"
+            public static let discard: String = "trash: the recording is deleted (no confirmation, as WhatsApp and Messages)"
+            public static let send: String = "send: recording or paused, the whole recording is sent"
+            public static let onMedia: String = "camera.sendto: the same order inside the recording capsule (camera.sendto.layout.messageField)"
+            public static let motion: String = "rows appear / change with duration.global.fade; the live waveform redraws per sample without animation"
+        }
         /// Telegram + WhatsApp · chat.voice · voice playback behaviour · SOURCED
         /// token: `chat.voice.layout.playback`
         public enum ChatVoiceLayoutPlayback {
             public static let tap: String = "the capsule toggles play / pause; one voice message plays at a time (starting another stops the first)"
             public static let label: String = "total duration when idle; elapsed time while playing or paused mid-way"
             public static let end: String = "back to the idle state at the end"
+            public static let waveform: String = "the played part of the waveform follows the playback (layout.global.waveform progress): split at progress × width, updated with the elapsed label"
         }
         /// WhatsApp + Telegram · chat.voice · recording a voice message · SOURCED
         /// token: `chat.voice.layout.recording`
@@ -969,10 +1000,11 @@ public enum Tokens {
             public static let start: String = "press and hold the composer's mic glyph: recording runs while the finger is down"
             public static let send: String = "lift the finger → the voice message is sent"
             public static let cancel: String = "slide left → recording discarded"
-            public static let lock: String = "slide up onto the lock circle above the mic → keeps recording hands-free; then the send glyph sends, the trash glyph discards"
+            public static let lock: String = "slide up onto the lock circle above the mic → keeps recording hands-free (chat.voice.layout.locked)"
             public static let field: String = "while recording the field shows: icon.global.mic in color.global.destructive · elapsed time (chat.voice.layout.durationFormat, text role body, color.global.textPrimary) · icon.global.back + chat.voice.recording.slideToCancel in color.global.textSecondary"
             public static let lockCircle: String = "C-11 circle size.global.circleButton, color.global.control, icon.global.lock in color.global.textPrimary, centred over the mic glyph, size.global.pillGap above the field"
-            public static let haptic: String = "none on start / stop (HIG: do not disturb the microphone); haptic.global.send when sent"
+            public static let haptic: String = "none on start / stop / pause / continue (HIG: do not disturb the microphone); haptic.global.send when sent"
+            public static let pause: String = "locked: pause stops the recording into a draft that can be played, continued, deleted or sent (chat.voice.layout.locked); holding has no pause"
         }
         /// Meta developer docs (standards: accessibility thresholds, share-image specs) · collage.share · the image handed to the share sheet · VERIFIED
         /// token: `collage.share.layout.export`
@@ -1501,6 +1533,26 @@ public enum Tokens {
         public enum GlobalVariableWeightAndroid {
             public static let body: CGFloat = 450
         }
+        /// WhatsApp + Telegram + Apple Messages · global · C-36 voice waveform: geometry, colours, states and the level data behind the bars · SOURCED
+        /// token: `layout.global.waveform`
+        public enum GlobalWaveform {
+            public static let component: String = "C-36: a row of capsule-ended bars (corners = bar width / 2), size.global.waveformBarWidth wide, size.global.waveformBarGap apart, centred on the row's middle"
+            public static let maxHeightRatio: CGFloat = 0.553
+            public static let maxHeight: String = "the tallest bar = maxHeightRatio × the height of the capsule or field that holds the waveform (37-pt capsule → 20.5 pt; 48-pt field → 26.5 pt)"
+            public static let barCount: String = "width-driven: floor((width + gap) / (barWidth + gap)), at most samples; bar i = the peak of its bucket of the stored levels"
+            public static let height: String = "size.global.waveformBarMinHeight + (maxHeight − minHeight) × level ÷ the note's largest level"
+            public static let played: String = "color.global.textPrimary on a page, color.global.textOnMedia on media (the capsule's own glyph colour)"
+            public static let unplayed: String = "color.global.textSecondary (both platforms, both appearances, page and media)"
+            public static let idle: String = "every bar unplayed"
+            public static let progress: String = "while playing or paused part-way: bars left of x = progress × width are played; the bar under x is split at x"
+            public static let samples: CGFloat = 100
+            public static let levelMax: CGFloat = 31
+            public static let reduction: String = "100 buckets of the recorder's peak samples (peak per bucket; fewer samples than buckets repeat samples); scale = max(2500 / 32767, 1.8 × mean bucket peak); level = min(31, floor(peak × 31 ÷ scale))"
+            public static let sampling: String = "the recorder's peak level every 30 ms while recording (none while paused)"
+            public static let live: String = "while recording and while a draft is paused: the samples so far, reduced and drawn by the same rules across the available width"
+            public static let fallback: String = "no stored levels: every bar at minHeight; once the note's audio is on the device (after its first play) its levels are computed from the file with the same reduction and drawn from then on"
+            public static let accessibility: String = "decorative: hidden from VoiceOver / TalkBack; the note's element reads its duration and play state"
+        }
         /// Retro · onthisday · bottom control row of the Rewind page · SOURCED
         /// token: `layout.onthisday.controls`
         public enum OnthisdayControls {
@@ -1695,6 +1747,28 @@ public enum Tokens {
             public static let android: String = "DsTheme(dark = true) around the viewer"
             public static let sheets: String = "menus, alerts and sheets presented over it follow the system appearance"
         }
+        /// Retro · photo.viewer · progress ring around the header avatar · SOURCED
+        /// token: `photo.viewer.layout.avatarRing`
+        public enum PhotoViewerLayoutAvatarRing {
+            public static let outerDiameter: String = "size.global.avatarHeader (ring included)"
+            public static let strokeWidth: CGFloat = 2
+            public static let gap: CGFloat = 3
+            public static let photo: String = "the avatar photo inside: outerDiameter − 2 × (strokeWidth + gap)"
+            public static let start: String = "12 o'clock"
+            public static let direction: String = "clockwise"
+            public static let sweep: String = "index ÷ total of the viewer's context × 360° (the position the pill names; one photo: the full circle)"
+            public static let caps: String = "round"
+            public static let color: String = "color.global.textOnMedia"
+            public static let motion: String = "changes with the page cross-fade (duration.global.crossfade)"
+        }
+        /// Retro · photo.viewer · width of the leading tap zone that goes back · SOURCED
+        /// token: `photo.viewer.layout.backZone`
+        public enum PhotoViewerLayoutBackZone {
+            public static let fraction: CGFloat = 0.2
+            public static let edge: String = "leading"
+            public static let of: String = "the photo's width (full screen width), measured from the leading edge"
+            public static let rest: String = "a tap anywhere else on the photo advances (photo.viewer.layout.advance)"
+        }
         /// Retro · photo.viewer · replies listed under the photo · SOURCED
         /// token: `photo.viewer.layout.comments`
         public enum PhotoViewerLayoutComments {
@@ -1822,6 +1896,12 @@ public enum Tokens {
             public static let people: String = "everyone who shares at least one group with you, without you; order walls.browse.layout.rowOrder"
             public static let search: String = "C-12 search field above the grid filters by name"
         }
+        /// Apple Photos · walls.browse · order of people in the grid · SOURCED
+        /// token: `walls.browse.layout.rowOrder`
+        public enum WallsBrowseLayoutRowOrder {
+            public static let order: String = "by display name, A to Z, in the device locale's collation, ignoring case and accents"
+            public static let tie: String = "profile id"
+        }
         /// Retro · walls.mine · profile header of a wall (C-19 adapted) · SOURCED
         /// token: `walls.mine.layout.header`
         public enum WallsMineLayoutHeader {
@@ -1880,6 +1960,18 @@ public enum Tokens {
             public static let haptics: String = "week.edit.haptic.dragStart on pick-up, week.edit.haptic.dragAlign on each slot change"
             public static let reduceMotion: String = "the drag tracks the finger; the shifts cross-fade (layout.global.reduceMotion)"
         }
+        /// Android photo picker · week.edit · the in / out mark on a grid photo (position, size, colours) · PLATFORM
+        /// token: `week.edit.layout.selectionMark`
+        public enum WeekEditLayoutSelectionMark {
+            public static let unselected: String = "no mark: the photo fills the square cell"
+            public static let selectedInsetRatio: CGFloat = 0.089
+            public static let selectedCornerRatio: CGFloat = 0.119
+            public static let selectedCellFill: String = "color.global.control"
+            public static let mark: String = "icon.global.check in the size.global.checkCircle glyph box at the cell's top-leading corner, its circle in color.global.selection (iOS) / color.global.system.primary (Android) with the check in color.global.textOnMedia, on a color.global.textOnMedia disc markOutline wider in radius"
+            public static let markCentreRatio: CGFloat = 0.148
+            public static let markOutline: CGFloat = 1.5
+            public static let motion: String = "the inset and the mark change with the state cross-fade (duration.global.crossfade)"
+        }
         /// Retro · week.history · the current week's strip (empty-day, add and placeholder tiles) · SOURCED
         /// token: `week.history.layout.currentWeek`
         public enum WeekHistoryLayoutCurrentWeek {
@@ -1903,6 +1995,19 @@ public enum Tokens {
             public static let section: String = "C-20 header: week.history.header.title + the date range (locale interval Monday–Sunday; omitted for the current week without photos) + icon.global.more → week.history.layout.weekMenu; C-17 strip under it"
             public static let strip: String = "one photo tile per post in time order (several photos on a day = several tiles), weekday label from created_at; current week per week.history.layout.currentWeek"
             public static let limit: String = "if app_config free_history_days limits browsing (owner), the list ends there with no message"
+        }
+        /// Retro · week.recap · how the 4 × 6 collage grid is filled when the recap has fewer than 24 photos (or more) · SOURCED
+        /// token: `week.recap.layout.gridFill`
+        public enum WeekRecapLayoutGridFill {
+            public static let columns: String = "floor(√n) for n photos, clamped to 1 … maxColumns (1 photo → 1, 9 → 3, 24 → 4: Retro's three cards)"
+            public static let maxColumns: CGFloat = 4
+            public static let rows: String = "ceil(n ÷ columns), at most maxRows"
+            public static let maxRows: CGFloat = 6
+            public static let area: String = "the grid always fills the card's photo area: as wide as the card minus its padding and that width ÷ areaAspect tall (3:4); cells share it: (width − (columns − 1) × gap) ÷ columns by (height − (rows − 1) × gap) ÷ rows, aspect fill; gap size.global.stripGap"
+            public static let areaAspect: CGFloat = 0.75
+            public static let order: String = "row by row from the leading top cell, in the recap's item order"
+            public static let lastRow: String = "a short last row is leading-aligned; the places after the last photo show the card fill (color.global.surfaceLight)"
+            public static let beyond: String = "photos past maxColumns × maxRows are not drawn on the card (they stay in the recap and the viewer)"
         }
         /// Retro · week.recap · list of the group's recaps (Retro 'Create Recap') · SOURCED
         /// token: `week.recap.layout.list`
@@ -1936,6 +2041,15 @@ public enum Tokens {
             public static let frame: String = "the recap-preview media page of collage.view.layout.screen (capture group, ST-04 2026): full width, safe-area top to mediaPageBottomFromScreenBottom, corners mediaPageCornerRadius, the cover photo blurred inside (layout.global.materials.backdrop); its close circle (C-11 on media) at closeCentreFromTrailing / closeCentreBelowPageTop"
             public static let pages: String = "week.recap.layout.pages, swiped sideways inside the frame; page dots (C-31, on media) centred dimension.year.story.dots.offset below the frame (memory group)"
             public static let bottomRow: String = "centre at collage.view.layout.screen bottomRowCentreFromScreenBottom: leading the select-photos thumbnail (week.recap.dimension.selectThumb square, corners week.recap.radius.selectThumb, week.recap.dimension.selectThumbBorder border in color.global.surfaceLight, the recap's first item, aspect fill) at size.global.buttonMarginH → week.edit; trailing the C-09 light pill week.recap.saveAsAlbum laid out as collage.share.layout.pill (height, paddingHorizontal, trailingInset) → album sheet"
+        }
+        /// Material 3 · widget.android · lock-screen placement of the Glance widget (owner decision 18: opt in) · PLATFORM
+        /// token: `widget.android.layout.lockScreen`
+        public enum WidgetAndroidLayoutLockScreen {
+            public static let widgetCategory: String = "home_screen|keyguard"
+            public static let `where`: String = "the lock-screen widget hub: Android 16 QPR2+ (AOSP 'the release after Android 16 (QPR1)'), Pixel Tablet since 2024; earlier releases ignore keyguard (home screen only)"
+            public static let size: String = "about 4 x 3 cells → the Medium size class (PlatformWidgetGrid.minSize(4, 3) = 276 x 183 dp)"
+            public static let tap: String = "the same PendingIntent; the activity opens after unlock (no android:showWhenLocked)"
+            public static let preview: String = "the generated preview covers every category (Glance setWidgetPreviews default HOME_SCREEN or KEYGUARD or SEARCHBOX)"
         }
         /// Retro · widget.android · AppWidgetProviderInfo of the Glance widget (default 2 × 2, resizable down to 100 dp) · SOURCED
         /// token: `widget.android.layout.provider`
@@ -2179,6 +2293,9 @@ public enum Tokens {
         public static let widgetAndroidRadiusWidget: CGFloat = 22
     }
     public enum Shadows {
+        /// Retro · albums.view · drop shadow under the book-like album cover · SOURCED
+        /// token: `albums.view.shadow.cover`
+        public static let albumsViewShadowCover: DSShadow = DSShadow(color: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.25), radius: 8.5, x: 3, y: 10)
         /// Retro · groups.screen · drop shadow of the 'book' cover (Retro's one shadow on a non-photo surface; also used by the cover on groups.invite and groups.create) · SOURCED
         /// token: `groups.screen.shadow.cover`
         public static let groupsScreenShadowCover: DSShadow = DSShadow(color: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.25), radius: 8.5, x: 3, y: 10)
@@ -2259,6 +2376,9 @@ public enum Tokens {
         /// Retro · chat.thread · message row: baseline of the name / time line → baseline of the first text line (and text line → text line) · SOURCED
         /// token: `chat.thread.dimension.rowLinePitch`
         public static let chatThreadDimensionRowLinePitch: CGFloat = 19
+        /// Apple Messages + WhatsApp · chat.voice · length of a voice message's waveform (C-36) in the capsule: thread, viewer footer and comments, send-to note · SOURCED
+        /// token: `chat.voice.dimension.waveform`
+        public static let chatVoiceDimensionWaveform: CGFloat = 154
         /// Apple HIG · daily.liveactivity · Lock Screen presentation margin · VERIFIED
         /// token: `daily.liveactivity.size.lockScreenMargin`
         public static let dailyLiveactivitySizeLockScreenMargin: CGFloat = 14
@@ -2334,6 +2454,15 @@ public enum Tokens {
         /// Retro · onthisday · width (stroke) of every tick and of the indicator · SOURCED
         /// token: `dimension.onthisday.dial.tickWidth`
         public static let onthisdayDialTickWidth: CGFloat = 3.2
+        /// Retro · onthisday · expand chevron ink centre below the date title’s cap middle · SOURCED
+        /// token: `dimension.onthisday.modeChevron.drop`
+        public static let onthisdayModeChevronDrop: CGFloat = 2
+        /// Retro · onthisday · date title ink → expand chevron ink · SOURCED
+        /// token: `dimension.onthisday.modeChevron.gap`
+        public static let onthisdayModeChevronGap: CGFloat = 8.7
+        /// Retro · onthisday · expand chevron after the date title (opens the mode menu): ink width · SOURCED
+        /// token: `dimension.onthisday.modeChevron.width`
+        public static let onthisdayModeChevronWidth: CGFloat = 19.7
         /// Retro · onthisday · date title baseline → subtitle baseline · SOURCED
         /// token: `dimension.onthisday.subtitleBaseline`
         public static let onthisdaySubtitleBaseline: CGFloat = 26.4
@@ -2706,6 +2835,15 @@ public enum Tokens {
         /// Retro · global · safe-area top → baseline of the display title on a root screen · SOURCED
         /// token: `size.global.titleTop`
         public static let globalTitleTop: CGFloat = 64
+        /// Apple Messages · global · C-36 voice waveform: space between two bars · SOURCED
+        /// token: `size.global.waveformBarGap`
+        public static let globalWaveformBarGap: CGFloat = 2.1
+        /// WhatsApp · global · C-36 voice waveform: height of a silent bar (a dot: height = bar width) · SOURCED
+        /// token: `size.global.waveformBarMinHeight`
+        public static let globalWaveformBarMinHeight: CGFloat = 2
+        /// Apple Messages · global · C-36 voice waveform: width of one bar · SOURCED
+        /// token: `size.global.waveformBarWidth`
+        public static let globalWaveformBarWidth: CGFloat = 2
         /// Retro · walls.browse · people grid: avatar centre → avatar centre of the next column (three columns, centred on the screen) · SOURCED
         /// token: `walls.browse.dimension.columnPitch`
         public static let wallsBrowseDimensionColumnPitch: CGFloat = 124.3

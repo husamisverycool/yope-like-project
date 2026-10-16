@@ -565,8 +565,12 @@ public enum Copy {
     public static func chatVoiceA11yMessageMine(duration: String) -> String { CopyLookup.format("chat.voice.a11y.messageMine", default: "Your voice message, {duration}", ["duration": duration]) }
     /// "Pause" — Retro · chat.voice · new · SOURCED
     public static var chatVoiceA11yPause: String { CopyLookup.string("chat.voice.a11y.pause", default: "Pause") }
+    /// "Pause recording" — WhatsApp · chat.voice · adapted · SOURCED
+    public static var chatVoiceA11yPauseRecording: String { CopyLookup.string("chat.voice.a11y.pauseRecording", default: "Pause recording") }
     /// "Play voice message, {duration}" — Retro · chat.voice · new · SOURCED
     public static func chatVoiceA11yPlay(duration: String) -> String { CopyLookup.format("chat.voice.a11y.play", default: "Play voice message, {duration}", ["duration": duration]) }
+    /// "Continue recording" — WhatsApp + Apple Messages · chat.voice · adapted · SOURCED
+    public static var chatVoiceA11yResumeRecording: String { CopyLookup.string("chat.voice.a11y.resumeRecording", default: "Continue recording") }
     /// "Error loading voice message. Tap to retry" — Retro · chat.voice · adapted · SOURCED
     public static var chatVoiceErrorPlay: String { CopyLookup.string("chat.voice.error.play", default: "Error loading voice message. Tap to retry") }
     /// "Couldn't record voice message" — Retro · chat.voice · new · SOURCED
@@ -1165,6 +1169,10 @@ public enum Copy {
     public static var onthisdayMenuReport: String { CopyLookup.string("onthisday.menu.report", default: "Report Post") }
     /// "Save to Camera Roll" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayMenuSave: String { CopyLookup.string("onthisday.menu.save", default: "Save to Camera Roll") }
+    /// "On this day…" — Retro · onthisday · adapted · SOURCED
+    public static var onthisdayModeDay: String { CopyLookup.string("onthisday.mode.day", default: "On this day…") }
+    /// "Shuffle" — Retro · onthisday · verbatim · SOURCED
+    public static var onthisdayModeShuffle: String { CopyLookup.string("onthisday.mode.shuffle", default: "Shuffle") }
     /// "Try it out" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayNuxButton: String { CopyLookup.string("onthisday.nux.button", default: "Try it out") }
     /// "On This Day is a private way to revisit what {group} shared on this date over the years. Drag the dial to take a spin through your memories." — Retro · onthisday · new · SOURCED
@@ -1643,6 +1651,10 @@ public enum Copy {
     public static var wallsMineErrorTitle: String { CopyLookup.string("walls.mine.error.title", default: "Error loading your weeks. Tap here to try again.") }
     /// "In recap" — Retro · week.edit · new · SOURCED
     public static var weekEditA11yInRecap: String { CopyLookup.string("week.edit.a11y.inRecap", default: "In recap") }
+    /// "Move photo left" — Chrome · week.edit · adapted · SOURCED
+    public static var weekEditA11yMoveLeft: String { CopyLookup.string("week.edit.a11y.moveLeft", default: "Move photo left") }
+    /// "Move photo right" — Chrome · week.edit · adapted · SOURCED
+    public static var weekEditA11yMoveRight: String { CopyLookup.string("week.edit.a11y.moveRight", default: "Move photo right") }
     /// "Not in recap" — Retro · week.edit · new · SOURCED
     public static var weekEditA11yNotInRecap: String { CopyLookup.string("week.edit.a11y.notInRecap", default: "Not in recap") }
     /// "Create Album" — Retro · week.edit · verbatim · SOURCED

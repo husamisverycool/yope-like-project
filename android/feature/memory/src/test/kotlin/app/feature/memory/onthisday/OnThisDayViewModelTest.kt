@@ -119,6 +119,22 @@ class OnThisDayViewModelTest {
         assertEquals(1, backend.calls.count { it == "historyWeeks" })
     }
 
+    @Test fun modeMenuGoesBackFromShuffleToTheDay() {
+        val vm = vm(Scenario.backend())
+        vm.step(+1)
+        vm.showDay()
+        assertEquals("already the day: nothing changes", 1, vm.page.index)
+        vm.shuffle()
+        assertEquals(MemoryMode.Shuffle, vm.page.mode)
+        vm.step(+1)
+        vm.togglePlay()
+        vm.showDay()
+        assertEquals(MemoryMode.Day, vm.page.mode)
+        assertEquals("back at the newest memory of the day", 0, vm.page.index)
+        assertEquals(listOf("p-2025", "p-2023a", "p-2023b", "p-2023c"), vm.page.memories.map { it.postId })
+        assertFalse(vm.page.playing)
+    }
+
     @Test fun menuSaveShareAndDeleteYourOwnMemory() = runTest {
         val backend = Scenario.backend()
         val files = FakePhotoFiles()
