@@ -3,6 +3,7 @@
 // its origin). HTTP 404 / 410 / 429 / 5xx map to the card states of design/surfaces/invite.appclip.md / invite.web.md.
 // Without a configured domain the installed app reads the `invite_preview` RPC instead (storage paths, not URLs).
 import AppData
+import AppModels
 import Foundation
 
 /// `preview.json` (web/src/app.ts): `group_name`, `group_kind`, `inviter_first_name`, `cover {url, width, height}`,
@@ -115,6 +116,23 @@ extension InvitePreviewState {
         case .offline: return .offline
         default: return .error
         }
+    }
+}
+
+/// The invite token of a URL the App Clip is opened with: the invite link itself (`https://<domain>/i/<token>`, Safari's
+/// App Clip card and Messages) or the App Clip link the invite page's "Let's go" builds
+/// (`https://appclip.apple.com/id?p=<bundle id>.Clip&token=<token>`, web/src/platform.ts `appClipUrl`).
+enum InviteClipLink {
+    static let appClipHost = "appclip.apple.com" // provenance-ok: Apple's App Clip link host, not user-facing
+    static let tokenQueryItem = "token" // provenance-ok: query item name shared with web/src/platform.ts
+
+    static func token(from url: URL, parser: DeepLinkParser) -> String? {
+        if case let .invite(token)? = parser.parse(url) { return token }
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              components.host?.lowercased() == appClipHost,
+              let token = components.queryItems?.first(where: { $0.name == tokenQueryItem })?.value,
+              DeepLinkParser.isValidToken(token) else { return nil }
+        return token
     }
 }
 

@@ -3,7 +3,8 @@
 // references/auto/retro/press/tc-2023-12-recaps.png (TC-REC phones 2–3), references/auto/retro/press/tc-2023-12-retro-header.png
 // (TC-H); mechanics: references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png (design/surfaces/year.story.md).
 // Components: C-34, C-31, C-22 (position pill), C-11, C-09 (recap Share pill), C-27, C-28; the recap preview screen is
-// the capture group's shared `RecapPreviewScreen` (Features/Capture/Collage).
+// the capture group's shared `RecapPreviewScreen` (Features/Capture/Collage): the cards as `page`, the position pill and
+// `RecapPreviewClose` as `overlay`, pause / play / replay as `leading`, Share as `trailing`, dots on the summary only.
 import AppData
 import DesignSystem
 import SwiftUI

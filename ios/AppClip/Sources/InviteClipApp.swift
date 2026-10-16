@@ -21,7 +21,8 @@ struct InviteClipApp: App {
     var body: some Scene {
         WindowGroup {
             InviteClipContainer(model: model)
-                // App Clip invocations (QR, Safari card, Messages) arrive as web activities.
+                // App Clip invocations (Safari card, the invite page's App Clip link, Messages, QR) arrive as web
+                // activities.
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
                     model.open(activity.webpageURL)
                 }
@@ -95,8 +96,9 @@ final class InviteClipModel {
         )
     }
 
+    /// The invite link, or the App Clip link with its `token` (`InviteClipLink`).
     func open(_ url: URL?) {
-        guard let url, case let .invite(token)? = parser.parse(url) else {
+        guard let url, let token = InviteClipLink.token(from: url, parser: parser) else {
             if inviteToken == nil { preview = .notFound }
             return
         }

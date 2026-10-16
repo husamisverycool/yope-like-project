@@ -24,7 +24,7 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertEqual(model.profile(SocialDemo.ana)?.socialFirstName, "Ana")
         XCTAssertEqual(model.group?.name, "roommates")
         XCTAssertFalse(model.hasOlder)
-        XCTAssertEqual(model.timeZone.identifier, "UTC", "times and day dividers in the group's time zone")
+        XCTAssertEqual(model.timeZone, model.group?.resolvedTimeZone, "times and day dividers in the group's time zone")
     }
 
     func testEmptyThread() async {

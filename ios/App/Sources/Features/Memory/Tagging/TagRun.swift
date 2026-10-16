@@ -276,21 +276,3 @@ struct TagRunControl: View {
         }
     }
 }
-
-// MARK: - Yope-era signature (the photo.viewer pass replaces the call site)
-
-/// The Yope-era white "i'm in this" capsule is gone (tagging.md, MERGE RM-9): this draws the Retro run in its untagged /
-/// tagged-by-you look from the host's on / off state, so the viewer keeps compiling until it hosts `TagRunControl` or
-/// `TagRun` with the tagged names.
-@available(*, deprecated, message: "Retro's tag run: TagRunControl (or TagRun + TaggingSheet) in the viewer footer's second line")
-struct SelfTagToggleControl: View {
-    let isOn: Bool
-    var isPending = false
-    var showsCoach = false
-    let onToggle: () -> Void
-    var onDismissCoach: () -> Void = {}
-
-    var body: some View {
-        TagRun(names: [], isTagged: isOn, isPending: isPending, action: onToggle)
-    }
-}

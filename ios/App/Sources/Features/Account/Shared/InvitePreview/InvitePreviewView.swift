@@ -135,8 +135,42 @@ private struct InvitePillStyle: ButtonStyle {
     }
 }
 
+/// The card's colour field (`invite.web.layout.backdrop`, MERGE L-6): the photo aspect-filled, extended 3σ past the card
+/// so the blur has no faded edge, Gaussian-blurred at σ = `blurSigmaToWidth` × the card width, under
+/// `color.global.backdropDim`; `color.global.backgroundDeep` while it loads. Not the recap's mild C-34 blur
+/// (`BlurredBackdrop`, σ `size.global.backdropBlur`).
+struct InviteBackdrop: View {
+    let source: PhotoSource?
+
+    /// The blur's standard deviation for a card `width` wide.
+    static func sigma(width: CGFloat) -> CGFloat {
+        width * Tokens.Layouts.InviteWebLayoutBackdrop.blurSigmaToWidth
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            let sigma = Self.sigma(width: proxy.size.width)
+            let bleed = sigma * Self.bleedSigmas
+            ZStack {
+                Tokens.Colors.globalBackgroundDeep
+                PhotoView(source: source)
+                    .frame(width: proxy.size.width + bleed * 2, height: proxy.size.height + bleed * 2)
+                    .blur(radius: sigma)
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                Tokens.Colors.globalBackdropDim
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .clipped()
+        }
+        .accessibilityHidden(true)
+    }
+
+    /// "extended 3σ past the card" (`invite.web.layout.backdrop.source`).
+    private static let bleedSigmas: CGFloat = 3 // provenance-ok: the token's "3σ" extension, stated in its source text
+}
+
 /// The invite card on the white page (invite.web mobile): inset `invite.web.size.cardInset` from every screen edge,
-/// corners `invite.web.radius.card`, filled with the C-34 blurred backdrop (`BlurredBackdrop`) or
+/// corners `invite.web.radius.card`, filled with the blurred colour field (`InviteBackdrop`) or
 /// `color.global.backgroundDeep`. A centred column: the inviter's avatar centred in the space above the text block;
 /// the headline, the line and the member stack anchored `invite.web.size.bodyToPill` above the pill; the pill
 /// `invite.web.size.pillToFooter` above the footer "Terms & Privacy" (`invite.web.size.footerMargin` around it).
@@ -183,7 +217,7 @@ struct InviteCard: View {
     @ViewBuilder
     private var card: some View {
         if let backdrop = content.backdrop {
-            BlurredBackdrop(source: backdrop)
+            InviteBackdrop(source: backdrop)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(content.backdropLabel ?? ""))
                 .accessibilityAddTraits(.isImage)

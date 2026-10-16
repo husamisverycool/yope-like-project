@@ -406,7 +406,7 @@ def main():
     sheets = [camera_capture(), camera_sendto(), daily_capture(), daily_dualimage(), collage_view(), collage_view(share=True)]
     refs_w = [f"{REF}/retro/apk/widget_preview_journals.webp", f"{REF}/retro/apk/widget_preview_friends.webp"]
     sheets.append(widget("widget.android", "Retro's Glance widget (Albums variant: name over group), Locket's tap → camera.",
-                         ["widget.android_small_photo.png", "widget.android_small_photo-dark.png", "widget.android_small_empty.png", "widget.android_configure-groups.png"], refs_w, widget_android_extra))
+                         ["widget.android_small_photo.png", "widget.android_small_photo-dark.png", "widget.android_small_empty.png", "widget.android_small_signedout.png"], refs_w, widget_android_extra))
     for size in ["small", "medium", "large"]:
         sheets.append(widget(f"widget.home.{size}", f"Android form of `widget.home.{size}`: one layout at every size (RC-11).",
                              [f"widget.android_{size}_photo.png", f"widget.android_{size}_collage.png", f"widget.android_{size}_empty.png"], refs_w))

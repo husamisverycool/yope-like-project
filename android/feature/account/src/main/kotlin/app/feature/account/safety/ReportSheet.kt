@@ -174,7 +174,6 @@ fun reportTarget(route: AppRoute.SafetyReport): ReportTarget? = when {
  * M3 ModalBottomSheet (`safety.report.layout.flow` android — container `color.global.system.surfaceContainerLow`, top
  * corners `radius.global.sheet` android) while choosing; nothing while the report is sent; the platform alerts after.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportRoute(nav: NavController, target: ReportTarget) {
     val env = LocalAccountEnvironment.current
@@ -182,50 +181,68 @@ fun ReportRoute(nav: NavController, target: ReportTarget) {
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
     UndimmedDialogWindow()
+    ReportFlow(
+        state = state,
+        onClose = { nav.popBackStack() },
+        onReason = vm::choose,
+        onAskLeave = vm::askLeave,
+        onLeave = vm::leave,
+        onBlock = { personId ->
+            nav.popBackStack()
+            nav.navigate(AppRoute.SafetyBlock(personId))
+        },
+    )
+}
+
+/**
+ * What the flow draws per phase: the M3 ModalBottomSheet with [ReportContent] while choosing; nothing while sending; the
+ * leave confirmation, or the platform alerts after.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReportFlow(
+    state: ReportUiState,
+    onClose: () -> Unit,
+    onReason: (ReportReason) -> Unit,
+    onAskLeave: () -> Unit,
+    onLeave: () -> Unit,
+    onBlock: (String) -> Unit,
+) {
     when (state.phase) {
         ReportPhase.Reasons, ReportPhase.NextSteps -> {
             val corner = Tokens.Layouts.GlobalSheet.android.dp
             ModalBottomSheet(
-                onDismissRequest = { nav.popBackStack() },
+                onDismissRequest = onClose,
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                 containerColor = Tokens.Colors.globalSystemSurfaceContainerLow,
                 shape = RoundedCornerShape(topStart = corner, topEnd = corner),
             ) {
-                ReportContent(
-                    state = state,
-                    onReason = vm::choose,
-                    onCancel = { nav.popBackStack() },
-                    onLeave = vm::askLeave,
-                    onBlock = { personId ->
-                        nav.popBackStack()
-                        nav.navigate(AppRoute.SafetyBlock(personId))
-                    },
-                )
+                ReportContent(state = state, onReason = onReason, onCancel = onClose, onLeave = onAskLeave, onBlock = onBlock)
             }
         }
         ReportPhase.Sending -> Unit
         ReportPhase.ConfirmLeave -> LeaveGroupDialog(
             groupName = state.groupName.orEmpty(),
             last = false,
-            onConfirm = vm::leave,
-            onDismiss = { nav.popBackStack() },
+            onConfirm = onLeave,
+            onDismiss = onClose,
         )
         ReportPhase.Error -> SystemAlertDialog(
             title = stringResource(R.string.safety_report_error_title),
             text = stringResource(R.string.safety_report_error_detail),
             confirmLabel = errorDismissLabel(),
-            onConfirm = { nav.popBackStack() },
+            onConfirm = onClose,
             dismissLabel = null,
-            onDismiss = { nav.popBackStack() },
+            onDismiss = onClose,
             dismissible = false,
         )
         ReportPhase.NotFound -> SystemAlertDialog(
             title = null,
             text = stringResource(R.string.safety_report_error_notfound),
             confirmLabel = errorDismissLabel(),
-            onConfirm = { nav.popBackStack() },
+            onConfirm = onClose,
             dismissLabel = null,
-            onDismiss = { nav.popBackStack() },
+            onDismiss = onClose,
             dismissible = false,
         )
     }
