@@ -38,6 +38,13 @@ class SignUpSession {
     @Volatile var phoneE164: String? = null
     @Volatile var phoneDisplay: String? = null
     @Volatile var codeSentAtMillis: Long? = null
+
+    /** A session ended (sign-out, account deletion, expiry): the next person starts at the landing with an empty number. */
+    fun clear() {
+        phoneE164 = null
+        phoneDisplay = null
+        codeSentAtMillis = null
+    }
 }
 
 /**

@@ -133,6 +133,24 @@ class AccountFlowsTest {
         assertFalse(nav.popBackStack())
     }
 
+    /**
+     * After a sign-out the next person sees the landing (auth.phone A), not the form still holding the previous number
+     * (the end-to-end journey found the form after Maya signed out).
+     */
+    @Test fun signOutReturnsToTheLandingWithoutThePreviousNumber() {
+        val backend = FakeAccountBackend()
+        val env = fakeEnvironment(backend, FakeStores())
+        start(env)
+        signUp(backend)
+        at<AppRoute.GroupsList>()
+        kotlinx.coroutines.runBlocking { backend.signOut() }
+        compose.waitForIdle()
+        at<AppRoute.AuthPhone>()
+        text("Get started").assertExists()
+        assertNull(env.signUp.phoneDisplay)
+        assertNull(env.signUp.phoneE164)
+    }
+
     @Test fun createAGroupFromTheEmptyHome() {
         val backend = FakeAccountBackend().apply { signIn(); ageConfirmed = true; profile(meId, "Ana Lima") }
         start(fakeEnvironment(backend, FakeStores().apply { onboarded += backend.meId }))

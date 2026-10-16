@@ -442,6 +442,8 @@ def photo_viewer():
     sh.row("`photo.viewer.layout.voiceNote` (capsule on `color.global.controlOnDeep`, one pitch under the date)", tok("size.global.pillHeight"), m["voice"]["height"])
     sh.row("add-reaction glyph ink at the margin", W - tok("size.global.screenMargin"), m["add"]["right"] - 12, tol=0.8, note="hit 48, glyph box 24 → ink edge 12 inside the hit box")
     sh.row("`photo.viewer.dimension.footerToDivider` (voice capsule bottom → divider)", tok("photo.viewer.dimension.footerToDivider"), m["divider"]["top"] - m["voice"]["bottom"])
+    sh.row("voice note and voice replies: C-36 waveform (`chat.voice.dimension.waveform`, played `color.global.textOnMedia`), the post's / reply's `voice_levels` (none → decoded from the audio)", "spec",
+           "renders `othersPhoto` (note `v-1`), voice reply `c-3` in the comments; `SocialViewModelTest` comments", status="match (token)")
     sh.row("divider (C-32) `color.global.separator` (dark)", tok("color.global.separator", "dark"), m["dividerInk"]["hex"])
     sh.row("divider `size.global.hairline` (1 device px at 2×)", 0.5, m["divider"]["height"])
     sh.row("divider inside the margins", tok("size.global.screenMargin"), m["divider"]["left"])

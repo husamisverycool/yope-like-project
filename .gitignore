@@ -55,3 +55,7 @@ references/**/*.mov
 references/**/*.m4a
 references/**/*.svg
 references/**/*.txt
+
+# Python bytecode from the verification scripts
+__pycache__/
+*.pyc

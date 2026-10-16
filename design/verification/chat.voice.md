@@ -8,7 +8,7 @@ Retro reference(s): `references/auto/retro/lazyweb/retro-lazyweb-20251020-week43
 
 Snapshots (CI): `chat.voice-idle-light.png`, `chat.voice-idle-dark.png`, `chat.voice-recording-light.png`, `chat.voice-recording-locked-light.png`, `chat.voice-recording-locked-dark.png`, `chat.voice-recording-paused-light.png`, `chat.voice-recording-paused-dark.png`, `chat.voice-error-play-light.png` (the recording states on the loaded thread, owner decision 16; C-36 alone: `components/testC36VoiceWaveform.*`)
 
-**Summary: 27 matched · 0 approximated · 0 not matched (BLOCKED or not buildable).**
+**Summary: 25 matched · 0 approximated · 0 not matched (BLOCKED or not buildable).**
 
 ## Elements
 
