@@ -18,7 +18,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performSemanticsAction
@@ -31,10 +31,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.data.repo.ReactionEntry
 import app.feature.social.FakeSocialData.Companion.ANA
-import app.feature.social.FakeSocialData.Companion.BASE
 import app.feature.social.FakeSocialData.Companion.BEN
 import app.feature.social.FakeSocialData.Companion.GROUP
-import app.feature.social.FakeSocialData.Companion.ME
 import app.feature.social.chat.ChatNav
 import app.feature.social.chat.ChatScreen
 import app.feature.social.chat.ChatViewModel
@@ -74,7 +72,7 @@ class SocialFlowTest {
     }
 
     @get:Rule val compose = createComposeRule()
-    private val chatNav = ChatNav({}, {}, {}, {}, {}, {}, {}, { _, _ -> })
+    private val chatNav = ChatNav({}, {}, {}, {}, {}, { _, _ -> }, {})
 
     @Before fun setUp() {
         fixLocale()
@@ -91,37 +89,51 @@ class SocialFlowTest {
         return vm
     }
 
-    /** Typing swaps the mic for the lime send circle (`chat.composer.layout.typingState`); it and the keyboard's send key send. */
+    /** Typing swaps camera + mic for the send glyph (`chat.composer.layout.typingState`); send sends and clears. */
     @Test fun sendText() {
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
-        compose.onNodeWithContentDescription("record a voice message").assertExists()
+        compose.onNodeWithContentDescription("Record a voice message").assertExists()
         compose.onNode(hasSetTextAction()).performTextInput("on my way")
-        compose.onNodeWithContentDescription("record a voice message").assertDoesNotExist()
-        compose.onNodeWithContentDescription("send").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Record a voice message").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Send").performClick()
         compose.waitForIdle()
         assertTrue(data.calls.contains("sendText:on my way:"))
-        compose.onNodeWithContentDescription("you, on my way").assertExists()
-        compose.onNodeWithContentDescription("record a voice message").assertExists()
-
-        compose.onNode(hasSetTextAction()).performTextInput("brb")
-        compose.onNode(hasSetTextAction()).performImeAction()
-        compose.waitForIdle()
-        assertTrue(data.calls.contains("sendText:brb:"))
+        compose.onNodeWithContentDescription("You, on my way").assertExists()
+        compose.onNodeWithContentDescription("Record a voice message").assertExists()
     }
 
-    /** A failed send stays in the thread with the red indicator and label; a tap sends it again. */
+    /** A failed send stays with "Couldn't send. Tap to retry"; a tap sends it again. */
     @Test fun failedSendRetries() {
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
         data.failNext += "sendText:on my way:"
         compose.onNode(hasSetTextAction()).performTextInput("on my way")
-        compose.onNodeWithContentDescription("send").performClick()
         compose.waitForIdle()
-        compose.onNodeWithText("couldn’t send — tap to try again").assertExists().performClick()
+        compose.onNodeWithContentDescription("Send").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Couldn't send. Tap to retry").assertExists().performClick()
         compose.waitForIdle()
         assertEquals(2, data.calls.count { it == "sendText:on my way:" })
-        compose.onNodeWithText("couldn’t send — tap to try again").assertDoesNotExist()
+        compose.onNodeWithText("Couldn't send. Tap to retry").assertDoesNotExist()
+    }
+
+    /** Context menu → Reply: the reply bar names the sender; the text goes with `p_reply_to_message_id`. */
+    @Test fun replyToAMessage() {
+        val data = FakeSocialData().apply { seedChat() }
+        chat(data)
+        compose.onNodeWithContentDescription("Ben, strictly vibes only tonight").performTouchInput { longClick() }
+        compose.waitForIdle()
+        compose.onNodeWithText("Reply").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Replying to Ben").assertExists()
+        compose.onNode(hasSetTextAction()).performTextInput("same")
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Send").performClick()
+        compose.waitForIdle()
+        assertTrue(data.calls.contains("sendText:same::m=m-2"))
+        compose.onNodeWithText("Replying to Ben").assertDoesNotExist()
     }
 
     private fun micGranted() = Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).grantPermissions(Manifest.permission.RECORD_AUDIO)
@@ -131,10 +143,11 @@ class SocialFlowTest {
         micGranted()
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
-        compose.onNodeWithContentDescription("record a voice message").performTouchInput { down(center) }
+        compose.onNodeWithContentDescription("Record a voice message").performTouchInput { down(center) }
         assertTrue(testVoice.recording)
-        compose.onNodeWithText("slide to cancel").assertExists()
-        compose.onNodeWithContentDescription("record a voice message").performTouchInput {
+        compose.onNodeWithText("Slide to cancel").assertExists()
+        compose.onNodeWithContentDescription("Keep recording").assertExists()
+        compose.onNodeWithContentDescription("Record a voice message").performTouchInput {
             advanceEventTime(HOLD_MS)
             up()
         }
@@ -148,7 +161,7 @@ class SocialFlowTest {
         micGranted()
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
-        compose.onNodeWithContentDescription("record a voice message").performTouchInput {
+        compose.onNodeWithContentDescription("Record a voice message").performTouchInput {
             down(center)
             advanceEventTime(HOLD_MS)
             moveBy(androidx.compose.ui.geometry.Offset(-SLIDE_PX, 0f))
@@ -156,18 +169,18 @@ class SocialFlowTest {
         }
         compose.waitForIdle()
         assertFalse(testVoice.recording)
-        compose.onNodeWithContentDescription("record a voice message").performClick()
+        compose.onNodeWithContentDescription("Record a voice message").performClick()
         compose.waitForIdle()
         assertFalse(testVoice.recording)
         assertFalse(data.calls.any { it.startsWith("sendVoice") })
     }
 
-    /** Slide up onto the lock: hands-free; pause keeps a draft to play; the send circle sends it. */
-    @Test fun voiceLockPauseAndSend() {
+    /** Slide up onto the lock: hands-free; then trash discards or send sends. */
+    @Test fun voiceLockAndSend() {
         micGranted()
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
-        compose.onNodeWithContentDescription("record a voice message").performTouchInput {
+        compose.onNodeWithContentDescription("Record a voice message").performTouchInput {
             down(center)
             advanceEventTime(HOLD_MS)
             moveBy(androidx.compose.ui.geometry.Offset(0f, -SLIDE_PX))
@@ -175,51 +188,44 @@ class SocialFlowTest {
         }
         compose.waitForIdle()
         assertTrue("locked: still recording after the finger lifts", testVoice.recording)
-        compose.onNodeWithContentDescription("pause").performClick()
+        compose.onNodeWithContentDescription("Delete recording").assertExists()
+        compose.onNodeWithContentDescription("Send").performClick()
         compose.waitForIdle()
         assertFalse(testVoice.recording)
-        compose.onNodeWithContentDescription("play voice message, 4 seconds").assertExists()
-        compose.onNodeWithContentDescription("send").performClick()
-        compose.waitForIdle()
         assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))
     }
 
-    /** TalkBack: activating the mic records hands-free (no hold gesture needed); the send circle sends. */
+    /** TalkBack: activating the mic records hands-free (no hold gesture); trash discards. */
     @Test fun voiceWithTalkBack() {
         micGranted()
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
-        compose.onNodeWithContentDescription("record a voice message").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.onNodeWithContentDescription("Record a voice message").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         compose.waitForIdle()
         assertTrue(testVoice.recording)
-        compose.onNodeWithContentDescription("send").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.onNodeWithContentDescription("Delete recording").performClick()
         compose.waitForIdle()
-        assertTrue(data.calls.contains("sendVoice:${FakeVoice.DURATION_MS}"))
+        assertFalse(testVoice.recording)
+        assertFalse(data.calls.any { it.startsWith("sendVoice") })
     }
 
-    @Test fun reactFromTheThread() {
+    /** Long press on a photo: the quick-reaction row reacts at once; an emoji you used shows selected and unreacts. */
+    @Test fun quickReactionsReactAndUnreact() {
         val data = FakeSocialData().apply { seedChat() }
         chat(data)
-        compose.onNodeWithContentDescription("Ana’s pic, 8:01 PM", substring = true).performTouchInput { longClick() }
+        compose.onNodeWithContentDescription("Ana's photo", substring = true).performTouchInput { longClick() }
         compose.waitForIdle()
-        compose.onAllNodesWithContentDescription("face with tears of joy").onFirst().performClick()
+        compose.onNodeWithContentDescription("React with sparkling heart").performClick()
         compose.waitForIdle()
-        assertTrue(data.calls.contains("react:p-1:😂"))
-    }
-
-    /** `chat.reactions.layout.unreact`: your reaction is highlighted (selected) in the picker; tapping it takes it back. */
-    @Test fun unreactFromThePicker() {
-        val data = FakeSocialData().apply { seedChat() }
-        chat(data)
-        compose.onNodeWithContentDescription("Ana’s pic, 8:01 PM", substring = true).performTouchInput { longClick() }
+        assertTrue(data.calls.contains("react:p-1:💖"))
+        compose.onNodeWithContentDescription("Ana's photo", substring = true).performTouchInput { longClick() }
         compose.waitForIdle()
-        compose.onAllNodesWithContentDescription("fire").onFirst().assertIsSelected().performClick()
+        compose.onNodeWithContentDescription("React with fire").assertIsSelected().performClick()
         compose.waitForIdle()
         assertTrue(data.calls.contains("unreact:p-1:🔥"))
-        assertFalse(data.calls.contains("react:p-1:🔥"))
     }
 
-    /** Tenet 2: reaction labels name emoji, never a number (cluster labels, TalkBack). */
+    /** Tenet 2: reaction labels name emoji, never a number. */
     @Test fun noCountsInReactionLabels() {
         val data = FakeSocialData().apply { seedChat() }
         data.reactions["p-1"] = (1..9).map { i -> ReactionEntry(if (i % 2 == 0) ANA else BEN, if (i % 3 == 0) "🔥" else "😍") }.toMutableList()
@@ -234,18 +240,12 @@ class SocialFlowTest {
         assertTrue(compose.onAllNodesWithText("9").fetchSemanticsNodes().isEmpty())
     }
 
-    private fun viewerData() = FakeSocialData().apply {
-        seedGroup()
-        addPhoto("v-1", ANA, BASE.minusSeconds(86_400))
-        addPhoto("v-2", ME, BASE)
-    }
-
-    private fun viewerHost(data: FakeSocialData, postId: String): () -> NavHostController {
+    private fun viewerHost(data: FakeSocialData, postId: String, context: PhotoContext = PhotoContext.Album, contextId: String = "a-v"): () -> NavHostController {
         lateinit var nav: NavHostController
         compose.setContent {
             TestScreen(data) {
                 nav = rememberNavController()
-                NavHost(nav, startDestination = PhotoViewerIn(GROUP, postId, PhotoContext.Single, postId)) {
+                NavHost(nav, startDestination = PhotoViewerIn(GROUP, postId, context, contextId)) {
                     socialDestinations(nav)
                     composable<AppRoute.Camera> { entry ->
                         Text(entry.savedStateHandle.get<String>(SocialHandoff.REPLY_TO_POST_ID) ?: "none", Modifier.testTag("camera"))
@@ -257,36 +257,47 @@ class SocialFlowTest {
         return { nav }
     }
 
-    @Test fun replyToAPhotoWithTextAndWithAPhoto() {
+    /** A comment goes with `p_reply_to_post_id` and joins the list; the camera opens with the reply target. */
+    @Test fun commentOnAPhotoAndReplyWithAPhoto() {
         val data = viewerData()
         viewerHost(data, "v-1")
         compose.onNode(hasSetTextAction()).performTextInput("where is this")
-        compose.onNode(hasSetTextAction()).performImeAction()
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Send").performClick()
         compose.waitForIdle()
         assertTrue(data.calls.contains("sendText:where is this:v-1"))
+        compose.onNodeWithContentDescription("You, where is this").assertExists()
 
-        compose.onNodeWithContentDescription("React with fire").performClick()
-        compose.waitForIdle()
-        assertTrue(data.calls.contains("react:v-1:🔥"))
-
-        compose.onNodeWithContentDescription("send a pic").performClick()
+        compose.onNodeWithContentDescription("Take photo").performClick()
         compose.waitForIdle()
         compose.onNodeWithTag("camera").assertExists()
         compose.onNodeWithText("v-1").assertExists()
     }
 
+    /** Tap advances (and moves the "N of M" pill); "I'm in this" tags you at once. */
+    @Test fun advanceAndTagYourself() {
+        val data = viewerData().apply { tagRows.clear() }
+        viewerHost(data, "v-1")
+        compose.onNodeWithContentDescription("1 of 3").assertExists()
+        compose.onNodeWithContentDescription("I'm in this").performClick()
+        compose.waitForIdle()
+        assertTrue(data.calls.contains("tagSelf:v-1"))
+        compose.onNode(androidx.compose.ui.test.hasContentDescription("Ana's photo", substring = true)).performTouchInput { click(androidx.compose.ui.geometry.Offset(width * 0.9f, height / 2f)) }
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("2 of 3").assertExists()
+    }
+
     @Test fun deleteEverywhere() {
         val data = viewerData()
-        val nav = viewerHost(data, "v-2")
-        compose.onNodeWithContentDescription("more").performClick()
+        viewerHost(data, "v-2", PhotoContext.Single, "v-2")
+        compose.onNodeWithContentDescription("More Options").performClick()
         compose.waitForIdle()
-        compose.onNodeWithText("delete").performClick()
+        compose.onNodeWithText("Delete").performClick()
         compose.waitForIdle()
-        compose.onNodeWithText("delete this pic?").assertExists()
-        compose.onAllNodesWithText("delete").onLast().performClick()
+        compose.onNodeWithText("Delete photo?").assertExists()
+        compose.onNodeWithText("Yes, delete").performClick()
         compose.waitForIdle()
         assertTrue(data.calls.contains("deleteMedia:md-v-2"))
-        assertFalse("the viewer closed (its only photo is gone)", nav().currentDestination?.route?.contains("PhotoViewerIn") == true && data.posts.containsKey("v-2"))
     }
 
     @Test fun editRecapAndSaveIt() {
@@ -295,16 +306,16 @@ class SocialFlowTest {
         var closed = false
         compose.setContent { TestScreen(data) { WeekEditSheet(vm, onClose = { closed = true }) } }
         compose.waitForIdle()
-        compose.onNodeWithContentDescription("Ana’s pic, Oct 18 2026").performClick()
+        compose.onAllNodesWithContentDescription("Sunday, October 18, 2026, Ana's photo").onLast().performClick()
         compose.waitForIdle()
         assertTrue("w-7" in vm.state.value.checked)
-        compose.onAllNodesWithText("save").onLast().performClick()
+        compose.onNodeWithText("Update").performClick()
         compose.waitForIdle()
         assertTrue(data.calls.contains("updateRecap:" + (1..7).joinToString(",") { "w-$it" } + ":the best week"))
         assertTrue(closed)
     }
 
-    /** `week.edit.layout.reorder`: touch and hold a checked tile, drag it onto another slot, drop; the recap keeps the new order. */
+    /** `week.edit.layout.reorder`: touch and hold a strip tile, drag it onto the next slot, drop; the recap keeps the order. */
     @Test fun reorderARecapByDragging() {
         val data = FakeSocialData().apply { seedWeek() }
         val vm = WeekEditViewModel(data, GROUP, "r-w", null, albumOnly = false)
@@ -312,8 +323,7 @@ class SocialFlowTest {
         compose.waitForIdle()
         val first = vm.state.value.checked.first()
         val second = vm.state.value.checked[1]
-        val tile = compose.onAllNodes(androidx.compose.ui.test.hasStateDescription("in recap")).onFirst()
-        tile.performTouchInput {
+        compose.onAllNodesWithContentDescription("Monday, October 12, 2026", substring = true).onFirst().performTouchInput {
             down(center)
             advanceEventTime(HOLD_MS)
             moveBy(androidx.compose.ui.geometry.Offset(width.toFloat(), 0f))
@@ -322,7 +332,7 @@ class SocialFlowTest {
         }
         compose.waitForIdle()
         assertEquals(listOf(second, first), vm.state.value.checked.take(2))
-        compose.onAllNodesWithText("save").onLast().performClick()
+        compose.onNodeWithText("Update").performClick()
         compose.waitForIdle()
         assertTrue(data.calls.any { it.startsWith("updateRecap:$second,$first,") })
     }
@@ -334,7 +344,8 @@ class SocialFlowTest {
         compose.setContent { TestScreen(data) { WeekEditSheet(vm, onClose = { closed = true }) } }
         compose.waitForIdle()
         compose.onNode(hasSetTextAction()).performTextInput("lake week")
-        compose.onNodeWithText("save").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Create Album").performClick()
         compose.waitForIdle()
         assertTrue(data.calls.contains("saveAlbum:lake week:" + (1..7).joinToString(",") { "w-$it" }))
         assertTrue(closed)

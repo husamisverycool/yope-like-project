@@ -3,7 +3,6 @@
 //   GET /i/:token                 invite page (invite.web), every state
 //   GET /i/:token/cover.jpg       group cover, re-encoded (no metadata)
 //   GET /i/:token/avatar/:n.jpg   member n's avatar, re-encoded
-//   GET /i/:token/backdrop.png    the card's backdrop: the cover (else the inviter's avatar) blurred
 //   GET /i/:token/og.png          600×600 link-preview image (invite.web.layout.ogImage)
 //   GET /i/:token/preview.json    the same preview for the App Clip and the apps before joining
 //   GET /.well-known/apple-app-site-association, /.well-known/assetlinks.json
@@ -148,9 +147,9 @@ export function createApp(deps: AppDeps): Hono {
     const nonce = randomBytes(16).toString("base64");
     if (config.mode === "development") {
       // Sourced values are never adjusted; failing WCAG pairs over this invite's backdrop are reported.
-      const backdrop = await deps.invites!.backdrop(token).catch(() => null);
-      if (backdrop) {
-        const failing = cardPairs(backdrop.under).filter((p) => !p.pass);
+      const tone = await deps.invites!.backdropTone(token).catch(() => null);
+      if (tone) {
+        const failing = cardPairs(tone).filter((p) => !p.pass);
         if (failing.length) log(`WCAG: backdrop ${failing[0]!.bg} fails ${failing.map((p) => `${p.element} ${p.ratio.toFixed(2)}:1 < ${p.need}:1`).join("; ")}`);
       }
     }
@@ -173,18 +172,6 @@ export function createApp(deps: AppDeps): Hono {
       return buf ? image(c, buf) : c.body(null, 404);
     } catch (e) {
       log(`avatar failed: ${(e as Error).message}`);
-      return c.body(null, 503);
-    }
-  });
-
-  app.get("/i/:token/backdrop.png", async (c) => {
-    const r = await resolve(c, false);
-    if (!r.ok) return r.response;
-    try {
-      const b = await deps.invites!.backdrop(c.req.param("token"));
-      return b ? image(c, b.png, false, "image/png") : c.body(null, 404);
-    } catch (e) {
-      log(`backdrop failed: ${(e as Error).message}`);
       return c.body(null, 503);
     }
   });

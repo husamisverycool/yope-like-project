@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { beforeAll, describe, expect, it } from "vitest";
 import { copy } from "../../src/generated/copy.js";
 import { tokens } from "../../src/generated/tokens.js";
-import { AVATAR_PX, BACKDROP_WIDTH } from "../../src/images.js";
+import { AVATAR_PX } from "../../src/images.js";
 import type { InvitePreview } from "../../src/supabase.js";
 import { ANDROID, DESKTOP, FULL_APP_JSON, IPHONE, testApp } from "../support/app.js";
 import { FakeUpstream } from "../support/fakeUpstream.js";
@@ -88,7 +88,7 @@ describe("GET /i/:token — valid invite", () => {
     expect(text).not.toMatch(/[0-9]/); // no member count, no number of anything
     expect(html.match(/<h1/g)).toHaveLength(1);
     expect(html).toContain(`<h1 class="headline">Ana Invited You!</h1>`);
-    expect(html).toContain(`<img class="backdrop" src="/i/${TOKEN}/backdrop.png" alt="Lima family cover">`);
+    expect(html).toContain(`<main class="card photo">\n<img class="backdrop" src="/i/${TOKEN}/cover.jpg" alt="Lima family cover">`);
     expect(html).toContain(`<img class="avatar" src="/i/${TOKEN}/avatar/0.jpg" alt="Ana">`);
   });
 
@@ -119,11 +119,15 @@ describe("GET /i/:token — valid invite", () => {
     expect(twoAnas).toContain(`<span class="avatar" role="img" aria-label="Ana"></span>`);
   });
 
-  it("backdrop: the cover, else the inviter's avatar (decorative), else none", async () => {
+  it("backdrop (C-34): the cover, else the inviter's avatar (decorative), else none; blurred and dimmed by tokens", async () => {
+    const html = await page();
+    expect(html).toContain(`filter:blur(${tokens["size.global.backdropBlur"]}px)`);
+    expect(html).toMatch(/\.photo::after\{content:"";position:absolute;inset:0;z-index:-1;background:rgb\(0 0 0 \/ 0\.22[0-9]*\)\}/);
     const noCover = await page(preview({ cover_path: null }));
-    expect(noCover).toContain(`<img class="backdrop" src="/i/${TOKEN}/backdrop.png" alt="">`);
+    expect(noCover).toContain(`<main class="card photo">\n<img class="backdrop" src="/i/${TOKEN}/avatar/0.jpg" alt="">`);
     const nothing = await page(preview({ cover_path: null, members: [{ first_name: "Ana", avatar_path: null }] }));
     expect(nothing).not.toContain(`class="backdrop"`);
+    expect(nothing).toContain(`<main class="card">`);
   });
 
   it("exposes no non-preview field, storage path, user id, Supabase URL or key", async () => {
@@ -237,7 +241,7 @@ describe("GET /i/:token — other states", () => {
     const up = fake();
     const { app } = testApp(up);
     expect((await get(app, `/i/${bad}`)).status).toBe(404);
-    for (const sub of ["cover.jpg", "og.png", "backdrop.png", "avatar/0.jpg", "preview.json"]) {
+    for (const sub of ["cover.jpg", "og.png", "avatar/0.jpg", "preview.json"]) {
       expect((await get(app, `/i/${bad}/${sub}`)).status).toBe(404);
     }
     expect(up.calls.preview + up.calls.sign + up.calls.fetch).toBe(0);
@@ -287,14 +291,14 @@ describe("caching and revocation", () => {
     expect(first.headers.get("cache-control")).toBe("private, max-age=60");
     await get(app, `/i/${TOKEN}/cover.jpg`);
     await get(app, `/i/${TOKEN}/avatar/0.jpg`);
-    await get(app, `/i/${TOKEN}/backdrop.png`);
+    await get(app, `/i/${TOKEN}/og.png`);
     expect(up.calls.preview).toBe(1);
     up.previews.set(TOKEN, { status: "unavailable", reason: "revoked" });
     now = 59_000;
     expect((await get(app, `/i/${TOKEN}`)).status).toBe(200);
     now = 60_001;
     expect((await get(app, `/i/${TOKEN}`)).status).toBe(410);
-    for (const sub of ["cover.jpg", "backdrop.png", "og.png"]) expect((await get(app, `/i/${TOKEN}/${sub}`)).status).toBe(410);
+    for (const sub of ["cover.jpg", "avatar/0.jpg", "og.png"]) expect((await get(app, `/i/${TOKEN}/${sub}`)).status).toBe(410);
     expect(up.calls.preview).toBe(2);
   });
 });
@@ -325,25 +329,6 @@ describe("images", () => {
     expect(AVATAR_PX).toBe(tokens["invite.web.size.avatar"] * 3);
     expect([meta.width, meta.height]).toEqual([AVATAR_PX, AVATAR_PX]);
     for (const p of ["avatar/1.jpg", "avatar/2.jpg", "avatar/3.jpg", "avatar/99.jpg", "avatar/x.jpg", "avatar/0.png"]) expect((await get(app, `/i/${TOKEN}/${p}`)).status).toBe(404);
-  });
-
-  it("backdrop.png is the cover blurred to a colour field (C-34), lossless", async () => {
-    const res = await get(testApp(fake()).app, `/i/${TOKEN}/backdrop.png`);
-    expect([res.status, res.headers.get("content-type"), res.headers.get("cache-control")]).toEqual([200, "image/png", "private, max-age=60"]);
-    const { info, at } = await pixels(Buffer.from(await res.arrayBuffer()));
-    expect([info.width, info.height]).toEqual([BACKDROP_WIDTH, BACKDROP_WIDTH * 0.75]);
-    // the cover's hard edge between its blue and peach halves is gone: a gradient over many rows
-    const col = Array.from({ length: info.height }, (_, y) => at(info.width / 2, y)[2]!);
-    const steps = col.slice(1).map((v, i) => Math.abs(v - col[i]!));
-    expect(Math.max(...steps)).toBeLessThan(12);
-    expect(col[0]! - col[col.length - 1]!).toBeGreaterThan(5);
-  });
-
-  it("backdrop.png falls back to the inviter's avatar, else 404", async () => {
-    const fromAvatar = await get(testApp(fake(preview({ cover_path: null }))).app, `/i/${TOKEN}/backdrop.png`);
-    expect(fromAvatar.status).toBe(200);
-    const none = await get(testApp(fake(preview({ cover_path: null, inviter_first_name: "Rui" }))).app, `/i/${TOKEN}/backdrop.png`);
-    expect(none.status).toBe(404);
   });
 
   it("og.png is the 600 × 600 share image of invite.web.layout.ogImage", async () => {
@@ -444,7 +429,7 @@ describe("security headers", () => {
 
   it("every response carries the headers, including errors, images and JSON", async () => {
     const { app } = testApp(fake());
-    for (const path of ["/nope", "/healthz", "/.well-known/assetlinks.json", `/i/${TOKEN}/og.png`, `/i/${TOKEN}/backdrop.png`]) {
+    for (const path of ["/nope", "/healthz", "/.well-known/assetlinks.json", `/i/${TOKEN}/og.png`, `/i/${TOKEN}/cover.jpg`]) {
       const res = await get(app, path);
       expect(res.headers.get("x-content-type-options"), path).toBe("nosniff");
       expect(res.headers.get("content-security-policy"), path).toBeTruthy();

@@ -117,8 +117,14 @@ export function invitePage(token: string, invite: LoadedInvite, ctx: PageContext
 <meta name="twitter:image:alt" content="${esc(coverAlt)}">
 ${ctx.smartBanner ? `<meta name="apple-itunes-app" content="${esc(`${ctx.smartBanner}, app-argument=${inviteUrl}`)}">\n` : ""}`;
 
+  // C-34 backdrop: the cover (named), else the inviter's avatar (decorative: the avatar itself is named), blurred and
+  // dimmed by the stylesheet; without either the card is color.global.backgroundDeep.
   const source = InviteService.backdropSource(invite);
-  const backdrop = source ? `<img class="backdrop" src="/i/${token}/backdrop.png" alt="${source === "cover" ? esc(coverAlt) : ""}">\n` : "";
+  const backdrop = !source
+    ? ""
+    : source.kind === "cover"
+      ? `<img class="backdrop" src="/i/${token}/cover.jpg" alt="${esc(coverAlt)}">\n`
+      : `<img class="backdrop" src="/i/${token}/avatar/${source.index}.jpg" alt="">\n`;
   const headline = p.inviter_first_name ? text("invite.web.invitedBy", { first_name: p.inviter_first_name }) : text("invite.web.invitedFallback");
   const shown = p.members.slice(0, MEMBERS_SHOWN);
   const members = shown.length
@@ -129,7 +135,7 @@ ${ctx.smartBanner ? `<meta name="apple-itunes-app" content="${esc(`${ctx.smartBa
   return `${head(ctx, title(ctx, p.group_name), meta)}
 <body>
 <div class="page">
-<main class="card">
+<main class="card${source ? " photo" : ""}">
 ${backdrop}<div class="hero">${qrSvg(inviteUrl, "qr", num("invite.web.size.qrDesktop"))}${inviterAvatar(token, invite)}</div>
 <div class="text">
 <h1 class="headline">${esc(headline)}</h1>

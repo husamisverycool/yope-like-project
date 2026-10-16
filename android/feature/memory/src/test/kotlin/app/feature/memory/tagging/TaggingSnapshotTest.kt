@@ -75,10 +75,11 @@ class TaggingSnapshotTest : SnapshotTest() {
     @Test fun taggedYou() = footer("footer-with-you", listOf(ana, me))
     @Test fun taggedMany() = footer("footer-with-truncated", listOf(ana, ben, me, TaggedPerson("u-cleo", "Cleo", null), TaggedPerson("u-dan", "Daniela", null)))
 
+    /** The sheet as the run opens it (from inside the viewer's dark subtree; the sheet follows the appearance). */
     private fun sheet(state: String, people: List<TaggedPerson>, dark: Boolean = false) = snap("tagging", state, dark = dark, screen = true) {
         val c = controller(people)
+        androidx.compose.runtime.LaunchedEffect(Unit) { c.sheetOpen = true }
         ViewerFooterHost(c)
-        InThisPhotoSheet(c, onDismiss = {})
     }
 
     @Test fun sheetTagged() = sheet("sheet-tagged", listOf(ana, me))

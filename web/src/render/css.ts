@@ -22,6 +22,9 @@ export function pageCss(): string {
   const minTarget = px("size.global.minTouchTarget.ios");
   const pillT = `background-color ${num("invite.web.duration.pill")}ms ${cssEasing("invite.web.easing.pill")}`;
   const memberGlyph = `${Math.min(num("size.global.avatarSmall"), num("size.global.icon"))}px`;
+  // C-34 backdrop: CSS blur() takes the Gaussian's standard deviation, as the token is defined. The image extends 3σ
+  // past the card (clipped) so the blur has photo, not transparency, at the card's edges.
+  const bleed = `calc(-3 * ${px("size.global.backdropBlur")})`;
   return `
 :root{color-scheme:light}
 *,*::before,*::after{box-sizing:border-box}
@@ -54,7 +57,8 @@ img{display:block}
 .mobile-only{display:revert}
 .page{min-height:100vh;min-height:100dvh;padding:${px("invite.web.size.cardInset")};display:flex}
 .card{flex:1 1 auto;min-height:0;border-radius:${px("invite.web.radius.card")};overflow:hidden;background:${cssColor("color.global.backgroundDeep")}}
-.backdrop{display:block;position:absolute;inset:0;z-index:-1;width:100%;height:100%;object-fit:cover}
+.backdrop{display:block;position:absolute;z-index:-1;top:${bleed};left:${bleed};width:calc(100% - 2 * ${bleed});height:calc(100% - 2 * ${bleed});object-fit:cover;filter:blur(${px("size.global.backdropBlur")})}
+.photo::after{content:"";position:absolute;inset:0;z-index:-1;background:${cssColor("color.global.backdropDim")}}
 .hero{margin-top:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%}
 .avatar{width:${px("invite.web.size.avatar")};height:${px("invite.web.size.avatar")}}
 .text{margin-bottom:${px("invite.web.size.bodyToPill")}}

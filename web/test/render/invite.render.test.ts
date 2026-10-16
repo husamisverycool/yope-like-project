@@ -12,7 +12,6 @@ import type { Browser, Page } from "playwright-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { copy } from "../../src/generated/copy.js";
 import { tokens } from "../../src/generated/tokens.js";
-import { BACKDROP_WIDTH } from "../../src/images.js";
 import { CASES, launch, load, measure, open, OUT_DIR, serveCases, TOKENS, type CaseName, type Layout, type Scheme } from "../support/render.js";
 
 const t = tokens;
@@ -90,9 +89,14 @@ describe("mobile card (viewport ≤ invite.web.size.breakpoint)", () => {
       expect(card.box).toMatchObject({ x: inset, y: inset, w: 390 - 2 * inset, h: 664 - 2 * inset });
       expect(card.s["border-top-left-radius"]).toBe(PX(t["invite.web.radius.card"]));
 
-      const backdrop = await measure(page, ".backdrop");
-      expect(backdrop.box).toMatchObject(card.box);
-      expect(await page.$eval(".backdrop", (i) => (i as HTMLImageElement).naturalWidth)).toBe(BACKDROP_WIDTH);
+      // C-34 backdrop: the cover with a Gaussian σ = size.global.backdropBlur, 3σ past the card, under color.global.backdropDim
+      const sigma = t["size.global.backdropBlur"];
+      const backdrop = await measure(page, ".backdrop", ["filter", "object-fit"]);
+      expect([backdrop.s.filter, backdrop.s["object-fit"]]).toEqual([`blur(${sigma}px)`, "cover"]);
+      near(backdrop.box.x, card.box.x - 3 * sigma, 0.1);
+      near(backdrop.box.w, card.box.w + 6 * sigma, 0.1);
+      const dim = await page.$eval(".card", (e) => getComputedStyle(e, "::after").backgroundColor);
+      expect(dim).toBe(rgba(t["color.global.backdropDim"]));
 
       const hero = await measure(page, ".hero");
       const avatar = await measure(page, ".avatar", ["border-radius", "object-fit"]);

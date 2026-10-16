@@ -13,12 +13,15 @@ import app.feature.account.invite.InviteJoinViewModel
 import app.feature.account.invite.InvitePreviewResult
 import app.feature.account.paywall.PaywallMessage
 import app.feature.account.paywall.PaywallViewModel
+import app.feature.account.paywall.PaywallWelcome
+import app.feature.account.paywall.Perk
 import app.feature.account.paywall.PlanPeriod
 import app.feature.account.paywall.PlansStatus
 import app.feature.account.paywall.PremiumResult
 import app.feature.account.paywall.periodUnit
 import app.feature.account.safety.BlockViewModel
 import app.feature.account.safety.ReportPhase
+import app.feature.account.safety.ReportReasons
 import app.feature.account.safety.ReportTarget
 import app.feature.account.safety.ReportViewModel
 import app.feature.account.settings.ManageSubscription
@@ -103,12 +106,35 @@ class SettingsSafetyPaywallInviteTest {
         assertFalse(backend.accountDeleted)
     }
 
-    @Test fun nameSaveFailureRestoresTheName() = runTest(main.dispatcher) {
+    @Test fun editFullNameSavesAndCloses() = runTest(main.dispatcher) {
+        val backend = world()
+        val vm = SettingsAccountViewModel(fakeEnvironment(backend))
+        vm.openName()
+        assertTrue(vm.state.value.editingName)
+        vm.saveName("  Ana B ")
+        assertEquals("Ana B", vm.state.value.name)
+        assertFalse(vm.state.value.editingName)
+        assertEquals("Ana B", backend.profiles.getValue(backend.meId).displayName)
+    }
+
+    @Test fun nameSaveFailureKeepsThePageAndShowsTheAlert() = runTest(main.dispatcher) {
         val backend = world().apply { failures["updateDisplayName"] = DataError.Network }
         val vm = SettingsAccountViewModel(fakeEnvironment(backend))
+        vm.openName()
         vm.saveName("Ana B")
         assertEquals("Ana Lima", vm.state.value.name)
-        assertTrue(vm.state.value.nameError)
+        assertTrue(vm.state.value.editingName)
+        assertTrue(vm.state.value.saveError)
+    }
+
+    @Test fun birthdayRowShowsTheSavedDateAndPhotoRemoves() = runTest(main.dispatcher) {
+        val backend = world().apply { birthday = java.time.LocalDate.of(2001, 3, 14) to true; profile(meId, "Ana Lima", "avatars/u-me/a.jpg") }
+        val vm = SettingsAccountViewModel(fakeEnvironment(backend))
+        assertEquals(java.time.LocalDate.of(2001, 3, 14), vm.state.value.birthday)
+        assertTrue(vm.state.value.hasPhoto)
+        vm.removePhoto()
+        assertFalse(vm.state.value.hasPhoto)
+        assertTrue("removeAvatar" in backend.calls)
     }
 
     @Test fun unblockRemovesTheRow() = runTest(main.dispatcher) {
@@ -123,31 +149,55 @@ class SettingsSafetyPaywallInviteTest {
         assertTrue(backend.blocks.isEmpty())
     }
 
+    @Test fun unblockFailureKeepsTheRowWithTheAlert() = runTest(main.dispatcher) {
+        val backend = world().apply { blocks += app.data.model.Block(meId, "u-sam", now); failures["unblock"] = DataError.Network }
+        val vm = SettingsBlockedViewModel(fakeEnvironment(backend))
+        vm.unblock(vm.state.value.people!!.single())
+        assertEquals(1, vm.state.value.people!!.size)
+        assertTrue(vm.state.value.unblockFailed)
+        assertFalse(vm.state.value.error)
+    }
+
     // safety ----------------------------------------------------------------------------------------
 
-    @Test fun reportPostSendsTheKindAsReasonWhenNoDetails() = runTest(main.dispatcher) {
+    @Test fun reportReasonFilesAtOnceWithItsEnglishText() = runTest(main.dispatcher) {
         val backend = world()
         val post = backend.post("g1", "u-sam", backend.now)
         val vm = ReportViewModel(fakeEnvironment(backend), ReportTarget(ReportTargetKind.Post, post.id, "g1", null))
+        val events = vm.recordEvents(backgroundScope)
         assertEquals("Sam", vm.state.value.firstName)
-        vm.submit()
-        assertEquals(ReportPhase.Sent, vm.state.value.phase)
-        assertEquals(Triple(ReportTargetKind.Post, post.id, "post"), backend.reports.single())
+        val reasons = ReportReasons.of(ReportTargetKind.Post)
+        assertEquals(listOf("I don't like it", "Nudity or sexual activity", "Other"), reasons.map { it.wire })
+        vm.choose(reasons[1])
+        assertEquals(Triple(ReportTargetKind.Post, post.id, "Nudity or sexual activity"), backend.reports.single())
+        assertEquals(listOf(AccountEvent.Toast(R.string.safety_report_sent_title)), events.toasts())
+        assertTrue(AccountEvent.Back in events)
         assertEquals("u-sam", vm.state.value.target.personId)
+    }
+
+    @Test fun dontLikeItFilesNothingAndOffersNextSteps() = runTest(main.dispatcher) {
+        val backend = world()
+        val post = backend.post("g1", "u-sam", backend.now)
+        val vm = ReportViewModel(fakeEnvironment(backend, scope = backgroundScope), ReportTarget(ReportTargetKind.Post, post.id, "g1", null))
+        val events = vm.recordEvents(backgroundScope)
+        vm.choose(ReportReasons.of(ReportTargetKind.Post).first())
+        assertEquals(ReportPhase.NextSteps, vm.state.value.phase)
+        assertTrue(backend.reports.isEmpty())
+        vm.askLeave()
+        vm.leave()
+        assertEquals(listOf(AccountEvent.Toast(R.string.safety_report_left)), events.toasts())
+        assertEquals(AppRoute.GroupsList, events.navigations().single().route)
     }
 
     @Test fun reportTargetGoneAndError() = runTest(main.dispatcher) {
         val backend = world().apply { failures["report"] = DataError.Api(ApiError.TargetNotFound, "target_not_found", 404, null) }
         val vm = ReportViewModel(fakeEnvironment(backend), ReportTarget(ReportTargetKind.User, "u-sam", "g1", "u-sam"))
-        vm.onDetails("details")
-        vm.submit()
+        vm.choose(ReportReasons.of(ReportTargetKind.User).first())
         assertEquals(ReportPhase.NotFound, vm.state.value.phase)
         backend.failures["report"] = DataError.Network
         val again = ReportViewModel(fakeEnvironment(backend), ReportTarget(ReportTargetKind.User, "u-sam", "g1", "u-sam"))
-        again.onDetails("kept")
-        again.submit()
+        again.choose(ReportReasons.of(ReportTargetKind.User).last())
         assertEquals(ReportPhase.Error, again.state.value.phase)
-        assertEquals("kept", again.state.value.details)
     }
 
     @Test fun blockShowsTheToastAndGoesBack() = runTest(main.dispatcher) {
@@ -170,15 +220,22 @@ class SettingsSafetyPaywallInviteTest {
 
     // paywall ---------------------------------------------------------------------------------------
 
-    @Test fun plansLoadYearlyDefaultAndPendingPurchase() = runTest(main.dispatcher) {
+    @Test fun plansLoadAnnualFirstAndPendingPurchase() = runTest(main.dispatcher) {
         val premium = FakePremium().apply { purchaseResult = PremiumResult.Pending }
         val vm = PaywallViewModel(fakeEnvironment(world(), premium = premium))
         assertEquals(PlansStatus.Ready, vm.state.value.status)
-        assertEquals(PlanPeriod.Yearly, vm.state.value.selectedPlan!!.period)
-        vm.select(PlanPeriod.Monthly)
-        assertEquals("$3.99", vm.state.value.selectedPlan!!.price)
-        vm.purchase(android.app.Activity())
+        assertEquals(listOf(PlanPeriod.Yearly, PlanPeriod.Monthly), vm.state.value.orderedPlans.map { it.period })
+        val monthly = vm.state.value.orderedPlans.last()
+        assertEquals("$3.99", monthly.price)
+        vm.purchase(android.app.Activity(), monthly)
         assertEquals(PaywallMessage.Pending, vm.state.value.message)
+    }
+
+    @Test fun purchaseDoneShowsTheWelcomeAndHistoryPerkFollowsTheConfig() = runTest(main.dispatcher) {
+        val vm = PaywallViewModel(fakeEnvironment(world(), premium = FakePremium()))
+        assertFalse(Perk.History in vm.state.value.perks)
+        vm.purchase(android.app.Activity(), vm.state.value.orderedPlans.first())
+        assertEquals(PaywallWelcome.Purchased, vm.state.value.welcome)
     }
 
     @Test fun plansUnavailableAndRestoreNothing() = runTest(main.dispatcher) {
@@ -208,23 +265,33 @@ class SettingsSafetyPaywallInviteTest {
     @Test fun previewJsonParsing() {
         val ok = HttpInvitePreviewClient.parse("""{"group_name":"Lima family","group_kind":"family","inviter_first_name":"Ana","cover":null,"members":[],"theme":{}}""")
         assertEquals(InvitePreviewResult.Valid("Lima family", app.data.model.GroupKind.Family, "Ana"), ok)
+        val full = HttpInvitePreviewClient.parse(
+            """{"group_name":"Lima family","group_kind":"family","inviter_first_name":"Ana","cover":{"url":"https://x/i/t/cover.jpg","width":3,"height":4},""" +
+                """"members":[{"first_name":"Ana","avatar_url":"https://x/i/t/avatar/0.jpg"},{"first_name":"Rui","avatar_url":null}],"theme":{}}""",
+        ) as InvitePreviewResult.Valid
+        assertEquals("https://x/i/t/cover.jpg", full.coverUrl)
+        assertEquals(listOf("https://x/i/t/avatar/0.jpg", null), full.memberAvatars)
         assertEquals(InvitePreviewResult.Error, HttpInvitePreviewClient.parse("{}"))
     }
 
-    @Test fun signedOutInviteKeepsTheTokenAndGoesToSignUp() = runTest(main.dispatcher) {
+    @Test fun signedOutInviteShowsTheCardThenLetsGoSignsUp() = runTest(main.dispatcher) {
         val backend = FakeAccountBackend()
         val stores = FakeStores()
         val vm = InviteJoinViewModel(fakeEnvironment(backend, stores), "AbCdEfGhIjKlMnOpQrStUvWx")
         val events = vm.recordEvents(backgroundScope)
         testScheduler.advanceUntilIdle()
+        assertEquals(InviteJoinState.Ready, vm.state.value.phase)
+        assertTrue(events.navigations().isEmpty())
+        vm.go()
+        testScheduler.advanceUntilIdle()
         assertEquals("AbCdEfGhIjKlMnOpQrStUvWx", stores.pendingInviteToken)
-        assertTrue(events.navigations().isEmpty() || events.navigations().single().route == AppRoute.AuthPhone)
+        assertEquals(AppRoute.AuthPhone, events.navigations().single().route)
     }
 
     @Test fun expiredInviteFromThePreviewEndsAndForgetsTheToken() = runTest(main.dispatcher) {
         val stores = FakeStores()
         val vm = InviteJoinViewModel(fakeEnvironment(FakeAccountBackend(), stores, preview = InvitePreviewResult.Unavailable), "AbCdEfGhIjKlMnOpQrStUvWx")
-        assertEquals(InviteJoinState.Unavailable, vm.state.value)
+        assertEquals(InviteJoinState.Unavailable, vm.state.value.phase)
         assertNull(stores.pendingInviteToken)
     }
 
@@ -238,6 +305,7 @@ class SettingsSafetyPaywallInviteTest {
         val stores = FakeStores().apply { onboarded += backend.meId }
         val vm = InviteJoinViewModel(fakeEnvironment(backend, stores), "AbCdEfGhIjKlMnOpQrStUvWx")
         val events = vm.recordEvents(backgroundScope)
+        vm.go()
         assertEquals(listOf(AppRoute.GroupsList, AppRoute.Group("g9")), events.navigations().map { it.route })
         assertNull(stores.pendingInviteToken)
     }
@@ -248,7 +316,8 @@ class SettingsSafetyPaywallInviteTest {
             failures["joinGroup"] = DataError.Api(ApiError.GroupFull, "group_full", 409, null)
         }
         val stores = FakeStores().apply { onboarded += backend.meId }
-        val vm = InviteJoinViewModel(fakeEnvironment(backend, stores), "AbCdEfGhIjKlMnOpQrStUvWx")
-        assertEquals(InviteJoinState.Full, vm.state.value)
+        // The pending invite at the end of onboarding joins without a second tap.
+        val vm = InviteJoinViewModel(fakeEnvironment(backend, stores), "AbCdEfGhIjKlMnOpQrStUvWx", autoJoin = true)
+        assertEquals(InviteJoinState.Full, vm.state.value.phase)
     }
 }

@@ -78,7 +78,7 @@ describe("valid invite (local stack)", () => {
     expect(text).toContain(copy["invite.web.invitedBy"].replace("{first_name}", "Ana"));
     expect(html).toContain(`<img class="avatar" src="/i/${g.token}/avatar/0.jpg" alt="Ana">`);
     expect(html).toContain(`aria-label="Rui"`); // member without a photo
-    expect(html).toContain(`<img class="backdrop" src="/i/${g.token}/backdrop.png"`);
+    expect(html).toContain(`<img class="backdrop" src="/i/${g.token}/cover.jpg" alt="`);
     expect(text).not.toContain("Lima Lastname");
     expect(text).not.toContain("Costa"); // first names only
     expect(text).not.toMatch(/[0-9]/); // no member count or any other number
@@ -103,15 +103,13 @@ describe("valid invite (local stack)", () => {
     expect((await get(a, `/i/${g.token}/avatar/1.jpg`)).status).toBe(404); // Rui has no avatar
   });
 
-  it("serves the 600×600 link-preview image, the blurred backdrop and their tags", async () => {
+  it("serves the 600×600 link-preview image and its tags", async () => {
     const { app: a } = app();
     const html = await (await get(a, `/i/${g.token}`)).text();
     expect(html).toContain(`<meta property="og:image" content="https://invite.example.com/i/${g.token}/og.png">`);
     const og = await get(a, `/i/${g.token}/og.png`);
     const meta = await sharp(Buffer.from(await og.arrayBuffer())).metadata();
     expect([og.status, meta.format, meta.width, meta.height]).toEqual([200, "png", 600, 600]);
-    const backdrop = await get(a, `/i/${g.token}/backdrop.png`);
-    expect([backdrop.status, backdrop.headers.get("content-type")]).toEqual([200, "image/png"]);
   });
 
   it("serves preview.json for the App Clip", async () => {
@@ -129,8 +127,7 @@ describe("valid invite (local stack)", () => {
   it("a group without a cover: the inviter's avatar is the backdrop, the preview image has a black field", async () => {
     const { app: a } = app();
     const html = await (await get(a, `/i/${noCover.token}`)).text();
-    expect(html).toContain(`<img class="backdrop" src="/i/${noCover.token}/backdrop.png" alt="">`);
-    expect((await get(a, `/i/${noCover.token}/backdrop.png`)).status).toBe(200);
+    expect(html).toContain(`<img class="backdrop" src="/i/${noCover.token}/avatar/0.jpg" alt="">`);
     const og = await get(a, `/i/${noCover.token}/og.png`);
     const { data } = await sharp(Buffer.from(await og.arrayBuffer())).removeAlpha().raw().toBuffer({ resolveWithObject: true });
     expect([og.status, data[0], data[1], data[2]]).toEqual([200, 0, 0, 0]);

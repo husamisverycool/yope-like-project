@@ -175,12 +175,3 @@ export function cssFontStack(name: TokenName): string {
   if (v?.ios === "system-serif" && v?.android === "serif") return 'ui-serif, "Noto Serif", serif';
   throw new Error(`token ${name}: no web font stack for ${JSON.stringify(v)}`);
 }
-
-/**
- * GAP — backdrop blur radius (design/surfaces/invite.web.md "Gaps"; design/components.md C-34: "blur radius not
- * measurable"). Approximation until a token exists: a Gaussian with σ = 5 % of the backdrop's width. Method: the
- * low-frequency fall-off of Retro's own stock invite backdrop (references/auto/retro/web/
- * retro.app-invite-background-bg2.jpeg, 673 px wide) fits σ ≈ 28–38 px (4–6 % of its width) under a 1/f² source
- * model; the fit rests on two spectrum bins, so it is recorded as approximated (design/verification/invite.web.md).
- */
-export const BACKDROP_BLUR_OF_WIDTH = 0.05; // provenance-ok: Gap approximation documented above

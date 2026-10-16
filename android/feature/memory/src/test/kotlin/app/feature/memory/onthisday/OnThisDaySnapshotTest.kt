@@ -63,6 +63,8 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.onNodeWithText("Save to Camera Roll").assertExists()
         compose.onNodeWithText("Report Post").assertExists()
         compose.onNodeWithText("Delete Post").assertDoesNotExist()
+        compose.waitForIdle()
+        repeat(4) { compose.mainClock.advanceTimeByFrame() }
         com.github.takahirom.roborazzi.captureScreenRoboImage("src/test/snapshots/onthisday/menu-light.png")
     }
 

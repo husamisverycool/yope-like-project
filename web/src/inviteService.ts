@@ -1,11 +1,12 @@
 // Looks up invites and prepares everything a page needs, with a short-lived cache.
 //
 // One lookup = invite_preview (anon) + one signing call (service role) + the cover download. The
-// result, the processed cover, avatars, backdrop and link-preview image are reused for
+// result, the processed cover, avatars and link-preview image are reused for
 // INVITE_CACHE_SECONDS and then dropped, so a revoked or expired invite stops showing within that
 // time. Upstream failures are never cached.
 
-import { blurredBackdrop, composeOgImage, processAvatar, processCover, type Backdrop, type ProcessedCover } from "./images.js";
+import type { Rgb } from "./design.js";
+import { backdropTone, composeOgImage, processAvatar, processCover, type ProcessedCover } from "./images.js";
 import type { InvitePreview, Upstream } from "./supabase.js";
 
 export interface LoadedInvite {
@@ -29,7 +30,6 @@ interface Entry {
   result: Promise<InviteResult>;
   signed: Map<string, string>;
   avatars: Map<number, Promise<Buffer | null>>;
-  backdrop?: Promise<Backdrop | null>;
   og?: Promise<Buffer>;
   bytes: number;
 }
@@ -108,35 +108,23 @@ export class InviteService {
   }
 
   /**
-   * The card's backdrop (C-34): the cover blurred; without a cover the inviter's avatar blurred; null when there is
+   * What the card's backdrop (C-34) is drawn from: the cover; without a cover the inviter's avatar; null when there is
    * neither (the card is then color.global.backgroundDeep).
    */
-  async backdrop(token: string): Promise<Backdrop | null> {
-    const entry = this.entry(token);
-    const result = await entry.result;
-    if (result.status !== "ok") return null;
-    if (!entry.backdrop) {
-      const source = async (): Promise<Buffer | null> => {
-        if (result.cover) return result.cover.jpeg;
-        if (result.inviterIndex !== null && result.avatarIndexes.has(result.inviterIndex)) return this.avatar(token, result.inviterIndex);
-        return null;
-      };
-      entry.backdrop = source().then(async (buf) => {
-        if (!buf) return null;
-        const b = await blurredBackdrop(buf);
-        this.account(entry, b.png.length);
-        return b;
-      });
-      entry.backdrop.catch(() => (entry.backdrop = undefined));
-    }
-    return entry.backdrop;
+  static backdropSource(invite: LoadedInvite): { kind: "cover" } | { kind: "inviter"; index: number } | null {
+    if (invite.cover) return { kind: "cover" };
+    if (invite.inviterIndex !== null && invite.avatarIndexes.has(invite.inviterIndex)) return { kind: "inviter", index: invite.inviterIndex };
+    return null;
   }
 
-  /** What the backdrop is drawn from, without computing it. */
-  static backdropSource(invite: LoadedInvite): "cover" | "inviter" | null {
-    if (invite.cover) return "cover";
-    if (invite.inviterIndex !== null && invite.avatarIndexes.has(invite.inviterIndex)) return "inviter";
-    return null;
+  /** Colour under the card's text (contrast reporting in development), or null without a backdrop photo. */
+  async backdropTone(token: string): Promise<Rgb | null> {
+    const result = await this.lookup(token);
+    if (result.status !== "ok") return null;
+    const source = InviteService.backdropSource(result);
+    if (!source) return null;
+    const jpeg = source.kind === "cover" ? result.cover!.jpeg : await this.avatar(token, source.index);
+    return jpeg ? backdropTone(jpeg) : null;
   }
 
   /** 600 × 600 link-preview image (invite.web.layout.ogImage). */

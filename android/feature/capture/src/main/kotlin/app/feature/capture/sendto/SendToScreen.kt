@@ -393,49 +393,51 @@ private fun MessageSheet(text: String, onText: (String) -> Unit, onDone: () -> U
     val max = Tokens.Counts.cameraSendtoSizeCaptionMaxLength
     val focus = remember { FocusRequester() }
     DsBottomSheet(onDismissRequest = onDone) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Tokens.Sizes.globalScreenMargin),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                stringResource(R.string.camera_sendto_message_title),
-                style = TextRoles.sheetTitle,
-                color = Tokens.Colors.globalTextPrimary,
-                modifier = Modifier.semantics { heading() },
+        // A page sheet: the field takes the height; the counter sits 22 above the keyboard.
+        Column(Modifier.fillMaxSize().imePadding()) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    stringResource(R.string.camera_sendto_message_title),
+                    style = TextRoles.sheetTitle,
+                    color = Tokens.Colors.globalTextPrimary,
+                    modifier = Modifier.semantics { heading() },
+                )
+                HeaderTextButton(stringResource(R.string.camera_sendto_message_done), onDone, Modifier.align(Alignment.CenterEnd).testTag("sendto.message.done"))
+            }
+            val placeholder = stringResource(R.string.camera_sendto_caption_placeholder)
+            BasicTextField(
+                value = text,
+                onValueChange = onText,
+                textStyle = TextRoles.placeholder.copy(color = Tokens.Colors.globalTextPrimary),
+                cursorBrush = SolidColor(Tokens.Colors.globalTextPrimary),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(PaddingValues(horizontal = Dp(sheet.textInset), vertical = Tokens.Sizes.globalScreenMargin))
+                    .focusRequester(focus)
+                    .testTag("sendto.message.field"),
+                decorationBox = { inner ->
+                    Box {
+                        if (text.isEmpty()) Text(placeholder, style = TextRoles.placeholder, color = PageRoles.secondaryText())
+                        inner()
+                    }
+                },
             )
-            HeaderTextButton(stringResource(R.string.camera_sendto_message_done), onDone, Modifier.align(Alignment.CenterEnd).testTag("sendto.message.done"))
+            Text(
+                stringResource(R.string.camera_sendto_message_counter, text.length, max),
+                style = TextRoles.placeholder.copy(fontSize = Tokens.FontSizes.cameraSendtoFontSizeCounter, fontFamily = FontFamily.Monospace),
+                color = PageRoles.secondaryText(),
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(end = Dp(sheet.counterTrailingInset))
+                    .paddingFrom(LastBaseline, after = Dp(sheet.counterAboveKeyboard)),
+            )
         }
-        val placeholder = stringResource(R.string.camera_sendto_caption_placeholder)
-        BasicTextField(
-            value = text,
-            onValueChange = onText,
-            textStyle = TextRoles.placeholder.copy(color = Tokens.Colors.globalTextPrimary),
-            cursorBrush = SolidColor(Tokens.Colors.globalTextPrimary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f, fill = false)
-                .padding(PaddingValues(horizontal = Dp(sheet.textInset), vertical = Tokens.Sizes.globalScreenMargin))
-                .focusRequester(focus)
-                .testTag("sendto.message.field"),
-            decorationBox = { inner ->
-                Box {
-                    if (text.isEmpty()) Text(placeholder, style = TextRoles.placeholder, color = PageRoles.secondaryText())
-                    inner()
-                }
-            },
-        )
-        Text(
-            stringResource(R.string.camera_sendto_message_counter, text.length, max),
-            style = TextRoles.placeholder.copy(fontSize = Tokens.FontSizes.cameraSendtoFontSizeCounter, fontFamily = FontFamily.Monospace),
-            color = PageRoles.secondaryText(),
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(end = Dp(sheet.counterTrailingInset))
-                .paddingFrom(LastBaseline, after = Dp(sheet.counterAboveKeyboard))
-                .imePadding(),
-        )
     }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 }
