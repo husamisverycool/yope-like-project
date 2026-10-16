@@ -49,11 +49,12 @@ final class DemoTourUITests: XCTestCase {
             XCTFail("the chat did not open")
         }
 
-        // A photo in the viewer: the first photo tile of the week strip (its tiles are buttons; the group cover above it
-        // is an image that opens nothing).
+        // A photo in the viewer: the first photo tile of the week strip. Its tiles are buttons labelled "<date>, photo by
+        // <name>" (groups.screen.photo.accessibilityLabel); "groups.screen.week" is the strip's header, which opens the
+        // week's history, and the group cover above it opens nothing.
         launch(app)
         if openRoommates(app) {
-            let tile = element(app, "groups.screen.week").buttons.firstMatch
+            let tile = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", ", photo by ")).firstMatch
             if tile.waitForExistence(timeout: 5) {
                 tile.tap()
                 if element(app, "photo.viewer").waitForExistence(timeout: 10) {
