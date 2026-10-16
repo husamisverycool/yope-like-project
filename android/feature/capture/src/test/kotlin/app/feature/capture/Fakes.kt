@@ -102,6 +102,9 @@ class FakeCaptureData : CaptureData {
         collageError?.let { throw DataException(it) }
         return collage
     }
+    /** The first photo's display path (collage backdrop); null = the post is gone. */
+    var firstPhotoPath: String? = "u/u1/m1/display.jpg"
+    override suspend fun collageFirstPhotoPath(collage: Collage): String? = firstPhotoPath
     override suspend fun newestForWidget(groupId: String): NewestForWidget? = newest
     override suspend fun members(groupId: String): List<Member> = members
     var myName: String? = "Ana"

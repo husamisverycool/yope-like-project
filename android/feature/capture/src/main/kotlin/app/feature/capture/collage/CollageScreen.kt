@@ -1,5 +1,5 @@
 // Surfaces: collage.view and collage.share — Retro's 2026 recap preview (ST-04) holding the worker's collage page as
-// its card: the rounded media page with page 1 blurred, the close circle, page dots below the page, the white "Share"
+// its card: the rounded media page with the collage's first photo blurred (L-7), the close circle, page dots below the page, the white "Share"
 // pill. The chrome is the shared core:ui `RecapPreviewScreen` (also used by week.recap and year.story).
 // References: references/auto/retro/store/retro-store-04.png (ST-04); references/auto/retro/press/tc-2023-12-recaps.png
 // (card on the blurred backdrop); design/collage-options/option-B.jpg (the pages). Decisions: RC-14, RC-15, RC-19.
@@ -95,7 +95,8 @@ private fun rememberPage(file: File?, widthPx: Int): Painter? {
 }
 
 /**
- * The collage screen (stateless) in the recap preview (`collage.view.layout.screen`): the backdrop is page 1 blurred;
+ * The collage screen (stateless) in the recap preview (`collage.view.layout.screen`): the backdrop is the collage's
+ * first photo blurred (`mediaPage`, MERGE_DECISIONS L-7; page 1 until it loads);
  * the card is the current page, aspect-fit in the media page inset by [RecapPreviewDefaults.collageCardPadding] and
  * clipped to `collage.view.layout.page.outerRadiusRatio` × its width. Loading / empty / error / offline fill the
  * media page with `color.global.controlOnDeep` (no dots, no Share).
@@ -113,7 +114,10 @@ fun CollageScreen(
 ) {
     val ready = state.content as? CollageViewModel.Content.Ready
     val pages = ready?.pages.orEmpty()
-    val backdrop = ready?.let { pageImage(pages.firstOrNull()) }
+    // The collage's first photo, aspect-filled and blurred (L-7); page 1's image only until it has loaded.
+    val firstPhoto = pageImage(state.backdrop)
+    val pageOne = ready?.let { pageImage(pages.firstOrNull()) }
+    val backdrop = if (ready != null) firstPhoto ?: pageOne else null
     val pageLabel = stringResource(R.string.collage_view_a11y_collage, state.groupName.orEmpty(), state.date?.let(Formats::longDate).orEmpty())
     RecapPreviewScreen(
         backdrop = backdrop,

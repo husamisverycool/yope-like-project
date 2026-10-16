@@ -469,6 +469,19 @@ class ViewModelTests {
         assertTrue(data.downloads.any { it.endsWith("display-2.jpg") })
     }
 
+    /** L-7: the backdrop is the collage's first photo (post_ids[0], display rendition), never the composed page. */
+    @Test fun readyCollageFetchesItsFirstPhotoForTheBackdrop() {
+        data.invitation = invitation()
+        data.collage = collage(pages = 1)
+        val vm = collageVm()
+        assertTrue(data.downloads.any { it.endsWith("u/u1/m1/display.jpg") })
+        assertTrue(vm.ui.value.backdrop?.isFile == true)
+        // The post is gone: no backdrop file, page 1 stays behind the card.
+        data.firstPhotoPath = null
+        val gone = CollageViewModel(data, "g1", "inv2", File(dir, "collage-gone"), now = { T0.plusSeconds(600) }, pollMillis = 1_000)
+        assertEquals(null, gone.ui.value.backdrop)
+    }
+
     @Test fun collageShowsCachedPagesFirstAndKeepsThemOffline() {
         data.invitation = invitation()
         data.collage = collage(pages = 2)

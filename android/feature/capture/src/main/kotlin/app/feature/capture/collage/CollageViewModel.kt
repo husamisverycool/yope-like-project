@@ -52,6 +52,8 @@ class CollageViewModel(
         val groupName: String? = null,
         val page: Int = 0,
         val sharing: Boolean = false,
+        /** The collage's first photo (display rendition), downloaded: the blurred backdrop (L-7); null until it is here. */
+        val backdrop: File? = null,
     )
 
     sealed interface Event {
@@ -70,6 +72,7 @@ class CollageViewModel(
 
     init {
         cachedPages()?.let { pages -> state.update { it.copy(content = Content.Ready(pages, shareable = false)) } }
+        backdropFile().takeIf { it.isFile }?.let { file -> state.update { it.copy(backdrop = file) } }
         viewModelScope.launch {
             val name = runCatching { data.group(groupId)?.name }.getOrNull()
             state.update { it.copy(groupName = name) }
@@ -135,8 +138,27 @@ class CollageViewModel(
             }
         }
         rememberPages(files)
+        loadBackdrop(ready)
         return false
     }
+
+    /** The first photo for the backdrop (page 1's image stands in until it is here); failures keep page 1. */
+    private suspend fun loadBackdrop(collage: Collage) {
+        if (state.value.backdrop != null) return
+        try {
+            val path = data.collageFirstPhotoPath(collage) ?: return
+            val url = data.signedUrls(listOf(path))[path] ?: return
+            val file = backdropFile()
+            data.download(url, file)
+            state.update { it.copy(backdrop = file) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // Decorative: page 1 stays behind the card.
+        }
+    }
+
+    private fun backdropFile(): File = File(File(cacheDir, PAGES_DIR), "inv-$invitationId-first.jpg")
 
     /** "share": downloads the current page's 9:16 share image (`share-<n>.jpg`) and hands it to the Sharesheet. */
     fun share() {

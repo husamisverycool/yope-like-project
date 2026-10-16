@@ -212,11 +212,15 @@ class ScreenSnapshotTest {
         )
     }
 
+    /** The collage's first photo (post_ids[0]): a real sample photo, the backdrop (L-7). */
+    private val firstPhoto: File get() = File(dir, "first.jpg").also { f -> if (!f.isFile) SamplePhotos.writeJpeg(f, "dinner-pizza-cheers-3x4", 900, 1200) }
     private val day = CollageViewModel.UiState(date = LocalDate.of(2026, 5, 26), groupName = "Sunday dinners")
-    private val ready get() = day.copy(content = CollageViewModel.Content.Ready(listOf(pageFile(1), pageFile(2)), shareable = true))
+    private val ready get() = day.copy(content = CollageViewModel.Content.Ready(listOf(pageFile(1), pageFile(2)), shareable = true), backdrop = firstPhoto)
 
     @Test fun collageLoading() = collage("loading", day)
-    @Test fun collageOnePage() = collage("ready", day.copy(content = CollageViewModel.Content.Ready(listOf(pageFile(1)), shareable = true)))
+    @Test fun collageOnePage() = collage("ready", day.copy(content = CollageViewModel.Content.Ready(listOf(pageFile(1)), shareable = true), backdrop = firstPhoto))
+    /** Before the first photo has loaded, page 1's image stands in behind the card. */
+    @Test fun collageBackdropLoading() = collage("ready-backdrop-loading", day.copy(content = CollageViewModel.Content.Ready(listOf(pageFile(1)), shareable = true)))
     @Test fun collageTwoPages() = collage("ready-pages", ready)
     @Test fun collageTwoPagesDark() = collage("ready-pages", ready, dark = true)
     @Test fun collageSharing() = snap("collage.share_downloading") {
@@ -226,7 +230,7 @@ class ScreenSnapshotTest {
             onBack = {}, onPage = {}, onShare = {}, onOpenCamera = {}, onRetry = {},
         )
     }
-    @Test fun collageNotShareable() = collage("ready-no-share", day.copy(content = CollageViewModel.Content.Ready(listOf(pageFile(1)), shareable = false)))
+    @Test fun collageNotShareable() = collage("ready-no-share", day.copy(content = CollageViewModel.Content.Ready(listOf(pageFile(1)), shareable = false), backdrop = firstPhoto))
     @Test fun collageEmpty() = collage("empty", day.copy(content = CollageViewModel.Content.Empty))
     @Test fun collageError() = collage("error", day.copy(content = CollageViewModel.Content.Error))
     @Test fun collageOffline() = collage("offline", day.copy(content = CollageViewModel.Content.Offline))

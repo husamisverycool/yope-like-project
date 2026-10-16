@@ -67,6 +67,12 @@ interface CaptureData {
 
     suspend fun collageForInvitation(invitationId: String): Collage?
 
+    /**
+     * Storage path of the collage's first photo (`post_ids[0]`, its display rendition): the recap preview's
+     * backdrop (collage.view, MERGE_DECISIONS L-7). Null when the post or its media is gone.
+     */
+    suspend fun collageFirstPhotoPath(collage: Collage): String?
+
     /** The newest post or ready collage of [groupId] for its widget; null when the group has none. */
     suspend fun newestForWidget(groupId: String): NewestForWidget?
 
@@ -107,6 +113,11 @@ class GraphCaptureData(private val graph: DataGraph) : CaptureData {
     override suspend fun group(groupId: String): Group? = graph.groups.group(groupId)
 
     override suspend fun collageForInvitation(invitationId: String): Collage? = graph.invitations.collageForInvitation(invitationId)
+
+    override suspend fun collageFirstPhotoPath(collage: Collage): String? {
+        val post = collage.postIds.firstOrNull()?.let { graph.posts.post(it) } ?: return null
+        return graph.posts.mediaOf(post)?.imagePath(Media.Rendition.Display)
+    }
 
     override suspend fun newestForWidget(groupId: String): NewestForWidget? {
         val post: Post? = graph.posts.feed(groupId, limit = 1).firstOrNull()
@@ -151,6 +162,7 @@ object UnconfiguredCaptureData : CaptureData {
     override suspend fun invitation(invitationId: String): DailyInvitation? = null
     override suspend fun group(groupId: String): Group? = null
     override suspend fun collageForInvitation(invitationId: String): Collage? = null
+    override suspend fun collageFirstPhotoPath(collage: Collage): String? = null
     override suspend fun newestForWidget(groupId: String): NewestForWidget? = null
     override suspend fun members(groupId: String): List<Member> = emptyList()
     override suspend fun download(url: String, target: File) = throw DataException(DataError.NotConfigured)
