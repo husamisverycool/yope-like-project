@@ -25,8 +25,8 @@ import app.ui.text.TextRoles
  *   from [DsTheme].
  * - Native components (dialogs, sheets, menus, switches, segmented buttons, text-field cursors) take their
  *   colours from MaterialTheme: Retro's own Android ColorScheme (`color.global.system.*`, light `d42.u` /
- *   dark `d42.v` — retro-package-copy-motion.md §3.2), the M3 baseline for every role Retro leaves at the
- *   default (tokens README → "Platform-drawn components").
+ *   dark `d42.v` / dark with Settings → True Black `d42.w` — retro-package-copy-motion.md §3.2), the M3 baseline
+ *   for every role Retro leaves at the default (tokens README → "Platform-drawn components").
  */
 
 /** Light M3 scheme from the `color.global.system.*` light values. */
@@ -72,8 +72,22 @@ val AppDarkColorScheme: ColorScheme = darkColorScheme(
     surfaceContainerLow = Tokens.ColorsDark.globalSystemSurfaceContainerLow,
 )
 
-/** The scheme for an appearance. */
-fun appColorScheme(dark: Boolean): ColorScheme = if (dark) AppDarkColorScheme else AppLightColorScheme
+/**
+ * Dark M3 scheme with Settings → True Black on: Retro's `d42.w` — background and surface
+ * `color.global.system.surface.trueBlack` (#000000), every other role as [AppDarkColorScheme]
+ * (retro-package-copy-motion.md §3.2).
+ */
+val AppTrueBlackColorScheme: ColorScheme = AppDarkColorScheme.copy(
+    background = Tokens.ColorsDark.globalSystemSurfaceTrueBlack,
+    surface = Tokens.ColorsDark.globalSystemSurfaceTrueBlack,
+)
+
+/** The scheme for an appearance; [trueBlack] (Settings → True Black) changes the dark scheme only. */
+fun appColorScheme(dark: Boolean, trueBlack: Boolean = false): ColorScheme = when {
+    !dark -> AppLightColorScheme
+    trueBlack -> AppTrueBlackColorScheme
+    else -> AppDarkColorScheme
+}
 
 /**
  * MaterialTheme typography with Retro's overrides (`layout.global.system.typography`): headlineLarge =
@@ -93,14 +107,16 @@ fun appTypography(): Typography {
 
 /**
  * Wraps the whole app, every screen test and every preview. [dark] defaults to the system setting; tests
- * pass it explicitly. Provides [DsTheme] (colour tokens), the M3 scheme and typography for native
- * components, `color.global.textPrimary` as the default content colour, and `size.global.minTouchTarget.android`
- * as the minimum touch target (Compose expands smaller controls' touch bounds to it; M3 components pad to it).
+ * pass it explicitly. [trueBlack] defaults to Settings → True Black ([LocalAppearanceSettings]; Android only,
+ * owner decision 21) and changes the dark appearance only. Provides [DsTheme] (colour tokens), the M3 scheme and
+ * typography for native components, `color.global.textPrimary` as the default content colour, and
+ * `size.global.minTouchTarget.android` as the minimum touch target (Compose expands smaller controls' touch bounds
+ * to it; M3 components pad to it).
  */
 @Composable
-fun AppTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    DsTheme(dark = dark) {
-        MaterialTheme(colorScheme = appColorScheme(dark), typography = appTypography()) {
+fun AppTheme(dark: Boolean = isSystemInDarkTheme(), trueBlack: Boolean = currentTrueBlack(), content: @Composable () -> Unit) {
+    DsTheme(dark = dark, trueBlack = trueBlack) {
+        MaterialTheme(colorScheme = appColorScheme(dark, trueBlack), typography = appTypography()) {
             val base = LocalViewConfiguration.current
             val target = Tokens.Sizes.globalMinTouchTargetAndroid
             val configuration = remember(base, target) { MinimumTouchTarget(base, DpSize(target, target)) }

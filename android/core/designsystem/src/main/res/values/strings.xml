@@ -507,8 +507,8 @@
     <string name="chat_thread_divider_yesterday" formatted="false">Yesterday</string>
     <!-- Retro · chat.thread · new · SOURCED -->
     <string name="chat_thread_empty_detail" formatted="false">Be the first to say hi.</string>
-    <!-- Retro · chat.thread · verbatim · SOURCED -->
-    <string name="chat_thread_empty_invite" formatted="false">Invite friends</string>
+    <!-- Retro · chat.thread · adapted · SOURCED -->
+    <string name="chat_thread_empty_invite" formatted="false">Add members</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_empty_title" formatted="false">Let\'s get started</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
@@ -720,6 +720,8 @@
     <!-- Retro · groups.invite · verbatim · SOURCED -->
     <string name="groups_invite_link_messagetarget" formatted="false">Message</string>
     <!-- Retro · groups.invite · verbatim · SOURCED -->
+    <string name="groups_invite_link_qr" formatted="false">QR Code</string>
+    <!-- Retro · groups.invite · verbatim · SOURCED -->
     <string name="groups_invite_link_reset" formatted="false">Reset link</string>
     <!-- Retro · groups.invite · verbatim · SOURCED -->
     <string name="groups_invite_link_share" formatted="false">Share to…</string>
@@ -737,6 +739,28 @@
     <string name="groups_invite_link_turnoff_title" formatted="false">Turn off link sharing?</string>
     <!-- Retro · groups.invite · verbatim · SOURCED -->
     <string name="groups_invite_link_turnon" formatted="false">Turn on link sharing</string>
+    <!-- Retro · groups.invite · adapted · SOURCED · args: group_name -->
+    <string name="groups_invite_qr_accessibilitylabel">QR code for joining %1$s</string>
+    <!-- Retro · groups.invite · verbatim · SOURCED -->
+    <string name="groups_invite_qr_save" formatted="false">Save</string>
+    <!-- Retro · groups.invite · verbatim · SOURCED -->
+    <string name="groups_invite_qr_saved" formatted="false">Saved</string>
+    <!-- Retro · groups.invite · verbatim · SOURCED -->
+    <string name="groups_invite_qr_savedenied_button" formatted="false">Allow Photo Access</string>
+    <!-- Apple HIG · groups.invite · verbatim · VERIFIED -->
+    <string name="groups_invite_qr_savedenied_cancel" formatted="false">Cancel</string>
+    <!-- Retro · groups.invite · new · SOURCED -->
+    <string name="groups_invite_qr_savedenied_message" formatted="false">Allow access in Settings to save photos to your camera roll.</string>
+    <!-- Retro · groups.invite · verbatim · SOURCED -->
+    <string name="groups_invite_qr_savedenied_title" formatted="false">Camera Roll Access</string>
+    <!-- Retro · groups.invite · new · SOURCED -->
+    <string name="groups_invite_qr_savefailed" formatted="false">Couldn\'t save photo</string>
+    <!-- Retro · groups.invite · verbatim · SOURCED -->
+    <string name="groups_invite_qr_share" formatted="false">Share</string>
+    <!-- Retro · groups.invite · adapted · SOURCED -->
+    <string name="groups_invite_qr_tagline" formatted="false">Photos with friends and family</string>
+    <!-- Retro · groups.invite · verbatim · SOURCED -->
+    <string name="groups_invite_qr_title" formatted="false">Share Link</string>
     <!-- Retro · groups.invite · adapted · SOURCED · args: group_name -->
     <string name="groups_invite_title">Invite to %1$s</string>
     <!-- Retro · groups.list · adapted · SOURCED -->
@@ -1465,6 +1489,8 @@
     <string name="settings_root_account" formatted="false">Edit Profile</string>
     <!-- Apple HIG · settings.root · verbatim · VERIFIED -->
     <string name="settings_root_alert_cancel" formatted="false">Cancel</string>
+    <!-- Mastodon (Android) · settings.root · verbatim · SOURCED -->
+    <string name="settings_root_appearance_header" formatted="false">Appearance</string>
     <!-- Retro · settings.root · new · SOURCED -->
     <string name="settings_root_blocked" formatted="false">Blocked People</string>
     <!-- Apple HIG · settings.root · new · VERIFIED -->
@@ -1513,6 +1539,10 @@
     <string name="settings_root_terms" formatted="false">Terms of Use</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_title" formatted="false">Settings</string>
+    <!-- AntennaPod (Android) · settings.root · adapted · SOURCED -->
+    <string name="settings_root_trueblack" formatted="false">True Black</string>
+    <!-- AntennaPod (Android) · settings.root · adapted · SOURCED -->
+    <string name="settings_root_trueblack_detail" formatted="false">Use true black for the dark theme.</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_version" formatted="false">Version</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
@@ -1581,14 +1611,14 @@
     <string name="walls_browse_empty_detail" formatted="false">People in your groups show up here.</string>
     <!-- Retro · walls.browse · verbatim · SOURCED -->
     <string name="walls_browse_empty_title" formatted="false">Nothing to see here yet</string>
-    <!-- Retro · walls.browse · verbatim · SOURCED -->
-    <string name="walls_browse_error_title" formatted="false">Error loading friends. Tap here to try again.</string>
+    <!-- Retro · walls.browse · adapted · SOURCED -->
+    <string name="walls_browse_error_title" formatted="false">Error loading members. Tap here to try again.</string>
     <!-- Retro · walls.browse · verbatim · SOURCED -->
     <string name="walls_browse_search" formatted="false">Search</string>
     <!-- Retro · walls.browse · adapted · SOURCED -->
     <string name="walls_browse_search_empty" formatted="false">No matching people</string>
     <!-- Retro · walls.browse · verbatim · SOURCED -->
-    <string name="walls_browse_title" formatted="false">Friends</string>
+    <string name="walls_browse_title" formatted="false">Members</string>
     <!-- Retro · walls.member · verbatim · SOURCED -->
     <string name="walls_member_a11y_more" formatted="false">More Options</string>
     <!-- Retro · walls.member · new · SOURCED · args: name -->

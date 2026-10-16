@@ -293,6 +293,27 @@
       "level": "SOURCED",
       "notes": "Retro's Rewind and Activity tabs have no destination in this app; adding them is an information-architecture decision for the lead / owner (MERGE RA-7)."
     },
+    "groups.list.layout.templateCovers": {
+      "type": "layout",
+      "value": {
+        "friends": "template_cover_friends",
+        "family": "template_cover_family",
+        "roommates": "template_cover_roommates",
+        "custom": "template_cover_custom",
+        "pixelWidth": 216,
+        "pixelHeight": 291,
+        "ios": "App asset catalog ios/App/Resources/Assets.xcassets/<name>.imageset (scale 3x)",
+        "android": "android/feature/account/src/main/res/drawable-nodpi/<name>.jpg",
+        "source": "fixtures/photos (Unsplash License; people-free picks listed in fixtures/photos/LICENSE.md and INDEX.md)"
+      },
+      "source_app": "Retro",
+      "surface": "groups.list",
+      "element": "\"Ideas to Get Started\" template thumbnails (owner decision 9): one cover photo per group kind",
+      "evidence": "references/auto/retro/press/jeddacp-2024-05-home-profile-journals.png phone 3 (JED: each template row shows a cover photo — Event a room interior, Friends a red-lit room, Couple a portrait); docs/OWNER_DECISIONS.md 2026-10-16 #9; fixtures/photos/road-trip-window-3x2.jpg (friends: mountains through a car window — Retro's friends template 'Chronicle adventures with your best friends', JED), fixtures/photos/cake-chocolate-candles-4x5.jpg (family: a birthday cake with lit candles — 'celebrate milestones together', groups.create.type.family.detail), fixtures/photos/pizza-table-3x4.jpg (roommates: dinner on the table at home — 'dinners and nights in', groups.create.type.roommates.detail), fixtures/photos/sunset-lake-9x16.jpg (custom: an island in a calm lake at sunset — 'whatever else your mind takes you to', groups.create.type.custom.detail)",
+      "method": "every fixture photo viewed at full size; only photos with no person in them kept (no faces, no figures, no hands); among those, one per kind matching its description; no alcohol or brand marks (picnic-spread-3x4 dropped: wine bottle and glasses). Centre crop to 3:4 (road-trip-window x 270–810 of 1080; cake-chocolate-candles x 27–837 of 864; pizza-table whole frame; sunset-lake y 134–945 of 1080), Lanczos resize to 3 × size.global.rowThumbWidth × 3 × size.global.rowThumbHeight = 216 × 291 px, JPEG quality 80, sRGB, no EXIF / ICC (python3 -I + PIL)",
+      "level": "SOURCED",
+      "notes": "Drawn like a group cover: aspect-fill in the C-15 thumbnail (size.global.rowThumbWidth × rowThumbHeight, radius.global.thumbnail). Retro's own template photos and its user-styled cover titles are not copied (groups.list do-not-copy)."
+    },
     "groups.screen.size.coverWidth": {
       "type": "dimension",
       "value": 173.5,
@@ -535,6 +556,56 @@
       "level": "SOURCED",
       "precision": "±1 pt",
       "notes": "Label size from 'Q' ink 10.2 pt including its tail → 12–13 pt type: text role meta (13)."
+    },
+    "groups.invite.icon.qr": {
+      "type": "icon",
+      "value": {
+        "ios": "qrcode",
+        "android": "Rounded.QrCode2"
+      },
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "element": "glyph of the \"QR Code\" share target (first of the four circles)",
+      "evidence": "references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2: first 64-pt circle x 1515–1646; glyph ink x 1557–1604, y 2343–2390 (23.2 × 23.2 pt at 2.0687 px/pt): three rounded finder squares with a dot each and a module cluster bottom-right; label \"QR Code\"",
+      "level": "PLATFORM",
+      "notes": "SF Symbol `qrcode` / Material `QrCode2` draw the same three-finder glyph; box size.global.icon (24) as the other targets."
+    },
+    "groups.invite.fontSize.qrTagline": {
+      "type": "fontSize",
+      "value": 10,
+      "unit": "pt",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "element": "QR card: tiny print under the group name (groups.invite.qr.tagline)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'FONT FAMILY USAGE': osg.g cs1.java:165 sizes(sp)=['0.39', '10', '0.11'] refs=['R.string.qr_card_content_subtitle'] (osg.g = Retro's tiny-print face, design/research/retro-package-copy-motion.md §2.3 'Tiny print … QR card'); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt qr_card_content_subtitle",
+      "method": "package constant: the text size set next to the QR card subtitle (10 sp → 10 pt)",
+      "level": "SOURCED",
+      "precision": "exact (constant)",
+      "notes": "Face: Retro sets it in Helvetica (osg.g); this app uses its UI sans (font.global.family) — Helvetica is not licensed for bundling on Android. The other two constants (0.39, 0.11) are not identified as tracking or alpha and are not used. The card is a picture (also the shared image): the text keeps this size at every Dynamic Type / font scale; the card's accessibility label carries it."
+    },
+    "groups.invite.layout.qrCard": {
+      "type": "layout",
+      "value": {
+        "presentation": "tapping the \"QR Code\" target shows the recap preview (C-34 on the media page: collage.view.layout.screen, RecapPreviewScreen on both platforms): the group cover blurred as the backdrop (BlurredBackdrop; no cover → color.global.controlOnDeep), the card centred, the close circle, a Save circle (C-11 on media, icon.global.download) bottom-leading and the light Share pill (C-09, collage.share.layout.pill) trailing; iOS full-screen cover, Android a full-screen layer over the invite sheet (Back closes it)",
+        "card": "layout.year.story.recapCard shell: widthRatio of the media page, paddingRatio, cornerRadiusRatio, footerHeightRatio; fill color.global.surfaceLight in both appearances (L-4)",
+        "qrSide": "the card width less twice its padding: the recap card grid area, square",
+        "quietZoneModules": 4,
+        "errorCorrection": "H",
+        "encoder": "the invite URL exactly as the sheet shares it (https://<domain>/i/<token>), byte mode, error correction H, as web/src/render/qr.ts (qrcode-generator, invite.web); iOS CoreImage CIQRCodeGenerator inputCorrectionLevel H; Android ZXing core Encoder ErrorCorrectionLevel.H (Apache-2.0, licence android/feature/account/licenses/ZXing-LICENSE.txt)",
+        "modules": "square, a whole number of device pixels each, nearest-neighbour (web/src/render/qr.ts: crisp at every pixel ratio), centred in the qrSide square; the card fill around them is the quiet zone",
+        "moduleColor": "color.global.onSurfaceLight",
+        "footer": "footer height = layout.year.story.recapCard footerHeightRatio × card width, contents centred in it (TC-REC), leading at the card padding: the group name in font.global.display text role displayTitle, color.global.onSurfaceLight, one line, tail truncation; under it groups.invite.qr.tagline at groups.invite.fontSize.qrTagline in font.global.family, groups.invite.color.note. The card is a picture (also the exported image): its text keeps the default size at every Dynamic Type / font scale",
+        "exportScale": 3,
+        "export": "Save and Share use the card alone (no backdrop) as a PNG: iOS ImageRenderer at exportScale; Android the card's drawn layer at the device density",
+        "accessibility": "the card is one image element labelled groups.invite.qr.accessibilityLabel; Save and Share are buttons labelled with their copy"
+      },
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "element": "in-app QR invite card (owner decision 17) and its screen",
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-16 #17; references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (QR Code target first in the share row); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt qr_card_content_subtitle, qr_card_content_member_since_template, journal_qr_code_action_sheet_title, friends_tab_profile_qr (Retro's in-app QR card and sheet); https://techcrunch.com/2024/04/04/retro-an-actually-good-photo-sharing-app-for-bffs-launches-collaborative-journals/ (accessed 2026-10-16: 'a QR code that you can either save to your camera roll or print'); references/auto/retro/web/retro.app-u-nathan-desktop.png (Retro's QR: black modules on white); web/src/render/qr.ts + design/tokens/invite.json invite.web.size.qrDesktop (this app's web QR: EC H, whole-pixel modules, black on white); https://www.qrcode.com/en/howto/code.html (DENSO WAVE, accessed 2026-10-16: 'QR Code requires a four-module wide margin at all sides of a symbol.'); https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/41049 (inverted dark-theme codes are not read by some readers — the card stays light in dark appearance); design/tokens/memory.json layout.year.story.recapCard (TC-REC / TC-H recap card); design/components.md C-34, C-09, C-11",
+      "method": "composition of Retro components C-34 (recap card shell holding the QR in its grid area), C-11 (Save circle on media) and C-09 (Share pill) in Retro's recap preview order (ST-04); encoding parameters reused from the web invite page; quiet zone per the QR Code specification's owner (DENSO WAVE)",
+      "level": "SOURCED",
+      "notes": "Retro's QR card art itself was never captured (only its strings and tiny-print size), so the card is Retro's recap card holding the code, the shape Retro uses for its own share cards ('2023 / nathan / retro.app', TC-H). Not copied: Retro's domain line 'Retro.app' (owner's domain, BLOCKED) and 'Member since %1$d' (a person's join year; this card is a group's). No logo or avatar over the code's centre: the web QR's centre avatar shows who invited you on /i/ (invite.web), the card names the group instead. Error correction stays H so a printed card survives wear."
     },
     "groups.invite.layout.share": {
       "type": "layout",

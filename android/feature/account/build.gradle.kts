@@ -65,6 +65,8 @@ dependencies {
     implementation("androidx.browser:browser:1.9.0")
     // auth.phone: region calling code prefill, E.164 normalisation and display formatting.
     implementation("com.googlecode.libphonenumber:libphonenumber:9.0.30")
+    // groups.invite QR card (owner decision 17): QR encoder, Apache-2.0 (licenses/ZXing-LICENSE.txt, ZXing-NOTICE.txt).
+    implementation(libs.zxing.core)
     debugImplementation(libs.compose.ui.test.manifest)
 
     testImplementation(libs.bundles.robolectric.test)

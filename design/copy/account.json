@@ -1547,6 +1547,121 @@
       "pattern": "retro.voice.confirmation",
       "level": "SOURCED"
     },
+    "groups.invite.link.qr": {
+      "text": "QR Code",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_settings_link_sharing_qr_code_cta`, `journal_broadcast_invite_option_qr_code`; references/auto/retro/press/tc-2024-04-retro-journals-5.png phone 2 (label under the first share circle)",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Share target that opens the QR card (owner decision 17)."
+    },
+    "groups.invite.qr.title": {
+      "text": "Share Link",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_qr_code_action_sheet_title` (title of Retro's journal QR sheet)",
+      "pattern": "retro.voice.title-case",
+      "level": "SOURCED",
+      "notes": "Accessibility name of the QR card screen (the card itself carries the group's name)."
+    },
+    "groups.invite.qr.accessibilityLabel": {
+      "text": "QR code for joining {group_name}",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `friends_tab_profile_qr` ('Profile QR code', the label of Retro's profile QR); design/copy-patterns.md platform.a11yLabel",
+      "pattern": "platform.a11yLabel",
+      "level": "SOURCED",
+      "notes": "Label of the card image: what the code does (join) and for which group, Sentence case (a description). Noun swap: profile → joining {group_name}."
+    },
+    "groups.invite.qr.tagline": {
+      "text": "Photos with friends and family",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `qr_card_content_subtitle` ('Retro.app - Photos with Friends', the tiny print on Retro's QR card); references/auto/retro/web/retro.app-web-copy-excerpts.txt (og:description 'Photos with friends.')",
+      "pattern": "retro.voice.share",
+      "level": "SOURCED",
+      "notes": "Retro's domain prefix dropped (the domain and name are the owner's, config/app.json domain BLOCKED); noun swap friends → friends and family as invite.appclip.card.subtitle. Means people in general, so it keeps \"friends\" (owner decision 10)."
+    },
+    "groups.invite.qr.save": {
+      "text": "Save",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `message_thread_context_menu_save`; https://techcrunch.com/2024/04/04/retro-an-actually-good-photo-sharing-app-for-bffs-launches-collaborative-journals/ (accessed 2026-10-16: Retro's co-founder on the journal QR code — \"we've created this very beautiful QR code that you can either save to your camera roll or print\")",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Saves the card image to the photo library (label of the circle button)."
+    },
+    "groups.invite.qr.share": {
+      "text": "Share",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_composer_share_cta`; https://techcrunch.com/2024/04/04/retro-an-actually-good-photo-sharing-app-for-bffs-launches-collaborative-journals/ (accessed 2026-10-16: Retro's co-founder on the journal QR code — \"we've created this very beautiful QR code that you can either save to your camera roll or print\") (print goes through the system share sheet)",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Light pill under the card (recap preview, C-09) → system share sheet with the card image."
+    },
+    "groups.invite.qr.saved": {
+      "text": "Saved",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_shareout_save_success_message`",
+      "pattern": "retro.voice.confirmation",
+      "level": "SOURCED"
+    },
+    "groups.invite.qr.saveFailed": {
+      "text": "Couldn't save photo",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt media_viewer_comment_send_failed_title pattern ('Couldn't send comment'); same line as onthisday.saveFailed",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
+    },
+    "groups.invite.qr.saveDenied.title": {
+      "text": "Camera Roll Access",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `rewind_home_no_permission_upsell_title`",
+      "pattern": "retro.voice.permission",
+      "level": "SOURCED"
+    },
+    "groups.invite.qr.saveDenied.message": {
+      "text": "Allow access in Settings to save photos to your camera roll.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "design/copy-patterns.md retro.voice.permission ('Retro needs permission to access your photo library so you can select and post photos.' — composer_permission_upsell_message); same line as onthisday.saveDenied.message",
+      "pattern": "retro.voice.permission",
+      "level": "SOURCED"
+    },
+    "groups.invite.qr.saveDenied.button": {
+      "text": "Allow Photo Access",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `rewind_home_no_permission_upsell_cta`",
+      "pattern": "retro.voice.permission",
+      "level": "SOURCED",
+      "notes": "Opens the app's page in Settings."
+    },
+    "groups.invite.qr.saveDenied.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "groups.invite",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `cancel`; HIG Alerts",
+      "pattern": "platform.alertButton",
+      "level": "VERIFIED"
+    },
     "groups.invite.link.message": {
       "text": "Check out {group_name} on {app_name}: {link}",
       "origin": "adapted",
@@ -2392,6 +2507,36 @@
       "pattern": "retro.voice.widget",
       "level": "SOURCED",
       "notes": "Noun swap: memories from your album → photos from your groups on your home screen."
+    },
+    "settings.root.appearance.header": {
+      "text": "Appearance",
+      "origin": "verbatim",
+      "source_app": "Mastodon (Android)",
+      "surface": "settings.root",
+      "evidence": "https://raw.githubusercontent.com/mastodon/mastodon-android/master/mastodon/src/main/res/values/strings.xml `settings_theme` = \"Appearance\" (its settings section holding the theme options; read 2026-10-16)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "Android only (owner decision 21). Section header: one Title-Case word as Retro's settings_section_header_* ('Account', 'Privacy'); Retro's package has no appearance section (MERGE_DECISIONS OD21-1)."
+    },
+    "settings.root.trueBlack": {
+      "text": "True Black",
+      "origin": "adapted",
+      "source_app": "AntennaPod (Android)",
+      "surface": "settings.root",
+      "evidence": "https://raw.githubusercontent.com/AntennaPod/AntennaPod/develop/ui/i18n/src/main/res/values/strings.xml `pref_black_theme_title` = \"Full black\" (a SwitchPreference in its Theming category, ui/preferences/src/main/res/xml/preferences_user_interface.xml, read 2026-10-16); docs/OWNER_DECISIONS.md #21 names Retro's option \"True black\" (Retro scheme d42.w, design/research/retro-package-copy-motion.md §3.1–3.2)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "Android only. 'Full' → 'True' (the decision's name for Retro's option); Title Case per retro.voice.settings. Retro ships the scheme with no string resource or dex literal naming it (MERGE_DECISIONS OD21-1). Toggle row (C-14 with the native switch)."
+    },
+    "settings.root.trueBlack.detail": {
+      "text": "Use true black for the dark theme.",
+      "origin": "adapted",
+      "source_app": "AntennaPod (Android)",
+      "surface": "settings.root",
+      "evidence": "https://raw.githubusercontent.com/AntennaPod/AntennaPod/develop/ui/i18n/src/main/res/values/strings.xml `pref_black_theme_message` = \"Use full black for the dark theme\" (read 2026-10-16)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "Android only. 'full' → 'true' as settings.root.trueBlack; the closing period per retro.voice.settings ('Others will not be able to send you friend requests.'). 'Dark theme' is Android's own name for the system setting."
     },
     "settings.root.privacy.header": {
       "text": "Privacy",

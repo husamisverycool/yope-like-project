@@ -16,6 +16,8 @@ import app.feature.social.chat.RecorderControls
 import app.feature.social.chat.Recording
 import app.feature.social.chat.VoiceUi
 import app.feature.social.data.VoicePlayback
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithText
 import org.junit.Test
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -160,10 +162,11 @@ class ChatSnapshotTest : SnapshotBase() {
         chat(state, ChatUiState(menuFor = "m-5"), data, screen = true)
     }
 
-    /** Long press on a photo: the quick-reaction row (🔥 💖 +) then Reply · Save · Report Message. */
+    /** Long press on Ana's photo: the quick-reaction row (🔥 💖 +) then Reply · Report Message — no Save (owner decision 12). */
     @Test fun contextMenuPhoto() {
         val (data, state) = loaded()
         chat(state, ChatUiState(menuFor = "m-1"), data, screen = true)
+        compose.onAllNodesWithText("Save").assertCountEquals(0)
     }
 
     @Test fun unsendConfirmation() {

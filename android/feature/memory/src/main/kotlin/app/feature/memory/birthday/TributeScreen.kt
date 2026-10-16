@@ -96,8 +96,8 @@ data class TributeActions(
  * leading `size.global.screenMargin`, baseline `size.global.titleTop`) with the group name under it (`textButton`,
  * `color.global.textSecondary`, `dimension.onthisday.subtitleBaseline` below) and the close circle on media (C-11) at
  * `size.global.headerInset`, centred on the title's cap middle; the 16:9 player full width, centred between the
- * header and the bar (native controls, the poster first); the recap preview's bottom row — "Save to Camera Roll"
- * circle and the white "Share" pill.
+ * header and the bar (native controls, the poster first); for the honoree only (owner decision 12), the recap
+ * preview's bottom row — "Save to Camera Roll" circle and the white "Share" pill. Members watch it in the app.
  */
 @Composable
 fun TributeScreen(
@@ -173,6 +173,7 @@ private fun androidx.compose.foundation.layout.BoxScope.Page(state: TributeState
         // The player is centred between the header and the top of the bar (the pill's top edge).
         Spacer(Modifier.height(recapRowCentre() + Dp(Tokens.Layouts.CollageShareLayoutPill.height) / 2))
     }
+    if (!state.forMe) return
     RecapBottomRow(
         leading = {
             CircleIconButton(

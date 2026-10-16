@@ -13,6 +13,7 @@ import app.feature.account.platform.DeviceContactsSource
 import app.feature.account.platform.DeviceImageImporter
 import app.feature.account.platform.LegalLinks
 import app.links.AppLinkConfig
+import app.ui.theme.AppearanceSettings
 import android.content.pm.PackageManager
 import java.util.Locale
 
@@ -40,6 +41,7 @@ object AccountEnvironments {
             legal = LegalLinks(BuildConfig.LEGAL_TERMS_URL, BuildConfig.LEGAL_PRIVACY_URL, BuildConfig.SUPPORT_EMAIL),
             region = { region(app) },
             isGranted = { ContextCompat.checkSelfPermission(app, it) == PackageManager.PERMISSION_GRANTED },
+            appearance = AppearanceSettings.device(app),
         )
     }
 

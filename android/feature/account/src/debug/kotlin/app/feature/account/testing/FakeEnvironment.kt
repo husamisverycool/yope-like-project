@@ -18,6 +18,8 @@ import app.feature.account.platform.ImageImporter
 import app.feature.account.platform.LegalLinks
 import app.model.DeepLinkCodec
 import app.model.SessionPromptGate
+import app.ui.theme.AppearanceSettings
+import app.ui.theme.MemoryAppearanceSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
@@ -69,6 +71,7 @@ fun fakeEnvironment(
     sdkInt: Int = 36,
     scope: CoroutineScope? = null,
     launchToCamera: Boolean = false,
+    appearance: AppearanceSettings = MemoryAppearanceSettings(),
 ): AccountEnvironment = AccountEnvironment(
     backend = backend,
     stores = stores,
@@ -88,10 +91,11 @@ fun fakeEnvironment(
     region = { "US" },
     isGranted = { it in granted },
     launchToCamera = launchToCamera,
+    appearance = appearance,
 ).let { env -> if (scope != null) env.copyWithScope(scope) else env }
 
 private fun AccountEnvironment.copyWithScope(scope: CoroutineScope) = AccountEnvironment(
     backend, stores, inviteLinks, invitePreview, premium, contacts, images, legal, clock, zone, sdkInt, promptGate, signUp,
     appScope = scope, optimistic = optimistic, smsUserConsent = smsUserConsent, region = region, isGranted = isGranted,
-    launchToCamera = launchToCamera, toasts = toasts,
+    launchToCamera = launchToCamera, toasts = toasts, appearance = appearance,
 )

@@ -42,7 +42,11 @@ data class TributeState(
     val groupName: String? = null,
     /** The honoree's first name (the member's title "{name}'s birthday video"). */
     val honoreeName: String? = null,
-    /** The viewer is the honoree ("Your birthday video"). */
+    /**
+     * The viewer is the honoree ("Your birthday video"). Only the honoree gets Save and Share: the video was made for them
+     * and carries other members' photos, which leave the app only through the person they were given to (owner decision
+     * 12); members watch it in the app.
+     */
     val forMe: Boolean = false,
     val saving: Boolean = false,
     val toast: Toast? = null,
@@ -152,8 +156,9 @@ class TributeViewModel(
         }
     }
 
-    /** "Download": saves the MP4; toast `birthday.tribute.saved` / `.saveFailed`. */
+    /** "Download" (the honoree's): saves the MP4; toast `birthday.tribute.saved` / `.saveFailed`. */
     fun save(accessGranted: Boolean = true) {
+        if (!_state.value.forMe) return
         val ready = _state.value.content as? TributeContent.Ready ?: return
         if (_state.value.saving) return
         if (!accessGranted) {
@@ -170,8 +175,9 @@ class TributeViewModel(
         _state.update { it.copy(saving = false, toast = if (ok) TributeState.Toast.Saved else TributeState.Toast.SaveFailed) }
     }
 
-    /** "Share": the system share sheet with the MP4 file. */
+    /** "Share" (the honoree's): the system share sheet with the MP4 file. */
     fun share() {
+        if (!_state.value.forMe) return
         val ready = _state.value.content as? TributeContent.Ready ?: return
         viewModelScope.launch {
             val uri = files.shareUri(ready.videoUrl, tributeId)

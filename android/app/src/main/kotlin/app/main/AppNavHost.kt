@@ -13,7 +13,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.AccountEnvironments
 import app.feature.account.LocalAccountEnvironment
@@ -25,6 +24,7 @@ import app.feature.memory.memoryDestinations
 import app.feature.social.socialDestinations
 import app.model.AppRoute
 import app.ui.components.ToastHost
+import app.ui.foundation.PageRoles
 import app.model.DeepLink
 import app.model.DeepLinkRouting
 import kotlinx.coroutines.flow.Flow
@@ -43,7 +43,7 @@ fun AppNavHost(
     env: AccountEnvironment = AccountEnvironments.get(LocalContext.current),
 ) {
     CompositionLocalProvider(LocalAccountEnvironment provides env) {
-        Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundAndroid)) {
+        Box(Modifier.fillMaxSize().background(PageRoles.page)) {
             NavHost(navController = navController, startDestination = DeepLinkRouting.home) {
                 // One registration file per feature group, so each group's screens are built independently
                 // (docs/SURFACES.md groups: account, capture, social, memory).
@@ -55,7 +55,7 @@ fun AppNavHost(
             ShellTabBar(navController, env, Modifier.align(Alignment.BottomCenter))
             val ready = RootGate(navController, env)
             // Until the session is known nothing shows, so no screen flashes before sign-up / home.
-            if (!ready) Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundAndroid))
+            if (!ready) Box(Modifier.fillMaxSize().background(PageRoles.page))
             // Confirmations raised by the account flows, shown as platform toasts (C-26); they outlive the
             // navigation that follows them.
             ToastHost(env.toasts)

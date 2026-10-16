@@ -255,7 +255,7 @@ const table = {
   "chat.thread.divider.today": "Today", // Retro · chat.thread · SOURCED
   "chat.thread.divider.yesterday": "Yesterday", // Retro · chat.thread · SOURCED
   "chat.thread.empty.detail": "Be the first to say hi.", // Retro · chat.thread · SOURCED
-  "chat.thread.empty.invite": "Invite friends", // Retro · chat.thread · SOURCED
+  "chat.thread.empty.invite": "Add members", // Retro · chat.thread · SOURCED
   "chat.thread.empty.title": "Let's get started", // Retro · chat.thread · SOURCED
   "chat.thread.error.detail": "There was a problem. Please try again.", // Retro · chat.thread · SOURCED
   "chat.thread.error.retry": "Try Again", // Retro · chat.thread · SOURCED
@@ -361,6 +361,7 @@ const table = {
   "groups.invite.link.expiry": "This link works until {date}.", // Retro · groups.invite · SOURCED
   "groups.invite.link.label": "Anyone with this link can join {group_name}", // Retro · groups.invite · SOURCED
   "groups.invite.link.messageTarget": "Message", // Retro · groups.invite · SOURCED
+  "groups.invite.link.qr": "QR Code", // Retro · groups.invite · SOURCED
   "groups.invite.link.reset": "Reset link", // Retro · groups.invite · SOURCED
   "groups.invite.link.share": "Share to…", // Retro · groups.invite · SOURCED
   "groups.invite.link.turnedOff": "Link off", // Retro · groups.invite · SOURCED
@@ -370,6 +371,17 @@ const table = {
   "groups.invite.link.turnOff.message": "People who have this link won't be able to join with it.", // Retro · groups.invite · SOURCED
   "groups.invite.link.turnOff.title": "Turn off link sharing?", // Retro · groups.invite · SOURCED
   "groups.invite.link.turnOn": "Turn on link sharing", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.accessibilityLabel": "QR code for joining {group_name}", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.save": "Save", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.saved": "Saved", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.saveDenied.button": "Allow Photo Access", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.saveDenied.cancel": "Cancel", // Apple HIG · groups.invite · VERIFIED
+  "groups.invite.qr.saveDenied.message": "Allow access in Settings to save photos to your camera roll.", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.saveDenied.title": "Camera Roll Access", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.saveFailed": "Couldn't save photo", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.share": "Share", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.tagline": "Photos with friends and family", // Retro · groups.invite · SOURCED
+  "groups.invite.qr.title": "Share Link", // Retro · groups.invite · SOURCED
   "groups.invite.title": "Invite to {group_name}", // Retro · groups.invite · SOURCED
   "groups.list.empty.button": "Create Group", // Retro · groups.list · SOURCED
   "groups.list.empty.detail": "Here you can share moments with a select group of people.", // Retro · groups.list · SOURCED
@@ -734,6 +746,7 @@ const table = {
   "settings.root.about.header": "About", // Retro · settings.root · SOURCED
   "settings.root.account": "Edit Profile", // Retro · settings.root · SOURCED
   "settings.root.alert.cancel": "Cancel", // Apple HIG · settings.root · VERIFIED
+  "settings.root.appearance.header": "Appearance", // Mastodon (Android) · settings.root · SOURCED
   "settings.root.blocked": "Blocked People", // Retro · settings.root · SOURCED
   "settings.root.close.accessibilityLabel": "Close", // Apple HIG · settings.root · VERIFIED
   "settings.root.contact": "Contact Us", // Retro · settings.root · SOURCED
@@ -758,6 +771,8 @@ const table = {
   "settings.root.subscription.header": "Subscription", // Retro · settings.root · SOURCED
   "settings.root.terms": "Terms of Use", // Apple HIG · settings.root · VERIFIED
   "settings.root.title": "Settings", // Retro · settings.root · SOURCED
+  "settings.root.trueBlack": "True Black", // AntennaPod (Android) · settings.root · SOURCED
+  "settings.root.trueBlack.detail": "Use true black for the dark theme.", // AntennaPod (Android) · settings.root · SOURCED
   "settings.root.version": "Version", // Retro · settings.root · SOURCED
   "settings.root.widgets.add": "Add Widget", // Retro · settings.root · SOURCED
   "settings.root.widgets.detail": "See photos from your groups on your home screen", // Retro · settings.root · SOURCED
@@ -792,10 +807,10 @@ const table = {
   "walls.browse.empty.action": "Create a group", // Retro · walls.browse · SOURCED
   "walls.browse.empty.detail": "People in your groups show up here.", // Retro · walls.browse · SOURCED
   "walls.browse.empty.title": "Nothing to see here yet", // Retro · walls.browse · SOURCED
-  "walls.browse.error.title": "Error loading friends. Tap here to try again.", // Retro · walls.browse · SOURCED
+  "walls.browse.error.title": "Error loading members. Tap here to try again.", // Retro · walls.browse · SOURCED
   "walls.browse.search": "Search", // Retro · walls.browse · SOURCED
   "walls.browse.search.empty": "No matching people", // Retro · walls.browse · SOURCED
-  "walls.browse.title": "Friends", // Retro · walls.browse · SOURCED
+  "walls.browse.title": "Members", // Retro · walls.browse · SOURCED
   "walls.member.a11y.more": "More Options", // Retro · walls.member · SOURCED
   "walls.member.a11y.wall": "{name}'s profile", // Retro · walls.member · SOURCED
   "walls.member.empty.detail": "{name} hasn't shared anything in a group you're both in.", // Retro · walls.member · SOURCED

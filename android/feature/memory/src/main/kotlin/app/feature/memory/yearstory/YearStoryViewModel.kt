@@ -65,7 +65,10 @@ data class YearStoryData(
 
 /** One card of the story, in order (design/surfaces/year.story.md, B "Cards, in order"). */
 sealed interface StoryCard {
-    /** Cards with the Share pill (fact cards, the outro and the summary). */
+    /**
+     * Cards with the Share pill: the fact cards, the collages, the outro and the summary (group pieces made for sharing),
+     * and a most-reacted photo only when it is your own (owner decision 12: someone else's photo never leaves the app).
+     */
     val shareable: Boolean get() = false
 
     /** 1: "Year in Photos" + "{group} · {year}". */
@@ -83,9 +86,9 @@ sealed interface StoryCard {
     /** 5: "The moments you reacted to most". */
     data object MostReactedSetup : StoryCard
 
-    /** 6…10: one most-reacted photo, in the worker's order — no number, rank or reaction glyph (T2). */
-    data class MostReactedPhoto(val postId: String, val url: String?, val name: String, val date: LocalDate) : StoryCard {
-        override val shareable get() = true
+    /** 6…10: one most-reacted photo, in the worker's order — no number, rank or reaction glyph (T2). [isMine]: you posted it. */
+    data class MostReactedPhoto(val postId: String, val url: String?, val name: String, val date: LocalDate, val isMine: Boolean = false) : StoryCard {
+        override val shareable get() = isMine
     }
 
     /** 11: "You didn't go through these moments alone" + "Some days, everyone was there". */
@@ -277,7 +280,10 @@ class YearStoryViewModel(
             val photos = reacted.mapNotNull { id ->
                 val post = posts[id] ?: return@mapNotNull null
                 if (media[post.mediaId] == null) return@mapNotNull null
-                StoryCard.MostReactedPhoto(id, displayUrl(id), names[post.authorId].orEmpty(), post.createdAt.atZone(zone).toLocalDate())
+                StoryCard.MostReactedPhoto(
+                    id, displayUrl(id), names[post.authorId].orEmpty(), post.createdAt.atZone(zone).toLocalDate(),
+                    isMine = backend.currentUserId != null && post.authorId == backend.currentUserId,
+                )
             }
             val together = days.mapNotNull { day ->
                 val collage = collages[day.collageId] ?: return@mapNotNull null

@@ -509,8 +509,8 @@ public enum Copy {
     public static var chatThreadDividerYesterday: String { CopyLookup.string("chat.thread.divider.yesterday", default: "Yesterday") }
     /// "Be the first to say hi." — Retro · chat.thread · new · SOURCED
     public static var chatThreadEmptyDetail: String { CopyLookup.string("chat.thread.empty.detail", default: "Be the first to say hi.") }
-    /// "Invite friends" — Retro · chat.thread · verbatim · SOURCED
-    public static var chatThreadEmptyInvite: String { CopyLookup.string("chat.thread.empty.invite", default: "Invite friends") }
+    /// "Add members" — Retro · chat.thread · adapted · SOURCED
+    public static var chatThreadEmptyInvite: String { CopyLookup.string("chat.thread.empty.invite", default: "Add members") }
     /// "Let's get started" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadEmptyTitle: String { CopyLookup.string("chat.thread.empty.title", default: "Let's get started") }
     /// "There was a problem. Please try again." — Retro · chat.thread · verbatim · SOURCED
@@ -721,6 +721,8 @@ public enum Copy {
     public static func groupsInviteLinkLabel(groupName: String) -> String { CopyLookup.format("groups.invite.link.label", default: "Anyone with this link can join {group_name}", ["group_name": groupName]) }
     /// "Message" — Retro · groups.invite · verbatim · SOURCED
     public static var groupsInviteLinkMessageTarget: String { CopyLookup.string("groups.invite.link.messageTarget", default: "Message") }
+    /// "QR Code" — Retro · groups.invite · verbatim · SOURCED
+    public static var groupsInviteLinkQr: String { CopyLookup.string("groups.invite.link.qr", default: "QR Code") }
     /// "Reset link" — Retro · groups.invite · verbatim · SOURCED
     public static var groupsInviteLinkReset: String { CopyLookup.string("groups.invite.link.reset", default: "Reset link") }
     /// "Share to…" — Retro · groups.invite · verbatim · SOURCED
@@ -739,6 +741,28 @@ public enum Copy {
     public static var groupsInviteLinkTurnOffTitle: String { CopyLookup.string("groups.invite.link.turnOff.title", default: "Turn off link sharing?") }
     /// "Turn on link sharing" — Retro · groups.invite · verbatim · SOURCED
     public static var groupsInviteLinkTurnOn: String { CopyLookup.string("groups.invite.link.turnOn", default: "Turn on link sharing") }
+    /// "QR code for joining {group_name}" — Retro · groups.invite · adapted · SOURCED
+    public static func groupsInviteQrAccessibilityLabel(groupName: String) -> String { CopyLookup.format("groups.invite.qr.accessibilityLabel", default: "QR code for joining {group_name}", ["group_name": groupName]) }
+    /// "Save" — Retro · groups.invite · verbatim · SOURCED
+    public static var groupsInviteQrSave: String { CopyLookup.string("groups.invite.qr.save", default: "Save") }
+    /// "Saved" — Retro · groups.invite · verbatim · SOURCED
+    public static var groupsInviteQrSaved: String { CopyLookup.string("groups.invite.qr.saved", default: "Saved") }
+    /// "Allow Photo Access" — Retro · groups.invite · verbatim · SOURCED
+    public static var groupsInviteQrSaveDeniedButton: String { CopyLookup.string("groups.invite.qr.saveDenied.button", default: "Allow Photo Access") }
+    /// "Cancel" — Apple HIG · groups.invite · verbatim · VERIFIED
+    public static var groupsInviteQrSaveDeniedCancel: String { CopyLookup.string("groups.invite.qr.saveDenied.cancel", default: "Cancel") }
+    /// "Allow access in Settings to save photos to your camera roll." — Retro · groups.invite · new · SOURCED
+    public static var groupsInviteQrSaveDeniedMessage: String { CopyLookup.string("groups.invite.qr.saveDenied.message", default: "Allow access in Settings to save photos to your camera roll.") }
+    /// "Camera Roll Access" — Retro · groups.invite · verbatim · SOURCED
+    public static var groupsInviteQrSaveDeniedTitle: String { CopyLookup.string("groups.invite.qr.saveDenied.title", default: "Camera Roll Access") }
+    /// "Couldn't save photo" — Retro · groups.invite · new · SOURCED
+    public static var groupsInviteQrSaveFailed: String { CopyLookup.string("groups.invite.qr.saveFailed", default: "Couldn't save photo") }
+    /// "Share" — Retro · groups.invite · verbatim · SOURCED
+    public static var groupsInviteQrShare: String { CopyLookup.string("groups.invite.qr.share", default: "Share") }
+    /// "Photos with friends and family" — Retro · groups.invite · adapted · SOURCED
+    public static var groupsInviteQrTagline: String { CopyLookup.string("groups.invite.qr.tagline", default: "Photos with friends and family") }
+    /// "Share Link" — Retro · groups.invite · verbatim · SOURCED
+    public static var groupsInviteQrTitle: String { CopyLookup.string("groups.invite.qr.title", default: "Share Link") }
     /// "Invite to {group_name}" — Retro · groups.invite · adapted · SOURCED
     public static func groupsInviteTitle(groupName: String) -> String { CopyLookup.format("groups.invite.title", default: "Invite to {group_name}", ["group_name": groupName]) }
     /// "Create Group" — Retro · groups.list · adapted · SOURCED
@@ -1467,6 +1491,8 @@ public enum Copy {
     public static var settingsRootAccount: String { CopyLookup.string("settings.root.account", default: "Edit Profile") }
     /// "Cancel" — Apple HIG · settings.root · verbatim · VERIFIED
     public static var settingsRootAlertCancel: String { CopyLookup.string("settings.root.alert.cancel", default: "Cancel") }
+    /// "Appearance" — Mastodon (Android) · settings.root · verbatim · SOURCED
+    public static var settingsRootAppearanceHeader: String { CopyLookup.string("settings.root.appearance.header", default: "Appearance") }
     /// "Blocked People" — Retro · settings.root · new · SOURCED
     public static var settingsRootBlocked: String { CopyLookup.string("settings.root.blocked", default: "Blocked People") }
     /// "Close" — Apple HIG · settings.root · new · VERIFIED
@@ -1515,6 +1541,10 @@ public enum Copy {
     public static var settingsRootTerms: String { CopyLookup.string("settings.root.terms", default: "Terms of Use") }
     /// "Settings" — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootTitle: String { CopyLookup.string("settings.root.title", default: "Settings") }
+    /// "True Black" — AntennaPod (Android) · settings.root · adapted · SOURCED
+    public static var settingsRootTrueBlack: String { CopyLookup.string("settings.root.trueBlack", default: "True Black") }
+    /// "Use true black for the dark theme." — AntennaPod (Android) · settings.root · adapted · SOURCED
+    public static var settingsRootTrueBlackDetail: String { CopyLookup.string("settings.root.trueBlack.detail", default: "Use true black for the dark theme.") }
     /// "Version" — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootVersion: String { CopyLookup.string("settings.root.version", default: "Version") }
     /// "Add Widget" — Retro · settings.root · verbatim · SOURCED
@@ -1583,14 +1613,14 @@ public enum Copy {
     public static var wallsBrowseEmptyDetail: String { CopyLookup.string("walls.browse.empty.detail", default: "People in your groups show up here.") }
     /// "Nothing to see here yet" — Retro · walls.browse · verbatim · SOURCED
     public static var wallsBrowseEmptyTitle: String { CopyLookup.string("walls.browse.empty.title", default: "Nothing to see here yet") }
-    /// "Error loading friends. Tap here to try again." — Retro · walls.browse · verbatim · SOURCED
-    public static var wallsBrowseErrorTitle: String { CopyLookup.string("walls.browse.error.title", default: "Error loading friends. Tap here to try again.") }
+    /// "Error loading members. Tap here to try again." — Retro · walls.browse · adapted · SOURCED
+    public static var wallsBrowseErrorTitle: String { CopyLookup.string("walls.browse.error.title", default: "Error loading members. Tap here to try again.") }
     /// "Search" — Retro · walls.browse · verbatim · SOURCED
     public static var wallsBrowseSearch: String { CopyLookup.string("walls.browse.search", default: "Search") }
     /// "No matching people" — Retro · walls.browse · adapted · SOURCED
     public static var wallsBrowseSearchEmpty: String { CopyLookup.string("walls.browse.search.empty", default: "No matching people") }
-    /// "Friends" — Retro · walls.browse · verbatim · SOURCED
-    public static var wallsBrowseTitle: String { CopyLookup.string("walls.browse.title", default: "Friends") }
+    /// "Members" — Retro · walls.browse · verbatim · SOURCED
+    public static var wallsBrowseTitle: String { CopyLookup.string("walls.browse.title", default: "Members") }
     /// "More Options" — Retro · walls.member · verbatim · SOURCED
     public static var wallsMemberA11yMore: String { CopyLookup.string("walls.member.a11y.more", default: "More Options") }
     /// "{name}'s profile" — Retro · walls.member · new · SOURCED

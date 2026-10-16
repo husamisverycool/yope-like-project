@@ -60,6 +60,7 @@ import androidx.compose.material.icons.rounded.MoreHoriz as RoundedMoreHoriz
 import androidx.compose.material.icons.rounded.Pause as RoundedPause
 import androidx.compose.material.icons.rounded.Person as RoundedPerson
 import androidx.compose.material.icons.rounded.PlayArrow as RoundedPlayArrow
+import androidx.compose.material.icons.rounded.QrCode2 as RoundedQrCode2
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked as RoundedRadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Refresh as RoundedRefresh
 import androidx.compose.material.icons.rounded.Replay as RoundedReplay
@@ -88,6 +89,9 @@ object Tokens {
         /** Retro · global · page background on Android (Retro's default dark scheme; the iOS / true-black value is color.global.background) · SOURCED — token `color.global.background.android` */
         val globalBackgroundAndroid: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
+        /** Retro · global · page background on Android while Settings → True Black is on (owner decision 21): the dark appearance only — light stays #FFFFFF; replaces color.global.background.android wherever that token draws the page (window, page, tab bar, sheets) · SOURCED — token `color.global.background.android.trueBlack` */
+        val globalBackgroundAndroidTrueBlack: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF000000) else Color(0xFFFFFFFF)
         /** Retro · global · media surfaces that stay black in both appearances: photo / story viewer, camera, postcard-style composer, recap preview, full-bleed media (Rewind) · SOURCED — token `color.global.backgroundDeep` */
         val globalBackgroundDeep: Color = Color(0xFF000000)
         /** Retro · global · Retro red: 'new' badge capsule, 4 pt unread dot on a tab, red count-free markers · SOURCED — token `color.global.badge` */
@@ -163,6 +167,9 @@ object Tokens {
         /** Retro · global.system · Android M3 surface / background (dialogs and sheets inherit from it unless a container role applies) · SOURCED — token `color.global.system.surface` */
         val globalSystemSurface: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
+        /** Retro · global.system · Android M3 surface / background while Settings → True Black is on (dark appearance only); every other M3 role keeps its color.global.system.* value · SOURCED — token `color.global.system.surface.trueBlack` */
+        val globalSystemSurfaceTrueBlack: Color
+            @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF000000) else Color(0xFFFFFFFF)
         /** Material 3 · global.system · Android M3 dialog container (role md.sys.color.surface-container-high) · PLATFORM — token `color.global.system.surfaceContainerHigh` */
         val globalSystemSurfaceContainerHigh: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF2B2930) else Color(0xFFECE6F0)
@@ -353,6 +360,8 @@ object Tokens {
         val globalTileLabel: TextUnit = 13.sp
         /** Retro · global · month and weekday lines on an empty-day tile ('Oct' / 'Mon') · SOURCED — token `fontSize.global.tileMonth` */
         val globalTileMonth: TextUnit = 14.sp
+        /** Retro · groups.invite · QR card: tiny print under the group name (groups.invite.qr.tagline) · SOURCED — token `groups.invite.fontSize.qrTagline` */
+        val groupsInviteFontSizeQrTagline: TextUnit = 10.sp
         /** Retro · invite.web · mobile page: body line ('See what … is up to this week.'), family font.global.family, regular, centred · SOURCED — token `invite.web.fontSize.body` */
         val inviteWebFontSizeBody: TextUnit = 14.sp
         /** Retro · invite.web · desktop page: body line ('Scan the code to …'), line height 28, tracking −0.4, centred, max width 300 · SOURCED — token `invite.web.fontSize.bodyDesktop` */
@@ -455,6 +464,8 @@ object Tokens {
         val chatReactionsIconAdd: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedAddReaction
         /** Retro · groups.invite · eye glyph before the link note · PLATFORM — token `groups.invite.icon.note` */
         val groupsInviteIconNote: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedVisibility
+        /** Retro · groups.invite · glyph of the "QR Code" share target (first of the four circles) · PLATFORM — token `groups.invite.icon.qr` */
+        val groupsInviteIconQr: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedQrCode2
         /** Retro · groups.invite · glyph of the 'Reset link' row (circular arrow) · PLATFORM — token `groups.invite.icon.reset` */
         val groupsInviteIconReset: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedRefresh
         /** Retro · global · activity tab · PLATFORM — token `icon.global.activity` */
@@ -961,6 +972,21 @@ object Tokens {
             const val android: String = "READ_CONTACTS granted: people rows (C-16); not granted: permission block (C-27, Retro's 'No Contacts Access' copy) inside the section; targetSdk ≥ 37 on API 37+: Contact Picker (Intent.ACTION_PICK_CONTACTS), no block"
             const val send: String = "SMS compose with the invite text (iOS MFMessageComposeViewController, Android ACTION_SENDTO smsto:)"
         }
+        /** Retro · groups.invite · in-app QR invite card (owner decision 17) and its screen · SOURCED — token `groups.invite.layout.qrCard` */
+        object GroupsInviteLayoutQrCard {
+            const val presentation: String = "tapping the \"QR Code\" target shows the recap preview (C-34 on the media page: collage.view.layout.screen, RecapPreviewScreen on both platforms): the group cover blurred as the backdrop (BlurredBackdrop; no cover → color.global.controlOnDeep), the card centred, the close circle, a Save circle (C-11 on media, icon.global.download) bottom-leading and the light Share pill (C-09, collage.share.layout.pill) trailing; iOS full-screen cover, Android a full-screen layer over the invite sheet (Back closes it)"
+            const val card: String = "layout.year.story.recapCard shell: widthRatio of the media page, paddingRatio, cornerRadiusRatio, footerHeightRatio; fill color.global.surfaceLight in both appearances (L-4)"
+            const val qrSide: String = "the card width less twice its padding: the recap card grid area, square"
+            const val quietZoneModules: Float = 4f
+            const val errorCorrection: String = "H"
+            const val encoder: String = "the invite URL exactly as the sheet shares it (https://<domain>/i/<token>), byte mode, error correction H, as web/src/render/qr.ts (qrcode-generator, invite.web); iOS CoreImage CIQRCodeGenerator inputCorrectionLevel H; Android ZXing core Encoder ErrorCorrectionLevel.H (Apache-2.0, licence android/feature/account/licenses/ZXing-LICENSE.txt)"
+            const val modules: String = "square, a whole number of device pixels each, nearest-neighbour (web/src/render/qr.ts: crisp at every pixel ratio), centred in the qrSide square; the card fill around them is the quiet zone"
+            const val moduleColor: String = "color.global.onSurfaceLight"
+            const val footer: String = "footer height = layout.year.story.recapCard footerHeightRatio × card width, contents centred in it (TC-REC), leading at the card padding: the group name in font.global.display text role displayTitle, color.global.onSurfaceLight, one line, tail truncation; under it groups.invite.qr.tagline at groups.invite.fontSize.qrTagline in font.global.family, groups.invite.color.note. The card is a picture (also the exported image): its text keeps the default size at every Dynamic Type / font scale"
+            const val exportScale: Float = 3f
+            const val export: String = "Save and Share use the card alone (no backdrop) as a PNG: iOS ImageRenderer at exportScale; Android the card's drawn layer at the device density"
+            const val accessibility: String = "the card is one image element labelled groups.invite.qr.accessibilityLabel; Save and Share are buttons labelled with their copy"
+        }
         /** Apple HIG · groups.invite · what each share target opens · PLATFORM — token `groups.invite.layout.share` */
         object GroupsInviteLayoutShare {
             const val ios: String = "ShareLink / UIActivityViewController with the invite text and URL ('Share to…' target)"
@@ -975,6 +1001,18 @@ object Tokens {
             const val glyphs: String = "camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall"
             const val badges: String = "none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)"
             const val overMedia: String = "while the camera tab is selected the bar sits over the black camera surface: selected color.global.textOnMedia, unselected color.global.tabInactiveOnMedia (C-04 over-photo variant, RWA)"
+        }
+        /** Retro · groups.list · "Ideas to Get Started" template thumbnails (owner decision 9): one cover photo per group kind · SOURCED — token `groups.list.layout.templateCovers` */
+        object GroupsListLayoutTemplateCovers {
+            const val friends: String = "template_cover_friends"
+            const val family: String = "template_cover_family"
+            const val roommates: String = "template_cover_roommates"
+            const val custom: String = "template_cover_custom"
+            const val pixelWidth: Float = 216f
+            const val pixelHeight: Float = 291f
+            const val ios: String = "App asset catalog ios/App/Resources/Assets.xcassets/<name>.imageset (scale 3x)"
+            const val android: String = "android/feature/account/src/main/res/drawable-nodpi/<name>.jpg"
+            const val source: String = "fixtures/photos (Unsplash License; people-free picks listed in fixtures/photos/LICENSE.md and INDEX.md)"
         }
         /** Apple HIG · groups.screen · long-press menu on the group's photos · PLATFORM — token `groups.screen.layout.menu` */
         object GroupsScreenLayoutMenu {
@@ -2229,6 +2267,7 @@ object Tokens {
         val globalBackdropDim: Color = Color(0x39000000)
         val globalBackground: Color = Color(0xFFFFFFFF)
         val globalBackgroundAndroid: Color = Color(0xFFFFFFFF)
+        val globalBackgroundAndroidTrueBlack: Color = Color(0xFFFFFFFF)
         val globalBackgroundDeep: Color = Color(0xFF000000)
         val globalBadge: Color = Color(0xFFEA3337)
         val globalBadgeMuted: Color = Color(0xFF999999)
@@ -2259,6 +2298,7 @@ object Tokens {
         val globalSystemPrimaryContainer: Color = Color(0xFFCCCCCC)
         val globalSystemSecondaryContainer: Color = Color(0xFFF7F7F7)
         val globalSystemSurface: Color = Color(0xFFFFFFFF)
+        val globalSystemSurfaceTrueBlack: Color = Color(0xFFFFFFFF)
         val globalSystemSurfaceContainerHigh: Color = Color(0xFFECE6F0)
         val globalSystemSurfaceContainerLow: Color = Color(0xFFF7F2FA)
         val globalTabInactive: Color = Color(0xFFB2B2B2)
@@ -2287,6 +2327,7 @@ object Tokens {
         val globalBackdropDim: Color = Color(0x39000000)
         val globalBackground: Color = Color(0xFF000000)
         val globalBackgroundAndroid: Color = Color(0xFF1C1C1E)
+        val globalBackgroundAndroidTrueBlack: Color = Color(0xFF000000)
         val globalBackgroundDeep: Color = Color(0xFF000000)
         val globalBadge: Color = Color(0xFFEA3337)
         val globalBadgeMuted: Color = Color(0xFF999999)
@@ -2317,6 +2358,7 @@ object Tokens {
         val globalSystemPrimaryContainer: Color = Color(0xFF4D4D4D)
         val globalSystemSecondaryContainer: Color = Color(0xFF262626)
         val globalSystemSurface: Color = Color(0xFF1C1C1E)
+        val globalSystemSurfaceTrueBlack: Color = Color(0xFF000000)
         val globalSystemSurfaceContainerHigh: Color = Color(0xFF2B2930)
         val globalSystemSurfaceContainerLow: Color = Color(0xFF1D1B20)
         val globalTabInactive: Color = Color(0xFF999999)

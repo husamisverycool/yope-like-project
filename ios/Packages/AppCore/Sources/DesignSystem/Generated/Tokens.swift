@@ -27,6 +27,9 @@ public enum Tokens {
         /// Retro · global · page background on Android (Retro's default dark scheme; the iOS / true-black value is color.global.background) · SOURCED
         /// token: `color.global.background.android`
         public static let globalBackgroundAndroid: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0.1098, green: 0.1098, blue: 0.1176, opacity: 1))
+        /// Retro · global · page background on Android while Settings → True Black is on (owner decision 21): the dark appearance only — light stays #FFFFFF; replaces color.global.background.android wherever that token draws the page (window, page, tab bar, sheets) · SOURCED
+        /// token: `color.global.background.android.trueBlack`
+        public static let globalBackgroundAndroidTrueBlack: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1))
         /// Retro · global · media surfaces that stay black in both appearances: photo / story viewer, camera, postcard-style composer, recap preview, full-bleed media (Rewind) · SOURCED
         /// token: `color.global.backgroundDeep`
         public static let globalBackgroundDeep: Color = Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
@@ -117,6 +120,9 @@ public enum Tokens {
         /// Retro · global.system · Android M3 surface / background (dialogs and sheets inherit from it unless a container role applies) · SOURCED
         /// token: `color.global.system.surface`
         public static let globalSystemSurface: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0.1098, green: 0.1098, blue: 0.1176, opacity: 1))
+        /// Retro · global.system · Android M3 surface / background while Settings → True Black is on (dark appearance only); every other M3 role keeps its color.global.system.* value · SOURCED
+        /// token: `color.global.system.surface.trueBlack`
+        public static let globalSystemSurfaceTrueBlack: Color = Color(light: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1), dark: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1))
         /// Material 3 · global.system · Android M3 dialog container (role md.sys.color.surface-container-high) · PLATFORM
         /// token: `color.global.system.surfaceContainerHigh`
         public static let globalSystemSurfaceContainerHigh: Color = Color(light: Color(.sRGB, red: 0.9255, green: 0.902, blue: 0.9412, opacity: 1), dark: Color(.sRGB, red: 0.1686, green: 0.1608, blue: 0.1882, opacity: 1))
@@ -389,6 +395,9 @@ public enum Tokens {
         /// Retro · global · month and weekday lines on an empty-day tile ('Oct' / 'Mon') · SOURCED
         /// token: `fontSize.global.tileMonth`
         public static let globalTileMonth: CGFloat = 14
+        /// Retro · groups.invite · QR card: tiny print under the group name (groups.invite.qr.tagline) · SOURCED
+        /// token: `groups.invite.fontSize.qrTagline`
+        public static let groupsInviteFontSizeQrTagline: CGFloat = 10
         /// Retro · invite.web · mobile page: body line ('See what … is up to this week.'), family font.global.family, regular, centred · SOURCED
         /// token: `invite.web.fontSize.body`
         public static let inviteWebFontSizeBody: CGFloat = 14
@@ -538,6 +547,9 @@ public enum Tokens {
         /// Retro · groups.invite · eye glyph before the link note · PLATFORM
         /// token: `groups.invite.icon.note`
         public static let groupsInviteIconNote: String = "eye"
+        /// Retro · groups.invite · glyph of the "QR Code" share target (first of the four circles) · PLATFORM
+        /// token: `groups.invite.icon.qr`
+        public static let groupsInviteIconQr: String = "qrcode"
         /// Retro · groups.invite · glyph of the 'Reset link' row (circular arrow) · PLATFORM
         /// token: `groups.invite.icon.reset`
         public static let groupsInviteIconReset: String = "arrow.clockwise"
@@ -1140,6 +1152,22 @@ public enum Tokens {
             public static let android: String = "READ_CONTACTS granted: people rows (C-16); not granted: permission block (C-27, Retro's 'No Contacts Access' copy) inside the section; targetSdk ≥ 37 on API 37+: Contact Picker (Intent.ACTION_PICK_CONTACTS), no block"
             public static let send: String = "SMS compose with the invite text (iOS MFMessageComposeViewController, Android ACTION_SENDTO smsto:)"
         }
+        /// Retro · groups.invite · in-app QR invite card (owner decision 17) and its screen · SOURCED
+        /// token: `groups.invite.layout.qrCard`
+        public enum GroupsInviteLayoutQrCard {
+            public static let presentation: String = "tapping the \"QR Code\" target shows the recap preview (C-34 on the media page: collage.view.layout.screen, RecapPreviewScreen on both platforms): the group cover blurred as the backdrop (BlurredBackdrop; no cover → color.global.controlOnDeep), the card centred, the close circle, a Save circle (C-11 on media, icon.global.download) bottom-leading and the light Share pill (C-09, collage.share.layout.pill) trailing; iOS full-screen cover, Android a full-screen layer over the invite sheet (Back closes it)"
+            public static let card: String = "layout.year.story.recapCard shell: widthRatio of the media page, paddingRatio, cornerRadiusRatio, footerHeightRatio; fill color.global.surfaceLight in both appearances (L-4)"
+            public static let qrSide: String = "the card width less twice its padding: the recap card grid area, square"
+            public static let quietZoneModules: CGFloat = 4
+            public static let errorCorrection: String = "H"
+            public static let encoder: String = "the invite URL exactly as the sheet shares it (https://<domain>/i/<token>), byte mode, error correction H, as web/src/render/qr.ts (qrcode-generator, invite.web); iOS CoreImage CIQRCodeGenerator inputCorrectionLevel H; Android ZXing core Encoder ErrorCorrectionLevel.H (Apache-2.0, licence android/feature/account/licenses/ZXing-LICENSE.txt)"
+            public static let modules: String = "square, a whole number of device pixels each, nearest-neighbour (web/src/render/qr.ts: crisp at every pixel ratio), centred in the qrSide square; the card fill around them is the quiet zone"
+            public static let moduleColor: String = "color.global.onSurfaceLight"
+            public static let footer: String = "footer height = layout.year.story.recapCard footerHeightRatio × card width, contents centred in it (TC-REC), leading at the card padding: the group name in font.global.display text role displayTitle, color.global.onSurfaceLight, one line, tail truncation; under it groups.invite.qr.tagline at groups.invite.fontSize.qrTagline in font.global.family, groups.invite.color.note. The card is a picture (also the exported image): its text keeps the default size at every Dynamic Type / font scale"
+            public static let exportScale: CGFloat = 3
+            public static let export: String = "Save and Share use the card alone (no backdrop) as a PNG: iOS ImageRenderer at exportScale; Android the card's drawn layer at the device density"
+            public static let accessibility: String = "the card is one image element labelled groups.invite.qr.accessibilityLabel; Save and Share are buttons labelled with their copy"
+        }
         /// Apple HIG · groups.invite · what each share target opens · PLATFORM
         /// token: `groups.invite.layout.share`
         public enum GroupsInviteLayoutShare {
@@ -1156,6 +1184,19 @@ public enum Tokens {
             public static let glyphs: String = "camera icon.global.camera · groups icon.global.home · walls icon.global.group · me icon.global.wall"
             public static let badges: String = "none: no unread dot on our tabs (Retro's dot sits on its Activity tab, which this app does not have)"
             public static let overMedia: String = "while the camera tab is selected the bar sits over the black camera surface: selected color.global.textOnMedia, unselected color.global.tabInactiveOnMedia (C-04 over-photo variant, RWA)"
+        }
+        /// Retro · groups.list · "Ideas to Get Started" template thumbnails (owner decision 9): one cover photo per group kind · SOURCED
+        /// token: `groups.list.layout.templateCovers`
+        public enum GroupsListLayoutTemplateCovers {
+            public static let friends: String = "template_cover_friends"
+            public static let family: String = "template_cover_family"
+            public static let roommates: String = "template_cover_roommates"
+            public static let custom: String = "template_cover_custom"
+            public static let pixelWidth: CGFloat = 216
+            public static let pixelHeight: CGFloat = 291
+            public static let ios: String = "App asset catalog ios/App/Resources/Assets.xcassets/<name>.imageset (scale 3x)"
+            public static let android: String = "android/feature/account/src/main/res/drawable-nodpi/<name>.jpg"
+            public static let source: String = "fixtures/photos (Unsplash License; people-free picks listed in fixtures/photos/LICENSE.md and INDEX.md)"
         }
         /// Apple HIG · groups.screen · long-press menu on the group's photos · PLATFORM
         /// token: `groups.screen.layout.menu`

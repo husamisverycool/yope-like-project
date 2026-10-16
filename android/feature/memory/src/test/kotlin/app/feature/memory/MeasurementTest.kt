@@ -129,7 +129,8 @@ class MeasurementTest : SnapshotTest() {
             "more" to tag(OnThisDayTags.MORE), "share" to tag(OnThisDayTags.SHARE), "random" to tag(OnThisDayTags.SHUFFLE),
             "dial" to tag(DialTags.DIAL), "play" to tag(DialTags.PLAY), "photo" to label("Photo by Maya", substring = true),
         ),
-    ) { OnThisDayScreen(samplePage, OnThisDayActions(), isMine = { false }) }
+        // Measured as your own memory so the share circle is laid out (owner decision 12 hides it on others').
+    ) { OnThisDayScreen(samplePage, OnThisDayActions(), isMine = { true }) }
 
     private val storyProbes = mapOf(
         "frame" to tag(YearStoryTags.CARD), "close" to label("Close"), "leading" to tag(YearStoryTags.LEADING),
@@ -148,8 +149,9 @@ class MeasurementTest : SnapshotTest() {
 
     @Test fun yearStoryPhoto() = measure(
         "year.story-photo",
-        storyProbes + mapOf("date" to text("Wednesday, February 25"), "name" to text("Post by Ana")),
-    ) { YearStoryScreen(YearStoryState.Story(sampleCards, 5, sampleRecap, paused = true), YearStoryActions()) }
+        // Your own photo (the sample's p2): the photo card that keeps its Share pill (owner decision 12).
+        storyProbes + mapOf("date" to text("Saturday, March 14"), "name" to text("Post by Jesus")),
+    ) { YearStoryScreen(YearStoryState.Story(sampleCards, 6, sampleRecap, paused = true), YearStoryActions()) }
 
     @Test fun yearStorySummary() = measure(
         "year.story-summary",
@@ -235,12 +237,13 @@ class MeasurementTest : SnapshotTest() {
     @Test fun tribute() = measure(
         "birthday.tribute",
         mapOf(
-            "title" to text("Ana's birthday video"), "group" to text("Sunday Lunch"), "close" to label("Close"), "player" to tag(PLAYER),
+            "title" to text("Your birthday video"), "group" to text("Sunday Lunch"), "close" to label("Close"), "player" to tag(PLAYER),
             "save" to tag(TributeTags.SAVE), "share" to text("Share"),
         ),
     ) {
+        // The honoree's view: the only one with save and Share (owner decision 12).
         TributeScreen(
-            TributeState(TributeContent.Ready("https://video.test/t.mp4", TestImages.url("poster", 16, 9)), groupName = "Sunday Lunch", honoreeName = "Ana"),
+            TributeState(TributeContent.Ready("https://video.test/t.mp4", TestImages.url("poster", 16, 9)), groupName = "Sunday Lunch", forMe = true),
             autoplay = false,
             player = null,
             actions = TributeActions(),

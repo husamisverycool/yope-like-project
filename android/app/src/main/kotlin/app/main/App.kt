@@ -8,6 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -23,6 +27,8 @@ import app.model.DeepLink
 import app.push.NotificationAppearance
 import app.ui.startup.AppStartupHook
 import app.ui.theme.AppTheme
+import app.ui.theme.AppearanceSettings
+import app.ui.theme.LocalAppearanceSettings
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
@@ -76,18 +82,32 @@ class MainActivity : ComponentActivity() {
         private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val light = Tokens.ColorsLight.globalBackgroundAndroid.toArgb()
-        val dark = Tokens.ColorsDark.globalBackgroundAndroid.toArgb()
-        enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(light, dark), navigationBarStyle = SystemBarStyle.auto(light, dark))
+        val appearance = AppearanceSettings.device(this)
+        applyWindowColours(appearance.trueBlack.value)
         super.onCreate(savedInstanceState)
-        window.setBackgroundDrawable(ColorDrawable(DsAppearance.pick(this, light, dark)))
         // After a configuration change the back stack is restored; route the launch intent once.
         if (savedInstanceState == null) route(intent)
         setContent {
             val nav = rememberNavController()
             navController = nav
-            AppTheme { AppNavHost(deepLinks = deepLinks.receiveAsFlow(), navController = nav, env = AccountEnvironments.get(this)) }
+            val trueBlack by appearance.trueBlack.collectAsState()
+            // Settings → True Black (Android, owner decision 21) repaints the window and the bar scrims at once.
+            LaunchedEffect(trueBlack) { applyWindowColours(trueBlack) }
+            CompositionLocalProvider(LocalAppearanceSettings provides appearance) {
+                AppTheme { AppNavHost(deepLinks = deepLinks.receiveAsFlow(), navController = nav, env = AccountEnvironments.get(this)) }
+            }
         }
+    }
+
+    /**
+     * Edge-to-edge with bar scrims and the window background in the page colour of each appearance
+     * (`color.global.background.android`, or `….trueBlack` while Settings → True Black is on — dark only).
+     */
+    private fun applyWindowColours(trueBlack: Boolean) {
+        val light = Tokens.ColorsLight.globalBackgroundAndroid.toArgb()
+        val dark = (if (trueBlack) Tokens.ColorsDark.globalBackgroundAndroidTrueBlack else Tokens.ColorsDark.globalBackgroundAndroid).toArgb()
+        enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(light, dark), navigationBarStyle = SystemBarStyle.auto(light, dark))
+        window.setBackgroundDrawable(ColorDrawable(DsAppearance.pick(this, light, dark)))
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -96,7 +116,8 @@ class MainActivity : ComponentActivity() {
         route(intent)
     }
 
+    /** Parsed with the account environment's link codec: the one its invite sheet formats links with. */
     private fun route(intent: Intent?) {
-        AppLinks.parse(intent)?.let(deepLinks::trySend)
+        AppLinks.parse(intent, AccountEnvironments.get(this).inviteLinks.codec)?.let(deepLinks::trySend)
     }
 }

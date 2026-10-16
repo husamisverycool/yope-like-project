@@ -32,8 +32,9 @@ class TributeViewModelTest {
 
     private class Files(var ok: Boolean = true) : TributeFiles {
         val saved = mutableListOf<String>()
+        val shared = mutableListOf<String>()
         override suspend fun save(url: String, tributeId: String): Boolean = ok.also { if (it) saved += url }
-        override suspend fun shareUri(url: String, tributeId: String): Uri? = null
+        override suspend fun shareUri(url: String, tributeId: String): Uri? = null.also { shared += url }
     }
 
     private fun vm(backend: FakeMemoryBackend, files: TributeFiles = Files(), cache: MemoryCache = MemoryCache()) =
@@ -83,8 +84,21 @@ class TributeViewModelTest {
         assertEquals(TributeContent.Failed, vm(failing).state.value.content)
     }
 
-    @Test fun downloadSucceedsOrFailsWithToastAndHaptic() = runTest {
+    /** Owner decision 12: a member watches the video in the app; Save and Share are the honoree's. */
+    @Test fun membersCannotSaveOrShare() {
         val backend = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null) }
+        val files = Files()
+        val vm = vm(backend, files)
+        assertTrue(vm.state.value.content is TributeContent.Ready)
+        vm.save()
+        vm.share()
+        assertTrue(files.saved.isEmpty())
+        assertTrue(files.shared.isEmpty())
+        assertNull(vm.state.value.toast)
+    }
+
+    @Test fun downloadSucceedsOrFailsWithToastAndHaptic() = runTest {
+        val backend = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ME, delivered = Scenario.at("2026-12-05T08:00:00Z")) }
         val files = Files()
         val vm = vm(backend, files)
         val effects = mutableListOf<MemoryEffect>()

@@ -81,6 +81,8 @@ data class SettingsRootUiState(
     val avatar: Any? = null,
     val subscription: SubscriptionState = SubscriptionState.Loading,
     val signingOut: Boolean = false,
+    /** Settings → Appearance → True Black (Android only, owner decision 21). */
+    val trueBlack: Boolean = false,
 )
 
 class SettingsRootViewModel(private val env: AccountEnvironment) : AccountViewModel() {
@@ -103,7 +105,13 @@ class SettingsRootViewModel(private val env: AccountEnvironment) : AccountViewMo
                 }
             }.collect { sub -> mutable.update { it.copy(subscription = sub) } }
         }
+        viewModelScope.launch {
+            env.appearance.trueBlack.collect { on -> mutable.update { it.copy(trueBlack = on) } }
+        }
     }
+
+    /** True Black on / off: kept on this device; the app theme follows at once (the dark appearance only). */
+    fun setTrueBlack(on: Boolean) = env.appearance.setTrueBlack(on)
 
     /** Sign out: `unregister_device` (session glue hook) then `auth.signOut()` → auth.phone. Local state clears even offline. */
     fun signOut() {
@@ -170,6 +178,7 @@ fun SettingsRootRoute(nav: NavController) {
             onUrl = { ExternalActions.openInAppBrowser(context, it) },
             onMail = { ExternalActions.mail(context, it) },
             onSignOut = vm::signOut,
+            onTrueBlack = vm::setTrueBlack,
         ),
     )
 }
@@ -188,13 +197,15 @@ data class SettingsRootActions(
     val onUrl: (String) -> Unit = {},
     val onMail: (String) -> Unit = {},
     val onSignOut: () -> Unit = {},
+    val onTrueBlack: (Boolean) -> Unit = {},
 )
 
 /**
  * The Settings sheet (C-29 page sheet: centred "Settings" + close; `settings.root.layout.list`): the profile card (one C-14
  * row: name `listTitle`, phone `listSubtitle` secondary, the 64 avatar at the trailing edge — C-19 content) → settings.account;
  * Subscription (Premium → paywall; subscribers "Your Subscription" with Annual / Monthly → the Play subscription page; the
- * platform indicator while the store answers); Notifications; Widgets ("Add Widget" → onboarding.widget); Privacy
+ * platform indicator while the store answers); Notifications; Widgets ("Add Widget" → onboarding.widget); Appearance
+ * (Android only: the "True Black" switch row, owner decision 21 — Retro's true-black dark scheme); Privacy
  * (Blocked People); System Permissions (Camera, Microphone, Contacts, Push Notifications — "Denied" when denied → the
  * app's page in system Settings); About (Contact Us, Privacy Policy, Terms of Use — each omitted while its
  * `config/app.json` value is BLOCKED — and Version); Sign Out (confirmed; the row shows the indicator while it runs).
@@ -237,6 +248,17 @@ fun SettingsRootScreen(
             // Widgets
             SettingsHeader(stringResource(R.string.settings_root_widgets_header))
             SettingsGroup(listOf(navRow(stringResource(R.string.settings_root_widgets_add), stringResource(R.string.settings_root_widgets_detail), onClick = actions.onWidgets)))
+            // Appearance (Android only): one C-14 row with the native switch; the dark appearance only.
+            SettingsHeader(stringResource(R.string.settings_root_appearance_header))
+            SettingsGroup(
+                listOf(
+                    GroupedRowSpec(
+                        title = stringResource(R.string.settings_root_trueblack),
+                        subtitle = stringResource(R.string.settings_root_trueblack_detail),
+                        trailing = GroupedTrailing.Toggle(state.trueBlack, actions.onTrueBlack),
+                    ),
+                ),
+            )
             // Privacy
             SettingsHeader(stringResource(R.string.settings_root_privacy_header))
             SettingsGroup(listOf(navRow(stringResource(R.string.settings_root_blocked), onClick = actions.onBlocked)))

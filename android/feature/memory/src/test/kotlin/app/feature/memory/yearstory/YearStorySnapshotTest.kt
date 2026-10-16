@@ -42,7 +42,8 @@ internal val sampleCards: List<StoryCard> = listOf(
     StoryCard.BusiestMonth(7),
     StoryCard.MostReactedSetup,
     StoryCard.MostReactedPhoto("p1", TestImages.url("r1", 3, 4), "Ana", LocalDate.of(2026, 2, 25)),
-    StoryCard.MostReactedPhoto("p2", TestImages.url("r2", 4, 3), "Ben", LocalDate.of(2026, 3, 14)),
+    // Your own photo: the only most-reacted card with the Share pill (owner decision 12).
+    StoryCard.MostReactedPhoto("p2", TestImages.url("r2", 4, 3), "Jesus", LocalDate.of(2026, 3, 14), isMine = true),
     StoryCard.TogetherSetup,
     StoryCard.TogetherDay("c1", TestImages.url("collage1", 9, 16), LocalDate.of(2026, 4, 2), listOf("p1")),
     StoryCard.Outro,
@@ -207,6 +208,9 @@ class YearStoryFlowTest : SnapshotTest() {
         // Most-reacted photos: who and when, in order; on to the summary; replay.
         repeat(3) { tap(right = true) }
         compose.onNodeWithText("Post by Ana").assertExists()
+        // Someone else's photo: no Share pill (owner decision 12).
+        step(SETTLE_MS)
+        compose.onNodeWithText("Share").assertDoesNotExist()
         // Photo 1 of 5 → the summary (cards 6 … 14, then the summary takes no taps).
         repeat(9) { tap(right = true) }
         compose.onNodeWithText("2 of 2", substring = false).assertDoesNotExist()
@@ -217,6 +221,9 @@ class YearStoryFlowTest : SnapshotTest() {
 
     private companion object {
         const val SHARE_WAIT_MS = 60_000L
+
+        /** Longer than any pill fade (`duration.global.fade`). */
+        const val SETTLE_MS = 500L
     }
 
     @Test fun advancesOnItsOwnAndPauses() {

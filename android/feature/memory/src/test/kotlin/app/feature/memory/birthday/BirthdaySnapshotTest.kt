@@ -147,12 +147,13 @@ class TributeSnapshotTest : SnapshotTest() {
 
     @Test fun loading() = tribute("loading", TributeState())
     @Test fun rendering() = tribute("rendering", TributeState(TributeContent.Rendering, groupName = "Sunday Lunch", honoreeName = "Ana"))
+    /** A member's view: the video only — Save and Share are the honoree's (owner decision 12). */
     @Test fun ready() = tribute("ready", ready)
     @Test fun readyDark() = tribute("ready", ready, dark = true)
     @Test fun honoree() = tribute("honoree", ready.copy(forMe = true, honoreeName = null))
-    @Test fun saving() = tribute("saving", ready.copy(saving = true))
+    @Test fun saving() = tribute("saving", ready.copy(forMe = true, honoreeName = null, saving = true))
     @Test fun offline() = tribute("offline", TributeState(TributeContent.Offline))
     @Test fun notFound() = tribute("not-found", TributeState(TributeContent.NotFound))
     @Test fun error() = tribute("error", TributeState(TributeContent.Failed))
-    @Test fun saveDenied() = tribute("save-denied", ready.copy(saveDenied = true), screen = true)
+    @Test fun saveDenied() = tribute("save-denied", ready.copy(forMe = true, honoreeName = null, saveDenied = true), screen = true)
 }

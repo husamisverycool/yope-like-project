@@ -45,6 +45,9 @@ class OnThisDaySnapshotTest : SnapshotTest() {
     @Test fun paused() = page("paused", samplePage)
     @Test fun pausedDark() = page("paused", samplePage, dark = true)
     @Test fun secondMemory() = page("dial-step-2", samplePage.copy(index = 1))
+
+    /** Your own memory: the share circle shows (owner decision 12); on anyone else's its place stays empty. */
+    @Test fun pausedOwnMemory() = page("paused-own-memory", samplePage.copy(index = 3))
     @Test fun playing() = page("playing", samplePage.copy(index = 2, playing = true))
     @Test fun shuffle() = page("shuffle", samplePage.copy(memories = listOf(sampleMemories[2]), index = 0, mode = MemoryMode.Shuffle))
     @Test fun loading() = page("loading", OnThisDayState.Loading)
@@ -58,14 +61,31 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.mainClock.autoAdvance = false
         compose.setContent { MemoryTestContent { OnThisDayScreen(samplePage, OnThisDayActions(), isMine = { false }) } }
         compose.mainClock.advanceTimeBy(settleMillis)
+        // Owner decision 12: someone else's photo is never saved or shared outside the app.
+        compose.onNodeWithTag(OnThisDayTags.SHARE).assertDoesNotExist()
         compose.onNodeWithTag(OnThisDayTags.MORE).performClick()
         compose.mainClock.advanceTimeBy(settleMillis)
-        compose.onNodeWithText("Save to Camera Roll").assertExists()
+        compose.onNodeWithText("Save to Camera Roll").assertDoesNotExist()
         compose.onNodeWithText("Report Post").assertExists()
         compose.onNodeWithText("Delete Post").assertDoesNotExist()
         compose.waitForIdle()
         repeat(4) { compose.mainClock.advanceTimeByFrame() }
         com.github.takahirom.roborazzi.captureScreenRoboImage("src/test/snapshots/onthisday/menu-light.png")
+    }
+
+    @Test fun menuOnYourOwnMemory() {
+        compose.mainClock.autoAdvance = false
+        compose.setContent { MemoryTestContent { OnThisDayScreen(samplePage.copy(index = 3), OnThisDayActions(), isMine = { it.authorId == FakeMemoryBackend.ME }) } }
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithTag(OnThisDayTags.SHARE).assertExists()
+        compose.onNodeWithTag(OnThisDayTags.MORE).performClick()
+        compose.mainClock.advanceTimeBy(settleMillis)
+        compose.onNodeWithText("Save to Camera Roll").assertExists()
+        compose.onNodeWithText("Delete Post").assertExists()
+        compose.onNodeWithText("Report Post").assertDoesNotExist()
+        compose.waitForIdle()
+        repeat(4) { compose.mainClock.advanceTimeByFrame() }
+        com.github.takahirom.roborazzi.captureScreenRoboImage("src/test/snapshots/onthisday/menu-own-light.png")
     }
 
     @Test fun deleteYourOwnMemoryAsksFirst() {

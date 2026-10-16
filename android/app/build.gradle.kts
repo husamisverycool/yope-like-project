@@ -26,6 +26,13 @@ android {
         // App Links host for https://<domain>/i/<token>. While `domain` is BLOCKED a reserved
         // never-resolving name (RFC 2606 .invalid) keeps the filter inert.
         manifestPlaceholders["appLinkHost"] = appDomain ?: "unset.invalid"
+        // On-device end-to-end journey (src/androidTest/kotlin/app/main/e2e/JourneyTest.kt): the runner points the app at the Supabase stack
+        // named by the instrumentation arguments `supabaseUrl` / `supabaseAnonKey` before the app starts.
+        testInstrumentationRunner = "app.main.e2e.E2eRunner"
+    }
+    testOptions {
+        // Window and transition animations off while instrumented tests run (AGP passes --no-window-animation).
+        animationsDisabled = true
     }
     buildFeatures {
         compose = true
@@ -86,4 +93,42 @@ dependencies {
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.roborazzi.junit.rule)
+
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.core)
+}
+
+// The end-to-end journey's "camera" photo: the emulator camera cannot take a real photo, so the test's camera controller
+// (src/androidTest, through the capture group's `CameraControllers.factory` seam) returns this sample photo from
+// fixtures/photos/ (licence: fixtures/photos/LICENSE.md). Packaged into the test APK's assets only.
+abstract class E2eFixturesTask : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val photo: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val dir = outputDir.get().asFile
+        dir.deleteRecursively()
+        dir.mkdirs()
+        photo.get().asFile.copyTo(File(dir, "e2e-photo.jpg"))
+    }
+}
+
+val e2eFixtures = tasks.register<E2eFixturesTask>("e2eFixtures") {
+    photo.set(rootDir.resolve("../fixtures/photos/coffee-cup-top-1x1.jpg"))
+    outputDir.set(layout.buildDirectory.dir("generated/e2e/assets"))
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("debug")) { variant ->
+        variant.deviceTests.values.forEach { test -> test.sources.assets?.addGeneratedSourceDirectory(e2eFixtures, E2eFixturesTask::outputDir) }
+    }
 }

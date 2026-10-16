@@ -172,7 +172,34 @@ describe('create_post', () => {
       400,
     );
     const [p] = await rpc<any[]>(a.client, 'create_post', { p_media_id: m.id, p_group_ids: [g1.id], p_voice_path: voice, p_voice_duration_ms: 2500 });
-    expect(p).toMatchObject({ voice_path: voice, voice_duration_ms: 2500 });
+    expect(p).toMatchObject({ voice_path: voice, voice_duration_ms: 2500, voice_levels: null });
+  });
+
+  it('a voice note carries its 100 levels (0…31); levels need a voice note', async () => {
+    const levels = Array.from({ length: 100 }, (_, i) => i % 32);
+    const m = await createMedia(a);
+    const voice = `u/${a.id}/${m.id}/voice.m4a`;
+    await upload(a, voice, 'audio/mp4');
+    for (const bad of [levels.slice(0, 99), [...levels, 0], levels.map((v, i) => (i === 7 ? 32 : v)), levels.map((v, i) => (i === 3 ? -1 : v))]) {
+      await expectRpcError(
+        rpc(a.client, 'create_post', { p_media_id: m.id, p_group_ids: [g1.id], p_voice_path: voice, p_voice_duration_ms: 2500, p_voice_levels: bad }),
+        'invalid_voice',
+        400,
+      );
+    }
+    await expectRpcError(rpc(a.client, 'create_post', { p_media_id: m.id, p_group_ids: [g1.id], p_voice_levels: levels }), 'invalid_voice', 400);
+    const [p] = await rpc<any[]>(a.client, 'create_post', {
+      p_media_id: m.id,
+      p_group_ids: [g1.id],
+      p_voice_path: voice,
+      p_voice_duration_ms: 2500,
+      p_voice_levels: levels,
+    });
+    expect(p.voice_levels).toEqual(levels);
+    // members read the levels with the post; outsiders see no row
+    const [seen] = await select(b.client, 'posts', (q) => q.eq('id', p.id));
+    expect(seen.voice_levels).toEqual(levels);
+    expect(await select(stranger.client, 'posts', (q) => q.eq('id', p.id))).toEqual([]);
   });
 });
 

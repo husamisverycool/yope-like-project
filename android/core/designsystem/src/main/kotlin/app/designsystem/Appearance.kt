@@ -15,14 +15,21 @@ import androidx.compose.runtime.staticCompositionLocalOf
 val LocalDsDarkTheme = staticCompositionLocalOf { false }
 
 /**
+ * Whether Settings → True Black is on (Android only, owner decision 21; Retro's `trueBlack` scheme): the page
+ * and the M3 surface take their `….trueBlack` tokens. Only the dark appearance changes — the tokens' light values
+ * equal the default ones. Provided by [DsTheme]; outside it, off.
+ */
+val LocalDsTrueBlack = staticCompositionLocalOf { false }
+
+/**
  * Applies the system appearance (Light / Dark) to every colour token below it
  * (`layout.global.appearance`: follows the system setting). The app shell (core:ui `AppTheme`, which
  * wraps this), the widgets' configuration activity and tests wrap their content in it; tests pass
- * [dark] explicitly.
+ * [dark] explicitly. [trueBlack]: Settings → True Black ([LocalDsTrueBlack]).
  */
 @Composable
-fun DsTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalDsDarkTheme provides dark, content = content)
+fun DsTheme(dark: Boolean = isSystemInDarkTheme(), trueBlack: Boolean = false, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalDsDarkTheme provides dark, LocalDsTrueBlack provides trueBlack, content = content)
 }
 
 /**
@@ -47,3 +54,4 @@ object DsAppearance {
     /** [light] or [dark] for the system appearance. */
     fun <T> pickSystem(light: T, dark: T): T = if (isSystemDark()) dark else light
 }
+

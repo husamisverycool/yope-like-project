@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: plain HTTP to a local Supabase stack (see res/xml/debug_network_security.xml). Release builds
+     keep the platform default (HTTPS only). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:networkSecurityConfig="@xml/debug_network_security" />
+</manifest>

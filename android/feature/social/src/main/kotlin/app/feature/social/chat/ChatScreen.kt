@@ -296,7 +296,8 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
             scope.launch { clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(text, text))) }
             PlatformToast.show(context, copied)
         },
-        onSave = { row -> row.media?.originalPath?.let(savePhoto) },
+        // A photo leaves the app only when it is your own (owner decision 12).
+        onSave = { row -> if (row.mine) row.media?.originalPath?.let(savePhoto) },
         onUnsend = { id -> haptics.perform(Tokens.Haptics.globalWarning); vm.deleteMessage(id) },
         onDeletePhoto = { postId -> haptics.perform(Tokens.Haptics.globalWarning); vm.deletePhoto(postId) },
         onOpenMicSettings = {
@@ -924,7 +925,10 @@ private fun MessageBody(
     }
 }
 
-/** The context-menu items of a message (chat.thread.md → Context menu; Sentence case, destructive last). */
+/**
+ * The context-menu items of a message (chat.thread.md → Context menu; Sentence case, destructive last). Save is on your own
+ * photo messages only (owner decision 12).
+ */
 @Composable
 private fun menuItems(row: ChatRow, ui: ChatUiState, nav: ChatNav, onRetrySend: (String) -> Unit, onReply: (ChatRow) -> Unit, onCopy: (String) -> Unit, onSave: (ChatRow) -> Unit): List<DsMenuItem> {
     val reply = stringRes(R.string.chat_thread_menu_reply)
@@ -943,7 +947,7 @@ private fun menuItems(row: ChatRow, ui: ChatUiState, nav: ChatNav, onRetrySend: 
         if (!row.pending) add(DsMenuItem(reply, { onReply(row) }))
         when (row.kind) {
             MessageKind.Text -> add(DsMenuItem(copy, { onCopy(row.message.body.orEmpty()) }))
-            MessageKind.Photo -> add(DsMenuItem(save, { onSave(row) }))
+            MessageKind.Photo -> if (row.mine) add(DsMenuItem(save, { onSave(row) }))
             MessageKind.Voice -> Unit
         }
         if (row.pending) return@buildList

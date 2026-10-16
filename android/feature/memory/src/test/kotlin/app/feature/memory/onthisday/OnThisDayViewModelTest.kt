@@ -127,34 +127,39 @@ class OnThisDayViewModelTest {
         val effects = mutableListOf<MemoryEffect>()
         val a = launch(UnconfinedTestDispatcher(testScheduler)) { vm.requests.toList(events) }
         val b = launch(UnconfinedTestDispatcher(testScheduler)) { vm.effects.toList(effects) }
-        assertFalse("Ana's memory: Report Post", vm.isMine(vm.page.memory))
+        // Owner decision 12: someone else's photo never leaves the app — no save, no share sheet.
+        assertFalse("Ana's memory: Report Post only", vm.isMine(vm.page.memory))
         vm.save()
-        assertEquals(listOf("p-2025"), files.saved)
         vm.share()
-        assertEquals(listOf("p-2025"), files.shared)
+        assertTrue(files.saved.isEmpty())
+        assertTrue(files.shared.isEmpty())
         repeat(3) { vm.step(+1) }
-        assertTrue("your own memory: Delete Post", vm.isMine(vm.page.memory))
+        assertTrue("your own memory: Save, Delete Post and the share circle", vm.isMine(vm.page.memory))
+        vm.save()
+        assertEquals(listOf("p-2023c"), files.saved)
+        vm.share()
+        assertEquals(listOf("p-2023c"), files.shared)
+        files.ok = false
+        vm.save()
+        vm.save(accessGranted = false)
         vm.delete()
         assertEquals(listOf("p-2023c"), backend.deletedPosts)
         assertEquals("the memory leaves the dial", listOf("p-2025", "p-2023a", "p-2023b"), vm.page.memories.map { it.postId })
         assertEquals(2, vm.page.index)
-        files.ok = false
-        vm.save()
-        vm.save(accessGranted = false)
         a.cancel()
         b.cancel()
         assertEquals(
             listOf(
                 OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.Saved),
-                OnThisDayEvent.Share(Uri.parse("content://test/p-2025")),
-                OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.Deleted),
+                OnThisDayEvent.Share(Uri.parse("content://test/p-2023c")),
                 OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.SaveFailed),
                 OnThisDayEvent.SaveDenied,
+                OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.Deleted),
             ),
             events,
         )
         assertEquals(
-            listOf(Tokens.Haptics.globalSuccess, Tokens.Haptics.globalWarning, Tokens.Haptics.globalError, Tokens.Haptics.globalError),
+            listOf(Tokens.Haptics.globalSuccess, Tokens.Haptics.globalError, Tokens.Haptics.globalError, Tokens.Haptics.globalWarning),
             effects.map { (it as MemoryEffect.Haptic).constant },
         )
     }

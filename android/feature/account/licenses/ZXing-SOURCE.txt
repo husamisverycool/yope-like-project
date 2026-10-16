@@ -1,0 +1,5 @@
+ZXing ("Zebra Crossing") core — com.google.zxing:core 3.5.3 (Maven Central,
+https://repo1.maven.org/maven2/com/google/zxing/core/3.5.3/), source https://github.com/zxing/zxing (tag zxing-3.5.3).
+Licence: Apache License 2.0 (ZXing-LICENSE.txt, from the tag's LICENSE file); notices: ZXing-NOTICE.txt (the tag's
+NOTICE file). Used unmodified by android/feature/account to encode the group invite link as a QR code
+(groups.invite QR card, design/tokens/account.json groups.invite.layout.qrCard).

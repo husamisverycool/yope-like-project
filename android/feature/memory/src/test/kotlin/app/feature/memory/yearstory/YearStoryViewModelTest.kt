@@ -63,11 +63,20 @@ class YearStoryViewModelTest {
         assertEquals(listOf("Intro", "LookBack", "Moments", "Outro", "Summary"), kinds)
     }
 
-    @Test fun theSharePillIsOnFactCardsTheOutroAndTheSummary() {
+    @Test fun theSharePillIsOnFactCardsCollagesTheOutroTheSummaryAndYourOwnPhoto() {
         val cards = vm().story.cards
         val share = cards.filter { it.shareable }.map { it::class.simpleName }
-        assertEquals(listOf("Moments", "BusiestMonth") + List(5) { "MostReactedPhoto" } + List(2) { "TogetherDay" } + listOf("Outro", "Summary"), share)
-        assertTrue(cards.filter { !it.shareable }.all { it is StoryCard.Intro || it == StoryCard.LookBack || it == StoryCard.MostReactedSetup || it == StoryCard.TogetherSetup })
+        assertEquals(listOf("Moments", "BusiestMonth", "MostReactedPhoto") + List(2) { "TogetherDay" } + listOf("Outro", "Summary"), share)
+        // Owner decision 12: of the most-reacted photos only your own (p-r4) offers Share.
+        val photos = cards.filterIsInstance<StoryCard.MostReactedPhoto>()
+        assertEquals(listOf("p-r4"), photos.filter { it.shareable }.map { it.postId })
+        assertEquals(listOf(false, false, false, true, false), photos.map { it.isMine })
+        assertTrue(
+            cards.filter { !it.shareable }.all {
+                it is StoryCard.Intro || it == StoryCard.LookBack || it == StoryCard.MostReactedSetup || it == StoryCard.TogetherSetup ||
+                    (it is StoryCard.MostReactedPhoto && !it.isMine)
+            },
+        )
     }
 
     @Test fun recapIsMostReactedFirstThenTheYearInWholeRows() {

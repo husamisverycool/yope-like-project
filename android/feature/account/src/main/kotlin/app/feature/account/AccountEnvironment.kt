@@ -14,8 +14,11 @@ import app.model.SessionPromptGate
 import java.time.Clock
 import java.time.ZoneId
 
-/** Invite links: `https://<domain>/i/<token>` (null while `config/app.json` `domain` is BLOCKED). */
-class InviteLinks(private val codec: DeepLinkCodec, val domain: String?) {
+/**
+ * Invite links: `https://<domain>/i/<token>` (null while `config/app.json` `domain` is BLOCKED). [codec] also parses the
+ * App Links the activity receives, so the links the app makes and the links it opens always agree.
+ */
+class InviteLinks(val codec: DeepLinkCodec, val domain: String?) {
     fun url(token: String): String? = codec.format(DeepLink.Invite(token))
 
     /** The web service's preview for apps before joining (design/surfaces/invite.web.md → Data). */
@@ -71,6 +74,8 @@ class AccountEnvironment(
     val launchToCamera: Boolean = true,
     /** Confirmations (C-26 platform toasts), shown by the shell's `ToastHost` (they outlive the navigation that follows them). */
     val toasts: app.ui.components.ToastState = app.ui.components.ToastState(),
+    /** Android-only appearance options (settings.root → Appearance → True Black); the app theme follows the same object. */
+    val appearance: app.ui.theme.AppearanceSettings = app.ui.theme.MemoryAppearanceSettings(),
 )
 
 val LocalAccountEnvironment = staticCompositionLocalOf<AccountEnvironment> { error("AccountEnvironment not provided") }

@@ -30,6 +30,21 @@
       "method": "colour constants read from the decompiled package",
       "precision": "exact"
     },
+    "color.global.background.android.trueBlack": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "color",
+      "value": {
+        "light": "#FFFFFF",
+        "dark": "#000000"
+      },
+      "element": "page background on Android while Settings → True Black is on (owner decision 21): the dark appearance only — light stays #FFFFFF; replaces color.global.background.android wherever that token draws the page (window, page, tab bar, sheets)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro root theme' (colorScheme = isDark ? (trueBlack ? d42.w : d42.v) : d42.u) and 'Retro semantic colour accessor' vv3.k = isDark ? (trueBlack ? u32.b Color.Black : d42.j #1C1C1E) : d42.g #FFFFFF; 'Compose Color companion' b = Black — design/research/retro-package-copy-motion.md §3.1, §3.3",
+      "method": "colour constants read from the decompiled package (only vv3.k and the M3 background / surface roles read the true-black flag)",
+      "precision": "exact",
+      "notes": "Android only (tokens README → Platform pairs). Retro ships the true-black scheme without a user-facing string in its package (MERGE_DECISIONS OD21-1); the setting's label is copy settings.root.trueBlack."
+    },
     "color.global.backgroundDeep": {
       "level": "SOURCED",
       "source_app": "Retro",
@@ -468,6 +483,21 @@
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt d42.u surface #FFFFFF, d42.v surface #1C1C1E (d42.w true black #000000) — design/research/retro-package-copy-motion.md §3.2",
       "method": "APK colour constants",
       "precision": "exact"
+    },
+    "color.global.system.surface.trueBlack": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global.system",
+      "type": "color",
+      "value": {
+        "light": "#FFFFFF",
+        "dark": "#000000"
+      },
+      "element": "Android M3 surface / background while Settings → True Black is on (dark appearance only); every other M3 role keeps its color.global.system.* value",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt 'Retro palette + M3 ColorScheme' d42.w (dark, true black) background / surface #000000, all other roles as d42.v — design/research/retro-package-copy-motion.md §3.2",
+      "method": "APK colour constants",
+      "precision": "exact",
+      "notes": "Android only; read by core:ui AppTheme (appColorScheme(dark, trueBlack))."
     },
     "color.global.system.onSurface": {
       "level": "SOURCED",

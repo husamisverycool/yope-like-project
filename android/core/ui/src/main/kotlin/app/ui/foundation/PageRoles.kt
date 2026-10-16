@@ -5,6 +5,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.designsystem.LocalDsTrueBlack
 import app.designsystem.generated.Tokens
 
 /**
@@ -16,8 +17,13 @@ import app.designsystem.generated.Tokens
  * (#999999), as the README's "Media stays dark" rule says.
  */
 object PageRoles {
-    /** Page background (Android). */
-    val page: Color @Composable @ReadOnlyComposable get() = Tokens.Colors.globalBackgroundAndroid
+    /**
+     * Page background (Android): `color.global.background.android`, or with Settings → True Black
+     * (`LocalDsTrueBlack`, owner decision 21) `color.global.background.android.trueBlack` — #000000 in dark, the same
+     * #FFFFFF in light.
+     */
+    val page: Color @Composable @ReadOnlyComposable get() =
+        if (LocalDsTrueBlack.current) Tokens.Colors.globalBackgroundAndroidTrueBlack else Tokens.Colors.globalBackgroundAndroid
 
     /** Rows, chips, reply bar, sheet cards (Android). */
     val secondarySurface: Color @Composable @ReadOnlyComposable get() = Tokens.Colors.globalSurfaceSecondaryAndroid

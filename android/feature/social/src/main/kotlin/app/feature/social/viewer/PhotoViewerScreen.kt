@@ -217,7 +217,8 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         onReact = vm::react,
         onUnreact = vm::unreact,
         onPhotoGone = vm::markGone,
-        onSave = { state.current?.media?.originalPath?.let(save) },
+        // A photo leaves the app only when it is your own (owner decision 12).
+        onSave = { if (state.mine) state.current?.media?.originalPath?.let(save) },
         onDelete = { haptics.perform(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
         onUnsendComment = { id -> haptics.perform(Tokens.Haptics.globalWarning); vm.unsendComment(id) },
     )
@@ -459,7 +460,10 @@ private fun PhotoArea(
 /** Until the media's size is known the frame takes a 3:4 box (the strip tiles' shape, `size.global.stripTileWidth` ÷ `.stripTileHeight`). */
 private val DEFAULT_ASPECT: Float get() = Tokens.Sizes.globalStripTileWidth / Tokens.Sizes.globalStripTileHeight
 
-/** The viewer's menu (`photo.viewer.layout.menu`): save; delete (yours) or report + block {name} (others'). */
+/**
+ * The viewer's menu (`photo.viewer.layout.menu`): save + delete (yours) or report + block {name} (others' — no save: a
+ * photo leaves the app only when it is your own, owner decision 12).
+ */
 @Composable
 private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, onSave: () -> Unit): List<DsMenuItem> {
     val save = stringRes(R.string.photo_viewer_menu_save)
@@ -467,9 +471,10 @@ private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNa
     val report = stringRes(R.string.photo_viewer_menu_report)
     val block = stringRes(R.string.photo_viewer_menu_block, state.current?.author?.firstName.orEmpty())
     return buildList {
-        add(DsMenuItem(save, onSave, icon = Tokens.Icons.globalDownload))
-        if (state.mine) add(DsMenuItem(delete, { ui.confirmDelete = true }, icon = Tokens.Icons.globalTrash, destructive = true))
-        else state.current?.post?.let { post ->
+        if (state.mine) {
+            add(DsMenuItem(save, onSave, icon = Tokens.Icons.globalDownload))
+            add(DsMenuItem(delete, { ui.confirmDelete = true }, icon = Tokens.Icons.globalTrash, destructive = true))
+        } else state.current?.post?.let { post ->
             add(DsMenuItem(report, { nav.report(post.groupId, post.id) }, icon = Tokens.Icons.globalReport, destructive = true))
             add(DsMenuItem(block, { nav.block(post.authorId) }))
         }

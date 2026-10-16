@@ -54,6 +54,34 @@ class PremiumPackage internal constructor(internal val rc: Package) {
     val formattedPrice: String get() = rc.product.price.formatted
     /** ISO 8601 billing period (e.g. `P1M`, `P1Y`), or null for one-time products. */
     val billingPeriodIso: String? get() = rc.product.period?.iso8601
+
+    /**
+     * The free trial this package's purchase starts with, or null (no free phase, or the person is not eligible).
+     * Read from the offer RevenueCat buys for a package (`StoreProduct.defaultOption`: on Play the eligible offer
+     * with the longest free trial, else the base plan), whose pricing phases are Play Billing's
+     * `ProductDetails.SubscriptionOfferDetails.pricingPhases` one to one (price micros, ISO 8601 billing period).
+     */
+    val freeTrial: FreeTrial? get() = FreeTrial.of(rc.product.defaultOption?.pricingPhases.orEmpty().map { PhasePrice(it.price.amountMicros, it.billingPeriod.iso8601) })
+}
+
+/** One pricing phase of a subscription offer: Play Billing `PricingPhase.priceAmountMicros` and `.billingPeriod`. */
+data class PhasePrice(val priceAmountMicros: Long, val billingPeriodIso: String)
+
+/**
+ * A free trial read from the store: an offer phase priced 0 ("Free trial: a set number of days, weeks, or months at
+ * no charge", Play Console Help 12154973), [periodIso] its billing period (`P1W` = one week —
+ * https://developer.android.com/reference/com/android/billingclient/api/ProductDetails.PricingPhase#getBillingPeriod()).
+ */
+data class FreeTrial(val periodIso: String) {
+    companion object {
+        /**
+         * The first free phase before the last one (the last phase is the recurring full price), as RevenueCat's
+         * `SubscriptionOption.freePhase`; Play only returns offers the person is eligible for ("a maximum of 50 user
+         * eligible offers per subscription", https://developer.android.com/google/play/billing/integrate).
+         */
+        fun of(phases: List<PhasePrice>): FreeTrial? =
+            phases.dropLast(1).firstOrNull { it.priceAmountMicros == 0L }?.let { FreeTrial(it.billingPeriodIso) }
+    }
 }
 
 sealed interface PurchaseOutcome {

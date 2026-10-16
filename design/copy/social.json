@@ -160,13 +160,14 @@
       "notes": "Shortened from Retro's line (more than a noun swap, so 'new')."
     },
     "chat.thread.empty.invite": {
-      "text": "Invite friends",
-      "origin": "verbatim",
+      "text": "Add members",
+      "origin": "adapted",
       "source_app": "Retro",
       "surface": "chat.thread",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_edit_tagged_user_empty_state_cta)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_add_members 'Add Members' — the album page's action that opens its invite screen; media_viewer_edit_tagged_user_empty_state_cta 'Invite friends' was the earlier source); references/auto/retro/web/retro.app-web-copy-excerpts.txt and design/research/retro-package-copy-motion.md §7 (retro.app /j/: '7 members • 24 photos', '%1$s invited you to join the private journal'); docs/OWNER_DECISIONS.md 2026-10-16 #10 ('members' for the people of a group; 'friends' only for the person's friends in general)",
       "level": "SOURCED",
-      "notes": "Empty-state action → groups.invite."
+      "notes": "Empty-state action → groups.invite. Owner decision 10: the people it brings in become the group's members (a family or roommates group's people are not 'friends'); Sentence case as the other empty-state actions (retro.voice.empty-state).",
+      "pattern": "retro.voice.button"
     },
     "chat.thread.error.title": {
       "text": "Error loading your messages",
@@ -949,13 +950,14 @@
       "notes": "→ safety.block."
     },
     "walls.browse.title": {
-      "text": "Friends",
+      "text": "Members",
       "origin": "verbatim",
       "source_app": "Retro",
       "surface": "walls.browse",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_screen_title)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_edit_members_screen_title 'Members', journal_settings_members_header 'Members'); references/auto/retro/web/retro.app-web-copy-excerpts.txt and design/research/retro-package-copy-motion.md §7 (retro.app /j/: '7 members • 24 photos', '%1$s invited you to join the private journal'); docs/OWNER_DECISIONS.md 2026-10-16 #10 ('members' for the people of a group; 'friends' only for the person's friends in general)",
       "level": "SOURCED",
-      "notes": "Owner decision S-12 carried: the noun for family / roommates groups."
+      "notes": "Owner decision 10 closes S-12: this page lists the people of your groups, so it takes Retro's word for the people of a journal ('Members', its members screen title) instead of its Friends-tab title ('Friends', friends_tab_screen_title), which named a family group's people friends.",
+      "pattern": "retro.voice.title-case"
     },
     "walls.browse.search": {
       "text": "Search",
@@ -1003,12 +1005,14 @@
       "notes": "Noun swap: chat → group. Opens groups.create."
     },
     "walls.browse.error.title": {
-      "text": "Error loading friends. Tap here to try again.",
-      "origin": "verbatim",
+      "text": "Error loading members. Tap here to try again.",
+      "origin": "adapted",
       "source_app": "Retro",
       "surface": "walls.browse",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_loading_error)",
-      "level": "SOURCED"
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_loading_error 'Error loading friends. Tap here to try again.'); docs/OWNER_DECISIONS.md 2026-10-16 #10 ('members' for the people of a group; 'friends' only for the person's friends in general)",
+      "level": "SOURCED",
+      "pattern": "retro.voice.error",
+      "notes": "Noun swap friends → members (owner decision 10: the page lists the people of your groups)."
     },
     "walls.browse.a11y.collage": {
       "text": "Collage, {date}",

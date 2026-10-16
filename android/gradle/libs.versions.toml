@@ -20,6 +20,9 @@ revenuecat = "10.27.1"
 supabase = "3.8.0"
 ktor = "3.5.1"
 coil = "3.6.3"
+# QR code encoder for the in-app invite card (groups.invite, owner decision 17). Apache-2.0:
+# android/feature/account/licenses/ZXing-LICENSE.txt.
+zxing = "3.5.3"
 
 kotlinxSerialization = "1.11.0"
 kotlinxCoroutines = "1.11.0"
@@ -27,6 +30,9 @@ kotlinxCoroutines = "1.11.0"
 junit = "4.13.2"
 androidxTestCore = "1.7.0"
 androidxTestExtJunit = "1.3.0"
+# On-device tests (app/src/androidTest, the end-to-end journey): AndroidJUnitRunner + GrantPermissionRule.
+androidxTestRunner = "1.7.0"
+androidxTestRules = "1.7.0"
 robolectric = "4.17"
 # The android-all jar Robolectric 4.17 uses for API 36 (org.robolectric.plugins.DefaultSdkProvider).
 # Resolved through Gradle so tests never download from inside the test JVM.
@@ -72,6 +78,8 @@ revenuecat-purchases = { module = "com.revenuecat.purchases:purchases", version.
 
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+
 supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
@@ -88,6 +96,8 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 junit = { module = "junit:junit", version.ref = "junit" }
 androidx-test-core = { module = "androidx.test:core-ktx", version.ref = "androidxTestCore" }
 androidx-test-ext-junit = { module = "androidx.test.ext:junit-ktx", version.ref = "androidxTestExtJunit" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxTestRules" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 robolectric-androidAll = { module = "org.robolectric:android-all-instrumented", version.ref = "robolectricAndroidAll" }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }

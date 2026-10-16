@@ -17,6 +17,7 @@ import app.feature.social.viewer.ViewerPhoto
 import app.feature.social.viewer.ViewerState
 import app.feature.social.viewer.ViewerUiState
 import app.model.PhotoContext
+import androidx.compose.ui.test.onNodeWithText
 import org.junit.Test
 
 /** photo.viewer per state (dark in both appearances — the primary state is also rendered with the system in dark). */
@@ -72,15 +73,20 @@ class ViewerSnapshotTest : SnapshotBase() {
         viewer(state("v-1", d), ViewerUiState(saveDenied = true), d, screen = true)
     }
 
-    /** The field's "•••" menu on someone else's photo: Save to Camera Roll · Report Post · Block Ana. */
+    /** The field's "•••" menu on someone else's photo: Report Post · Block Ana — no Save (owner decision 12). */
     @Test fun menuOthers() {
         val d = viewerData()
         viewer(state("v-1", d), ViewerUiState(menu = true), d, screen = true)
+        compose.onNodeWithText("Save to Camera Roll").assertDoesNotExist()
+        compose.onNodeWithText("Report Post").assertExists()
     }
 
+    /** My photo: Save to Camera Roll · Delete. */
     @Test fun menuMine() {
         val d = viewerData()
         viewer(state("v-2", d), ViewerUiState(menu = true), d, screen = true)
+        compose.onNodeWithText("Save to Camera Roll").assertExists()
+        compose.onNodeWithText("Report Post").assertDoesNotExist()
     }
 
     /** Long press on the photo: the quick-reaction row and the menu items. */

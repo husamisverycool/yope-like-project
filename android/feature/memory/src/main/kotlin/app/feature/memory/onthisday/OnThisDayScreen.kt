@@ -106,8 +106,9 @@ data class OnThisDayActions(
  * status bar (aspect fill, `radius.global.photo`, no top scrim), the C-02 header on media (back chevron, the date in
  * the display serif, the subtitle), the glass "•••" (C-11, `size.global.circleButtonPhoto`) with the native menu,
  * `layout.global.photoScrim`, and the control row (share, dial, random) centred
- * `dimension.onthisday.controls.centerY` above the safe-area bottom with equal gaps. [isMine] decides the menu's
- * Report / Delete item. [showIntro]: the feature intro (C-29) over the page.
+ * `dimension.onthisday.controls.centerY` above the safe-area bottom with equal gaps. [isMine] decides the menu (yours:
+ * Save + Delete; someone else's: Report) and the share circle (yours only — owner decision 12: a photo leaves the app only
+ * when it is your own). [showIntro]: the feature intro (C-29) over the page.
  */
 @Composable
 fun OnThisDayScreen(
@@ -224,8 +225,8 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
                     menuOpen,
                     { menuOpen = false },
                     buildList {
-                        add(DsMenuItem(stringResource(R.string.onthisday_menu_save), actions.onSave))
                         if (isMine(memory)) {
+                            add(DsMenuItem(stringResource(R.string.onthisday_menu_save), actions.onSave))
                             add(DsMenuItem(stringResource(R.string.onthisday_menu_delete), { confirmDelete = true }, destructive = true))
                         } else {
                             add(DsMenuItem(stringResource(R.string.onthisday_menu_report), actions.onReport, destructive = true))
@@ -235,7 +236,7 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
             }
         }
     }
-    Controls(state, actions, Modifier.align(Alignment.BottomCenter))
+    Controls(state, actions, canShare = isMine(memory), Modifier.align(Alignment.BottomCenter))
     if (confirmDelete) {
         SystemAppearance {
             SystemAlertDialog(
@@ -322,11 +323,14 @@ private fun Header(
  * The control row (`layout.onthisday.controls`): share circle, dial, random circle with equal gaps across the width
  * (`Arrangement.SpaceEvenly`), centres `dimension.onthisday.controls.centerY` above the safe-area bottom. Share and
  * random are glass circles (C-11 `size.global.circleButtonLarge`, `color.global.glass`); they fade out while playing
- * (`duration.global.fade`, `easing.global.standard`) and keep their places.
+ * (`duration.global.fade`, `easing.global.standard`) and keep their places. Share shows only when [canShare] (your own
+ * memory, owner decision 12); on someone else's its place stays empty, so the dial does not move.
  */
 @Composable
-private fun Controls(state: OnThisDayState.Page, actions: OnThisDayActions, modifier: Modifier) {
+private fun Controls(state: OnThisDayState.Page, actions: OnThisDayActions, canShare: Boolean, modifier: Modifier) {
     val alpha by dsAnimateAlphaAsState(if (state.playing) 0f else 1f, DsMotion.fade(), label = "controls")
+    val shareShown = canShare && !state.playing
+    val shareAlpha by dsAnimateAlphaAsState(if (shareShown) 1f else 0f, DsMotion.fade(), label = "share")
     Box(
         modifier
             .fillMaxWidth()
@@ -335,14 +339,17 @@ private fun Controls(state: OnThisDayState.Page, actions: OnThisDayActions, modi
             .semantics { isTraversalGroup = true; traversalIndex = 1f },
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-            CircleIconButton(
-                Tokens.Icons.globalShare,
-                stringResource(R.string.onthisday_a11y_share),
-                actions.onShare,
-                Modifier.alpha(alpha).testTag(OnThisDayTags.SHARE),
-                style = CircleButtonStyle.GlassLarge,
-                enabled = !state.playing,
-            )
+            // Hidden in place (not composed into the semantics tree while hidden): the dial keeps its slot.
+            Box(Modifier.alpha(shareAlpha).then(if (shareShown) Modifier else Modifier.clearAndSetSemantics { })) {
+                CircleIconButton(
+                    Tokens.Icons.globalShare,
+                    stringResource(R.string.onthisday_a11y_share),
+                    actions.onShare,
+                    Modifier.testTag(OnThisDayTags.SHARE),
+                    style = CircleButtonStyle.GlassLarge,
+                    enabled = shareShown,
+                )
+            }
             RewindDial(
                 index = state.index,
                 count = state.memories.size,

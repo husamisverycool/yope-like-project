@@ -281,12 +281,15 @@ class OnThisDayViewModel(
 
     // ---- menu and share ------------------------------------------------------------------------------
 
-    /** Whether the current memory is yours (menu: Delete Post) or someone else's (Report Post). */
+    /**
+     * Whether the current memory is yours (menu: Save to Camera Roll + Delete Post, the share circle) or someone else's
+     * (Report Post only): a photo leaves the app only when it is your own (owner decision 12).
+     */
     fun isMine(memory: Memory): Boolean = memory.authorId == backend.currentUserId
 
-    /** "Save to Camera Roll": the original into the photo library; toast saved / failed. */
+    /** "Save to Camera Roll" (your own memory only): the original into the photo library; toast saved / failed. */
     fun save(accessGranted: Boolean = true) {
-        val memory = (_state.value as? OnThisDayState.Page)?.memory ?: return
+        val memory = (_state.value as? OnThisDayState.Page)?.memory?.takeIf(::isMine) ?: return
         if (!accessGranted) {
             queue.haptic(Tokens.Haptics.globalError)
             events.trySend(OnThisDayEvent.SaveDenied)
@@ -300,9 +303,9 @@ class OnThisDayViewModel(
         }
     }
 
-    /** Share: the original to the system share sheet. */
+    /** Share (your own memory only): the original to the system share sheet. */
     fun share() {
-        val memory = (_state.value as? OnThisDayState.Page)?.memory ?: return
+        val memory = (_state.value as? OnThisDayState.Page)?.memory?.takeIf(::isMine) ?: return
         viewModelScope.launch {
             val url = attempt { backend.signedUrls(listOf(memory.originalPath))[memory.originalPath] }.getOrNull()
             val uri = url?.let { files.shareUri(it, memory.postId) }
