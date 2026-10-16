@@ -20,6 +20,16 @@ final class AccountFlowUITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
+    /// Waits for the screen or control carrying `identifier`; when it never comes, fails with the screen's tree so the
+    /// log shows what was there instead.
+    @MainActor
+    private func expect(_ identifier: String, in app: XCUIApplication, timeout: TimeInterval = 5, _ message: String = "", file: StaticString = #filePath, line: UInt = #line) {
+        guard element(app, identifier).waitForExistence(timeout: timeout) else {
+            XCTFail("\(identifier) never appeared \(message)\n\(app.debugDescription)", file: file, line: line)
+            return
+        }
+    }
+
     /// The text field carrying `identifier` (the identifier is set on the form field around it).
     private func field(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {
         let textField = app.textFields[identifier]
@@ -74,33 +84,33 @@ final class AccountFlowUITests: XCTestCase {
         type("5551234567", into: "auth.phone.field", in: app)
         tap("auth.phone.continue", in: app)
 
-        XCTAssertTrue(element(app, "auth.code").waitForExistence(timeout: 5))
+        expect("auth.code", in: app, timeout: 5)
         type("123456", into: "auth.code.field", in: app)
         if element(app, "auth.code").exists, element(app, "auth.code.continue").exists, element(app, "auth.code.continue").isHittable {
             element(app, "auth.code.continue").tap()
         }
 
-        XCTAssertTrue(element(app, "auth.agegate").waitForExistence(timeout: 5))
+        expect("auth.agegate", in: app, timeout: 5)
         type("01012000", into: "auth.agegate.field", in: app)
         let birthday = field(app, "auth.agegate.field")
         XCTAssertEqual((birthday.value as? String)?.filter(\.isNumber), "01012000", "every digit of the birthday reached the field")
         tap("auth.agegate.continue", in: app)
 
-        XCTAssertTrue(element(app, "auth.profile").waitForExistence(timeout: 5))
+        expect("auth.profile", in: app, timeout: 5)
         type("Ana", into: "auth.profile.field", in: app)
         tap("auth.profile.continue", in: app)
 
         // Step 2 (Retro's profile photo step): "Maybe Later".
-        XCTAssertTrue(element(app, "auth.profile.photo").waitForExistence(timeout: 5))
+        expect("auth.profile.photo", in: app, timeout: 5)
         tap("auth.profile.photo.secondary", in: app)
 
-        XCTAssertTrue(element(app, "onboarding.permission.notifications").waitForExistence(timeout: 5))
+        expect("onboarding.permission.notifications", in: app, timeout: 5)
         tap("onboarding.notifications.continue", in: app)
 
-        XCTAssertTrue(element(app, "onboarding.widget").waitForExistence(timeout: 5))
+        expect("onboarding.widget", in: app, timeout: 5)
         tap("onboarding.widget.continue", in: app)
 
-        XCTAssertTrue(element(app, "groups.list").waitForExistence(timeout: 5), "home after onboarding")
+        expect("groups.list", in: app, timeout: 5, "home after onboarding")
         XCTAssertTrue(element(app, "groups.list.empty.create").exists, "a new account has no groups yet")
     }
 
