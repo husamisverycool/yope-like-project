@@ -41,7 +41,6 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
-import app.feature.account.blocked.BlockedCopy
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.SheetPage
@@ -227,10 +226,10 @@ fun SettingsRootScreen(
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = sheetBottomPadding())) {
             ProfileCard(state, actions.onAccount)
             // Subscription
-            val premiumTitle = BlockedCopy.premiumRowTitle(context)
+            val premiumTitle = context.getString(R.string.settings_root_premium_title)
             val subscriptionRow: GroupedRowSpec? = when (state.subscription) {
                 SubscriptionState.Loading -> null
-                SubscriptionState.None -> premiumTitle?.let { navRow(it, stringResource(R.string.settings_root_premium_subtitle), onClick = actions.onPremium) }
+                SubscriptionState.None -> navRow(premiumTitle, stringResource(R.string.settings_root_premium_subtitle), onClick = actions.onPremium)
                 SubscriptionState.Annual -> navRow(stringResource(R.string.settings_root_managesubscription), stringResource(R.string.settings_root_premium_annual), onClick = actions.onManage)
                 SubscriptionState.Monthly -> navRow(stringResource(R.string.settings_root_managesubscription), stringResource(R.string.settings_root_premium_monthly), onClick = actions.onManage)
                 SubscriptionState.Active -> navRow(stringResource(R.string.settings_root_managesubscription), onClick = actions.onManage)

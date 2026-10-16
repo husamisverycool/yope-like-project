@@ -1,9 +1,9 @@
 {
   "$comment": "Single source of app configuration. Values marked BLOCKED come from the owner (docs/OWNER_SETUP.md). Build tooling refuses release builds while any BLOCKED value remains.",
   "displayName": {
-    "value": null,
-    "level": "BLOCKED",
-    "notes": "owner decision 0.1"
+    "value": "Jolt",
+    "level": "OWNER",
+    "notes": "owner decision 0.1: the owner named the app Jolt (16 October 2026); the App Store listing name may need a longer form if 'Jolt' is taken there"
   },
   "domain": {
     "value": null,

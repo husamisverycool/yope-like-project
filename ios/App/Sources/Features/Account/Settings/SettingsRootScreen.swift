@@ -161,8 +161,7 @@ struct SettingsRootScreen: View {
 
     // MARK: Subscription
 
-    /// Non-subscriber: "{app_name} Premium" (BLOCKED until the app is named: release builds omit the row) with "Unlock
-    /// more of what you love." → paywall (never counted as a prompt). Subscriber: "Your Subscription" with the plan's
+    /// Non-subscriber: "Jolt Premium" (`settings.root.premium.title`) with "Unlock more of what you love." → paywall (never counted as a prompt). Subscriber: "Your Subscription" with the plan's
     /// period ("Annual" / "Monthly") → the system's subscription sheet. Loading: the row's value is the activity indicator.
     @ViewBuilder
     private var subscriptionSection: some View {
@@ -171,9 +170,9 @@ struct SettingsRootScreen: View {
                 SettingsRow(Copy.settingsRootManageSubscription, subtitle: periodText, kind: .navigation { showsManageSubscriptions = true })
                     .asSettingsRow(),
             ])
-        } else if let title = AccountBlockedCopy.premiumRowTitle {
+        } else {
             SettingsGroup(header: Copy.settingsRootSubscriptionHeader, rows: [
-                SettingsRow(title, subtitle: Copy.settingsRootPremiumSubtitle, kind: .navigation { showsPaywall = true }, valueIsBusy: !premiumLoaded)
+                SettingsRow(Copy.settingsRootPremiumTitle, subtitle: Copy.settingsRootPremiumSubtitle, kind: .navigation { showsPaywall = true }, valueIsBusy: !premiumLoaded)
                     .accessibilityIdentifier("settings.root.premium")
                     .asSettingsRow(),
             ])

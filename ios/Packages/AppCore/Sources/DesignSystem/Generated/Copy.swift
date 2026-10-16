@@ -723,6 +723,8 @@ public enum Copy {
     public static func groupsInviteLinkExpiry(date: String) -> String { CopyLookup.format("groups.invite.link.expiry", default: "This link works until {date}.", ["date": date]) }
     /// "Anyone with this link can join {group_name}" — Retro · groups.invite · adapted · SOURCED
     public static func groupsInviteLinkLabel(groupName: String) -> String { CopyLookup.format("groups.invite.link.label", default: "Anyone with this link can join {group_name}", ["group_name": groupName]) }
+    /// "Check out {group_name} on Jolt: {link}" — Retro · groups.invite · adapted · SOURCED
+    public static func groupsInviteLinkMessage(groupName: String, link: String) -> String { CopyLookup.format("groups.invite.link.message", default: "Check out {group_name} on Jolt: {link}", ["group_name": groupName, "link": link]) }
     /// "Message" — Retro · groups.invite · verbatim · SOURCED
     public static var groupsInviteLinkMessageTarget: String { CopyLookup.string("groups.invite.link.messageTarget", default: "Message") }
     /// "QR Code" — Retro · groups.invite · verbatim · SOURCED
@@ -965,6 +967,8 @@ public enum Copy {
     public static var inviteWebCta: String { CopyLookup.string("invite.web.cta", default: "Let's go") }
     /// "Scan the code to see what {group_name} is up to this week." — Retro · invite.web · adapted · SOURCED
     public static func inviteWebDesktopScan(groupName: String) -> String { CopyLookup.format("invite.web.desktop.scan", default: "Scan the code to see what {group_name} is up to this week.", ["group_name": groupName]) }
+    /// "Jolt - {title}" — Retro · invite.web · adapted · SOURCED
+    public static func inviteWebDocumentTitle(title: String) -> String { CopyLookup.format("invite.web.documentTitle", default: "Jolt - {title}", ["title": title]) }
     /// "There was a problem. Please try again." — Retro · invite.web · verbatim · SOURCED
     public static var inviteWebErrorBody: String { CopyLookup.string("invite.web.error.body", default: "There was a problem. Please try again.") }
     /// "Try again" — Retro · invite.web · verbatim · SOURCED
@@ -1105,12 +1109,16 @@ public enum Copy {
     public static var onboardingWidgetStepAndroid1: String { CopyLookup.string("onboarding.widget.step.android.1", default: "From your Home Screen, touch and hold on an empty space.") }
     /// "Tap Widgets." — Locket · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetStepAndroid2: String { CopyLookup.string("onboarding.widget.step.android.2", default: "Tap Widgets.") }
+    /// "Search for “Jolt”, tap on the widget, then tap Add." — Locket · onboarding.widget · adapted · SOURCED
+    public static var onboardingWidgetStepAndroid3: String { CopyLookup.string("onboarding.widget.step.android.3", default: "Search for “Jolt”, tap on the widget, then tap Add.") }
     /// "From your Home Screen, touch and hold a widget or empty area until the apps jiggle." — Locket · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetStepIos1: String { CopyLookup.string("onboarding.widget.step.ios.1", default: "From your Home Screen, touch and hold a widget or empty area until the apps jiggle.") }
     /// "Tap Edit in the upper-left corner." — Locket · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetStepIos2: String { CopyLookup.string("onboarding.widget.step.ios.2", default: "Tap Edit in the upper-left corner.") }
     /// "Tap Add Widget." — Locket · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetStepIos3: String { CopyLookup.string("onboarding.widget.step.ios.3", default: "Tap Add Widget.") }
+    /// "Search for “Jolt”, then tap on it." — Locket · onboarding.widget · adapted · SOURCED
+    public static var onboardingWidgetStepIos4: String { CopyLookup.string("onboarding.widget.step.ios.4", default: "Search for “Jolt”, then tap on it.") }
     /// "Select a widget size, then tap Add Widget." — Locket · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetStepIos5: String { CopyLookup.string("onboarding.widget.step.ios.5", default: "Select a widget size, then tap Add Widget.") }
     /// "Step {number}" — Apple HIG · onboarding.widget · new · VERIFIED
@@ -1213,6 +1221,8 @@ public enum Copy {
     public static func paywallLegalBillingAndroid(price: String, period: String) -> String { CopyLookup.format("paywall.legal.billing.android", default: "{price} per {period}. Renews automatically until you cancel. Cancel anytime in your subscriptions on Google Play.", ["price": price, "period": period]) }
     /// "{price} per {period}. Plan automatically renews until canceled. Cancel anytime in Settings." — Apple HIG · paywall · adapted · VERIFIED
     public static func paywallLegalBillingIos(price: String, period: String) -> String { CopyLookup.format("paywall.legal.billing.ios", default: "{price} per {period}. Plan automatically renews until canceled. Cancel anytime in Settings.", ["price": price, "period": period]) }
+    /// "You don't need a subscription to use Jolt." — Material 3 · paywall · new · VERIFIED
+    public static var paywallLegalOptional: String { CopyLookup.string("paywall.legal.optional", default: "You don't need a subscription to use Jolt.") }
     /// "Premium" — Retro · paywall · verbatim · SOURCED
     public static var paywallLockedBadge: String { CopyLookup.string("paywall.locked.badge", default: "Premium") }
     /// "Could not connect. Check your connection and try again." — Retro · paywall · verbatim · SOURCED
@@ -1281,6 +1291,8 @@ public enum Copy {
     public static var paywallRetry: String { CopyLookup.string("paywall.retry", default: "Try again") }
     /// "Terms" — Retro · paywall · verbatim · SOURCED
     public static var paywallTerms: String { CopyLookup.string("paywall.terms", default: "Terms") }
+    /// "Jolt Premium" — Retro · paywall · adapted · SOURCED
+    public static var paywallTitle: String { CopyLookup.string("paywall.title", default: "Jolt Premium") }
     /// "You've unlocked all Premium features." — Retro · paywall · new · SOURCED
     public static var paywallWelcomeBody: String { CopyLookup.string("paywall.welcome.body", default: "You've unlocked all Premium features.") }
     /// "Done" — Retro · paywall · verbatim · SOURCED
@@ -1533,6 +1545,8 @@ public enum Copy {
     public static var settingsRootPremiumMonthly: String { CopyLookup.string("settings.root.premium.monthly", default: "Monthly") }
     /// "Unlock more of what you love." — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootPremiumSubtitle: String { CopyLookup.string("settings.root.premium.subtitle", default: "Unlock more of what you love.") }
+    /// "Jolt Premium" — Retro · settings.root · adapted · SOURCED
+    public static var settingsRootPremiumTitle: String { CopyLookup.string("settings.root.premium.title", default: "Jolt Premium") }
     /// "Privacy Policy" — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootPrivacy: String { CopyLookup.string("settings.root.privacy", default: "Privacy Policy") }
     /// "Privacy" — Retro · settings.root · verbatim · SOURCED

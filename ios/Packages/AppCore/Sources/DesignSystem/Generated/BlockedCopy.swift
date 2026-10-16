@@ -5,21 +5,7 @@ import Foundation
 
 /// BLOCKED strings: DEBUG builds only.
 public enum BlockedCopy {
-    /// "Check out {group_name} on {app_name}: {link}" — Retro · groups.invite · adapted · SOURCED
-    public static func groupsInviteLinkMessage(groupName: String, appName: String, link: String) -> String { CopyLookup.format("groups.invite.link.message", default: "Check out {group_name} on {app_name}: {link}", ["group_name": groupName, "app_name": appName, "link": link]) }
-    /// "{app_name} - {title}" — Retro · invite.web · adapted · SOURCED
-    public static func inviteWebDocumentTitle(appName: String, title: String) -> String { CopyLookup.format("invite.web.documentTitle", default: "{app_name} - {title}", ["app_name": appName, "title": title]) }
-    /// "Search for “{app_name}”, tap on the widget, then tap Add." — Locket · onboarding.widget · adapted · SOURCED
-    public static func onboardingWidgetStepAndroid3(appName: String) -> String { CopyLookup.format("onboarding.widget.step.android.3", default: "Search for “{app_name}”, tap on the widget, then tap Add.", ["app_name": appName]) }
-    /// "Search for “{app_name}”, then tap on it." — Locket · onboarding.widget · adapted · SOURCED
-    public static func onboardingWidgetStepIos4(appName: String) -> String { CopyLookup.format("onboarding.widget.step.ios.4", default: "Search for “{app_name}”, then tap on it.", ["app_name": appName]) }
-    /// "You don't need a subscription to use {app_name}." — Material 3 · paywall · new · VERIFIED
-    public static func paywallLegalOptional(appName: String) -> String { CopyLookup.format("paywall.legal.optional", default: "You don't need a subscription to use {app_name}.", ["app_name": appName]) }
-    /// "{app_name} Premium" — Retro · paywall · adapted · SOURCED
-    public static func paywallTitle(appName: String) -> String { CopyLookup.format("paywall.title", default: "{app_name} Premium", ["app_name": appName]) }
-    /// "{app_name} Premium" — Retro · settings.root · adapted · SOURCED
-    public static func settingsRootPremiumTitle(appName: String) -> String { CopyLookup.format("settings.root.premium.title", default: "{app_name} Premium", ["app_name": appName]) }
-    /// "{app_name}" — Retro · year.story · new · BLOCKED
-    public static func yearStoryCardApp(appName: String) -> String { CopyLookup.format("year.story.card.app", default: "{app_name}", ["app_name": appName]) }
+    /// "Jolt" — Retro · year.story · new · BLOCKED
+    public static var yearStoryCardApp: String { CopyLookup.string("year.story.card.app", default: "Jolt") }
 }
 #endif

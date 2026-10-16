@@ -295,3 +295,42 @@ jobs:
             ios/sim-account.log
             ios/build/UITests.xcresult
           if-no-files-found: ignore
+
+  # Jolt to try on a Mac, in Xcode's iPhone simulator: a DEBUG build with the DEMO flag, which starts signed in on
+  # built-in sample data (one world of groups, people, photos, chats and memories; no backend, no account). Download the
+  # "jolt-demo" artifact, unzip it, and drag Jolt.app onto the Simulator window.
+  ios-demo:
+    name: ios demo build (Jolt for the simulator)
+    runs-on: macos-15
+    timeout-minutes: 45
+    needs: detect
+    if: needs.detect.outputs.ios == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: select newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+      - run: brew install xcodegen
+      - name: generate project
+        working-directory: ios
+        run: xcodegen generate
+      # Both architectures, so it runs on Apple silicon and Intel Macs. Unsigned: the simulator does not require signing.
+      - name: build the demo app
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO 'OTHER_SWIFT_FLAGS=$(inherited) -D DEMO' build 2>&1 | tee xcodebuild-demo.log | grep -E "error:|BUILD|\*\*" || true
+          grep -q "\*\* BUILD SUCCEEDED \*\*" xcodebuild-demo.log
+          rm -rf demo && mkdir demo && cp -R build/Build/Products/Debug-iphonesimulator/App.app demo/Jolt.app
+          (cd demo && ditto -c -k --sequesterRsrc --keepParent Jolt.app Jolt-demo.zip)
+      - name: upload the demo app
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jolt-demo
+          path: |
+            ios/demo/Jolt-demo.zip
+            ios/xcodebuild-demo.log
+          if-no-files-found: ignore

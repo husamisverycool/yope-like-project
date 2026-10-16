@@ -52,7 +52,6 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
-import app.feature.account.blocked.BlockedCopy
 import app.feature.account.common.AccountEvent
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.OnboardingForm
@@ -103,11 +102,10 @@ fun WidgetRoute(nav: NavController, fromSettings: Boolean = false) {
     val haptics = rememberHaptics()
     val vm = viewModel(key = "widgetPreview") { WidgetPreviewViewModel(env) }
     val preview by vm.preview.collectAsStateWithLifecycle()
-    val steps = listOfNotNull(
+    val steps = listOf(
         context.getString(R.string.onboarding_widget_step_android_1),
         context.getString(R.string.onboarding_widget_step_android_2),
-        // BLOCKED ({app_name}): omitted in release builds.
-        BlockedCopy.widgetStepAndroid3(context),
+        context.getString(R.string.onboarding_widget_step_android_3),
     )
     val next = {
         if (fromSettings) {

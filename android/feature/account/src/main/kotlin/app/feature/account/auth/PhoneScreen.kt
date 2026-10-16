@@ -60,7 +60,6 @@ import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.BuildConfig
 import app.feature.account.LocalAccountEnvironment
-import app.feature.account.blocked.BlockedCopy
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
 import app.feature.account.common.OnboardingForm
@@ -268,7 +267,7 @@ private const val FORM = 1
  */
 @Composable
 private fun Landing(onGetStarted: () -> Unit, onTerms: () -> Unit, onPrivacy: () -> Unit) {
-    val wordmark = BuildConfig.APP_DISPLAY_NAME ?: BlockedCopy.appName()
+    val wordmark = BuildConfig.APP_DISPLAY_NAME
     val linkStyle = TextRoles.listTitle
     val legalStyle = TextRoles.caption
     val navigation = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()

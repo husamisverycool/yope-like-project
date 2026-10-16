@@ -58,7 +58,6 @@ import app.designsystem.dsTextStyle
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
-import app.feature.account.blocked.BlockedCopy
 import app.feature.account.common.AccountEvent
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.CollectEvents
@@ -266,7 +265,7 @@ fun PaywallScreen(state: PaywallUiState, legal: LegalLinks, actions: PaywallActi
     Box(Modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep)) {
         if (state.media != null) ColourFieldBackdrop(state.media)
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-            Header(BlockedCopy.paywallTitle(context), actions.onClose)
+            Header(context.getString(R.string.paywall_title), actions.onClose)
             AnimatedContent(
                 targetState = state.welcome,
                 transitionSpec = { androidx.compose.animation.fadeIn(DsMotion.pageTransition()) togetherWith androidx.compose.animation.fadeOut(DsMotion.pageTransition()) },
@@ -488,7 +487,7 @@ private fun Footer(plan: PlanOption?, legal: LegalLinks, actions: PaywallActions
         if (plan != null) {
             Text(stringResource(R.string.paywall_legal_billing_android, plan.price, periodUnit(plan.period)), style = caption, color = white, textAlign = TextAlign.Center)
         }
-        BlockedCopy.paywallLegalOptional(context)?.let { Text(it, style = caption, color = white, textAlign = TextAlign.Center) }
+        Text(stringResource(R.string.paywall_legal_optional), style = caption, color = white, textAlign = TextAlign.Center)
         Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.CenterVertically) {
             FooterButton(stringResource(R.string.paywall_restore), actions.onRestore)
             legal.termsUrl?.let { url -> FooterButton(stringResource(R.string.paywall_terms)) { actions.onUrl(url) } }

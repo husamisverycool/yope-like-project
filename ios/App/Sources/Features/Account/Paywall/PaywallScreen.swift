@@ -133,18 +133,16 @@ struct PaywallView: View {
 
     // MARK: Header
 
-    /// The title (text role `sheetTitle`, `color.global.textOnMedia`; "{app_name} Premium" — BLOCKED until the app is named,
-    /// omitted in release) centred, the glass close circle (C-11 `.glassSmall`, always visible) at the trailing margin.
+    /// The title (text role `sheetTitle`, `color.global.textOnMedia`; `paywall.title`) centred, the glass close circle
+    /// (C-11 `.glassSmall`, always visible) at the trailing margin.
     private var header: some View {
         ZStack {
-            if let title = AccountBlockedCopy.paywallTitle {
-                Text(title)
-                    .dsTextStyle(TextRole.sheetTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextOnMedia)
-                    .multilineTextAlignment(.center)
-                    .accessibilityAddTraits(.isHeader)
-                    .padding(.horizontal, Tokens.Sizes.globalCircleButtonSmall)
-            }
+            Text(Copy.paywallTitle)
+                .dsTextStyle(TextRole.sheetTitle)
+                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.horizontal, Tokens.Sizes.globalCircleButtonSmall)
             HStack {
                 Spacer(minLength: 0)
                 CircleButton(icon: Tokens.Icons.globalClose, accessibilityLabel: Copy.paywallCloseAccessibilityLabel, style: .glassSmall) {

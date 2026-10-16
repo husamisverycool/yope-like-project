@@ -73,7 +73,6 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironment
 import app.feature.account.LocalAccountEnvironment
-import app.feature.account.blocked.BlockedCopy
 import app.feature.account.common.AccountViewModel
 import app.feature.account.common.BookCover
 import app.feature.account.common.CollectEvents
@@ -250,8 +249,8 @@ fun GroupInviteRoute(nav: NavController, groupId: String) {
     val qrLink = if (qrOpen) vm.link() else null
     BackHandler(enabled = qrLink != null) { qrOpen = false }
     val qr = rememberQrExport()
-    // `groups.invite.link.message` is BLOCKED while it names the app ({app_name}): release builds share the link alone.
-    fun message(url: String): String = BlockedCopy.inviteLinkMessage(context, state.groupName, url) ?: url
+    // `groups.invite.link.message`: the text shared with the link.
+    fun message(url: String): String = context.getString(R.string.groups_invite_link_message, state.groupName, url)
     val contactsRequest = rememberPermissionRequest(
         Manifest.permission.READ_CONTACTS,
         PermissionRationale(

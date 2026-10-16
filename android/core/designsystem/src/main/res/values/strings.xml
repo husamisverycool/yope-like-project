@@ -721,6 +721,8 @@
     <string name="groups_invite_link_expiry">This link works until %1$s.</string>
     <!-- Retro · groups.invite · adapted · SOURCED · args: group_name -->
     <string name="groups_invite_link_label">Anyone with this link can join %1$s</string>
+    <!-- Retro · groups.invite · adapted · SOURCED · args: group_name, link -->
+    <string name="groups_invite_link_message">Check out %1$s on Jolt: %2$s</string>
     <!-- Retro · groups.invite · verbatim · SOURCED -->
     <string name="groups_invite_link_messagetarget" formatted="false">Message</string>
     <!-- Retro · groups.invite · verbatim · SOURCED -->
@@ -963,6 +965,8 @@
     <string name="invite_web_cta" formatted="false">Let\'s go</string>
     <!-- Retro · invite.web · adapted · SOURCED · args: group_name -->
     <string name="invite_web_desktop_scan">Scan the code to see what %1$s is up to this week.</string>
+    <!-- Retro · invite.web · adapted · SOURCED · args: title -->
+    <string name="invite_web_documenttitle">Jolt - %1$s</string>
     <!-- Retro · invite.web · verbatim · SOURCED -->
     <string name="invite_web_error_body" formatted="false">There was a problem. Please try again.</string>
     <!-- Retro · invite.web · verbatim · SOURCED -->
@@ -1103,12 +1107,16 @@
     <string name="onboarding_widget_step_android_1" formatted="false">From your Home Screen, touch and hold on an empty space.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_step_android_2" formatted="false">Tap Widgets.</string>
+    <!-- Locket · onboarding.widget · adapted · SOURCED -->
+    <string name="onboarding_widget_step_android_3" formatted="false">Search for “Jolt”, tap on the widget, then tap Add.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_step_ios_1" formatted="false">From your Home Screen, touch and hold a widget or empty area until the apps jiggle.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_step_ios_2" formatted="false">Tap Edit in the upper-left corner.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_step_ios_3" formatted="false">Tap Add Widget.</string>
+    <!-- Locket · onboarding.widget · adapted · SOURCED -->
+    <string name="onboarding_widget_step_ios_4" formatted="false">Search for “Jolt”, then tap on it.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_step_ios_5" formatted="false">Select a widget size, then tap Add Widget.</string>
     <!-- Apple HIG · onboarding.widget · new · VERIFIED · args: number -->
@@ -1211,6 +1219,8 @@
     <string name="paywall_legal_billing_android">%1$s per %2$s. Renews automatically until you cancel. Cancel anytime in your subscriptions on Google Play.</string>
     <!-- Apple HIG · paywall · adapted · VERIFIED · args: price, period -->
     <string name="paywall_legal_billing_ios">%1$s per %2$s. Plan automatically renews until canceled. Cancel anytime in Settings.</string>
+    <!-- Material 3 · paywall · new · VERIFIED -->
+    <string name="paywall_legal_optional" formatted="false">You don\'t need a subscription to use Jolt.</string>
     <!-- Retro · paywall · verbatim · SOURCED -->
     <string name="paywall_locked_badge" formatted="false">Premium</string>
     <!-- Retro · paywall · verbatim · SOURCED -->
@@ -1279,6 +1289,8 @@
     <string name="paywall_retry" formatted="false">Try again</string>
     <!-- Retro · paywall · verbatim · SOURCED -->
     <string name="paywall_terms" formatted="false">Terms</string>
+    <!-- Retro · paywall · adapted · SOURCED -->
+    <string name="paywall_title" formatted="false">Jolt Premium</string>
     <!-- Retro · paywall · new · SOURCED -->
     <string name="paywall_welcome_body" formatted="false">You\'ve unlocked all Premium features.</string>
     <!-- Retro · paywall · verbatim · SOURCED -->
@@ -1531,6 +1543,8 @@
     <string name="settings_root_premium_monthly" formatted="false">Monthly</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_premium_subtitle" formatted="false">Unlock more of what you love.</string>
+    <!-- Retro · settings.root · adapted · SOURCED -->
+    <string name="settings_root_premium_title" formatted="false">Jolt Premium</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_privacy" formatted="false">Privacy Policy</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->

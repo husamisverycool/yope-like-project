@@ -362,6 +362,7 @@ const table = {
   "groups.invite.link.copy": "Copy Link", // Retro · groups.invite · SOURCED
   "groups.invite.link.expiry": "This link works until {date}.", // Retro · groups.invite · SOURCED
   "groups.invite.link.label": "Anyone with this link can join {group_name}", // Retro · groups.invite · SOURCED
+  "groups.invite.link.message": "Check out {group_name} on Jolt: {link}", // Retro · groups.invite · SOURCED
   "groups.invite.link.messageTarget": "Message", // Retro · groups.invite · SOURCED
   "groups.invite.link.qr": "QR Code", // Retro · groups.invite · SOURCED
   "groups.invite.link.reset": "Reset link", // Retro · groups.invite · SOURCED
@@ -483,6 +484,7 @@ const table = {
   "invite.web.cover.alt": "{group_name} cover", // W3C WCAG 2.2 · invite.web · VERIFIED
   "invite.web.cta": "Let's go", // Retro · invite.web · SOURCED
   "invite.web.desktop.scan": "Scan the code to see what {group_name} is up to this week.", // Retro · invite.web · SOURCED
+  "invite.web.documentTitle": "Jolt - {title}", // Retro · invite.web · SOURCED
   "invite.web.error.body": "There was a problem. Please try again.", // Retro · invite.web · SOURCED
   "invite.web.error.retry": "Try again", // Retro · invite.web · SOURCED
   "invite.web.error.title": "Something went wrong", // Retro · invite.web · SOURCED
@@ -553,9 +555,11 @@ const table = {
   "onboarding.widget.skip": "Maybe later", // Retro · onboarding.widget · SOURCED
   "onboarding.widget.step.android.1": "From your Home Screen, touch and hold on an empty space.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.step.android.2": "Tap Widgets.", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.android.3": "Search for “Jolt”, tap on the widget, then tap Add.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.step.ios.1": "From your Home Screen, touch and hold a widget or empty area until the apps jiggle.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.step.ios.2": "Tap Edit in the upper-left corner.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.step.ios.3": "Tap Add Widget.", // Locket · onboarding.widget · SOURCED
+  "onboarding.widget.step.ios.4": "Search for “Jolt”, then tap on it.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.step.ios.5": "Select a widget size, then tap Add Widget.", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.stepNumber.accessibilityLabel": "Step {number}", // Apple HIG · onboarding.widget · VERIFIED
   "onboarding.widget.title": "Widgets for your home screen", // Retro · onboarding.widget · SOURCED
@@ -607,6 +611,7 @@ const table = {
   "paywall.footer": "Cancel anytime. No questions asked.", // Retro · paywall · SOURCED
   "paywall.legal.billing.android": "{price} per {period}. Renews automatically until you cancel. Cancel anytime in your subscriptions on Google Play.", // Material 3 · paywall · VERIFIED
   "paywall.legal.billing.ios": "{price} per {period}. Plan automatically renews until canceled. Cancel anytime in Settings.", // Apple HIG · paywall · VERIFIED
+  "paywall.legal.optional": "You don't need a subscription to use Jolt.", // Material 3 · paywall · VERIFIED
   "paywall.locked.badge": "Premium", // Retro · paywall · SOURCED
   "paywall.offline": "Could not connect. Check your connection and try again.", // Retro · paywall · SOURCED
   "paywall.pending": "Your purchase is waiting for approval.", // Apple HIG · paywall · VERIFIED
@@ -641,6 +646,7 @@ const table = {
   "paywall.restore.none": "No previous purchases found", // Retro · paywall · SOURCED
   "paywall.retry": "Try again", // Retro · paywall · SOURCED
   "paywall.terms": "Terms", // Retro · paywall · SOURCED
+  "paywall.title": "Jolt Premium", // Retro · paywall · SOURCED
   "paywall.welcome.body": "You've unlocked all Premium features.", // Retro · paywall · SOURCED
   "paywall.welcome.done": "Done", // Retro · paywall · SOURCED
   "paywall.welcome.title": "Welcome to Premium!", // Retro · paywall · SOURCED
@@ -767,6 +773,7 @@ const table = {
   "settings.root.premium.annual": "Annual", // Retro · settings.root · SOURCED
   "settings.root.premium.monthly": "Monthly", // Retro · settings.root · SOURCED
   "settings.root.premium.subtitle": "Unlock more of what you love.", // Retro · settings.root · SOURCED
+  "settings.root.premium.title": "Jolt Premium", // Retro · settings.root · SOURCED
   "settings.root.privacy": "Privacy Policy", // Retro · settings.root · SOURCED
   "settings.root.privacy.header": "Privacy", // Retro · settings.root · SOURCED
   "settings.root.signOut": "Sign Out", // Retro · settings.root · SOURCED

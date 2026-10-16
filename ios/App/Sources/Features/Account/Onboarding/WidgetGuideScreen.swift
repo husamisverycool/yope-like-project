@@ -27,16 +27,15 @@ struct WidgetGuideScreen: View {
         self.onContinue = onContinue
     }
 
-    /// The iOS steps (`onboarding.widget.step.ios.1` … `.5`). Step 4 names the app (`{app_name}`, BLOCKED): release
-    /// builds omit it, so numbering follows the steps shown.
+    /// The iOS steps (`onboarding.widget.step.ios.1` … `.5`); step 4 names the app.
     static var steps: [String] {
         [
             Copy.onboardingWidgetStepIos1,
             Copy.onboardingWidgetStepIos2,
             Copy.onboardingWidgetStepIos3,
-            AccountBlockedCopy.widgetStepIOS4,
+            Copy.onboardingWidgetStepIos4,
             Copy.onboardingWidgetStepIos5,
-        ].compactMap { $0 }
+        ]
     }
 
     var body: some View {

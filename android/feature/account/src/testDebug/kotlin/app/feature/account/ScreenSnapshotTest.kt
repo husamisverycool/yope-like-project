@@ -105,7 +105,6 @@ import app.feature.account.settings.SettingsRootScreen
 import app.feature.account.settings.SettingsRootUiState
 import app.feature.account.settings.SubscriptionState
 import app.feature.account.testing.fakeEnvironment
-import app.feature.account.blocked.BlockedCopy
 import app.testing.SamplePhotos
 import app.ui.components.EmptyState
 import app.ui.components.EmptyStateAction
@@ -304,8 +303,8 @@ class ScreenSnapshotTest {
     private val widgetSteps @Composable get() = listOf(
         stringResource(R.string.onboarding_widget_step_android_1),
         stringResource(R.string.onboarding_widget_step_android_2),
-        BlockedCopy.widgetStepAndroid3(LocalContext.current),
-    ).filterNotNull()
+        stringResource(R.string.onboarding_widget_step_android_3),
+    )
     private val widgetPreview = WidgetPreview(photo("dinner-pizza-cheers-3x4"), "Sam")
     @Test fun widgetDefault() = snap("onboarding.widget", "default") { WidgetScreen(widgetSteps, widgetPreview, noop, noop) }
     @Test fun widgetDefaultDark() = snap("onboarding.widget", "default", dark = true) { WidgetScreen(widgetSteps, widgetPreview, noop, noop) }

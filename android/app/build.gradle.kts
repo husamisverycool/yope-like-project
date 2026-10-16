@@ -26,6 +26,8 @@ android {
         // App Links host for https://<domain>/i/<token>. While `domain` is BLOCKED a reserved
         // never-resolving name (RFC 2606 .invalid) keeps the filter inert.
         manifestPlaceholders["appLinkHost"] = appDomain ?: "unset.invalid"
+        // The name under the icon: config/app.json displayName (owner decision 0.1); release builds refuse a missing one.
+        manifestPlaceholders["appLabel"] = appDisplayName ?: "{app_name}"
         // On-device end-to-end journey (src/androidTest/kotlin/app/main/e2e/JourneyTest.kt): the runner points the app at the Supabase stack
         // named by the instrumentation arguments `supabaseUrl` / `supabaseAnonKey` before the app starts.
         testInstrumentationRunner = "app.main.e2e.E2eRunner"

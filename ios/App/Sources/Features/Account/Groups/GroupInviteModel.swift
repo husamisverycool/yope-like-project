@@ -128,10 +128,9 @@ final class GroupInviteModel {
         }
     }
 
-    /// The text that goes with the link (Message and Share to…). `groups.invite.link.message` uses `{app_name}` (BLOCKED):
-    /// release builds send the link alone.
+    /// The text that goes with the link (Message and Share to…): `groups.invite.link.message`.
     func message(for link: URL) -> String {
-        AccountBlockedCopy.inviteLinkMessage(groupName: group?.name ?? "", link: link.absoluteString) ?? link.absoluteString
+        Copy.groupsInviteLinkMessage(groupName: group?.name ?? "", link: link.absoluteString)
     }
 
     /// "Turn off link sharing" confirmed: `revoke_invite`, applied at once and restored if the request fails.
