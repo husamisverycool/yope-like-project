@@ -13,6 +13,7 @@ import app.designsystem.generated.Tokens
 import app.ui.components.DayTile
 import app.ui.components.GroupedPosition
 import app.ui.components.ViewerTaps
+import app.ui.components.WaveformBars
 import app.ui.components.WeekStripOrder
 import app.ui.components.finePrintText
 import app.ui.components.stripTileShape
@@ -158,5 +159,45 @@ class ComponentLogicTest {
         assertEquals(appColorScheme(dark = false), appColorScheme(dark = false, trueBlack = true))
         assertEquals(Tokens.ColorsLight.globalBackgroundAndroid, Tokens.ColorsLight.globalBackgroundAndroidTrueBlack)
         assertNotEquals(Tokens.ColorsDark.globalBackgroundAndroid, Tokens.ColorsDark.globalBackgroundAndroidTrueBlack)
+    }
+
+    // C-36 voice waveform (owner decision 16)
+
+    @Test fun waveformBarCountFollowsTheWidth() {
+        // 154 pt at 2.0 + 2.1: 38 bars (Apple Messages draws 38).
+        assertEquals(38, WaveformBars.count(154f, 2f, 2.1f))
+        assertEquals(1, WaveformBars.count(2f, 2f, 2.1f))
+        assertEquals(0, WaveformBars.count(0f, 2f, 2.1f))
+        assertEquals(38, WaveformBars(List(100) { 5 }, 154f, 2f, 2.1f, 2f, 20f).heights.size)
+        assertEquals("never more bars than stored levels", 3, WaveformBars(listOf(1, 2, 3), 1000f, 2f, 2.1f, 2f, 20f).heights.size)
+    }
+
+    @Test fun waveformBarsTakeTheBucketPeakAndScaleToTheNotesLargestLevel() {
+        val levels = MutableList(100) { 0 }
+        levels[3] = 10
+        levels[50] = 20
+        val bars = WaveformBars(levels, 4 * 4.1f - 2.1f, 2f, 2.1f, 2f, 22f)
+        assertEquals(4, bars.heights.size)
+        assertEquals(12f, bars.heights[0], 1e-4f)
+        assertEquals(2f, bars.heights[1], 1e-4f)
+        assertEquals(22f, bars.heights[2], 1e-4f)
+    }
+
+    @Test fun waveformWithoutLevelsDrawsDots() {
+        val bars = WaveformBars(null, 154f, 2f, 2.1f, 2f, 20f)
+        assertEquals(38, bars.heights.size)
+        assertTrue(bars.heights.all { it == 2f })
+        assertEquals(bars.heights, WaveformBars(emptyList(), 154f, 2f, 2.1f, 2f, 20f).heights)
+    }
+
+    @Test fun waveformProgressSplitsTheBarUnderTheEdge() {
+        val total = 10 * 4.1f - 2.1f
+        val bars = WaveformBars(List(100) { 9 }, total, 2f, 2.1f, 2f, 20f)
+        val progress = (3 * 4.1f + 1f) / total
+        assertEquals(1f, bars.playedShare(2, progress))
+        assertEquals(0.5f, bars.playedShare(3, progress), 1e-4f)
+        assertEquals(0f, bars.playedShare(4, progress))
+        assertEquals(0f, bars.playedShare(9, 0f))
+        assertEquals(1f, bars.playedShare(9, 1f))
     }
 }

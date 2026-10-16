@@ -367,6 +367,8 @@ private fun ModeTitle(menu: ModeMenu, capMiddle: Dp, title: @Composable (Modifie
     val ink = GlyphInk.bounds(chevron)
     val box = Tokens.Sizes.onthisdayModeChevronWidth * (chevron.viewportWidth / ink.width)
     val lead = (Tokens.Sizes.onthisdayModeChevronGap - GlyphInk.leading(chevron, box)).coerceAtLeast(0.dp)
+    val open = menu.open.value
+    println("DBGTITLE " + open)
     Box {
         Row(
             Modifier
@@ -388,8 +390,8 @@ private fun ModeTitle(menu: ModeMenu, capMiddle: Dp, title: @Composable (Modifie
             )
         }
         SystemAppearance {
-            println("DBGMENU " + menu.open.value + " " + System.identityHashCode(menu.open))
-            DsDropdownMenu(menu.open.value, { menu.open.value = false }, menu.items)
+            println("DBGMENU " + open + " " + System.identityHashCode(menu.open))
+            DsDropdownMenu(open, { menu.open.value = false }, menu.items)
         }
     }
 }

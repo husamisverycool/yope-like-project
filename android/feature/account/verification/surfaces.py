@@ -512,10 +512,12 @@ def paywall():
                      (f"Continue fill ({mode})", "color.global.onSurfaceLight", t("color.global.onSurfaceLight"), cap["color"])]
         # The FREE pill (annual plan with the 1-week trial): its trailing edge against the card's.
         purple = lambda c: c[0] > 140 and c[2] > 140 and c[1] < 110
-        pill = M.extent(im, purple, (plan["left"], plan["top"], plan["left"] + plan["width"], plan["top"] + 60))
+        # The card is the screen width − 2 × the leading inset (the fill scan runs on into the peeking next card).
+        card_right = M.W - plan["left"]
+        pill = M.extent(im, purple, (plan["left"], plan["top"], card_right, plan["top"] + 60))
         if pill:
             rows.append((f"FREE pill trailing inset ({mode})", "paywall.size.planPillInset", t("paywall.size.planPillInset"),
-                         round(plan["left"] + plan["width"] - pill[2], 1), {"tol": 1.0}))
+                         round(card_right - pill[2], 1), {"tol": 1.0}))
     return [("Default (paywall/default-light, -dark)", rows)]
 
 
