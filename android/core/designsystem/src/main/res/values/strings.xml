@@ -623,6 +623,14 @@
     <string name="daily_capture_send" formatted="false">Send</string>
     <!-- Retro · daily.dualimage · new · SOURCED · args: name -->
     <string name="daily_dualimage_a11y_label">Back and front photos from %1$s</string>
+    <!-- Apple HIG · global · new · PLATFORM -->
+    <string name="global_a11y_loading" formatted="false">Loading…</string>
+    <!-- Retro · global · verbatim · SOURCED -->
+    <string name="global_a11y_newbadge" formatted="false">New</string>
+    <!-- Retro · global · adapted · SOURCED · args: position, count -->
+    <string name="global_a11y_pageposition">%1$s of %2$s</string>
+    <!-- Apple HIG · global · new · PLATFORM -->
+    <string name="global_a11y_unread" formatted="false">New activity</string>
     <!-- Apple HIG · groups.create · new · VERIFIED -->
     <string name="groups_create_back_accessibilitylabel" formatted="false">Back</string>
     <!-- Apple HIG · groups.create · new · VERIFIED -->
@@ -1309,8 +1317,8 @@
     <string name="safety_block_cancel" formatted="false">Cancel</string>
     <!-- Retro · safety.block · adapted · SOURCED -->
     <string name="safety_block_confirm" formatted="false">Yes, block</string>
-    <!-- Retro · safety.block · adapted · SOURCED -->
-    <string name="safety_block_done" formatted="false">Blocked</string>
+    <!-- Retro · safety.block · new · SOURCED · args: first_name -->
+    <string name="safety_block_done">Blocked %1$s</string>
     <!-- Retro · safety.block · verbatim · SOURCED -->
     <string name="safety_block_error" formatted="false">There was a problem. Please try again.</string>
     <!-- Retro · safety.block · verbatim · SOURCED -->
@@ -1321,8 +1329,8 @@
     <string name="safety_block_message">Blocking %1$s hides your photos, messages and reactions from each other in every group you share. They will not be notified.</string>
     <!-- Retro · safety.block · verbatim · SOURCED · args: first_name -->
     <string name="safety_block_title">Block %1$s?</string>
-    <!-- Retro · safety.block · adapted · SOURCED -->
-    <string name="safety_block_undone" formatted="false">Unblocked</string>
+    <!-- Retro · safety.block · new · SOURCED · args: first_name -->
+    <string name="safety_block_undone">Unblocked %1$s</string>
     <!-- Apple HIG · safety.report · verbatim · VERIFIED -->
     <string name="safety_report_cancel" formatted="false">Cancel</string>
     <!-- Retro · safety.report · verbatim · SOURCED -->

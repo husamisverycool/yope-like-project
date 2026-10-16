@@ -137,6 +137,10 @@ object Tokens {
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFF262626) else Color(0xFFF7F7F7)
         /** Retro · global.system · Android M3 error: error / destructive text and icons in M3 components · SOURCED — token `color.global.system.error` */
         val globalSystemError: Color = Color(0xFFEA3337)
+        /** Retro · global.system · Android M3 onError: content on the error colour · SOURCED — token `color.global.system.onError` */
+        val globalSystemOnError: Color = Color(0xFFFFFFFF)
+        /** Retro · global.system · Android M3 onPrimary: content on primary (switch thumb on, filled tonal content) · SOURCED — token `color.global.system.onPrimary` */
+        val globalSystemOnPrimary: Color = Color(0xFFFFFFFF)
         /** Retro · global.system · Android M3 on-surface: list item labels, dialog headline · SOURCED — token `color.global.system.onSurface` */
         val globalSystemOnSurface: Color
             @Composable @ReadOnlyComposable get() = if (LocalDsDarkTheme.current) Color(0xFFFFFFFF) else Color(0xFF000000)
@@ -2218,6 +2222,8 @@ object Tokens {
         val globalSurfaceLight: Color = Color(0xFFFFFFFF)
         val globalSurfaceSecondaryAndroid: Color = Color(0xFFF7F7F7)
         val globalSystemError: Color = Color(0xFFEA3337)
+        val globalSystemOnError: Color = Color(0xFFFFFFFF)
+        val globalSystemOnPrimary: Color = Color(0xFFFFFFFF)
         val globalSystemOnSurface: Color = Color(0xFF000000)
         val globalSystemOnSurfaceVariant: Color = Color(0xFF49454F)
         val globalSystemOutline: Color = Color(0xFF79747E)
@@ -2273,6 +2279,8 @@ object Tokens {
         val globalSurfaceLight: Color = Color(0xFFFFFFFF)
         val globalSurfaceSecondaryAndroid: Color = Color(0xFF262626)
         val globalSystemError: Color = Color(0xFFEA3337)
+        val globalSystemOnError: Color = Color(0xFFFFFFFF)
+        val globalSystemOnPrimary: Color = Color(0xFFFFFFFF)
         val globalSystemOnSurface: Color = Color(0xFFFFFFFF)
         val globalSystemOnSurfaceVariant: Color = Color(0xFFCAC4D0)
         val globalSystemOutline: Color = Color(0xFF938F99)

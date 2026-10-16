@@ -444,6 +444,17 @@
       "method": "APK colour constant (light and dark identical)",
       "precision": "exact"
     },
+    "color.global.system.onPrimary": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global.system",
+      "type": "color",
+      "value": "#FFFFFF",
+      "element": "Android M3 onPrimary: content on primary (switch thumb on, filled tonal content)",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt M3 ColorScheme d42.u / d42.v / d42.w onPrimary #FFFFFF — design/research/retro-package-copy-motion.md §3.2",
+      "method": "APK colour constant (light, dark and true-black schemes identical)",
+      "precision": "exact"
+    },
     "color.global.system.surface": {
       "level": "SOURCED",
       "source_app": "Retro",
@@ -481,6 +492,17 @@
       "element": "Android M3 error: error / destructive text and icons in M3 components",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt error #EA3337 (light, dark, true black) — design/research/retro-package-copy-motion.md §3.2",
       "method": "APK colour constant",
+      "precision": "exact"
+    },
+    "color.global.system.onError": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global.system",
+      "type": "color",
+      "value": "#FFFFFF",
+      "element": "Android M3 onError: content on the error colour",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt M3 ColorScheme d42.u / d42.v / d42.w onError #FFFFFF — design/research/retro-package-copy-motion.md §3.2",
+      "method": "APK colour constant (light, dark and true-black schemes identical)",
       "precision": "exact"
     },
     "color.global.system.primaryContainer": {

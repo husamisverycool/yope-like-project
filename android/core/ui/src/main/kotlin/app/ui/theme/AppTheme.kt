@@ -32,6 +32,7 @@ import app.ui.text.TextRoles
 /** Light M3 scheme from the `color.global.system.*` light values. */
 val AppLightColorScheme: ColorScheme = lightColorScheme(
     primary = Tokens.ColorsLight.globalSystemPrimary,
+    onPrimary = Tokens.ColorsLight.globalSystemOnPrimary,
     primaryContainer = Tokens.ColorsLight.globalSystemPrimaryContainer,
     // color.global.system.primaryContainer / .secondaryContainer notes: on-container #000000 / #FFFFFF,
     // the values of color.global.system.onSurface.
@@ -46,6 +47,7 @@ val AppLightColorScheme: ColorScheme = lightColorScheme(
     onSurfaceVariant = Tokens.ColorsLight.globalSystemOnSurfaceVariant,
     outline = Tokens.ColorsLight.globalSystemOutline,
     error = Tokens.ColorsLight.globalSystemError,
+    onError = Tokens.ColorsLight.globalSystemOnError,
     surfaceContainerHigh = Tokens.ColorsLight.globalSystemSurfaceContainerHigh,
     surfaceContainerLow = Tokens.ColorsLight.globalSystemSurfaceContainerLow,
 )
@@ -53,6 +55,7 @@ val AppLightColorScheme: ColorScheme = lightColorScheme(
 /** Dark M3 scheme from the `color.global.system.*` dark values. */
 val AppDarkColorScheme: ColorScheme = darkColorScheme(
     primary = Tokens.ColorsDark.globalSystemPrimary,
+    onPrimary = Tokens.ColorsDark.globalSystemOnPrimary,
     primaryContainer = Tokens.ColorsDark.globalSystemPrimaryContainer,
     onPrimaryContainer = Tokens.ColorsDark.globalSystemOnSurface,
     secondaryContainer = Tokens.ColorsDark.globalSystemSecondaryContainer,
@@ -64,6 +67,7 @@ val AppDarkColorScheme: ColorScheme = darkColorScheme(
     onSurfaceVariant = Tokens.ColorsDark.globalSystemOnSurfaceVariant,
     outline = Tokens.ColorsDark.globalSystemOutline,
     error = Tokens.ColorsDark.globalSystemError,
+    onError = Tokens.ColorsDark.globalSystemOnError,
     surfaceContainerHigh = Tokens.ColorsDark.globalSystemSurfaceContainerHigh,
     surfaceContainerLow = Tokens.ColorsDark.globalSystemSurfaceContainerLow,
 )

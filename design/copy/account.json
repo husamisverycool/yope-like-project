@@ -3213,24 +3213,24 @@
       "level": "VERIFIED"
     },
     "safety.block.done": {
-      "text": "Blocked",
-      "origin": "adapted",
+      "text": "Blocked {first_name}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "safety.block",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_report_unfriended` ('Unfriended'), references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `share_to_journal_error_same_journal` ('Already posted to %1$s': a state line with its object)",
+      "pattern": "retro.voice.confirmation",
+      "level": "SOURCED",
+      "notes": "Retro's past-tense state line with the person named; {first_name} kept for the component that shows it (C-26)."
+    },
+    "safety.block.undone": {
+      "text": "Unblocked {first_name}",
+      "origin": "new",
       "source_app": "Retro",
       "surface": "safety.block",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_report_unfriended` ('Unfriended')",
       "pattern": "retro.voice.confirmation",
       "level": "SOURCED",
-      "notes": "Verb swap unfriend → block."
-    },
-    "safety.block.undone": {
-      "text": "Unblocked",
-      "origin": "adapted",
-      "source_app": "Retro",
-      "surface": "safety.block",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_report_unfriended`",
-      "pattern": "retro.voice.confirmation",
-      "level": "SOURCED",
-      "notes": "Verb swap unfriend → unblock."
+      "notes": "As safety.block.done."
     },
     "safety.block.error": {
       "text": "There was a problem. Please try again.",
@@ -3818,6 +3818,46 @@
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `onboarding_landing_error_try_again`",
       "pattern": "retro.voice.button",
       "level": "SOURCED"
+    },
+    "global.a11y.newBadge": {
+      "text": "New",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "global",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `friend_tab_suggestion_new_label`; design/components.md C-24 ('new' badge, never a count)",
+      "pattern": "platform.a11yLabel",
+      "level": "SOURCED",
+      "notes": "Accessibility label / value of the C-24 'new' badge."
+    },
+    "global.a11y.unread": {
+      "text": "New activity",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "global",
+      "evidence": "design/copy-patterns.md platform.a11yLabel; design/components.md C-04 ('the unread dot adds a value (\"new activity\"), never a count'); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `activity_tab_new_items_header` ('New')",
+      "pattern": "platform.a11yLabel",
+      "level": "PLATFORM",
+      "notes": "accessibilityValue of a tab that shows the C-04 unread dot."
+    },
+    "global.a11y.pagePosition": {
+      "text": "{position} of {count}",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "global",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_progress_badge_template` ('%1$d of %2$d')",
+      "pattern": "retro.voice.terse-numbers",
+      "level": "SOURCED",
+      "notes": "Placeholders renamed. A position in a pager or viewer (C-22 position pill, C-31 page dots) — never a count of likes or views."
+    },
+    "global.a11y.loading": {
+      "text": "Loading…",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "global",
+      "evidence": "design/copy-patterns.md retro.voice.progress ('Updating…', 'Downloading…'); design/components.md C-28 (busy state announced: live region 'Loading')",
+      "pattern": "retro.voice.progress",
+      "level": "PLATFORM",
+      "notes": "Announcement / label of C-28 loading forms and busy capsules (C-05). Retro has no 'Loading' string."
     }
   }
 }

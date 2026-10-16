@@ -1031,3 +1031,191 @@ comment avatar 30 → 31.2, viewer header avatar 39 → 40.7, position pill 22 �
 **L-4 — The recap card is white in both appearances (social RS-17 over memory RM-8).** Retro's recap render shows the
 white card with black text on a dark-mode screen; `layout.year.story.recapCard` background → `color.global.surfaceLight`,
 footer text → `color.global.onSurfaceLight`. week.recap (social) and year.story (memory) share this one definition.
+
+---
+
+## Redesign — Account (RA-*)
+
+Pass: redesign Pass 2, account group, 2026-10-16 (docs/REDESIGN_BRIEF.md "Pass 2"). Owns `design/tokens/account.json`
+(66 tokens: 47 SOURCED, 10 PLATFORM, 9 VERIFIED, 0 BLOCKED — was 171), `design/tokens/invite.json` (40 tokens: 36 SOURCED,
+3 PLATFORM, 1 VERIFIED — was 110), `design/copy/account.json` (411 strings: 359 SOURCED, 50 VERIFIED, 2 PLATFORM; 193 verbatim,
+98 adapted, 120 new — was 351; includes 4 `global.a11y.*` component strings), `design/copy/invite.json` (30 strings: 25 SOURCED, 5 VERIFIED — was 31), the specs
+`design/surfaces/{auth.phone, auth.code, auth.agegate, auth.profile, onboarding.permission.notifications,
+onboarding.permission.camera, onboarding.permission.photos, onboarding.permission.contacts, onboarding.widget, groups.list,
+groups.create, groups.invite, groups.screen, groups.settings, settings.root, settings.notifications, settings.account,
+settings.blocked, safety.report, safety.block, system.permissions, paywall, invite.web, invite.appclip}.md` and this
+section. `invite.json` belongs to this group because `invite.web` / `invite.appclip` do. Inputs: `design/components.md`
+(C-01 … C-35), `design/copy-patterns.md`, `design/research/retro-visual.md` (RV), `design/research/retro-package-copy-motion.md`
+(RP), `references/auto/retro/` (APK strings, web CSS and captures, RAW landing / paywall, TC press renders), the platform
+research. Rule: Retro is the identity and the voice; Locket (country code, widget steps), the platform (permissions,
+purchases, App Clips, alerts, menus) and this app's API keep the mechanics. Strings blocked only by `{app_name}`: 20 → 7.
+
+### Evidence gathered in this pass
+
+All measurements with `python3 -I` (PIL) on the files below; scales as in RV §0.2 unless stated.
+
+| what | source (coordinates) | used for |
+|---|---|---|
+| Landing layout: wordmark ink y1025–1176, tagline y1234–1313, capsule y2032–2211, link y2273–2314, legal lines y2399–2437 / 2463–2502 on 2622 px (3.000 px/pt) | `references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png` | `auth.phone.size.wordmarkToTagline` 19.3, `.capsuleToLink` 20.7, `.linkToLegal` 28.4, `.legalToBottom` 40, `auth.phone.layout.landingBlock` centre 0.446 |
+| Mobile wordmark 4rem | `references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css` `.page_largeRetroWordmark` | `auth.phone.fontSize.wordmark` 64 |
+| Album detail: screen x2469–3281 (2.0687 px/pt); cover x2696–3054 / y824–1332; title ink y1407–1455 (cap 23.2); meta y1488–1508; capsules y1563–1638; dated header y1718–1743 | `references/auto/retro/press/tc-2024-04-journals-1.webp` phone 3 | `groups.screen.size.coverWidth` 173.5, `.coverHeight` 246, `.coverToTitle` 36.7, `.titleToMeta` 16, `.metaToActions` 26.6 |
+| Cover drop shadow: luminance profiles below / right / left / above the cover on white (201 → 255 over 27 pt; 216 → 255 over 20; 233 → 255 over 14; 241 → 255 over 7); least-squares fit of an offset Gaussian box (sse 0.0021) | same file | `groups.screen.shadow.cover` {#000000, σ 8.5, x 3, y 10, opacity 0.25} — closes the "album cover drop shadow — unmeasured" note of `layout.global.elevation` |
+| Link-sharing sheet (2.0687 px/pt): cover x559–1141 / y1185–1999 (phone 1), x1570–2152 / y1017–1830 (phone 2); note y2059–2084 / 1890–1916, darkest (118,118,118); eye x1567–1602, text from x1615; grouped fill (241,241,241) y2022–2264, x1496–2226; '↻' x1533; 'Reset link' x1605 (cap 25 px); red row (234,51,55); share circles x1515–1646, 1702–1833, 1889–2020, 2076–2207 (63.8 pt, fill (241,241,241)); label ink y2455–2475 | `references/auto/retro/press/tc-2024-04-retro-journals-5.png` | `groups.invite.size.coverWidth` 281.8, `.coverHeight` 393.5, `.coverToNote` 29, `.color.note` #767676, `.noteGlyphGap` 6.3, `.menuRowHeight` 58.7, `.menuGlyphInset` 17.9, `.menuTextInset` 52.7, `.targetPitch` 90.4, `.targetLabelGap` 11.6; `settings.root.size.rowHeight` 58.7 |
+| Paywall (Display P3 → sRGB): media card edges x231 / 974 at y600, top y411; top-left corner inset profile (circle fit r 82 px, residual 6 px²); title ink y235–270; headline y1051–1121; description 'G' y1180–1217, line 2 x-height y1251–1277; plan-card edge alpha estimates 0.75–0.97 per channel (a blurred material, not a flat alpha); footer brightest (255,238,210) over (150,102,84) | `references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png` | `paywall.size.mediaCardWidth` 248, `paywall.radius.mediaCard` 27, description = text role `textButton` (17), plan card opaque (`paywall.layout.planCard`), footer white |
+| /u/ invite page (390 CSS px at 3×): card edge x18 / 1151, top y18, bottom y1973; top-left corner inset profile (circle r ≈ 108–110 px); pill x132–1038 / y1614–1782; backdrop samples #4F241E, #57231C, #61342B, #6B4740 | `references/auto/retro/web/retro.app-u-nathan-iphone.png` | `invite.web.size.cardInset` 6, `invite.web.radius.card` 36, pill geometry check, contrast samples |
+| /u/ page CSS (mobile + desktop), meta tags, OG text | `references/auto/retro/web/retro.app-5bff8a0be69f7ec7.css`, `…/retro.app-web-copy-excerpts.txt` | every other `invite.web.*` token; `invite.web.layout.linkPreview`; App Clip card display |
+| OG share image 600 × 600: avatar x258–340 / y208–290; name ink y309–348; domain ink y369–389, brightest (187,197,201); corners (0–3, 14–24, 33–45) | `references/auto/retro/web/retro.app-og-userogsquare-nathan.png` | `invite.web.layout.ogImage` |
+| Retro strings (keys cited per entry): sign-up form (`onboarding_form_input_*`, `onboarding_landing_*`, `error_message_*`), album flow (`journal_*`), settings (`settings_*`, `notification_settings_*`, `edit_profile_*`, `delete_account_*`), report / block (`media_viewer_report_*`, `profile_report_*`, `user_profile_*`), permissions (`*_permission_upsell_*`), widgets (`widget_*`, `home_widget_nux_upsell_*`), paywall (`retro_membership_*`, `redeem_code_sheet_*`), web (`/u/`, `/j/`, `/downloads`) | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt`, `references/auto/retro/web/retro.app-web-copy-excerpts.txt` | all copy |
+
+### Conflicts and resolutions
+
+| # | topic | values and sources | resolution | rule / evidence | status |
+|---|---|---|---|---|---|
+| RA-1 | Visual references | Yope (auth, groups), Locket (paywall, widget page), Partiful (invite page), HIG-only settings | Retro per surface: landing LAND; Albums list / templates / album detail / link sharing (ED-W3, JED, TC-J1, TC-J5); Settings sheet (VID-SET); paywall PAY; `/u/` page; Yope / Locket / Partiful visual tokens removed (247) | docs/REDESIGN_BRIEF.md; docs/SURFACES.md | resolved |
+| RA-2 | Sign-up form screens | not captured (RV §2 rows 36–41); only the APK order PHONE_NUMBER → AUTH_CODE → USER_NAME → FULL_NAME and hints | onboarding form composition: C-02 back, display title (`displayMedium`) at C-01's `titleTop`, explanation as C-19's secondary line, C-12 field at `titleToContent`, C-05 above the keyboard; the same frame for every `auth.*` step | composition rule (brief); APK hints verbatim | resolved; capture open |
+| RA-3 | Landing | LAND is dark RAW only; "already have an account?" leads Retro's returning users elsewhere | dark geometry used in light; the link is kept (verbatim) and opens the same phone step (one-time-code sign-in serves both) | LAND | resolved; light capture open |
+| RA-4 | Age confirmation | Retro: "By continuing, I confirm that I am %1$d or older…" on the landing; FTC COPPA neutral age screen (no cutoff before entry) | `auth.agegate` keeps the neutral date entry; the landing line drops the age clause ("By continuing, I agree to the Terms and Privacy Policy.") | docs/PLATFORM_CONSTRAINTS.md §9 (legal) over Retro | resolved |
+| RA-5 | Sign-up errors | Locket message-only alert (gap fill G2-5) vs Retro titled dialogs ("Code Expired" / message) with recoveries ("Send a new code", "Edit code", "Get help") | native alert with Retro's title + message pairs and the two recoveries; "Get help" not built (no destination) | APK-S `error_message_*`, `onboarding_landing_error_*` | resolved |
+| RA-6 | Loading HUD | Yope "Loading" HUD (#0C0C0C, 100 pt) | removed; Retro shows busy controls and placeholders: C-05 busy capsule, C-28 placeholders / platform indicator; announcement "Creating…" | C-28; APK-S `journal_profile_share_to_week_generating_title` | resolved |
+| RA-7 | Tab bar | Retro 2026: Home · Friends · Rewind · Activity · Profile (5); this app: camera · groups · walls · me | the app's destinations kept, drawn as C-04 with Retro's glyphs by role (house, person.2, person.crop.circle; camera outline); no unread dot (no Activity tab); media variant while the camera tab shows (capture RC note) | C-04; RV §3.6 | resolved; Rewind / Activity tabs = IA decision for the lead / owner |
+| RA-8 | Group list | Retro root Albums list (2024, no search) vs pushed list (2025, 52-pt search) | root variant (no search) with the serif title, C-15 rows, the new-album glyph and "Ideas to Get Started" mapped to `group_kind`; template thumbnails are Fill placeholders (Retro's photos are its assets) | ED-W3, TC-J1, JED | resolved |
+| RA-9 | Group screen container and header | Retro album detail is a page sheet (TC-J1); header glyphs book + chat (H22); album capsules Settings / Share / + vs profile Recaps / Share Profile / gear | pushed screen (the hub deep links return to); header book → `albums.list` + chat → `chat.thread`; capsules Recaps / Invite / gear (profile pattern; the album "+" becomes the strip's add tile); week history from the week header's chevron (C-20's "•••" menu was not captured) | TC-J1, H22, ST-02; docs/API.md §9.6 | resolved |
+| RA-10 | Group week and members | album detail (dated grid only) vs home (strip + friend cards) | album header + this week's strip (C-17, add tile; empty-day tiles only for an empty week) + members' weeks as C-18 cards + earlier photos as the dated 3-column grid; Retro's meta counts → member avatar stack; onthisday / year.story entry cards sit in the same pager (Retro puts its Rewind and Year-in-Photos cards in the home feed), the birthday request row above the week (memory group's request) | TC-J1, H43, ST-01; APK-S `home_rewind_upsell_feed_card_*` | resolved (feed-card image not captured: composition) |
+| RA-11 | Invite link | old: a link created on first share; Retro: explicit "Turn on link sharing", then Reset / make private + share targets (QR Code, Copy Link, Instagram, Share to…) | explicit turn-on (create_invite), Reset = revoke + create, Turn off = revoke (red); targets Message / Copy Link / Share to… (Instagram is a third-party brand; Retro's QR card art and copy are brand assets → owner); expiry shown as a date | TC-J5; APK-S `journal_settings_link_sharing_*`, `journal_broadcast_invite_*` | resolved; QR = owner |
+| RA-12 | Report reasons | BLOCKED (moderation categories, owner) | Retro's lists: posts / messages "I don't like it · Nudity or sexual activity · Other"; people / groups "It's impersonating someone · It's inappropriate · Other"; "I don't like it" files nothing and offers Next Steps — Retro's "Send a message" / "Unfriend" become "Leave the group" / "Block" (no DMs or friendships here); no free-text details (Retro has none) | APK-S `media_viewer_report_*`, `profile_report_*` | closed; owner may extend categories (docs/API.md §12 item 19) |
+| RA-13 | Toasts | Yope lime toast tokens (`safety.block.layout.toast`, `.duration.toast` 2000 ms, used app-wide) | removed; C-26 (Android Toast LENGTH_SHORT; iOS accessibility announcement, no custom toast until Retro's iOS toast is captured) | C-26; RP §3.9 | resolved |
+| RA-14 | Settings rows | iOS `List(.insetGrouped)` + M3 ListItem heights (56 / 72 / 88 dp) | Retro's own C-14 rows on both platforms; one-line row height 58.7 from TC-J5 (the only measured Retro grouped row); M3 list-item tokens removed | VID-SET, TC-J5, APK-X `pik` | resolved; raw Settings capture open |
+| RA-15 | Menu labels | `retro.voice.menu-labels` Sentence case vs Retro's overflow items in Title Case ("Report Post", "Block Profile", "Remove from Album"); HIG ellipsis for "more input follows" | Retro's verbatim Title-Case items; no ellipsis (Retro uses none) | a verbatim string on the analog beats the pattern (A-8 precedent); R-20 | resolved |
+| RA-16 | Confirm buttons | HIG verbs ("Delete", "Leave") vs Retro "Yes, delete" | "Yes, <verb>" for every app-drawn confirmation (leave, remove, block, turn off, delete, sign out); titles as action questions (R-21) | APK-S `edit_address_delete_confirmation_*` | resolved |
+| RA-17 | Paywall | Locket Gold (gradient, icon tile, perk stack, plan sheet, yellow CTAs; A-1) | Retro PAY: blurred backdrop, title row + glass close, benefit media card + serif headline, plan-card pager, footer; icon tile (BLOCKED `paywall.layout.iconTileArt`) and perk emoji (BLOCKED `paywall.perk.history.emoji`) removed — Retro has neither; plan card opaque white with the light capsule in both appearances; "No thanks!" → close circle; purple `color.global.premium` unchanged, used only on the trial / locked pills (owner); bullets that make a popularity claim or promise pausing dropped | PAY; APK-S `retro_membership_*` | resolved; purple = owner |
+| RA-18 | Paywall media | Retro: per-benefit graphics (its assets) | the person's newest group photo (real content) as the media card and the backdrop source; none → no card, black backdrop | do-not-copy assets | resolved |
+| RA-19 | Invite page | Partiful page (theme colour, auto-fit title, member list, gate card, 1200 × 630 OG) | Retro `/u/`: blurred-photo card (inset 6, r 36), 112 avatar, 32/32 serif headline, 62 % line, translucent 56-pt pill, 8-px footer; desktop QR above 840 px; 600 × 600 OG; same in both appearances (Retro's web has no dark scheme); added: the members' avatar stack (SPEC_FLAGS T7 "who you're joining") | RP §7; retro.app CSS | resolved |
+| RA-20 | App Clip | Partiful-style join sheet (name + phone) | the clip shows the `/u/` card, then the app's own sign-in screens (auth.* B, code, age, name), `join_group`, a "Welcome to {group_name}!" state and SKOverlay | RP §7; HIG App Clips | resolved |
+| RA-21 | Purpose strings | Retro's iOS strings not captured (no IPA); Retro's in-app equivalents name the app | kept HIG sentences "The app …" (no `{app_name}`, so Info.plist ships); Android rationale dialogs in Retro's permission voice with "We" (Retro's own first person) | HIG; APK-S | resolved |
+| RA-22 | App name in copy | Retro uses its name freely ("on Retro") | dropped wherever a string must ship before the app is named (age refusal, rationale messages, premium subtitle, notifications-off line, web body / opening line); 7 strings keep `{app_name}` (title, premium row, share message, widget steps, document title, Play line) | CONVENTIONS §4 | resolved |
+| RA-23 | Group kinds ↔ templates | Retro Event / Friends / Couple / Kid(s) / Hobbies / Anything else | friends ← Friends (verbatim), family ← Kid(s) / Couple (noun swap), roommates (new, Event pattern), custom ← "Or anything else" | APK-S `journal_tab_suggestion_*`; docs/API.md `group_kind` | resolved |
+| RA-24 | Name and photo | one Yope screen (name + avatar) vs Retro FULL_NAME then PROFILE_PHOTO pages | `auth.profile` step 1 (name form), step 2 (photo page: 112 avatar, "Choose photo", "Maybe Later"); Retro's skip nudge not copied; the App Clip runs step 1 only | RP §6.3 | resolved |
+| RA-25 | Contacts ask | Yope dismissible card (Android) | Retro "No Contacts Access" C-27 block inside the invite sheet's Contacts section (part of the scroll — no dismiss needed); iOS system controls unchanged (A-5) | APK-S `contact_permission_upsell_*` | resolved |
+| RA-26 | Mute semantics | Yope "mute this group" (on = muted) vs Retro "Album updates" (on = updates on) | Retro's: new key `groups.settings.notifications.updates` (on = not muted); `groups.settings.notifications.mute` removed | APK-S `journal_settings_notifications_title` | resolved |
+| RA-27 | Two cover sizes | album detail 173.5 × 246 vs link-sharing sheet 281.8 × 393.5 (same 0.71 proportion) | each surface keeps its own; the create form uses the detail size | TC-J1, TC-J5 | resolved |
+| RA-28 | Note colour on the link sheet | measured #767676 (TC-J5) vs global `textSecondary` #999999 | surface token `groups.invite.color.note` in light (4.54:1 pass); dark keeps `textSecondary` (Retro's dark secondary) | surface measured differently (brief) | resolved |
+
+### BLOCKED items
+
+- **Closed:** `safety.report.layout.reasons` (Retro's reason lists, RA-12); `paywall.layout.iconTileArt` (no icon tile in
+  Retro's paywall, RA-17); `paywall.perk.history.emoji` (no emoji on Retro's benefits, RA-17); `auth.phone.layout.countryCode`
+  and `auth.phone.layout.inlineError` stay sourced (Locket mechanics in C-12 / Retro's dialog pairs).
+- **Still BLOCKED:** none at the token or string level. Seven strings wait for the app's name (`{app_name}`). Owner
+  assets: the landing wordmark / app mark (`auth.phone.fontSize.wordmark` gives its size only), App Clip card art.
+
+### Contrast failures (reported, not adjusted — Retro's palette, `design/CONTRAST.md`)
+
+Light `textSecondary` text on the page / fills (rows 3, 4, 11; tagline, links, fine print, subtitles, footers), light
+inactive tab (row 22) and dark tab state (row 23), fills vs page (rows 13–14), empty-day tile text (rows 15–16), red
+text on rows (rows 31–33), Android meta (rows 5–6), M3 dialog actions (failure 6). Surface pairs: paywall card subtitle
+#757A7D on white 4.34:1 and footnote #A5ABAF 2.32:1; invite page line white 62 % on a light backdrop (#8A4A3A) 3.67:1;
+pill fill vs backdrop 1.80:1 (non-text); desktop line black 50 % 4.00:1 at 20 px (passes as large text).
+
+### Problems found (for Pass 3 / 4 and other groups)
+
+- **Removed keys still referenced by code** (code scan of `ios/`, `android/`, `web/`, `backend/worker/`, generated files
+  excluded — 242 of 247 removed tokens and 64 of 66 removed strings):
+  - Tokens: `auth.phone.`{fontSize.subtitle, layout.subtitle, layout.legalFooter}; `auth.code.`{fontSize.textLink,
+    fontWeight.textLink}; `groups.create.`{color.field, fontSize.fieldText, fontWeight.fieldText, fontSize.title,
+    fontWeight.title, color.buttonDisabledFill, color.buttonDisabledLabel, size.cover.width, size.cover.height,
+    radius.cover, color.cover, size.coverGlyph, size.sheetTopToTitle, size.titleToContent, size.mediaToField,
+    size.fieldToButton, layout.titleAccent, color.hud, size.hud, fontSize.hudLabel}; `groups.list.`{color.card,
+    size.cardHeight, size.avatarInset, size.cameraGlyph, size.coverHeight, color.headerCircleOverPhoto};
+    `groups.screen.`{size.cardHeight, size.cardMarginH, size.cardGap, radius.card, size.chatPillWidth,
+    size.chatPillHeight, color.chatPill, fontSize.chatPill, radius.lightPill, size.lightPillHeight, size.profileAvatar,
+    fontSize.profileName, fontWeight.profileName, size.segmentHeight, size.segmentMarginH, size.segmentInset,
+    color.segmentTrack, fontSize.segmentLabel, fontWeight.segmentLabel, layout.background}; `groups.invite.`{size.pickerRowPitch,
+    fontSize.pickerName, fontWeight.pickerName}; `onboarding.permission.notifications.`{color.secondaryButton, size.buttonGap};
+    `onboarding.permission.contacts.`{color.card, size.cardHeight, size.cardMarginH, fontSize.cardTitle, fontWeight.cardTitle,
+    fontSize.cardDetail, size.cardButtonWidth, size.cardButtonHeight, layout.card}; `onboarding.widget.`{color.backgroundTop,
+    color.backgroundBottom, fontSize.title, fontWeight.title, color.title, fontSize.step, fontWeight.step, lineHeight.step,
+    color.step, size.ctaHeight, color.cta, color.ctaLabel, fontSize.ctaLabel, size.ctaPaddingH, size.ctaArrowGap,
+    size.ctaArrow, icon.ctaArrow}; `paywall.`{color.backgroundTop, color.backgroundUpper, color.backgroundLower,
+    color.backgroundBottom, layout.iconTileArt, fontSize.title, color.title, fontSize.subtitle, lineHeight.subtitle,
+    color.subtitle, size.perkHeight, size.perkMarginH, size.perkGap, radius.perkOuter, radius.perkInner, color.perk,
+    size.perkIcon, size.perkTextInset, fontSize.perkTitle, fontWeight.perkTitle, color.perkTitle, fontSize.perkSubtitle,
+    color.perkSubtitle, size.ctaHeight, color.cta, fontSize.ctaLabel, color.ctaLabel, icon.ctaUnlock, fontSize.dismiss,
+    color.dismiss, layout.planSheet, color.planSheetTop, color.planSheetBottom, fontSize.planSheetTitle,
+    lineHeight.planSheetTitle, size.planMarginH, size.planSelectedHeight, size.planHeight, size.planBorder, color.planBorder,
+    color.planSelected, color.plan, fontSize.planName, fontSize.planDetail, color.planDetail, size.subscribeHeight,
+    color.subscribe, fontSize.subscribeLabel, color.subscribeLabel}; `settings.root.`{size.listItemOneLine.android,
+    size.listItemPaddingH.android, size.listItemPaddingV.android, size.listItemAvatar.android, size.divider.android};
+    `settings.blocked.layout.empty`; `safety.block.`{layout.toast, duration.toast}; `invite.appclip.`{fontSize.sheetInput,
+    opacity.sheetPlaceholder.light, opacity.sheetPlaceholder.dark, fontSize.sheetHelper, opacity.sheetHelper.light,
+    opacity.sheetHelper.dark}; and every Partiful-era `invite.web.*` token (`dimension.*`, `color.text.*`, `color.theme.default`,
+    `layout.theme*`, `font`, `lineHeight.default`, `opacity.*`, `layout.text`, `layout.link`, `fontSize.title.*`,
+    `count.title.maxLines`, `layout.title*`, `fontWeight.*`, `letterSpacing.title`, `radius.*`, `layout.cover`,
+    `fontSize.sectionHeader`, `fontSize.button.medium`, `blur.*`, `color.button.filled.*`, `duration.button.*`,
+    `easing.button`, `color.gateCard.*`, `fontSize.detail`, `icon.lock`, `icon.getApp`, `layout.state*`,
+    `fontSize.state.*` — 100 names in `web/src/render/css.ts`, `web/scripts/verify.ts`, `web/src/contrastReport.ts`,
+    `web/src/titleFit.ts`, `web/src/theme.ts`, `web/src/images.ts`, `web/src/render/pages.ts`, `web/src/render/icons.ts`,
+    the iOS `Features/Account/Shared/InvitePreview/*` views and `android/…/account/invite/InviteJoinScreen.kt`).
+  - Copy: `auth.phone.toast.codeSent`; `auth.code.offline.detail`; `auth.agegate.offline.detail`; `auth.profile.offline.detail`;
+    `onboarding.permission.contacts.`{card.title.friends, card.title.family, card.title.roommates, card.title.custom,
+    card.dismissAccessibilityLabel}; `groups.list.`{cover.accessibilityLabel, error.detail, error.retry};
+    `groups.create.hud.loading` (11 files); `groups.invite.title.`{friends, family, roommates, custom};
+    `groups.screen.`{header.accessibilityLabel, photo.more.accessibilityLabel, photo.menu.open, memberJoined,
+    profile.more.accessibilityLabel, profile.segment.pics, profile.segment.wall, profile.segment.recaps, menu.shareInvite,
+    menu.settings, menu.leave, menu.report, error.detail, error.retry}; `groups.settings.`{notifications.mute, shareInvite};
+    `settings.blocked.retry`; `safety.report.`{explanation, details.placeholder, submit, sent.message, sent.messageGroup,
+    sent.block, sent.done}; `paywall.`{subtitle, perk.video.emoji, perk.widgets.emoji, perk.history.emoji, perk.export.emoji,
+    cta, dismiss, plans.title, plans.selected.accessibilityLabel, legal.renews}; `invite.web.`{members.viewAll, gate.title,
+    gate.body, state.glyph, state.glyphLabel}; `invite.appclip.`{sheet.name, sheet.phone, sheet.helper, sheet.cancel,
+    sheet.continue, join, full.glyph, full.glyphLabel}.
+  - Files: the account feature on both platforms (`ios/App/Sources/Features/Account/**`, `ios/App/Sources/Screens/{GroupsHomeScreen,GroupScreen}.swift`,
+    `android/feature/account/**`), shared components that borrowed account tokens (`ios/App/Sources/Components/{FormField,
+    PrimaryButton, LoadingHUD, Toast, PermissionCard, LightPill, EmptyStateView, SegmentedPills, OnboardingTitle,
+    TextRoles, CheckRow, HeaderCircleButton, FloatingTabBar, BlockConfirmation, StorageImage, DesignGaps}.swift`,
+    `android/core/ui/…/{components/{Buttons, LoadingHud, PermissionCard, EmptyState, Selection, SegmentedControl, Avatar},
+    text/TextRoles, system/SystemList, paywall/PaywallGate}.kt`), the memory / social / capture screens that reused them
+    (`BirthdayDateField`, `MemoryControls`, `MemoryUi.kt`, `WeekViews`, `SocialStyle`, `SocialServices`, `EditScreen.kt`,
+    `PhotoViewerScreen.kt`, `ChatThreadView`, `PhotoViewerView`), tests (`ios/AppTests/Account/*`, `android/…/account/src/testDebug/*`,
+    `ios/AppTests/Social/SocialSnapshotTests.swift`, `backend/worker/test/unit/copy-tokens.test.ts`) and the web page.
+    Their replacements are components: C-12 field, C-05 capsule (busy / disabled), C-28 loading, C-26 toast, C-27 empty /
+    permission block, C-06 / C-09 pills, C-29 native segmented / menus, C-14 rows, C-04 tab bar.
+- **Kept keys whose placeholders changed** (Swift / Kotlin signatures change): `groups.list.row.sentPic` and `.newPic`
+  (`{time}` dropped), `groups.screen.photo.accessibilityLabel` (`{time}` → `{date}`), `groups.screen.created.detail`
+  (`{names}` dropped), `groups.settings.members.more.accessibilityLabel` (`{first_name}` dropped),
+  `safety.report.title.user` / `.group` (name dropped), `groups.invite.link.label`
+  and `invite.web.members.title` (`{group_name}` added), `paywall.plans.yearly.detail` (`{monthly_equivalent}` → `{yearly_price}`).
+- **Keys that left BLOCKED** (now in `Copy`, no longer in `BlockedCopy` — the iOS `AccountBlockedCopy` wrappers and Android
+  `BlockedValues.kt` read them from the debug-only tables): `auth.agegate.underAge.title`, `settings.root.premium.subtitle`,
+  `settings.notifications.off.footer`, `system.permissions.rationale.{camera,microphone,notifications,contacts}.message`,
+  `paywall.welcome.body`; token `safety.report.layout.reasons` (was `BlockedTokens`; `DesignGaps.swift`, `BlockedValues.kt`).
+- **Layout tokens whose fields changed** (code reading `Tokens.Layouts.X.field` must follow): `auth.phone.layout.countryCode`
+  (+ `field`), `auth.phone.layout.inlineError`, `auth.code.layout.codeField`, `auth.agegate.layout.optIn`,
+  `onboarding.permission.notifications.layout.preAlert`, `onboarding.permission.photos.layout.request`, `groups.list.layout.tabBar`,
+  `groups.screen.layout.menu`, `groups.invite.layout.share`, `settings.root.layout.list`, `safety.report.layout.flow`,
+  `safety.report.layout.reasons`, `invite.web.layout.ogImage`, `invite.web.layout.linkPreview`, `invite.appclip.layout.*`.
+- **Web**: the invite page (`web/src/**`) is rebuilt from the new `invite.web.*` tokens (Retro `/u/` card, desktop QR,
+  600 × 600 OG image); Pass 4's agent list names iOS / Android only — the lead assigns the web page.
+- **Foundations candidates**: the grouped-row height 58.7 (TC-J5) closes C-14's row-height Gap and could become a global
+  token; the cover shadow fit could update `layout.global.elevation`; `invite.web.radius.card` equals `radius.global.cardLarge`.
+- **Shared components (lead request):** the account keys Pass 3 components read are kept (`groups.list.tab.*`,
+  `onboarding.permission.camera.denied.*`, `onboarding.permission.photos.denied.*`, `safety.block.*` — `done` / `undone`
+  keep `{first_name}` — and `auth.phone.error.dismiss`); four component strings are added in `design/copy/account.json`
+  with surface `global`: `global.a11y.newBadge` ("New", Retro verbatim), `global.a11y.unread` ("New activity", PLATFORM),
+  `global.a11y.pagePosition` ("{position} of {count}", Retro's position badge), `global.a11y.loading` ("Loading…", PLATFORM).
+- **Capture group:** tab bar media variant recorded in `groups.list.layout.tabBar.overMedia`; `onboarding.widget` names the
+  widget with `widget.home.small.gallery.name` and shows `widget.arrival.help.delay`.
+- **Memory group:** `groups.screen` places the on-this-day and year-story entry cards in its members' pager (C-18
+  geometry, `displaySmall` title, C-09 pill) and the birthday request row (C-14 + C-16) above the week; `settings.account`'s
+  Birthday row pushes `birthday.add`.
+- **Social group:** `groups.screen` header book glyph → `albums.list`, chat glyph → `chat.thread`, week header chevron →
+  `week.history`, "Recaps" capsule → `week.recap` (list); `walls.mine`'s gear capsule → `settings.root`; `walls.member`
+  report / block → `safety.report` / `safety.block`.
+
+### Unresolved (owner, capture or verification)
+
+- Owner: app name and mark (landing wordmark, App Clip card), template cover photos (optional), QR invite card (RA-11),
+  Rewind / Activity tabs (RA-7), the purple premium accent (RA-17), moderation categories / report details (RA-12),
+  tier name "Premium", support e-mail, legal URLs, invite domain, `min_age_years`.
+- Captures (each closes a composition): Retro's first 4 sign-up steps and onboarding pages on a fresh install; Retro's
+  Settings (top + scrolled) and an album's Settings, light and dark; a raw album detail (light and dark); the album link
+  sheet in dark; a `/u/` page in iPhone Safari with the photo loaded; Retro's paywall with Annual / Monthly cards;
+  Retro's report sheet and block dialog; Retro's App Clip opened from a `/u/` link; the "Ideas to Get Started" "•••" menu.

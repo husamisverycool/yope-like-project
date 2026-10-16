@@ -87,6 +87,12 @@ public enum Tokens {
         /// Retro · global.system · Android M3 error: error / destructive text and icons in M3 components · SOURCED
         /// token: `color.global.system.error`
         public static let globalSystemError: Color = Color(.sRGB, red: 0.9176, green: 0.2, blue: 0.2157, opacity: 1)
+        /// Retro · global.system · Android M3 onError: content on the error colour · SOURCED
+        /// token: `color.global.system.onError`
+        public static let globalSystemOnError: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
+        /// Retro · global.system · Android M3 onPrimary: content on primary (switch thumb on, filled tonal content) · SOURCED
+        /// token: `color.global.system.onPrimary`
+        public static let globalSystemOnPrimary: Color = Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1)
         /// Retro · global.system · Android M3 on-surface: list item labels, dialog headline · SOURCED
         /// token: `color.global.system.onSurface`
         public static let globalSystemOnSurface: Color = Color(light: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 1), dark: Color(.sRGB, red: 1, green: 1, blue: 1, opacity: 1))

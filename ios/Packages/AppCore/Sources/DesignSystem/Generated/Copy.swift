@@ -625,6 +625,14 @@ public enum Copy {
     public static var dailyCaptureSend: String { CopyLookup.string("daily.capture.send", default: "Send") }
     /// "Back and front photos from {name}" — Retro · daily.dualimage · new · SOURCED
     public static func dailyDualimageA11yLabel(name: String) -> String { CopyLookup.format("daily.dualimage.a11y.label", default: "Back and front photos from {name}", ["name": name]) }
+    /// "Loading…" — Apple HIG · global · new · PLATFORM
+    public static var globalA11yLoading: String { CopyLookup.string("global.a11y.loading", default: "Loading…") }
+    /// "New" — Retro · global · verbatim · SOURCED
+    public static var globalA11yNewBadge: String { CopyLookup.string("global.a11y.newBadge", default: "New") }
+    /// "{position} of {count}" — Retro · global · adapted · SOURCED
+    public static func globalA11yPagePosition(position: String, count: String) -> String { CopyLookup.format("global.a11y.pagePosition", default: "{position} of {count}", ["position": position, "count": count]) }
+    /// "New activity" — Apple HIG · global · new · PLATFORM
+    public static var globalA11yUnread: String { CopyLookup.string("global.a11y.unread", default: "New activity") }
     /// "Back" — Apple HIG · groups.create · new · VERIFIED
     public static var groupsCreateBackAccessibilityLabel: String { CopyLookup.string("groups.create.back.accessibilityLabel", default: "Back") }
     /// "Close" — Apple HIG · groups.create · new · VERIFIED
@@ -1311,8 +1319,8 @@ public enum Copy {
     public static var safetyBlockCancel: String { CopyLookup.string("safety.block.cancel", default: "Cancel") }
     /// "Yes, block" — Retro · safety.block · adapted · SOURCED
     public static var safetyBlockConfirm: String { CopyLookup.string("safety.block.confirm", default: "Yes, block") }
-    /// "Blocked" — Retro · safety.block · adapted · SOURCED
-    public static var safetyBlockDone: String { CopyLookup.string("safety.block.done", default: "Blocked") }
+    /// "Blocked {first_name}" — Retro · safety.block · new · SOURCED
+    public static func safetyBlockDone(firstName: String) -> String { CopyLookup.format("safety.block.done", default: "Blocked {first_name}", ["first_name": firstName]) }
     /// "There was a problem. Please try again." — Retro · safety.block · verbatim · SOURCED
     public static var safetyBlockError: String { CopyLookup.string("safety.block.error", default: "There was a problem. Please try again.") }
     /// "Block Profile" — Retro · safety.block · verbatim · SOURCED
@@ -1323,8 +1331,8 @@ public enum Copy {
     public static func safetyBlockMessage(firstName: String) -> String { CopyLookup.format("safety.block.message", default: "Blocking {first_name} hides your photos, messages and reactions from each other in every group you share. They will not be notified.", ["first_name": firstName]) }
     /// "Block {first_name}?" — Retro · safety.block · verbatim · SOURCED
     public static func safetyBlockTitle(firstName: String) -> String { CopyLookup.format("safety.block.title", default: "Block {first_name}?", ["first_name": firstName]) }
-    /// "Unblocked" — Retro · safety.block · adapted · SOURCED
-    public static var safetyBlockUndone: String { CopyLookup.string("safety.block.undone", default: "Unblocked") }
+    /// "Unblocked {first_name}" — Retro · safety.block · new · SOURCED
+    public static func safetyBlockUndone(firstName: String) -> String { CopyLookup.format("safety.block.undone", default: "Unblocked {first_name}", ["first_name": firstName]) }
     /// "Cancel" — Apple HIG · safety.report · verbatim · VERIFIED
     public static var safetyReportCancel: String { CopyLookup.string("safety.report.cancel", default: "Cancel") }
     /// "There was a problem. Please try again." — Retro · safety.report · verbatim · SOURCED

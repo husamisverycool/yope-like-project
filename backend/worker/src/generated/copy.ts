@@ -313,6 +313,10 @@ const table = {
   "daily.capture.prompt": "Taking the front photo…", // Retro · daily.capture · SOURCED
   "daily.capture.send": "Send", // Retro · daily.capture · SOURCED
   "daily.dualimage.a11y.label": "Back and front photos from {name}", // Retro · daily.dualimage · SOURCED
+  "global.a11y.loading": "Loading…", // Apple HIG · global · PLATFORM
+  "global.a11y.newBadge": "New", // Retro · global · SOURCED
+  "global.a11y.pagePosition": "{position} of {count}", // Retro · global · SOURCED
+  "global.a11y.unread": "New activity", // Apple HIG · global · PLATFORM
   "groups.create.back.accessibilityLabel": "Back", // Apple HIG · groups.create · VERIFIED
   "groups.create.close.accessibilityLabel": "Close", // Apple HIG · groups.create · VERIFIED
   "groups.create.cover.accessibilityLabel": "Cover image", // Apple HIG · groups.create · VERIFIED
@@ -656,13 +660,13 @@ const table = {
   "photo.viewer.toast.saved": "Saved!", // Retro · photo.viewer · SOURCED
   "safety.block.cancel": "Cancel", // Apple HIG · safety.block · VERIFIED
   "safety.block.confirm": "Yes, block", // Retro · safety.block · SOURCED
-  "safety.block.done": "Blocked", // Retro · safety.block · SOURCED
+  "safety.block.done": "Blocked {first_name}", // Retro · safety.block · SOURCED
   "safety.block.error": "There was a problem. Please try again.", // Retro · safety.block · SOURCED
   "safety.block.menuItem": "Block Profile", // Retro · safety.block · SOURCED
   "safety.block.menuItemNamed": "Block {first_name}", // Retro · safety.block · SOURCED
   "safety.block.message": "Blocking {first_name} hides your photos, messages and reactions from each other in every group you share. They will not be notified.", // Retro · safety.block · SOURCED
   "safety.block.title": "Block {first_name}?", // Retro · safety.block · SOURCED
-  "safety.block.undone": "Unblocked", // Retro · safety.block · SOURCED
+  "safety.block.undone": "Unblocked {first_name}", // Retro · safety.block · SOURCED
   "safety.report.cancel": "Cancel", // Apple HIG · safety.report · VERIFIED
   "safety.report.error.detail": "There was a problem. Please try again.", // Retro · safety.report · SOURCED
   "safety.report.error.notFound": "This is no longer available.", // Retro · safety.report · SOURCED

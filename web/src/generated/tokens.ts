@@ -106,6 +106,8 @@ export const tokens = {
   "color.global.surfaceSecondary.android": {"light":"#F7F7F7","dark":"#262626"}, // Retro · global · SOURCED
   "color.global.system.error": "#EA3337", // Retro · global.system · SOURCED
   "color.global.system.ios": {"groupedBackground":"systemGroupedBackground","cell":"secondarySystemGroupedBackground","label":"label","secondaryLabel":"secondaryLabel","placeholder":"placeholderText","separator":"separator","tint":"systemBlue","destructive":"systemRed"}, // Apple HIG · global.system · PLATFORM
+  "color.global.system.onError": "#FFFFFF", // Retro · global.system · SOURCED
+  "color.global.system.onPrimary": "#FFFFFF", // Retro · global.system · SOURCED
   "color.global.system.onSurface": {"light":"#000000","dark":"#FFFFFF"}, // Retro · global.system · SOURCED
   "color.global.system.onSurfaceVariant": {"light":"#49454F","dark":"#CAC4D0"}, // Material 3 · global.system · PLATFORM
   "color.global.system.outline": {"light":"#79747E","dark":"#938F99"}, // Material 3 · global.system · PLATFORM
