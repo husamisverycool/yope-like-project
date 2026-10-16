@@ -97,6 +97,76 @@ export const WORKER_COPY_KEYS = {
     surface: "notifications.push",
     meaning: "Body of the tribute-for-you notification. No count of contributors.",
   },
+  "notifications.push.selfieReaction.title": {
+    params: ["name", "group"],
+    surface: "notifications.push",
+    meaning: "Title when a member reacts to your photo with a selfie (selfie.reaction).",
+  },
+  "notifications.push.selfieReaction.body": {
+    params: ["name", "group"],
+    surface: "notifications.push",
+    meaning: "Body of the selfie-reaction notification. Never a number of reactions.",
+  },
+  "notifications.push.planNew.title": {
+    params: ["name", "group", "title"],
+    surface: "notifications.push",
+    meaning: "Title when a member makes a plan in the group ({title} = the plan's title).",
+  },
+  "notifications.push.planNew.body": {
+    params: ["name", "group", "title"],
+    surface: "notifications.push",
+    meaning: "Body of the new-plan notification: an invitation, never an obligation (tenet 5).",
+  },
+  "notifications.push.planTomorrow.title": {
+    params: ["group", "title"],
+    surface: "notifications.push",
+    meaning: "Title of the one reminder 24 hours before a plan, to members who answered Going or Maybe.",
+  },
+  "notifications.push.planTomorrow.body.timed": {
+    params: ["group", "title", "time"],
+    surface: "notifications.push",
+    meaning: "Body of the day-before reminder of a plan with a start time ({time} in the group's time zone). No count of who is going.",
+  },
+  "notifications.push.planTomorrow.body.allDay": {
+    params: ["group", "title"],
+    surface: "notifications.push",
+    meaning: "Body of the day-before reminder of an all-day plan.",
+  },
+  "notifications.push.planChanged.title": {
+    params: ["name", "group", "title"],
+    surface: "notifications.push",
+    meaning: "Title when a plan's day, time or place changes, to Going and Maybe.",
+  },
+  "notifications.push.planChanged.body.time": {
+    params: ["name", "group", "title", "when"],
+    surface: "notifications.push",
+    meaning: "Body when the day or time changed ({when} = the new day and time, or day for an all-day plan).",
+  },
+  "notifications.push.planChanged.body.place": {
+    params: ["name", "group", "title", "place"],
+    surface: "notifications.push",
+    meaning: "Body when only the place changed ({place} = the new place).",
+  },
+  "notifications.push.planCanceled.title": {
+    params: ["name", "group", "title"],
+    surface: "notifications.push",
+    meaning: "Title when a plan is cancelled, to Going and Maybe.",
+  },
+  "notifications.push.planCanceled.body": {
+    params: ["name", "group", "title"],
+    surface: "notifications.push",
+    meaning: "Body of the plan-cancelled notification ({name} = who cancelled it).",
+  },
+  "camera.overnight.push.title": {
+    params: ["group"],
+    surface: "camera.overnight",
+    meaning: "Title when the group's overnight photos have developed (one per group and reveal time).",
+  },
+  "camera.overnight.push.body": {
+    params: ["group"],
+    surface: "camera.overnight",
+    meaning: "Body of the photos-developed notification. No count of photos, no names.",
+  },
   "week.recap.template": {
     params: ["group"],
     surface: "week.recap",

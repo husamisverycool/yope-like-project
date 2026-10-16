@@ -389,6 +389,10 @@
     <string name="camera_capture_unavailable_detail" formatted="false">The camera couldn\'t start. Please try again.</string>
     <!-- Retro · camera.capture · new · SOURCED -->
     <string name="camera_capture_unavailable_title" formatted="false">Camera Unavailable</string>
+    <!-- Lapse · camera.overnight · adapted · SOURCED -->
+    <string name="camera_overnight_push_body" formatted="false">Photos have developed and are ready to view.</string>
+    <!-- Retro · camera.overnight · adapted · SOURCED · args: group -->
+    <string name="camera_overnight_push_title">%1$s</string>
     <!-- Retro · camera.sendto · new · SOURCED -->
     <string name="camera_sendto_a11y_close" formatted="false">Close</string>
     <!-- Retro · camera.sendto · verbatim · SOURCED -->
@@ -1037,6 +1041,26 @@
     <string name="notifications_push_newpost_body">%1$s just posted.</string>
     <!-- Retro · notifications.push · new · SOURCED · args: group -->
     <string name="notifications_push_newpost_title">%1$s</string>
+    <!-- Apple Invites / Partiful · notifications.push · adapted · SOURCED · args: name, title -->
+    <string name="notifications_push_plancanceled_body">%1$s canceled %2$s.</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: group -->
+    <string name="notifications_push_plancanceled_title">%1$s</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: title, place -->
+    <string name="notifications_push_planchanged_body_place">%1$s is now at %2$s.</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: title, when -->
+    <string name="notifications_push_planchanged_body_time">%1$s is now %2$s.</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: group -->
+    <string name="notifications_push_planchanged_title">%1$s</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: name, title -->
+    <string name="notifications_push_plannew_body">%1$s made a plan: %2$s</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: group -->
+    <string name="notifications_push_plannew_title">%1$s</string>
+    <!-- Countdown Widget | Day Counter · notifications.push · adapted · SOURCED -->
+    <string name="notifications_push_plantomorrow_body_allday" formatted="false">Tomorrow.</string>
+    <!-- Countdown Widget | Day Counter · notifications.push · adapted · SOURCED · args: time -->
+    <string name="notifications_push_plantomorrow_body_timed">Tomorrow at %1$s.</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: title -->
+    <string name="notifications_push_plantomorrow_title">%1$s</string>
     <!-- Retro · notifications.push · new · SOURCED · args: name, emoji -->
     <string name="notifications_push_reaction_body">%1$s reacted %2$s to your post.</string>
     <!-- Retro · notifications.push · new · SOURCED · args: group -->
@@ -1053,6 +1077,10 @@
     <string name="notifications_push_reply_body_voice">%1$s replied with a voice message.</string>
     <!-- Retro · notifications.push · new · SOURCED · args: group -->
     <string name="notifications_push_reply_title">%1$s</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: name -->
+    <string name="notifications_push_selfiereaction_body">%1$s reacted with a selfie to your post.</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: group -->
+    <string name="notifications_push_selfiereaction_title">%1$s</string>
     <!-- Retro · notifications.push · new · SOURCED · args: group -->
     <string name="notifications_push_tribute_body">%1$s made you a birthday video.</string>
     <!-- Retro · notifications.push · new · SOURCED -->

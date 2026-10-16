@@ -21,6 +21,7 @@ export const K = {
   requestId: "request_id",
   tributeId: "tribute_id",
   year: "year",
+  planId: "plan_id",
   kind: "kind",
   renditionUrl: "rendition_url",
   senderName: "sender_name",
@@ -46,7 +47,8 @@ export type PushType =
   | "recap_ready"
   | "birthday_request"
   | "tribute"
-  | "year_story";
+  | "year_story"
+  | "plan";
 
 export type AlertType = Exclude<PushType, "widget" | "daily_invitation_ended">;
 
@@ -81,7 +83,7 @@ export interface WidgetFields {
 export interface AlertSpec {
   type: AlertType;
   groupId: string;
-  ids: Partial<Record<"post_id" | "message_id" | "recap_id" | "request_id" | "tribute_id" | "invitation_id" | "year", string>>;
+  ids: Partial<Record<"post_id" | "message_id" | "recap_id" | "request_id" | "tribute_id" | "invitation_id" | "year" | "plan_id", string>>;
   title: string;
   body: string;
   /** apns-collapse-id / Android notification tag: a re-sent alert replaces the shown one */

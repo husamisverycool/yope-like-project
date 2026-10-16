@@ -391,6 +391,10 @@ public enum Copy {
     public static var cameraCaptureUnavailableDetail: String { CopyLookup.string("camera.capture.unavailable.detail", default: "The camera couldn't start. Please try again.") }
     /// "Camera Unavailable" — Retro · camera.capture · new · SOURCED
     public static var cameraCaptureUnavailableTitle: String { CopyLookup.string("camera.capture.unavailable.title", default: "Camera Unavailable") }
+    /// "Photos have developed and are ready to view." — Lapse · camera.overnight · adapted · SOURCED
+    public static var cameraOvernightPushBody: String { CopyLookup.string("camera.overnight.push.body", default: "Photos have developed and are ready to view.") }
+    /// "{group}" — Retro · camera.overnight · adapted · SOURCED
+    public static func cameraOvernightPushTitle(group: String) -> String { CopyLookup.format("camera.overnight.push.title", default: "{group}", ["group": group]) }
     /// "Close" — Retro · camera.sendto · new · SOURCED
     public static var cameraSendtoA11yClose: String { CopyLookup.string("camera.sendto.a11y.close", default: "Close") }
     /// "Save to Camera Roll" — Retro · camera.sendto · verbatim · SOURCED
@@ -1039,6 +1043,26 @@ public enum Copy {
     public static func notificationsPushNewPostBody(name: String) -> String { CopyLookup.format("notifications.push.newPost.body", default: "{name} just posted.", ["name": name]) }
     /// "{group}" — Retro · notifications.push · new · SOURCED
     public static func notificationsPushNewPostTitle(group: String) -> String { CopyLookup.format("notifications.push.newPost.title", default: "{group}", ["group": group]) }
+    /// "{name} canceled {title}." — Apple Invites / Partiful · notifications.push · adapted · SOURCED
+    public static func notificationsPushPlanCanceledBody(name: String, title: String) -> String { CopyLookup.format("notifications.push.planCanceled.body", default: "{name} canceled {title}.", ["name": name, "title": title]) }
+    /// "{group}" — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushPlanCanceledTitle(group: String) -> String { CopyLookup.format("notifications.push.planCanceled.title", default: "{group}", ["group": group]) }
+    /// "{title} is now at {place}." — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushPlanChangedBodyPlace(title: String, place: String) -> String { CopyLookup.format("notifications.push.planChanged.body.place", default: "{title} is now at {place}.", ["title": title, "place": place]) }
+    /// "{title} is now {when}." — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushPlanChangedBodyTime(title: String, when: String) -> String { CopyLookup.format("notifications.push.planChanged.body.time", default: "{title} is now {when}.", ["title": title, "when": when]) }
+    /// "{group}" — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushPlanChangedTitle(group: String) -> String { CopyLookup.format("notifications.push.planChanged.title", default: "{group}", ["group": group]) }
+    /// "{name} made a plan: {title}" — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushPlanNewBody(name: String, title: String) -> String { CopyLookup.format("notifications.push.planNew.body", default: "{name} made a plan: {title}", ["name": name, "title": title]) }
+    /// "{group}" — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushPlanNewTitle(group: String) -> String { CopyLookup.format("notifications.push.planNew.title", default: "{group}", ["group": group]) }
+    /// "Tomorrow." — Countdown Widget | Day Counter · notifications.push · adapted · SOURCED
+    public static var notificationsPushPlanTomorrowBodyAllDay: String { CopyLookup.string("notifications.push.planTomorrow.body.allDay", default: "Tomorrow.") }
+    /// "Tomorrow at {time}." — Countdown Widget | Day Counter · notifications.push · adapted · SOURCED
+    public static func notificationsPushPlanTomorrowBodyTimed(time: String) -> String { CopyLookup.format("notifications.push.planTomorrow.body.timed", default: "Tomorrow at {time}.", ["time": time]) }
+    /// "{title}" — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushPlanTomorrowTitle(title: String) -> String { CopyLookup.format("notifications.push.planTomorrow.title", default: "{title}", ["title": title]) }
     /// "{name} reacted {emoji} to your post." — Retro · notifications.push · new · SOURCED
     public static func notificationsPushReactionBody(name: String, emoji: String) -> String { CopyLookup.format("notifications.push.reaction.body", default: "{name} reacted {emoji} to your post.", ["name": name, "emoji": emoji]) }
     /// "{group}" — Retro · notifications.push · new · SOURCED
@@ -1055,6 +1079,10 @@ public enum Copy {
     public static func notificationsPushReplyBodyVoice(name: String) -> String { CopyLookup.format("notifications.push.reply.body.voice", default: "{name} replied with a voice message.", ["name": name]) }
     /// "{group}" — Retro · notifications.push · new · SOURCED
     public static func notificationsPushReplyTitle(group: String) -> String { CopyLookup.format("notifications.push.reply.title", default: "{group}", ["group": group]) }
+    /// "{name} reacted with a selfie to your post." — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushSelfieReactionBody(name: String) -> String { CopyLookup.format("notifications.push.selfieReaction.body", default: "{name} reacted with a selfie to your post.", ["name": name]) }
+    /// "{group}" — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushSelfieReactionTitle(group: String) -> String { CopyLookup.format("notifications.push.selfieReaction.title", default: "{group}", ["group": group]) }
     /// "{group} made you a birthday video." — Retro · notifications.push · new · SOURCED
     public static func notificationsPushTributeBody(group: String) -> String { CopyLookup.format("notifications.push.tribute.body", default: "{group} made you a birthday video.", ["group": group]) }
     /// "Happy birthday!" — Retro · notifications.push · new · SOURCED

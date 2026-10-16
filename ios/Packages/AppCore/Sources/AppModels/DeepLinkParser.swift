@@ -103,7 +103,8 @@ public struct DeepLinkParser: Sendable {
         case .tribute: route = .tribute
         case .yearStory: route = .yearStory
         case .dailyInvitation: route = .daily
-        case .widget, .dailyInvitationEnded: return nil
+        // .plan: no plan route yet; the tap opens the app.
+        case .widget, .dailyInvitationEnded, .plan: return nil
         }
         return Self.make(route: route, value: value)
     }

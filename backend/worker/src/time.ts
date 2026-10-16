@@ -101,3 +101,14 @@ export function isQuietAt(start: string | null, end: string | null, tz: string |
 export function unixSeconds(d: Date | string): number {
   return Math.floor((typeof d === "string" ? new Date(d) : d).getTime() / 1000);
 }
+
+/** A time of day in `tz` as the platform formats it in English ("7:30 PM"). */
+export function localTime(instant: Date | string, tz: string): string {
+  return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: tz }).format(new Date(instant));
+}
+
+/** A plan's day and time in `tz` as the platform formats it in English ("Saturday, October 24 at 7:30 PM"; day only when all-day). */
+export function localWhen(plan: { starts_at: string; all_day: boolean }, tz: string): string {
+  const day = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: tz }).format(new Date(plan.starts_at));
+  return plan.all_day ? day : `${day} at ${localTime(plan.starts_at, tz)}`;
+}

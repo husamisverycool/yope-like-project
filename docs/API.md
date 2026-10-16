@@ -1125,3 +1125,75 @@ Where this section and an earlier one differ, this section describes what the da
 14. **Config defaults** (migrations 0012 and 0014 supersede §11 / §12.7): `default_waking_start` '09:48',
     `default_waking_end` '21:12', `collage_option` 'B'; weekly recaps run at the end of each group's waking
     window on the recap day when `weekly_recap_local_time` is NULL.
+
+## 14. Selfie reactions, plans, overnight photos, weekly question (migrations 0018–0021)
+
+Evidence and surfaces: `design/research/selfie-reactions.md`, `plans.md` + `plans-data.md`,
+`overnight-and-questions.md` + `-data.md`; `design/surfaces/viewer.selfiereaction.md`, `plans.create.md`, `plans.page.md`,
+`widget.countdown.md`, `camera.overnight.md`, `question.weekly.md`. Tenets hold throughout: no counts, no names of who
+has not answered, one push per event, nothing asked of anyone.
+
+### 14.1 Selfie reactions (BeReal's RealMoji)
+
+`selfie_reactions(id, post_id, user_id, group_id, image_path, created_at)`, one per person per post. Read: members who
+can see the post, blocks hide both ways (as `reactions`). Realtime: inserts and updates published; removals arrive as the
+`reactions_changed` broadcast.
+
+| RPC | Does | Errors |
+|---|---|---|
+| `react_with_selfie(p_post_id, p_image_path)` | upload the selfie first to `u/<uid>/selfies/<uuid>.jpg`; a new selfie replaces yours (the old file is deleted). The post's author is told once per person (`push.selfie_reaction`, type `reaction`) | `post_not_found` 404, `invalid_image` 400 (not your upload), `own_post` 400 |
+| `remove_selfie_reaction(p_post_id, p_user_id = null)` | removes yours; the post's author may remove anyone's on their post | `post_not_found` 404, `not_allowed` 403 |
+| `report('selfie', <selfie_reactions.id>, reason)` | report someone else's selfie | `target_not_found` 404 |
+
+Storage: a selfie image is readable by whoever can read its row.
+
+### 14.2 Plans (Partiful, Apple Invites)
+
+`plans(id, group_id, created_by?, title, starts_at, ends_at?, all_day, local_date, place?, note?, cover_path?, canceled_at?,
+canceled_by?, created_at, updated_at)` — `local_date` is the plan's day in the group time zone; an all-day plan starts at
+00:00 of it. No delete (a cancelled plan stays and can be restored); a deleted account leaves its plans (`created_by`
+null, its cover cleared). `plan_answers(plan_id, user_id, group_id, answer, answered_at)`, answer `going` / `maybe` /
+`cant_go`; no answer = no row. Read: members; **Can't go rows only for their author and the plan's maker**. Realtime:
+inserts and updates of both tables.
+
+| RPC | Who | Does | Errors |
+|---|---|---|---|
+| `create_plan(p_group_id, p_title, p_starts_at, p_all_day=false, p_ends_at?, p_place?, p_note?, p_cover_path?)` | member | the maker answers Going; members told (`push.plan_created`); reminder queued 24 h before (skipped under 24 h) | `not_group_member` 403, `invalid_name`, `invalid_date` (before today, end before start), `invalid_place` (> 200), `invalid_note` (> 2048), `invalid_cover` 400 |
+| `update_plan(p_plan_id, …same…)` | maker or admin, until the plan is over | a change of day, time or place tells Going + Maybe once (`push.plan_changed`); the reminder moves | `plan_not_found` 404, `not_allowed` 403, `plan_canceled`, `plan_past` 409 |
+| `cancel_plan(p_plan_id)` / `restore_plan(p_plan_id)` | maker or admin, until over | cancel tells Going + Maybe (`push.plan_canceled`) and drops the reminder; restore tells nobody and re-queues it | same |
+| `answer_plan(p_plan_id, p_answer)` / `clear_answer(p_plan_id)` | member, until over, not cancelled | one tap; replaces the previous answer | `plan_not_found` 404, `invalid_answer` 400, `plan_canceled`, `plan_past` 409 |
+| `plan_photos(p_plan_id)` | member | the group's posts of the plan's local days (minus blocked authors); none for a cancelled plan | `plan_not_found` 404 |
+| `next_plans(p_group_id = null)` | member | upcoming plans (not cancelled, not over) of your groups, soonest first, with `my_answer` — the group screen row and the countdown widget | `not_group_member` 403 |
+
+"Over" = after `ends_at`, or after the end of `local_date` when there is no end (Partiful: no RSVP changes after the
+event). Push type `plan` with `plan_id` (apps: `PushType.plan` / `PushTypes.PLAN`); a plan's alerts share the collapse
+key `plan:<id>`.
+
+### 14.3 Overnight photos (Dispo, Lapse)
+
+`create_overnight_post(p_media_id, p_group_ids) → (group_id, develops_at)`: photos only (`develop_photo_only`), your own
+media, your groups, once per group (`already_posted`). The photo is held in `developing_posts` (no client access) until
+the first `overnight_reveal_local_time` (09:00) after it was taken, in each group's time zone. Until then **nobody** can
+read it — its files are refused even to the sender. Clients only ask:
+
+- `group_developing(p_group_id) → (developing boolean, reveal_at)` — members; no count, no names.
+- `my_developing() → (developing boolean, reveal_at)` — the camera.
+- `set_overnight_alerts(p_on)` — the member's switch for the reveal push (`notification_settings.overnight`, default on).
+
+At the reveal the scheduler (`due_developed_posts`) turns each into an ordinary post (`created_at` = when taken,
+`revealed_at` = the reveal time) with its chat photo message; members get one push per group and reveal time
+(`push.photos_developed`, type `new_post` with the first photo's `post_id`), the senders included, unless they muted the
+group or turned overnight alerts off. Broadcast `developing_changed` (no payload) on create and reveal.
+
+### 14.4 Weekly question (Retro prompt cards, Apple Journal)
+
+Off unless a group admin turns it on (`set_group_weekly_question(p_group_id, p_on)`; `groups.weekly_question`, default
+off) **and** `app_config.weekly_question_keys` lists the questions (copy keys `question.weekly.q*`, asked in order) —
+NULL until the catalogue and its order are decided, so nothing is asked today. No push, no reminder, no streak.
+
+- `current_group_question(p_group_id) → (id, question_key, week_start, hidden_by_me)` — this group week's question,
+  created on first read; no row when off.
+- `hide_question(p_question_id)` — "Remove": the card goes for you, that week.
+- `answer_question(p_post_id, p_question_id | null)` — links one of your posts in that group to the question during its
+  week (`invalid_question` 404, `question_off`, `question_closed` 409); null unlinks. `posts.question_id` is readable as
+  any post column; nothing counts or lists who answered.

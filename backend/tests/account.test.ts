@@ -175,7 +175,15 @@ describe('app_config / public_app_config', () => {
     const { data, error } = await anon.from('public_app_config').select('*');
     expect(error).toBeNull();
     const keys = (data ?? []).map((r: any) => r.key).sort();
-    expect(keys).toEqual(['free_history_days', 'invitation_window_seconds', 'max_group_members', 'min_age_years', 'week_start_isodow']);
+    expect(keys).toEqual([
+      'free_history_days',
+      'invitation_window_seconds',
+      'max_group_members',
+      'min_age_years',
+      'overnight_reveal_local_time',
+      'week_start_isodow',
+      'weekly_question_keys',
+    ]);
     const direct = await a.client.from('app_config').select('*');
     expect(direct.error?.code).toBe('42501');
     const svc = await admin.from('app_config').select('key');

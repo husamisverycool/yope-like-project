@@ -154,6 +154,36 @@ describe('group isolation: RPCs', () => {
       args: () => ({ p_request_id: seeded.requestId, p_post_id: seeded.postIds[0], p_line: 'x' }),
       expect: 'error',
     },
+    react_with_selfie: {
+      args: () => ({ p_post_id: seeded.postIds[0], p_image_path: `u/${outsider.id}/selfies/x.jpg` }),
+      expect: 'error',
+    },
+    remove_selfie_reaction: { args: () => ({ p_post_id: seeded.postIds[0] }), expect: 'error' },
+    create_plan: {
+      args: () => ({ p_group_id: seeded.group.id, p_title: 'x', p_starts_at: new Date(Date.now() + 86_400_000 * 3).toISOString() }),
+      expect: 'error',
+    },
+    update_plan: {
+      args: () => ({ p_plan_id: seeded.planId, p_title: 'x', p_starts_at: new Date(Date.now() + 86_400_000 * 3).toISOString() }),
+      expect: 'error',
+    },
+    cancel_plan: { args: () => ({ p_plan_id: seeded.planId }), expect: 'error' },
+    restore_plan: { args: () => ({ p_plan_id: seeded.planId }), expect: 'error' },
+    answer_plan: { args: () => ({ p_plan_id: seeded.planId, p_answer: 'going' }), expect: 'error' },
+    clear_answer: { args: () => ({ p_plan_id: seeded.planId }), expect: 'error' },
+    plan_photos: { args: () => ({ p_plan_id: seeded.planId }), expect: 'error' },
+    next_plans: { args: () => ({}), expect: 'empty' },
+    create_overnight_post: {
+      args: () => ({ p_media_id: seeded.mediaIds[0], p_group_ids: [seeded.group.id] }),
+      expect: 'error',
+    },
+    group_developing: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
+    my_developing: { args: () => ({}), expect: 'own-account' },
+    set_overnight_alerts: { args: () => ({}), expect: 'own-account' },
+    set_group_weekly_question: { args: () => ({ p_group_id: seeded.group.id, p_on: true }), expect: 'error' },
+    current_group_question: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
+    hide_question: { args: () => ({ p_question_id: seeded.questionId }), expect: 'error' },
+    answer_question: { args: () => ({ p_post_id: seeded.postIds[0], p_question_id: seeded.questionId }), expect: 'error' },
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {
@@ -232,6 +262,7 @@ describe('group isolation: RPCs', () => {
         'due_birthday_requests',
         'due_tributes',
         'due_year_stories',
+        'due_developed_posts',
       ]),
     );
     for (const fn of names) {

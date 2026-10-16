@@ -1079,6 +1079,137 @@
       "pattern": "retro.voice.formats — full weekday and date ('Tuesday, December 2')",
       "level": "SOURCED",
       "notes": "{date} = the invitation's local date in the locale's long weekday-month-day format. iOS SharePreview title / Android EXTRA_TITLE."
+    },
+    "notifications.push.selfieReaction.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` (title: the context — Retro `post_reminder_notification_title_template` \"Week %1$d\"); design/surfaces/viewer.selfiereaction.md copy table",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "notifications.push.selfieReaction.body": {
+      "text": "{name} reacted with a selfie to your post.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/surfaces/viewer.selfiereaction.md copy table, built on `notifications.push.reaction.body` \"{name} reacted {emoji} to your post.\" (BeReal's own RealMoji push text not found: design/research/selfie-reactions.md)",
+      "pattern": "messaging.reaction with retro.voice.push case and punctuation",
+      "level": "SOURCED",
+      "notes": "Never a number of reactions."
+    },
+    "notifications.push.planNew.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` (title: the context — Retro `post_reminder_notification_title_template` \"Week %1$d\"); design/research/plans.md §7",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "notifications.push.planNew.body": {
+      "text": "{name} made a plan: {title}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/research/plans.md §7: Retro `notification_settings_description_comments` \"%1$s commented on your post: …\" (sender, verb, colon, content); trigger from Partiful Group Reminder (\"a notification when they are added\")",
+      "pattern": "retro.voice.push — sender, verb, colon, content",
+      "level": "SOURCED",
+      "notes": "Research placeholders {first_name} / {plan_title} → the worker's {name} / {title}."
+    },
+    "notifications.push.planTomorrow.title": {
+      "text": "{title}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` (title: the context — Retro `post_reminder_notification_title_template` \"Week %1$d\"); design/research/plans.md §7 (context = the plan)",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "notifications.push.planTomorrow.body.timed": {
+      "text": "Tomorrow at {time}.",
+      "origin": "adapted",
+      "source_app": "Countdown Widget | Day Counter",
+      "surface": "notifications.push",
+      "evidence": "design/research/plans.md §7: \"One day until \\\"Anniversary\\\"!\" (CW-DC) with the \"!\" dropped (`retro.voice.punctuation`); sent 24 h before (Partiful Group Reminder \"24 hours before\")",
+      "pattern": "retro.voice.push — plain statement with a period",
+      "level": "SOURCED",
+      "notes": "{time}: the platform's time format in the group's zone (PLATFORM)."
+    },
+    "notifications.push.planTomorrow.body.allDay": {
+      "text": "Tomorrow.",
+      "origin": "adapted",
+      "source_app": "Countdown Widget | Day Counter",
+      "surface": "notifications.push",
+      "evidence": "design/research/plans.md §7 (all-day variant of `planTomorrow.body.timed`)",
+      "pattern": "retro.voice.push — plain statement with a period",
+      "level": "SOURCED"
+    },
+    "notifications.push.planChanged.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` (title: the context — Retro `post_reminder_notification_title_template` \"Week %1$d\"); design/research/plans.md §7",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "notifications.push.planChanged.body.time": {
+      "text": "{title} is now {when}.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/research/plans.md §7: retro.voice.push plain statement; content Apple Invites (guests \"notified about changes\")",
+      "pattern": "retro.voice.push — plain statement with a period",
+      "level": "SOURCED",
+      "notes": "{when}: the platform's date and time format in the group's zone (PLATFORM)."
+    },
+    "notifications.push.planChanged.body.place": {
+      "text": "{title} is now at {place}.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/research/plans.md §7: content Apple Invites \"let guests know if you changed the location\"",
+      "pattern": "retro.voice.push — plain statement with a period",
+      "level": "SOURCED"
+    },
+    "notifications.push.planCanceled.title": {
+      "text": "{group}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/copy-patterns.md `retro.voice.push` (title: the context — Retro `post_reminder_notification_title_template` \"Week %1$d\"); design/research/plans.md §7",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "notifications.push.planCanceled.body": {
+      "text": "{name} canceled {title}.",
+      "origin": "adapted",
+      "source_app": "Apple Invites / Partiful",
+      "surface": "notifications.push",
+      "evidence": "design/research/plans.md §7: Apple \"the event has been canceled\" / Partiful \"the event was canceled\" (US spelling) in retro.voice.push form",
+      "pattern": "retro.voice.push — plain statement with a period",
+      "level": "SOURCED"
+    },
+    "camera.overnight.push.title": {
+      "text": "{group}",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "camera.overnight",
+      "evidence": "design/copy-patterns.md `retro.voice.push` (title: the context — Retro `post_reminder_notification_title_template` \"Week %1$d\"); Lapse one banner per reveal (design/surfaces/camera.overnight.md, LSE3)",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED"
+    },
+    "camera.overnight.push.body": {
+      "text": "Photos have developed and are ready to view.",
+      "origin": "adapted",
+      "source_app": "Lapse",
+      "surface": "camera.overnight",
+      "evidence": "design/surfaces/camera.overnight.md: Lapse \"SNAPS DEVELOPED\" / \"5 snaps ready to view\" (references/auto/lapse, LSE3) with the count, caps and emoji removed, \"snaps\" → \"Photos\"",
+      "pattern": "retro.voice.push — plain statement with a period",
+      "level": "SOURCED",
+      "notes": "No count, no names."
     }
   }
 }

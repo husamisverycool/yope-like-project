@@ -2,7 +2,8 @@
 //   schedule_daily_invitations for today and tomorrow (UTC; each date is read as every group's
 //   local date, which covers every time zone's "today"); arms precise wake-ups so the runner
 //   dispatches invitation.fire at fires_at and closes windows (collage.compose, invitation.end)
-//   at closes_at; then the due_* helpers: weekly recaps, birthday requests, tributes, year stories.
+//   at closes_at; then the due_* helpers: weekly recaps, birthday requests, tributes, year stories,
+//   and overnight photos that have developed.
 // The SQL helpers are idempotent, so overlapping or repeated ticks are harmless.
 
 import { DbError, must, rpc } from "./db.js";
@@ -10,8 +11,8 @@ import type { Runner } from "./runner.js";
 import type { Services } from "./services.js";
 import { addDays, utcDate } from "./time.js";
 
-export type TickStep = "invitations" | "arm" | "recaps" | "birthdays" | "tributes" | "years";
-export const ALL_STEPS: TickStep[] = ["invitations", "arm", "recaps", "birthdays", "tributes", "years"];
+export type TickStep = "invitations" | "arm" | "recaps" | "birthdays" | "tributes" | "years" | "developed";
+export const ALL_STEPS: TickStep[] = ["invitations", "arm", "recaps", "birthdays", "tributes", "years", "developed"];
 
 export interface TickOptions {
   /** steps to run (default all) */
@@ -28,6 +29,7 @@ export interface TickReport {
   birthdayRequests: number;
   tributes: number;
   yearStories: number;
+  developed: number;
   errors: string[];
 }
 
@@ -38,6 +40,7 @@ const STEP_OF: Record<string, TickStep> = {
   due_birthday_requests: "birthdays",
   due_tributes: "tributes",
   due_year_stories: "years",
+  due_developed_posts: "developed",
 };
 
 interface ScheduleRow {
@@ -94,6 +97,7 @@ export class Scheduler {
       birthdayRequests: 0,
       tributes: 0,
       yearStories: 0,
+      developed: 0,
       errors: [],
     };
     const step = async (name: string, fn: () => Promise<void>) => {
@@ -159,7 +163,11 @@ export class Scheduler {
       report.yearStories = (await rpc<unknown[]>(this.svc.db, "due_year_stories", { p_now: now.toISOString() })).length;
     });
 
-    if (report.invitations.created || report.recaps || report.birthdayRequests || report.tributes || report.yearStories) this.runner?.wake();
+    await step("due_developed_posts", async () => {
+      report.developed = (await rpc<unknown[]>(this.svc.db, "due_developed_posts", { p_now: now.toISOString() })).length;
+    });
+
+    if (report.invitations.created || report.recaps || report.birthdayRequests || report.tributes || report.yearStories || report.developed) this.runner?.wake();
     this.lastTick = report;
     this.lastTickAt = Date.now();
     this.svc.log.info("scheduler tick", { ...report, at: undefined });

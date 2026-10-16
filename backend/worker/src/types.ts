@@ -170,6 +170,22 @@ export interface YearStoryRow {
 
 export const MEDIA_COLUMNS =
   "id, owner_id, kind, original_path, front_original_path, motion_path, display_path, thumb_path, widget_path, front_display_path, front_thumb_path, width, height, duration_ms, renditions_ready_at, created_at";
+export interface PlanRow {
+  id: string;
+  group_id: string;
+  created_by: string | null;
+  title: string;
+  starts_at: string;
+  ends_at: string | null;
+  all_day: boolean;
+  local_date: string;
+  place: string | null;
+  canceled_at: string | null;
+  updated_at: string;
+}
+
+export const PLAN_COLUMNS = "id, group_id, created_by, title, starts_at, ends_at, all_day, local_date, place, canceled_at, updated_at";
+
 export const POST_COLUMNS = "id, media_id, group_id, author_id, caption, invitation_id, in_window, reply_to_post_id, created_at";
 
 /** First word of a display name (same rule as private.first_name in SQL); null when empty. */

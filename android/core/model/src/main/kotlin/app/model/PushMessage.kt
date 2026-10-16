@@ -157,6 +157,7 @@ object PushKeys {
     const val REQUEST_ID = "request_id"
     const val TRIBUTE_ID = "tribute_id"
     const val YEAR = "year"
+    const val PLAN_ID = "plan_id"
     const val KIND = "kind"
     const val RENDITION_URL = "rendition_url"
     const val SENDER_NAME = "sender_name"
@@ -183,6 +184,7 @@ object PushTypes {
     const val BIRTHDAY_REQUEST = "birthday_request"
     const val TRIBUTE = "tribute"
     const val YEAR_STORY = "year_story"
+    const val PLAN = "plan"
 
     const val KIND_PHOTO = "photo"
     const val KIND_COLLAGE = "collage"

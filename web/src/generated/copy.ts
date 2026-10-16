@@ -196,6 +196,8 @@ const table = {
   "camera.capture.unavailable.button": "Try Again", // Retro · camera.capture · SOURCED
   "camera.capture.unavailable.detail": "The camera couldn't start. Please try again.", // Retro · camera.capture · SOURCED
   "camera.capture.unavailable.title": "Camera Unavailable", // Retro · camera.capture · SOURCED
+  "camera.overnight.push.body": "Photos have developed and are ready to view.", // Lapse · camera.overnight · SOURCED
+  "camera.overnight.push.title": "{group}", // Retro · camera.overnight · SOURCED
   "camera.sendto.a11y.close": "Close", // Retro · camera.sendto · SOURCED
   "camera.sendto.a11y.save": "Save to Camera Roll", // Retro · camera.sendto · SOURCED
   "camera.sendto.a11y.voice": "Add a voice note", // Retro · camera.sendto · SOURCED
@@ -520,6 +522,16 @@ const table = {
   "notifications.push.dailyInvitation.title": "{group}", // Retro · daily.notification · SOURCED
   "notifications.push.newPost.body": "{name} just posted.", // Retro · notifications.push · SOURCED
   "notifications.push.newPost.title": "{group}", // Retro · notifications.push · SOURCED
+  "notifications.push.planCanceled.body": "{name} canceled {title}.", // Apple Invites / Partiful · notifications.push · SOURCED
+  "notifications.push.planCanceled.title": "{group}", // Retro · notifications.push · SOURCED
+  "notifications.push.planChanged.body.place": "{title} is now at {place}.", // Retro · notifications.push · SOURCED
+  "notifications.push.planChanged.body.time": "{title} is now {when}.", // Retro · notifications.push · SOURCED
+  "notifications.push.planChanged.title": "{group}", // Retro · notifications.push · SOURCED
+  "notifications.push.planNew.body": "{name} made a plan: {title}", // Retro · notifications.push · SOURCED
+  "notifications.push.planNew.title": "{group}", // Retro · notifications.push · SOURCED
+  "notifications.push.planTomorrow.body.allDay": "Tomorrow.", // Countdown Widget | Day Counter · notifications.push · SOURCED
+  "notifications.push.planTomorrow.body.timed": "Tomorrow at {time}.", // Countdown Widget | Day Counter · notifications.push · SOURCED
+  "notifications.push.planTomorrow.title": "{title}", // Retro · notifications.push · SOURCED
   "notifications.push.reaction.body": "{name} reacted {emoji} to your post.", // Retro · notifications.push · SOURCED
   "notifications.push.reaction.title": "{group}", // Retro · notifications.push · SOURCED
   "notifications.push.recapReady.body": "This week's recap is ready.", // Retro · notifications.push · SOURCED
@@ -528,6 +540,8 @@ const table = {
   "notifications.push.reply.body.text": "{name} replied: \"{message}\"", // Retro · notifications.push · SOURCED
   "notifications.push.reply.body.voice": "{name} replied with a voice message.", // Retro · notifications.push · SOURCED
   "notifications.push.reply.title": "{group}", // Retro · notifications.push · SOURCED
+  "notifications.push.selfieReaction.body": "{name} reacted with a selfie to your post.", // Retro · notifications.push · SOURCED
+  "notifications.push.selfieReaction.title": "{group}", // Retro · notifications.push · SOURCED
   "notifications.push.tribute.body": "{group} made you a birthday video.", // Retro · notifications.push · SOURCED
   "notifications.push.tribute.title": "Happy birthday!", // Retro · notifications.push · SOURCED
   "onboarding.permission.camera.denied.button": "Allow Camera Access", // Retro · onboarding.permission.camera · SOURCED

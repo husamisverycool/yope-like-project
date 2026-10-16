@@ -8,7 +8,20 @@ import { collageCompose, collageRecompose } from "./collage.js";
 import { invitationEnd, invitationFire } from "./invitation.js";
 import { authDeleteUser, moderationReport, storageDelete } from "./maintenance.js";
 import { mediaRenditions } from "./media.js";
-import { pushBirthdayRequest, pushNewMessage, pushNewPost, pushReaction, pushRecapReady, pushTribute } from "./push.js";
+import {
+  pushBirthdayRequest,
+  pushNewMessage,
+  pushNewPost,
+  pushPhotosDeveloped,
+  pushPlanCanceled,
+  pushPlanChanged,
+  pushPlanCreated,
+  pushPlanTomorrow,
+  pushReaction,
+  pushRecapReady,
+  pushSelfieReaction,
+  pushTribute,
+} from "./push.js";
 import { recapGenerate } from "./recap.js";
 import { tributeRender } from "./tribute.js";
 import { widgetRefresh } from "./widget.js";
@@ -23,6 +36,12 @@ export const REALTIME_KINDS: Record<string, Handler> = {
   "push.birthday_request": pushBirthdayRequest,
   "push.recap_ready": pushRecapReady, // worker-enqueued by recap.generate
   "push.tribute": pushTribute, // worker-enqueued by tribute.render after delivery
+  "push.selfie_reaction": pushSelfieReaction,
+  "push.plan_created": pushPlanCreated,
+  "push.plan_tomorrow": pushPlanTomorrow,
+  "push.plan_changed": pushPlanChanged,
+  "push.plan_canceled": pushPlanCanceled,
+  "push.photos_developed": pushPhotosDeveloped,
   "widget.refresh": widgetRefresh,
 };
 

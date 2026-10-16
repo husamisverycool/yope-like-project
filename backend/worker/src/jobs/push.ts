@@ -7,6 +7,13 @@
 //   push.birthday_request members except the honoree and anyone with a block with them
 //   push.recap_ready     members, after recap.generate (worker-enqueued)
 //   push.tribute         the honoree only, after the tribute is rendered and delivered (worker-enqueued)
+//   push.selfie_reaction the photo's author, once per person per photo ("reaction" type, opens the photo)
+//   push.plan_created    members except the plan's maker
+//   push.plan_tomorrow   24 hours before a plan, members who answered Going or Maybe (the maker included)
+//   push.plan_changed    a plan's day, time or place changed: Going and Maybe, except who changed it
+//   push.plan_canceled   a plan was cancelled: Going and Maybe, except who cancelled it
+//   push.photos_developed overnight photos revealed: once per group and reveal time, to members who can see one
+//                        of them (their own included) and kept overnight alerts on (opens the first photo)
 // Rules for every alert: no push to the actor, nobody with a block with the actor, nobody who muted
 // the group (mute = no alerts from that group; widgets still update), silent in quiet hours.
 // Alerts carry a collapse id, so a job that runs twice replaces the notification instead of
@@ -18,8 +25,8 @@ import { alertSends, blockedWith, loadAudience, profileOf, type Audience, type M
 import { apnsAlert, fitText, type AlertSpec } from "../push/payloads.js";
 import type { DeviceSend } from "../push/service.js";
 import { str, type JobContext } from "../services.js";
-import { unixSeconds } from "../time.js";
-import { firstName, MEDIA_COLUMNS, POST_COLUMNS, type MediaRow, type MessageRow, type PostRow, type RecapRow, type TributeRequestRow, type TributeRow } from "../types.js";
+import { localTime, localWhen, unixSeconds } from "../time.js";
+import { firstName, MEDIA_COLUMNS, PLAN_COLUMNS, POST_COLUMNS, type MediaRow, type MessageRow, type PlanRow, type PostRow, type RecapRow, type TributeRequestRow, type TributeRow } from "../types.js";
 import { widgetFieldsForPost } from "./widget.js";
 
 function recipientsExcept(audience: Audience, exclude: Set<string>, blocked: Set<string>): Member[] {
@@ -213,4 +220,162 @@ export async function pushTribute(ctx: JobContext): Promise<void> {
     collapseKey: `tribute:${t.id}`,
   }, now);
   await ctx.push.dispatch(sends, { label: "tribute", group_id: t.group_id, tribute_id: t.id });
+}
+
+export async function pushSelfieReaction(ctx: JobContext): Promise<void> {
+  const postId = str(ctx.job.payload, "post_id");
+  const reactor = str(ctx.job.payload, "user_id");
+  const still = must(await ctx.db.from("selfie_reactions").select("post_id").eq("post_id", postId).eq("user_id", reactor), "selfie reaction") as unknown[];
+  if (!still.length) return; // removed before we got here
+  const post = await loadPost(ctx, postId);
+  if (!post || post.author_id === reactor) return;
+  const now = ctx.now();
+  const audience = await loadAudience(ctx.db, post.group_id, now);
+  const member = audience?.byId.get(post.author_id);
+  if (!audience || !member || member.muted) return;
+  if ((await blockedWith(ctx.db, [reactor])).has(post.author_id)) return;
+  const name = firstName((await profileOf(ctx.db, reactor))?.display_name) ?? "";
+  const params = { name, group: audience.group.name };
+  const sends = alertSends(member, {
+    type: "reaction",
+    groupId: post.group_id,
+    ids: { post_id: post.id },
+    title: copyText("notifications.push.selfieReaction.title", params),
+    body: copyText("notifications.push.selfieReaction.body", params),
+    // selfies and emoji reactions to one photo replace each other (push.reaction)
+    collapseKey: `reaction:${post.id}`,
+  }, now);
+  await ctx.push.dispatch(sends, { label: "selfie_reaction", group_id: post.group_id, post_id: post.id });
+}
+
+async function loadPlan(ctx: JobContext, id: string): Promise<PlanRow | null> {
+  return maybe(await ctx.db.from("plans").select(PLAN_COLUMNS).eq("id", id).maybeSingle(), "plan") as PlanRow | null;
+}
+
+/** Members who answered Going or Maybe, minus muted and anyone with a block with the plan's maker. */
+async function comingMembers(ctx: JobContext, plan: PlanRow, audience: Audience, except: string | null): Promise<Member[]> {
+  const answers = must(
+    await ctx.db.from("plan_answers").select("user_id").eq("plan_id", plan.id).in("answer", ["going", "maybe"]),
+    "plan answers",
+  ) as Array<{ user_id: string }>;
+  const coming = new Set(answers.map((a) => a.user_id));
+  const blocked = plan.created_by ? await blockedWith(ctx.db, [plan.created_by]) : new Set<string>();
+  return audience.members.filter((m) => coming.has(m.userId) && m.userId !== except && !m.muted && !blocked.has(m.userId));
+}
+
+function planAlert(plan: PlanRow, title: string, body: string): Omit<AlertSpec, "quiet"> {
+  return {
+    type: "plan",
+    groupId: plan.group_id,
+    ids: { plan_id: plan.id },
+    title,
+    body,
+    // a plan's alerts replace each other on the device
+    collapseKey: `plan:${plan.id}`,
+    expiresAt: unixSeconds(plan.starts_at),
+  };
+}
+
+export async function pushPlanCreated(ctx: JobContext): Promise<void> {
+  const plan = await loadPlan(ctx, str(ctx.job.payload, "plan_id"));
+  const now = ctx.now();
+  if (!plan || plan.canceled_at || new Date(plan.starts_at) <= now || !plan.created_by) return;
+  const audience = await loadAudience(ctx.db, plan.group_id, now);
+  if (!audience) return;
+  const recipients = recipientsExcept(audience, new Set([plan.created_by]), await blockedWith(ctx.db, [plan.created_by]));
+  if (!recipients.length) return;
+  const name = firstName((await profileOf(ctx.db, plan.created_by))?.display_name) ?? "";
+  const params = { name, group: audience.group.name, title: plan.title };
+  const spec = planAlert(plan, copyText("notifications.push.planNew.title", params), copyText("notifications.push.planNew.body", params));
+  await ctx.push.dispatch(recipients.flatMap((m) => alertSends(m, spec, now)), { label: "plan_created", group_id: plan.group_id, plan_id: plan.id });
+}
+
+export async function pushPlanTomorrow(ctx: JobContext): Promise<void> {
+  const plan = await loadPlan(ctx, str(ctx.job.payload, "plan_id"));
+  const now = ctx.now();
+  if (!plan || plan.canceled_at || new Date(plan.starts_at) <= now) return;
+  const audience = await loadAudience(ctx.db, plan.group_id, now);
+  if (!audience) return;
+  const recipients = await comingMembers(ctx, plan, audience, null);
+  if (!recipients.length) return;
+  const params = { group: audience.group.name, title: plan.title };
+  const body = plan.all_day
+    ? copyText("notifications.push.planTomorrow.body.allDay", params)
+    : copyText("notifications.push.planTomorrow.body.timed", { ...params, time: localTime(plan.starts_at, audience.group.time_zone) });
+  const spec = planAlert(plan, copyText("notifications.push.planTomorrow.title", params), body);
+  await ctx.push.dispatch(recipients.flatMap((m) => alertSends(m, spec, now)), { label: "plan_tomorrow", group_id: plan.group_id, plan_id: plan.id });
+}
+
+export async function pushPlanChanged(ctx: JobContext): Promise<void> {
+  const plan = await loadPlan(ctx, str(ctx.job.payload, "plan_id"));
+  const now = ctx.now();
+  // a later edit queues its own job: only the latest version is announced
+  if (!plan || plan.canceled_at || new Date(plan.starts_at) <= now || plan.updated_at !== str(ctx.job.payload, "updated_at")) return;
+  const audience = await loadAudience(ctx.db, plan.group_id, now);
+  if (!audience) return;
+  const editor = str(ctx.job.payload, "author_id");
+  const recipients = await comingMembers(ctx, plan, audience, editor);
+  if (!recipients.length) return;
+  const name = firstName((await profileOf(ctx.db, editor))?.display_name) ?? "";
+  const params = { name, group: audience.group.name, title: plan.title };
+  const timeChanged = ctx.job.payload.time_changed === true;
+  const body = timeChanged || !plan.place
+    ? copyText("notifications.push.planChanged.body.time", { ...params, when: localWhen(plan, audience.group.time_zone) })
+    : copyText("notifications.push.planChanged.body.place", { ...params, place: plan.place });
+  const spec = planAlert(plan, copyText("notifications.push.planChanged.title", params), body);
+  await ctx.push.dispatch(recipients.flatMap((m) => alertSends(m, spec, now)), { label: "plan_changed", group_id: plan.group_id, plan_id: plan.id });
+}
+
+export async function pushPlanCanceled(ctx: JobContext): Promise<void> {
+  const plan = await loadPlan(ctx, str(ctx.job.payload, "plan_id"));
+  const now = ctx.now();
+  // restored since: nothing to announce
+  if (!plan || !plan.canceled_at) return;
+  const audience = await loadAudience(ctx.db, plan.group_id, now);
+  if (!audience) return;
+  const canceler = str(ctx.job.payload, "author_id");
+  const recipients = await comingMembers(ctx, plan, audience, canceler);
+  if (!recipients.length) return;
+  const name = firstName((await profileOf(ctx.db, canceler))?.display_name) ?? "";
+  const params = { name, group: audience.group.name, title: plan.title };
+  const spec = planAlert(plan, copyText("notifications.push.planCanceled.title", params), copyText("notifications.push.planCanceled.body", params));
+  await ctx.push.dispatch(recipients.flatMap((m) => alertSends(m, spec, now)), { label: "plan_canceled", group_id: plan.group_id, plan_id: plan.id });
+}
+
+export async function pushPhotosDeveloped(ctx: JobContext): Promise<void> {
+  const groupId = str(ctx.job.payload, "group_id");
+  const developsAt = str(ctx.job.payload, "develops_at");
+  const now = ctx.now();
+  const audience = await loadAudience(ctx.db, groupId, now);
+  if (!audience) return;
+  // the photos that revealed at this time (ordinary posts now)
+  const posts = must(
+    await ctx.db.from("posts").select("id, author_id, created_at").eq("group_id", groupId).eq("revealed_at", developsAt).order("created_at").order("id"),
+    "revealed posts",
+  ) as Array<{ id: string; author_id: string }>;
+  if (!posts.length) return; // deleted since
+  // a member hears when at least one of the photos is theirs or from someone they have no block with
+  const authors = [...new Set(posts.map((p) => p.author_id))];
+  const blockedBy = new Map<string, Set<string>>();
+  for (const a of authors) blockedBy.set(a, await blockedWith(ctx.db, [a]));
+  const seesOne = (userId: string) => authors.some((a) => a === userId || !blockedBy.get(a)!.has(userId));
+  const off = must(
+    await ctx.db.from("notification_settings").select("user_id").eq("overnight", false).in("user_id", audience.members.map((m) => m.userId)),
+    "overnight settings",
+  ) as Array<{ user_id: string }>;
+  const silenced = new Set(off.map((r) => r.user_id));
+  const recipients = audience.members.filter(
+    (m) => !m.muted && !silenced.has(m.userId) && seesOne(m.userId),
+  );
+  if (!recipients.length) return;
+  const params = { group: audience.group.name };
+  const spec: Omit<AlertSpec, "quiet"> = {
+    type: "new_post",
+    groupId,
+    ids: { post_id: posts[0]!.id },
+    title: copyText("camera.overnight.push.title", params),
+    body: copyText("camera.overnight.push.body", params),
+    collapseKey: `developed:${groupId}:${developsAt}`,
+  };
+  await ctx.push.dispatch(recipients.flatMap((m) => alertSends(m, spec, now)), { label: "photos_developed", group_id: groupId, post_id: posts[0]!.id });
 }

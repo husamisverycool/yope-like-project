@@ -27,6 +27,8 @@ export interface SeededGroup {
   requestId: string;
   tributeId: string;
   yearStoryId: string;
+  planId: string;
+  questionId: string;
   objectPaths: string[];
 }
 
@@ -162,6 +164,41 @@ export async function seedFullGroup(users: TestUser[], name = 'Seeded'): Promise
     [group.id, p1[0].id, [p1[0].id], [yearAsset]],
   );
 
+  // selfie reaction (b's own upload) on a's photo
+  const selfiePath = `u/${b.id}/selfies/${randomUUID()}.jpg`;
+  await upload(b, selfiePath);
+  objectPaths.push(selfiePath);
+  await rpc(b.client, 'react_with_selfie', { p_post_id: p1[0].id, p_image_path: selfiePath });
+
+  // a plan with a cover, answered by c
+  const planCover = `u/${a.id}/plans/${randomUUID()}.jpg`;
+  await upload(a, planCover);
+  objectPaths.push(planCover);
+  const plan = await rpc(a.client, 'create_plan', {
+    p_group_id: group.id,
+    p_title: 'Dinner',
+    p_starts_at: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+    p_place: 'Our place',
+    p_note: 'Bring a dish',
+    p_cover_path: planCover,
+  });
+  await rpc(c.client, 'answer_plan', { p_plan_id: plan.id, p_answer: 'maybe' });
+  await rpc(d.client, 'answer_plan', { p_plan_id: plan.id, p_answer: 'cant_go' });
+
+  // an overnight photo by c, still developing (its files are nobody's until it develops: not in objectPaths)
+  const m3 = await createMedia(c);
+  await rpc(c.client, 'create_overnight_post', { p_media_id: m3.id, p_group_ids: [group.id] });
+
+  // the week's question (the group has it on), removed by d, answered by b
+  await rpc(a.client, 'set_group_weekly_question', { p_group_id: group.id, p_on: true });
+  const [question] = await sql<{ id: string }>(
+    `insert into public.group_questions (group_id, week_start, question_key)
+     values ($1, private.group_week_start($1), 'question.weekly.q01') returning id`,
+    [group.id],
+  );
+  await rpc(d.client, 'hide_question', { p_question_id: question.id });
+  await rpc(b.client, 'answer_question', { p_post_id: p2[0].id, p_question_id: question.id });
+
   // account-scoped rows
   await rpc(a.client, 'register_device', {
     p_platform: 'ios',
@@ -193,6 +230,8 @@ export async function seedFullGroup(users: TestUser[], name = 'Seeded'): Promise
     requestId: req.id,
     tributeId,
     yearStoryId: ys.id,
+    planId: plan.id,
+    questionId: question.id,
     objectPaths,
   };
 }

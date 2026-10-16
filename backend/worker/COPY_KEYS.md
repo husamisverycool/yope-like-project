@@ -16,6 +16,10 @@ the job as a contract error):
 | `{group}` | the group's name |
 | `{emoji}` | the reaction emoji |
 | `{message}` | the text of a chat reply (shortened only if the push would exceed APNs' 4 KB) |
+| `{title}` | a plan's title (1–80 characters) |
+| `{time}` | a plan's start time in the group's time zone, as the platform formats it ("7:30 PM") |
+| `{when}` | a plan's day and time in the group's time zone, as the platform formats it ("Saturday, October 24 at 7:30 PM"; the day alone when all-day) |
+| `{place}` | a plan's place as typed |
 
 Rules from the tenets for every string here: no counts, no streaks, no "late", no guilt or
 nagging, no urgency (docs/CONVENTIONS.md §6, docs/SPEC_FLAGS.md T4/T5).
@@ -42,6 +46,20 @@ Each notification has a title and a body (Android requires a title; iOS shows bo
 | `notifications.push.birthdayRequest.body` | `{name}`, `{group}` | `notifications.push` | Body of the request (wrapped-tribute-partiful.copy.json proposes `notifications.push.birthdayRequest` as one string; split here into title/body). |
 | `notifications.push.tribute.title` | `{group}` | `notifications.push` | To the birthday person: the tribute their group made is ready. |
 | `notifications.push.tribute.body` | `{group}` | `notifications.push` | Body of the tribute-for-you notification. No number of contributors. |
+| `notifications.push.selfieReaction.title` | `{name}`, `{group}` | `notifications.push` | Someone reacted to your photo with a selfie (selfie.reaction). Replaces an earlier reaction alert for the same photo. |
+| `notifications.push.selfieReaction.body` | `{name}`, `{group}` | `notifications.push` | Body of the selfie-reaction notification. Never a number. |
+| `notifications.push.planNew.title` | `{name}`, `{group}`, `{title}` | `notifications.push` | A member made a plan in the group. To every member but its maker. |
+| `notifications.push.planNew.body` | `{name}`, `{group}`, `{title}` | `notifications.push` | Body of the new-plan notification: an invitation, never an obligation (tenet 5). |
+| `notifications.push.planTomorrow.title` | `{group}`, `{title}` | `notifications.push` | The one reminder, 24 hours before the plan, to members who answered Going or Maybe. |
+| `notifications.push.planTomorrow.body.timed` | `{group}`, `{title}`, `{time}` | `notifications.push` | Body of the reminder for a plan with a start time. No count of who is going. |
+| `notifications.push.planTomorrow.body.allDay` | `{group}`, `{title}` | `notifications.push` | Body of the reminder for an all-day plan. |
+| `notifications.push.planChanged.title` | `{name}`, `{group}`, `{title}` | `notifications.push` | A plan's day, time or place changed. To Going and Maybe, except who changed it. |
+| `notifications.push.planChanged.body.time` | `{name}`, `{group}`, `{title}`, `{when}` | `notifications.push` | Body when the day or time changed. |
+| `notifications.push.planChanged.body.place` | `{name}`, `{group}`, `{title}`, `{place}` | `notifications.push` | Body when only the place changed. |
+| `notifications.push.planCanceled.title` | `{name}`, `{group}`, `{title}` | `notifications.push` | A plan was cancelled. To Going and Maybe, except who cancelled it. |
+| `notifications.push.planCanceled.body` | `{name}`, `{group}`, `{title}` | `notifications.push` | Body of the plan-cancelled notification. |
+| `camera.overnight.push.title` | `{group}` | `camera.overnight` | The group's overnight photos have developed (one per group and reveal time; members can turn these off). |
+| `camera.overnight.push.body` | `{group}` | `camera.overnight` | Body of the photos-developed notification. No count, no names. |
 
 Not sent (no type in the shared push contract, or not in the brief): ordinary chat messages that
 are not replies; "year story ready" (`year_story` exists in the contract but the brief does not
