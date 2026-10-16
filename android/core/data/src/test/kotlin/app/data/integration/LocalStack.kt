@@ -43,7 +43,8 @@ import kotlin.time.Duration.Companion.seconds
  * The local Supabase stack (`cd backend && npm run db:start`), as backend/tests use it: the CLI's
  * local URL and demo keys unless overridden (`-PsupabaseTestUrl` … or SUPABASE_URL …).
  * Integration tests call [assumeReachable] first: without the stack they are skipped, with the
- * reason printed, so CI without Docker stays green.
+ * reason printed. CI starts the stack and sets ANDROID_INTEGRATION_REQUIRED=1 (job `android`): there an unreachable
+ * stack fails them instead, so they can never pass by not running.
  */
 object LocalStack {
     val url: String = (System.getProperty("supabase.test.url") ?: System.getenv("SUPABASE_URL") ?: "http://127.0.0.1:54321").trimEnd('/')
@@ -55,8 +56,12 @@ object LocalStack {
     /** Null when reachable; otherwise why not. */
     val unreachableReason: String? by lazy { probe() }
 
+    /** ANDROID_INTEGRATION_REQUIRED=1: the integration tests must run (CI). */
+    val required: Boolean = System.getenv("ANDROID_INTEGRATION_REQUIRED") == "1"
+
     fun assumeReachable() {
         val reason = unreachableReason ?: return
+        if (required) throw AssertionError("ANDROID_INTEGRATION_REQUIRED=1 but the local Supabase stack is not reachable at $url: $reason")
         val message = "SKIPPED (local Supabase stack not reachable at $url: $reason). Start it with `cd backend && npm run db:start`."
         println(message)
         Assume.assumeTrue(message, false)

@@ -131,11 +131,14 @@ jobs:
           npm run typecheck
           npm test
 
+  # Build, unit and snapshot tests, and core:data's integration tests (the Android data layer: auth, groups, storage,
+  # realtime, selfies, overnight photos, schema conformance) against this job's local Supabase;
+  # ANDROID_INTEGRATION_REQUIRED=1 makes an unreachable stack fail them instead of skipping them.
   android:
-    name: android (build, unit, snapshot)
+    name: android (build, unit, snapshot, data layer against a local Supabase)
     runs-on: ubuntu-24.04
     needs: detect
-    if: needs.detect.outputs.android == 'true'
+    if: needs.detect.outputs.android == 'true' && needs.detect.outputs.backend == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -147,9 +150,33 @@ jobs:
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: start Supabase (core:data integration tests)
+        working-directory: backend
+        run: |
+          npm ci
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          supabase status -o json | jq -r '"SUPABASE_URL=\(.API_URL)", "SUPABASE_ANON_KEY=\(.ANON_KEY)", "SUPABASE_SERVICE_ROLE_KEY=\(.SERVICE_ROLE_KEY)"' >> "$GITHUB_ENV"
       - name: build, unit and snapshot tests
         working-directory: android
-        run: ./gradlew --no-daemon assembleDebug testDebugUnitTest
+        env:
+          ANDROID_INTEGRATION_REQUIRED: "1"
+        run: |
+          ./gradlew --no-daemon assembleDebug testDebugUnitTest
+          # The integration tests ran (none skipped).
+          python3 - <<'PY'
+          import glob, sys, xml.etree.ElementTree as ET
+          files = glob.glob("core/data/build/test-results/testDebugUnitTest/TEST-app.data.integration.*.xml")
+          tests = sum(int(ET.parse(f).getroot().get("tests", 0)) for f in files)
+          skipped = sum(int(ET.parse(f).getroot().get("skipped", 0)) for f in files)
+          print(f"core:data integration: {tests} tests, {skipped} skipped ({len(files)} classes)")
+          sys.exit(0 if files and tests > 0 and skipped == 0 else 1)
+          PY
 
   android-e2e:
     name: android e2e
@@ -185,13 +212,33 @@ jobs:
           # would let anyone sign in as these numbers.
           printf '\n[auth.sms.test_otp]\n12015550101 = "123456"\n12015550102 = "123456"\n' >> supabase/config.toml
           supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
-          # The age gate fails closed until the owner sets min_age_years (docs/OWNER_SETUP.md); the test stack sets one.
+          # The age gate fails closed until the owner sets min_age_years (docs/OWNER_SETUP.md); the weekly question asks
+          # nothing until the owner orders the catalogue (weekly_question_keys, docs/API.md §14.4). The test stack sets both.
           DB=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
-          docker exec "$DB" psql -U postgres -v ON_ERROR_STOP=1 -c "update public.app_config set value = '13' where key = 'min_age_years'"
+          docker exec "$DB" psql -U postgres -v ON_ERROR_STOP=1 \
+            -c "update public.app_config set value = '13' where key = 'min_age_years'" \
+            -c "update public.app_config set value = '[\"question.weekly.q01\", \"question.weekly.q02\"]' where key = 'weekly_question_keys'"
           supabase migration list --local || true
           ANON=$(supabase status -o json | jq -r '.ANON_KEY // empty')
-          test -n "$ANON"
+          SERVICE=$(supabase status -o json | jq -r '.SERVICE_ROLE_KEY // empty')
+          test -n "$ANON" && test -n "$SERVICE"
           echo "E2E_ANON_KEY=$ANON" >> "$GITHUB_ENV"
+          echo "E2E_SERVICE_ROLE_KEY=$SERVICE" >> "$GITHUB_ENV"
+      # The worker against the job's stack, as production runs it (backend/worker, `npm start`): renditions, the reveal's
+      # push and widget jobs, the scheduler (every 5 s here instead of every minute). No APNs / FCM keys: pushes are
+      # skipped and logged. Its log goes into the evidence (android-e2e.sh).
+      - name: start the worker
+        working-directory: backend/worker
+        run: |
+          npm ci
+          mkdir -p "$GITHUB_WORKSPACE/android/build/e2e"
+          SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY="$E2E_SERVICE_ROLE_KEY" PORT=8787 WORKER_ID=e2e \
+            SCHEDULER_INTERVAL_MS=5000 nohup npm start > "$GITHUB_WORKSPACE/android/build/e2e/worker.log" 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8787/healthz > /dev/null; then echo "worker up after ${i} s"; exit 0; fi
+            sleep 1
+          done
+          echo "the worker did not answer /healthz"; tail -50 "$GITHUB_WORKSPACE/android/build/e2e/worker.log"; exit 1
       - name: build the app and the journey
         working-directory: android
         run: ./gradlew --no-daemon :app:assembleDebug :app:assembleDebugAndroidTest

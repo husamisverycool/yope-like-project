@@ -12,6 +12,7 @@ import app.feature.account.AccountEnvironments
 import app.feature.account.InviteLinks
 import app.feature.account.invite.HttpInvitePreviewClient
 import app.feature.capture.camera.CameraControllers
+import app.feature.social.viewer.SelfieCameras
 import app.model.DeepLinkCodec
 
 /**
@@ -23,13 +24,17 @@ import app.model.DeepLinkCodec
  * - `AccountEnvironments.override`: the real environment with an invite-link host ([E2E_INVITE_HOST]), because
  *   `config/app.json` `domain` is BLOCKED and invite links do not exist without one. The web preview service is not part
  *   of this run, so the preview is "not configured" and `join_group` decides (the app's own path for that case);
- * - `CameraControllers.factory`: [FixtureCameraController], because the emulator camera cannot take a real photo.
+ * - `CameraControllers.factory`: [FixtureCameraController], because the emulator camera cannot take a real photo;
+ * - `SelfieCameras.factory`: [FixtureSelfieCamera] for the viewer's selfie layer (front camera), likewise, and
+ *   `SelfieCameras.hasFrontCamera` true, so the selfie entry points show whatever cameras the emulator image has.
  *
  * Without the arguments nothing is changed and [JourneyTest] skips. This file lives in the test APK only: release (and
  * plain debug) builds contain none of it.
  *
  * Arguments: `-e supabaseUrl http://10.0.2.2:54321 -e supabaseAnonKey <anon key>` (Gradle:
- * `-Pandroid.testInstrumentationRunnerArguments.supabaseUrl=…`).
+ * `-Pandroid.testInstrumentationRunnerArguments.supabaseUrl=…`), and `-e serviceRoleKey <service role key>`: the test
+ * stack's key, which the journey uses for what the worker's scheduler does at 9 AM (`due_developed_posts`), never the
+ * app.
  */
 class E2eRunner : AndroidJUnitRunner() {
     override fun onCreate(arguments: Bundle?) {
@@ -37,6 +42,8 @@ class E2eRunner : AndroidJUnitRunner() {
         val key = arguments?.getString(ARG_ANON_KEY)?.takeIf { it.isNotBlank() }
         if (url != null && key != null) {
             configure(targetContext.applicationContext, SupabaseConfig(url.trimEnd('/'), key))
+            supabaseUrl = url.trimEnd('/')
+            serviceRoleKey = arguments.getString(ARG_SERVICE_ROLE_KEY)?.takeIf { it.isNotBlank() }
             configured = true
             Log.i(TAG, "end-to-end run against $url")
         } else {
@@ -67,18 +74,29 @@ class E2eRunner : AndroidJUnitRunner() {
             ),
         )
         CameraControllers.factory = { context, _ -> FixtureCameraController(context) }
+        SelfieCameras.factory = { _, _ -> FixtureSelfieCamera() }
+        SelfieCameras.hasFrontCamera = { true }
     }
 
     companion object {
         const val TAG = "E2E"
         const val ARG_URL = "supabaseUrl"
         const val ARG_ANON_KEY = "supabaseAnonKey"
+        const val ARG_SERVICE_ROLE_KEY = "serviceRoleKey"
 
         /** Invite-link host of the run (RFC 6761 `.test`: never resolves, nothing outside the test opens these links). */
         const val E2E_INVITE_HOST = "invite.e2e.test"
 
         /** Whether the arguments named a stack (read by the tests). */
         @Volatile var configured: Boolean = false
+            private set
+
+        /** The stack's API URL as the device reaches it. */
+        @Volatile var supabaseUrl: String? = null
+            private set
+
+        /** The test stack's service role key (`serviceRoleKey` argument), or null. */
+        @Volatile var serviceRoleKey: String? = null
             private set
     }
 }
