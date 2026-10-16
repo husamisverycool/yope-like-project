@@ -110,6 +110,7 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         repeat(4) { compose.mainClock.advanceTimeByFrame() }
         com.github.takahirom.roborazzi.captureScreenRoboImage("src/test/snapshots/onthisday/mode-menu-light.png")
         compose.onNodeWithText("Shuffle").performClick()
+        compose.waitForIdle()
         compose.mainClock.advanceTimeBy(settleMillis)
         assertEquals(1, shuffled)
         compose.onNodeWithText("Shuffle").assertDoesNotExist()
@@ -118,6 +119,7 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.waitForIdle()
         compose.mainClock.advanceTimeBy(settleMillis)
         compose.onNodeWithText("On this day…").performClick()
+        compose.waitForIdle()
         compose.mainClock.advanceTimeBy(settleMillis)
         assertEquals(1, day)
     }
