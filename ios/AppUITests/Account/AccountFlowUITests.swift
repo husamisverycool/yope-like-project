@@ -45,7 +45,13 @@ final class AccountFlowUITests: XCTestCase {
         let candidate = app.buttons.matching(identifier: identifier).firstMatch
         let button = candidate.waitForExistence(timeout: 2) ? candidate : element(app, identifier)
         XCTAssertTrue(button.waitForExistence(timeout: 5), "\(identifier) missing", file: file, line: line)
-        XCTAssertTrue(button.isEnabled, "\(identifier) disabled", file: file, line: line)
+        // SwiftUI can publish a control's enabled state a frame after the keystroke that enables it: wait for it, and
+        // when it never comes, print the screen's tree so the cause shows in the log.
+        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true"), object: button)
+        guard XCTWaiter().wait(for: [enabled], timeout: 5) == .completed else {
+            XCTFail("\(identifier) disabled\n\(app.debugDescription)", file: file, line: line)
+            return
+        }
         button.tap()
     }
 
