@@ -313,7 +313,7 @@ def collage_view(share=False):
         s.near("card centred", 196.5, cx(card))
         s.near("card at least 32 from the sides", 32, card["left"], "", "side minimum only in the token's text (reported)")
         s.token("card corners `collage.view.layout.page.outerRadiusRatio` × width", num(tok("collage.view.layout.page", "outerRadiusRatio") * card["width"]), "maxWidth × outerRadiusRatio")
-        s.token("backdrop: page 1 blurred (`size.global.backdropBlur` σ, lead L-5), dim `color.global.backdropDim`", "σ token", "BlurredBackdrop(σ)", "", "below API 31: `controlOnDeep`")
+        s.token("backdrop: the collage's first photo (`post_ids[0]`, display rendition) aspect-filled, blurred `size.global.backdropBlur` under `color.global.backdropDim` (L-5, L-7)", "first photo, σ 1.8", "BlurredBackdrop(first photo, σ token); page 1 until it loads", "", "below API 31: `controlOnDeep`")
         s.section("Page dots (C-31 on media)")
         s.near("dot centre `dimension.year.story.dots.offset` below the page (RC-19)", tok("dimension.year.story.dots.offset"), cy(dots) - page["bottom"], "ST-04 y2385 → y2424 (16.3 pt)")
         s.near("dots centred", 196.5, cx(dots))
@@ -333,6 +333,7 @@ def collage_view(share=False):
         for st, note in [("loading", "page `controlOnDeep`, indicator + \"Creating your collage…\""), ("ready", "one page, no dots"), ("ready-no-share", "pill hidden until `share_path`"),
                          ("empty", "C-27 on media, C-07 \"Take photo\" → camera"), ("error", "one tappable `body` line"), ("offline", "offline line")]:
             s.row("match", f"state `{st}`", "spec → States", f"collage.view_{st}.png", "", note)
+        s.row("match", "state `ready-backdrop-loading`", "page 1's image until the first photo loads (L-7)", "collage.view_ready-backdrop-loading.png", "", "")
     return s
 
 

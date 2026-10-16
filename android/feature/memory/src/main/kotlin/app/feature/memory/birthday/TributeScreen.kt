@@ -31,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -169,7 +170,8 @@ private fun androidx.compose.foundation.layout.BoxScope.Page(state: TributeState
                 }
             }
         }
-        Spacer(Modifier.height(recapRowCentre() * 2))
+        // The player is centred between the header and the top of the bar (the pill's top edge).
+        Spacer(Modifier.height(recapRowCentre() + Dp(Tokens.Layouts.CollageShareLayoutPill.height) / 2))
     }
     RecapBottomRow(
         leading = {

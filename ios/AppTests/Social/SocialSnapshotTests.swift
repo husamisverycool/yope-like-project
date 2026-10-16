@@ -81,11 +81,12 @@ final class SocialSnapshotTests: XCTestCase {
     ) {
         for appearance in appearances {
             let name = surface + "-" + state + "-" + appearance.rawValue
+            let built = view()
             let content = Group {
                 if navigation {
-                    NavigationStack { view() }
+                    NavigationStack { built }
                 } else {
-                    view()
+                    built
                 }
             }
             .environment(account)
