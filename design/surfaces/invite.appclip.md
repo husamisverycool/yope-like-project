@@ -1,114 +1,94 @@
-# `invite.appclip` — iOS App Clip: the invite preview, then join
+# `invite.appclip` — iOS App Clip: invite preview, sign-in, join
 
-References: **Partiful** (App Clip card, invite page, RSVP sheet) + **Apple HIG / App Clips** (`docs/SURFACES.md`).
-Research: `design/research/wrapped-tribute-partiful.md` §5–§6; platform: `docs/PLATFORM_CONSTRAINTS.md` §3.
-Tokens: `design/tokens/invite.json` (`invite.appclip.*`, and every `invite.web.*` token for the preview itself).
-Copy: `design/copy/invite.json` (`invite.appclip.*`, and the `invite.web.*` strings named below).
-Code: `ios/AppClip/Sources/InviteClipApp.swift` (container; fills `InviteClipContainer`).
+Visual reference: Retro's `/u/[username]` page and its **App Clip card** (`io.lonepalm.Retro.Clip`, `app-clip-display=card`;
+RP §7) — the clip shows the same invite card as `invite.web` (mobile), natively. Mechanics: Apple HIG (App Clips:
+card limits, full-app overlay after the task). Sign-in reuses the onboarding form screens (`auth.phone` B, `auth.code`,
+`auth.agegate`, `auth.profile` step 1). Tokens: `invite.appclip.*`, `invite.web.*` (card) + `global.*`. Copy:
+`invite.appclip.*`, `invite.web.*`.
 
 ## References
 
 | id | file / URL | used for |
 |---|---|---|
-| C1 | `references/auto/partiful/store/partiful-store-04.png` (crop y 1400–2688) | App Clip card in Messages: header image (poster on blurred backdrop) with domain chip; clip icon, title "Book Club", subtitle "Make memories", action "View" |
-| C2 | https://partiful.com/.well-known/apple-app-site-association (fetched 2026-10-15) | `appclips.apps` entry + `applinks` components with an exclude rule — same shape as ours |
-| C3 | P1–P3 page HTML: `<meta name="apple-itunes-app" content="app-id=…, app-clip-bundle-id=…">` | banner/card on the invite page |
-| P4 | `references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png`, `pf-web-public-dark-rsvp-sheet.png` (+ computed styles) | join sheet: name and phone fields, helper line, Cancel / Continue |
-| W | `design/surfaces/invite.web.md` and its references (P3, P1, P2, NF) | the preview inside the clip (same anatomy, tokens and copy) |
-| JS | `references/auto/partiful/js/partiful-web-js-excerpt-2026-10-15.js` [B], [E], [I], [J], [K] | state glyphs and strings: not found, capacity ("Couldn't RSVP" / "Event is full"), offline, "Join" |
-| HIG | https://developer.apple.com/design/human-interface-guidelines/app-clips ; https://developer.apple.com/documentation/appclip | card limits, invocation, SKOverlay, ephemeral notifications |
-
-Partiful's App Clip screens themselves were **not found** (App Clips cannot be launched in the capture environment).
+| WEBX | `references/auto/retro/web/retro.app-web-copy-excerpts.txt` | `apple-itunes-app … app-clip-display=card`; "Let's go" → `appclip.apple.com/id?p=io.lonepalm.Retro.Clip&…` |
+| WEBU | `references/auto/retro/web/retro.app-u-nathan-iphone.png` | the card drawn by the clip |
+| HIG | https://developer.apple.com/design/human-interface-guidelines/app-clips | card text limits, preset verbs, SKOverlay after the task |
+| APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | `onboarding_post_invite_welcome_title` ("Welcome to Retro"), error patterns |
 
 ## Structure
 
-1. **App Clip card** (drawn by iOS — Safari banner/card from the page's `apple-itunes-app` meta, or Messages):
-   header image, title, subtitle `invite.appclip.card.subtitle`, action `invite.appclip.card.action` ("View").
-   Limits `invite.appclip.layout.cardLimits` (1800×1200 image without text, title ≤ 30, subtitle ≤ 56 characters).
-   Card anatomy `invite.appclip.layout.messagesCard`. Values are entered in App Store Connect (default experience +
-   advanced experience for the URL prefix `https://<domain>/i/`, `docs/OWNER_SETUP.md` §1.5).
-2. **Preview** — the `invite.web` page anatomy rendered natively, top to bottom: title (auto-fit), cover, "Invited by"
-   row, Member List (avatars, View all → member rows), members-only card. Every element, token and copy key is in the
-   `invite.web` Elements table; the only change is the card's action:
-   - card button label `invite.appclip.join` ("Join", Partiful's RSVP-control label) instead of `invite.web.getApp`;
-   - no footer and no "Get the app" link (the clip is the app's stand-in; Apple: no install requirement to finish a task).
-3. **Join sheet** (Partiful's RSVP sheet P4 without its Going / Maybe / Can't Go choices, which have no counterpart —
-   joining is one action): name field placeholder `invite.appclip.sheet.name`, phone field placeholder
-   `invite.appclip.sheet.phone`, helper `invite.appclip.sheet.helper`, actions `invite.appclip.sheet.cancel` /
-   `invite.appclip.sheet.continue`. Then the SMS code step of `auth.code` (Yope), then `join_group`.
-4. **After joining**: offer the full app with `SKOverlay.AppClipConfiguration` per `invite.appclip.layout.fullAppOverlay`
-   (position bottom, only after the join succeeded).
+1. **App Clip card** (system, from Safari / Messages / QR): header image (App Store Connect, no text), title (≤ 30),
+   subtitle `invite.appclip.card.subtitle`, action `invite.appclip.card.action` (`invite.appclip.layout.messagesCard`,
+   `invite.appclip.layout.cardLimits`).
+2. **Invite card** (first screen of the clip): exactly `invite.web` mobile (card inset, radius, blurred cover, avatar,
+   headline `invite.web.invitedBy`, line `invite.web.body`, member stack, pill `invite.web.cta`), drawn in SwiftUI with the
+   `invite.web.*` tokens; the footer links (Terms, Privacy) open `SFSafariViewController`. Fed by
+   `GET /i/:token/preview.json`. The page around the card is #FFFFFF (Retro's web page; the clip shows the same page).
+3. "Let's go" → **sign-in**: `auth.phone` state B → `auth.code` → `auth.agegate` (new accounts) → `auth.profile` step 1
+   (name; the photo step is left to the full app) — pushed in the clip's `NavigationStack`, unchanged.
+4. **Join**: `join_group(token)`; while it runs the last form capsule stays busy (C-05).
+5. **Joined**: the invite card returns with headline `invite.appclip.joined.title` ({group_name}), line
+   `invite.appclip.joined.body`, no pill; the full-app overlay (`SKOverlay`, `invite.appclip.layout.fullAppOverlay`)
+   rises at the bottom.
 
 ## Elements
 
-| element | tokens | copy | behaviour |
+| element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| card (iOS) | `invite.appclip.layout.messagesCard`, `invite.appclip.layout.cardLimits` | `invite.appclip.card.subtitle`, `invite.appclip.card.action` | App Store Connect metadata; the header image is the owner's asset (no text) |
-| preview | all `invite.web.*` layout, type, colour and theme tokens | `invite.web.*` as on the web | theme = mean colour of the cover (`preview.json` → `theme`) |
-| join button | `invite.web.dimension.button.large.height` / `.paddingH`, `invite.web.radius.button.large`, `invite.web.color.button.filled.*`, `invite.web.fontWeight.button` | `invite.appclip.join` | opens the join sheet |
-| name / phone fields | `invite.appclip.fontSize.sheetInput`, `invite.appclip.opacity.sheetPlaceholder.light` / `.dark` | `invite.appclip.sheet.name`, `invite.appclip.sheet.phone` | phone uses `textContentType(.telephoneNumber)`; the code step autofills `.oneTimeCode` (`auth.code`) |
-| helper | `invite.appclip.fontSize.sheetHelper`, `invite.appclip.opacity.sheetHelper.light` / `.dark` | `invite.appclip.sheet.helper` | — |
-| Cancel / Continue | `invite.web.fontSize.body`, `invite.web.fontWeight.button`; Continue = filled large button | `invite.appclip.sheet.cancel`, `invite.appclip.sheet.continue` | Cancel closes the sheet |
-| full-app offer | `invite.appclip.layout.fullAppOverlay` | — (system UI) | `fullAppOverlay(isPresented:position:)` in `InviteClipApp.swift` |
+| card (system) | `invite.appclip.layout.messagesCard`, `.cardLimits` | `invite.appclip.card.action`, `.card.subtitle` | opens the clip with the invite URL |
+| invite card | `invite.web.*` (mobile) | `invite.web.*` | as `invite.web` |
+| sign-in screens | `auth.*` specs | `auth.*` | as those specs |
+| joined state | invite card without pill | `invite.appclip.joined.title`, `.joined.body` | SKOverlay once per launch |
+| full-app overlay | `invite.appclip.layout.fullAppOverlay` (system) | system text | App Store install; the full app reads the invite token from the shared App Group container and finishes onboarding (photo, notifications, widget) |
 
 ## States
 
-| state | when | design | copy |
-|---|---|---|---|
-| loading | fetching `preview.json` | platform `ProgressView` (Apple HIG; Partiful's clip not observable) | — |
-| valid | 200 | preview | as above |
-| link no longer works | 410 | `invite.web` state layout | `invite.web.state.glyph`, `invite.web.unavailable.title`, `invite.web.unavailable.body` |
-| not found | 404 (or a launch without a valid invite URL) | `invite.web` state layout | `invite.web.state.glyph`, `invite.web.notFound.title` |
-| error | 5xx | state layout + retry button | `invite.web.error.title`, `invite.web.error.body`, `invite.web.error.retry` |
-| offline | no connection | state layout + retry button | `invite.web.error.title`, `invite.appclip.offline.body`, `invite.web.error.retry` |
-| group full | `join_group` → `group_full` | state layout, glyph `invite.appclip.full.glyph` (label `invite.appclip.full.glyphLabel`) | `invite.appclip.full.title`, `invite.appclip.full.body` |
-| invite expired/revoked at join time | `join_group` → `invite_expired` / `invite_revoked` | as "link no longer works" | as above |
-| permission-denied | ephemeral notifications are the only permission (`NSAppClipRequestEphemeralUserNotification`); none is required to join | — | — |
+| state | design | copy |
+|---|---|---|
+| loading preview | invite card with `color.global.backgroundDeep` fill and the platform activity indicator centred (C-28, white) | — |
+| link no longer works / not found | card states as `invite.web` (410 / 404) | `invite.web.unavailable.*` / `invite.web.notFound.title` |
+| group full (`group_full`) | card: headline `invite.appclip.full.title`, line `invite.appclip.full.body`, no pill | `invite.appclip.full.*` |
+| offline | card: headline `invite.web.error.title`, line `invite.appclip.offline.body`, pill `invite.web.error.retry` | — |
+| error (other) | as `invite.web` 503 | `invite.web.error.*` |
+| joined | joined state | `invite.appclip.joined.*` |
+| permission-denied | not applicable (the clip asks no permission; notifications wait for the full app) | — |
 
 ## Motion
 
-Sheet presentation and dismissal are the platform's (`.sheet`); button press feedback per `invite.web` Motion (opacity
-`invite.web.opacity.button.active`, `invite.web.duration.button.opacity`). Reduce Motion: platform behaviour.
+Card → sign-in: native push. Joined: cross-fade `duration.global.fade` (150 ms) of the card content; SKOverlay: system.
+Pill background: as `invite.web` on press (`invite.web.duration.pill`). Reduce Motion: cross-fades.
 
 ## Haptics
 
-None sourced (Partiful's web page has none; its clip was not observable).
+Pill press → none (iOS; `haptic.global.tap` is Android-only). Joined → `haptic.global.success`; failed → `haptic.global.error`.
 
 ## Accessibility
 
-As `invite.web` (labels, glyph names, contrast results in `design/verification/invite.web.md`). Dynamic Type scaling
-follows the foundations' text-role mechanism (`design/tokens/README.md` → "A text role"); Partiful gives no evidence for
-native scaling. The join sheet fields have visible placeholders and accessibility labels equal to them.
+- As `invite.web` (one header, the line, the pill as a button with its label); the member stack is one element labelled
+  `invite.web.members.title`.
+- Dynamic Type: headline `largeTitle` (32 pt base), line `subheadline`, pill `headline`. Contrast: as `invite.web`
+  (photo-dependent on the backdrop; pill fill **1.80:1 FAIL** non-text).
 
 ## Data & actions
 
-1. Invocation URL `https://<domain>/i/<token>` (`NSUserActivityTypeBrowsingWeb`; `DeepLinkParser`) → token.
-2. `GET https://<domain>/i/<token>/preview.json` (web service): `{group_name, group_kind, inviter_first_name,
-   cover:{url,width,height}|null, members:[{first_name, avatar_url|null}], theme:{background, scheme}}`; images are on the
-   web origin, re-encoded, valid while the invite is (cache ≤ 60 s). HTTP 404 / 410 / 429 / 5xx map to the states above.
-3. Phone OTP (`docs/API.md` §2), then `join_group(p_token)` (§6.1); errors `group_full`, `invite_expired`,
-   `invite_revoked`.
-4. Hand-off: store the session and the joined group id in the shared App Group / keychain
-   (`docs/PLATFORM_CONSTRAINTS.md` §3); the full app also receives the invocation URL.
-5. Association: AASA `appclips.apps = ["TEAM_ID.BUNDLE_ID.Clip"]`, applinks `/i/*` (sub-resources `/i/*/*` excluded) —
-   generated by the web service from `config/app.json` (`invite.appclip.layout.association`).
+- `GET https://<domain>/i/<token>/preview.json` (signed image URLs from the web origin) — before sign-in.
+- Sign-in: `signInWithOTP` / `verifyOTP` / `confirm_age` / profile update (docs/API.md §2). Join: `join_group(p_token)`
+  (§6.1, §9.3; errors `invite_not_found`, `invite_revoked`, `invite_expired`, `group_full`).
+- The token and the session are written to the App Group container so the full app continues without asking again.
+- Association: `invite.appclip.layout.association` (AASA `appclips` + advanced experience for `https://<domain>/i/`).
 
 ## Platform notes
 
-- iOS 17+, ≤ 100 MB uncompressed (digital invocations only) — `docs/PLATFORM_CONSTRAINTS.md` §3.
-- No Photos, Contacts, background modes or in-app purchase in the clip; ephemeral notifications only (8 h).
-- Android has no App Clip equivalent (Play Instant ended December 2025): the `invite.web` page + Play install referrer.
+- App Clip size limit and no background push; notifications, widget and photo step happen in the full app.
+- Android has no App Clip: `invite.web` → Play (Install Referrer carries the token).
 
 ## Do-not-copy
 
-Partiful's RSVP choice buttons (Going / Maybe / Can't Go) and attendee count field ("1 attendee"), "+Post a comment",
-"Follow event organizer to stay in the loop", guest counts — joining is one action and nothing is counted.
+- Retro's App Clip artwork and name; repeated install prompts (one overlay after the task only).
 
 ## Gaps
 
-| gap | handled as | owner capture / decision |
+| item | status | smallest capture |
 |---|---|---|
-| Partiful's App Clip screens (after "View") | invite page anatomy + RSVP sheet | research §8.3: a 15-s iPhone recording of tapping a Partiful link in Messages (card → clip) |
-| Whether Messages builds the card from the page's Open Graph tags or only from App Store Connect | both are provided (og tags on the page; ASC metadata) | same capture |
-| Card header image, title | owner assets in App Store Connect | `docs/OWNER_SETUP.md` §1.5 |
-| App name in the clip | `{app_name}` strings BLOCKED | owner decision 0.1 |
+| Retro's App Clip screens | not captured (only its link and card meta) | screenshots of Retro's App Clip opened from a `/u/` link on an iPhone without Retro |
+| card title / header image | owner (App Store Connect) | app name and art |
