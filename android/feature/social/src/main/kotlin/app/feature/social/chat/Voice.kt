@@ -19,17 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.stateDescription
@@ -37,6 +34,7 @@ import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
 import app.feature.social.common.stringRes
+import app.ui.components.ActivityIndicator
 import app.ui.foundation.DsMotion
 import app.ui.foundation.PageRoles
 import app.ui.foundation.tapClickable
@@ -106,7 +104,7 @@ fun VoiceCapsule(
         Box(Modifier.size(Tokens.Sizes.globalIconSmall), contentAlignment = Alignment.Center) {
             AnimatedContent(state, transitionSpec = { fadeIn(DsMotion.crossfade()) togetherWith fadeOut(DsMotion.crossfade()) }, label = "voiceGlyph") { s ->
                 when (s) {
-                    VoiceState.Loading -> CircularProgressIndicator(color = PageRoles.secondaryText(onMedia), strokeWidth = Tokens.Sizes.globalStripGap, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
+                    VoiceState.Loading -> ActivityIndicator(null, Modifier.size(Tokens.Sizes.globalIconSmall), onMedia = onMedia)
                     VoiceState.Playing -> Icon(Tokens.Icons.globalPause, contentDescription = null, tint = ink, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
                     else -> Icon(Tokens.Icons.globalPlay, contentDescription = null, tint = ink, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
                 }
@@ -130,10 +128,3 @@ fun voiceStateOf(key: String?, playingKey: String?, isPlaying: Boolean, progress
     key == playingKey && progress > 0f && progress < 1f -> VoiceState.Paused
     else -> VoiceState.Idle
 }
-
-/** Custom TalkBack action helper for the recording's discard (`chat.voice.a11y.discard`). */
-internal fun discardAction(label: String, onDiscard: () -> Unit) = CustomAccessibilityAction(label) { onDiscard(); true }
-
-/** Unused-import guard for semantics helpers shared with the composer. */
-@Suppress("unused")
-private val keepCustomActions = Modifier.clearAndSetSemantics { customActions = emptyList() }
