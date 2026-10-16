@@ -1,11 +1,11 @@
-// Surfaces: widget.home.small / .medium / .large / .xl, widget.lock.rect / .circular / .inline,
-// widget.arrival — reference app: Locket (+ Apple HIG Widgets).
-// Reference images: references/auto/locket/store/locket-store-03.png, locket-store-06.png,
-// references/auto/locket/help/locket-help-7914857-widget-with-avatar-crop.png,
-// references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg,
-// references/auto/platform/hig-widgets-ios-dimensions.png (design/surfaces/widget.*.md).
-// The widget's content views, filled from the App Group snapshot. Pure SwiftUI (no timeline types),
-// so AppTests snapshots them per family and state.
+// Surfaces: widget.home.small / .medium / .large / .xl, widget.lock.rect / .circular / .inline, widget.arrival — visual
+// reference Retro's Glance widgets (Albums variant: name over the group), mechanics Locket, sizes Apple HIG.
+// Reference images: references/auto/retro/apk/widget_preview_journals.webp, …_friends.webp, …_memories.webp (full-bleed
+// photo, white two-line stack bottom-trailing), references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt
+// §"Glance widget" (state glyph in a 48-dp box, white 85 %), references/auto/retro/press/tc-2023-07-retro-1b.webp (C-16
+// people row), references/auto/platform/hig-widgets-ios-dimensions.png (design/surfaces/widget.*.md; RC-9 … RC-11).
+// The widget's content views, filled from the App Group snapshot. Pure SwiftUI (no timeline types), so AppTests
+// snapshots them per family and state (linked into ios/AppTests/Capture/Linked).
 import AppModels
 import DesignSystem
 import SwiftUI
@@ -17,8 +17,10 @@ struct GroupWidgetContent {
     enum State: Equatable {
         /// Just added; no rendition cached yet (also the gallery preview).
         case loading
-        /// No group: none chosen, left, deleted, signed out.
+        /// No group: none chosen, left or deleted.
         case notSetUp
+        /// Nobody is signed in on this device (the app wrote no group list).
+        case signedOut
         /// The configured group has no photo yet.
         case empty
         /// The newest item is a photo.
@@ -29,94 +31,72 @@ struct GroupWidgetContent {
 
     var state: State
     var groupName: String?
+    /// The poster's display name (the widget shows its first word).
     var senderName: String?
-    var caption: String?
     var postedAt: Date?
     var photo: UIImage?
     var avatar: UIImage?
 
     static let loading = GroupWidgetContent(state: .loading)
 
-    init(state: State, groupName: String? = nil, senderName: String? = nil, caption: String? = nil,
-         postedAt: Date? = nil, photo: UIImage? = nil, avatar: UIImage? = nil) {
+    init(state: State, groupName: String? = nil, senderName: String? = nil, postedAt: Date? = nil, photo: UIImage? = nil, avatar: UIImage? = nil) {
         self.state = state
         self.groupName = groupName
         self.senderName = senderName
-        self.caption = caption
         self.postedAt = postedAt
         self.photo = photo
         self.avatar = avatar
     }
 
-    var hasCaption: Bool {
-        guard let caption else { return false }
-        return !caption.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    /// {name}: the first word of the poster's display name (notifications.push, widget.home.small).
+    var firstName: String {
+        let trimmed = (senderName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.split(separator: " ").first.map(String.init) ?? trimmed
     }
 
-    /// The visible empty text (`widget.home.small.empty.*`), when the widget has nothing to show.
-    var emptyText: String? {
+    /// The visible state line (`widget.home.small.empty.*`), when the widget has nothing to show.
+    var stateLine: String? {
         switch state {
         case .notSetUp: return Copy.widgetHomeSmallEmptySetUp
+        case .signedOut: return Copy.widgetHomeSmallEmptySignedOut
         case .empty: return Copy.widgetHomeSmallEmptyNoPhotos
-        default: return nil
+        case .loading, .photo, .collage: return nil
         }
     }
 
-    /// One accessibility label per widget (who and where, HIG; the avatar and pill are combined into it).
+    /// {date} of `widget.home.small.a11y.collage`: the day in the locale's long date ("May 26, 2026", `retro.voice.formats`).
+    var dateText: String {
+        postedAt.map { $0.formatted(date: .long, time: .omitted) } ?? ""
+    }
+
+    /// One accessibility label per widget (who and where).
     var accessibilityLabel: String {
-        let name = senderName ?? ""
         let group = groupName ?? ""
         switch state {
-        case .photo:
-            if hasCaption, let caption {
-                return Copy.widgetHomeSmallA11yPhotoWithCaption(name: name, group: group, caption: caption)
-            }
-            return Copy.widgetHomeSmallA11yPhoto(name: name, group: group)
-        case .collage:
-            let date = postedAt.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? ""
-            return Copy.widgetHomeSmallA11yCollage(group: group, date: date)
-        case .notSetUp, .empty:
-            return emptyText ?? ""
-        case .loading:
-            return ""
+        case .photo: return Copy.widgetHomeSmallA11yPhoto(name: firstName, group: group)
+        case .collage: return Copy.widgetHomeSmallA11yCollage(group: group, date: dateText)
+        case .notSetUp, .signedOut, .empty: return stateLine ?? ""
+        case .loading: return ""
         }
     }
 }
 
-// MARK: - Home Screen (small, medium, large, extra large)
+// MARK: - Home Screen (small, medium, large, extra large): one layout at every size (RC-11)
 
-/// The removable container background: the photo / collage page aspect-filling the widget, or the
-/// loading / empty gradients.
-struct WidgetEmptyState: View {
+/// The removable container background: the photo / collage page aspect-filling the widget under the bottom scrim
+/// (`widget.home.small.layout.photo`, `layout.global.photoScrim`); every other state is `color.global.backgroundDeep`
+/// (composition, RC-10). Errors keep the last photo (HIG): the timeline only replaces it with a newer one.
+struct WidgetContainerBackground: View {
     let content: GroupWidgetContent
 
     var body: some View {
-        switch content.state {
-        case .photo, .collage:
-            if let photo = content.photo {
+        ZStack {
+            Tokens.Colors.globalBackgroundDeep
+            if content.state == .photo || content.state == .collage, let photo = content.photo {
                 WidgetPhotoImage(image: photo)
-            } else {
-                placeholderGradient
+                WidgetPhotoScrim()
             }
-        case .loading:
-            placeholderGradient
-        case .empty, .notSetUp:
-            LinearGradient(
-                colors: [Tokens.Colors.widgetHomeSmallColorEmptyTop, Tokens.Colors.widgetHomeSmallColorEmptyBottom],
-                startPoint: .top,
-                endPoint: .bottom
-            )
         }
-    }
-
-    /// Loading placeholder (Locket 2022). Its member avatars are not drawn: the App Group store holds
-    /// no member avatars before the first rendition arrives.
-    private var placeholderGradient: some View {
-        LinearGradient(
-            colors: [Tokens.Colors.widgetHomeSmallColorPlaceholderTop, Tokens.Colors.widgetHomeSmallColorPlaceholderBottom],
-            startPoint: .top,
-            endPoint: .bottom
-        )
     }
 }
 
@@ -140,202 +120,210 @@ struct WidgetPhotoImage: View {
     }
 }
 
-/// Home-screen content over the photo: bottom-leading avatar and caption pill (photo only, not on
-/// the collage); the empty stack for empty / not set up. One accessibility element.
+/// Home-screen content over the photo: Retro's text stack at the bottom-trailing corner, or the state column. One
+/// accessibility element with the button trait (a tap opens the camera).
 struct WidgetOverlay: View {
     let content: GroupWidgetContent
-    let family: WidgetFamily
 
     var body: some View {
         ZStack {
             switch content.state {
             case .photo:
-                senderRow
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-            case .empty, .notSetUp:
-                WidgetEmptyStack(text: content.emptyText)
-            case .collage, .loading:
+                WidgetTextStack(lines: [content.firstName, content.groupName ?? ""])
+            case .collage:
+                WidgetTextStack(lines: [content.groupName ?? ""])
+            case .empty, .notSetUp, .signedOut:
+                WidgetStateColumn(line: content.stateLine)
+            case .loading:
                 Color.clear
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(content.accessibilityLabel)
+        .accessibilityLabel(Text(content.accessibilityLabel))
         .accessibilityAddTraits(.isButton)
     }
+}
 
-    private var senderRow: some View {
-        HStack(spacing: Tokens.Sizes.widgetHomeSmallSizeCaptionGap) {
-            WidgetAvatar(image: content.avatar, diameter: Tokens.Sizes.widgetHomeSmallSizeAvatar, ring: true)
-            if content.hasCaption, let caption = content.caption {
-                Text(caption)
-                    .dsTextStyle(WidgetType.caption)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+/// Retro's widget text stack (`widget.home.small.layout.overlay`): trailing-aligned lines in
+/// `widget.home.small.fontSize.overlay` / `.fontWeight.overlay`, `color.global.textOnMedia`; the last baseline
+/// `lastBaselineFromBottom` (15) above the bottom edge, lines `linePitch` (13) apart baseline to baseline, `trailingInset`
+/// (11) from the trailing edge; each line one line, truncated at the leading `size.global.screenMargin`. The pitch scales
+/// with the text (Caption 2).
+struct WidgetTextStack: View {
+    /// Top to bottom (photo: first name, group; collage: group).
+    let lines: [String]
+
+    @ScaledMetric private var pitch: CGFloat
+    @ScaledMetric private var lastBaseline: CGFloat
+
+    private typealias Overlay = Tokens.Layouts.WidgetHomeSmallLayoutOverlay
+
+    init(lines: [String]) {
+        self.lines = lines
+        let style = WidgetType.overlay.relativeTo
+        _pitch = ScaledMetric(wrappedValue: Overlay.linePitch, relativeTo: style)
+        _lastBaseline = ScaledMetric(wrappedValue: Overlay.lastBaselineFromBottom, relativeTo: style)
+    }
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Color.clear
+            ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
+                Text(line)
+                    .dsTextStyle(WidgetType.overlay)
+                    .foregroundStyle(Tokens.Colors.globalTextOnMedia)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .contentTransition(.identity)
-                    .padding(.horizontal, Tokens.Sizes.widgetHomeSmallSizeCaptionPadding)
-                    .frame(minHeight: Tokens.Sizes.widgetHomeSmallSizeCaptionHeight)
-                    .background(Tokens.Colors.widgetHomeSmallColorCaptionPill, in: Capsule())
+                    // The line's baseline is its bottom: lines sit `pitch` apart above the last baseline.
+                    .alignmentGuide(.bottom) { dimensions in dimensions[.lastTextBaseline] }
+                    .padding(.bottom, lastBaseline + CGFloat(lines.count - 1 - index) * pitch)
             }
         }
-        .padding(Tokens.Sizes.widgetHomeSmallSizeAvatarInset)
+        .padding(.leading, Tokens.Sizes.globalScreenMargin)
+        .padding(.trailing, Overlay.trailingInset)
     }
 }
 
-/// Locket's empty widget (`widget.home.small.layout.empty`, md variant): a translucent circle holding
-/// the photo glyph inside a ring, then the label `labelGap` below in `label` pt,
-/// `widget.home.small.color.emptyLabel` (weight not measured: platform regular). The lg variant for
-/// large / extra large exists only in the token's notes, so md is used at every size.
-struct WidgetEmptyStack: View {
-    var text: String?
-
-    private typealias Empty = Tokens.Layouts.WidgetHomeSmallLayoutEmpty
+/// Retro's widget state column (RC-10): `icon.global.camera` (the tap's action) at `size.global.icon` in a 48-pt box —
+/// the APK's 48-dp Glance box, the platform minimum target `size.global.minTouchTarget.android` (no capture token holds
+/// the box) — then the line in `widget.home.small.fontSize.overlay`, both tinted `widget.home.small.color.stateTint`
+/// (white 85 %), centred, up to 2 lines.
+struct WidgetStateColumn: View {
+    var line: String?
 
     var body: some View {
-        VStack(spacing: Empty.labelGap) {
-            graphic
-            if let text {
-                Text(text)
-                    .dsTextStyle(DSTextStyle(
-                        family: Tokens.Fonts.globalFamily,
-                        size: Empty.label,
-                        weight: .regular,
-                        relativeTo: WidgetTextStyleName.resolve(Tokens.Layouts.WidgetHomeSmallLayoutTextStyleMap.emptyLabel)
-                    ))
-                    .foregroundStyle(Tokens.Colors.widgetHomeSmallColorEmptyLabel)
-                    .lineLimit(1)
-            }
-        }
-    }
-
-    private var graphic: some View {
-        ZStack {
-            Circle()
-                .strokeBorder(Tokens.Colors.widgetHomeSmallColorEmptyRing, lineWidth: Empty.ringStroke)
-                .frame(width: Empty.ring, height: Empty.ring)
-            Circle()
-                .fill(Tokens.Colors.widgetHomeSmallColorEmptyCircle)
-                .frame(width: Empty.circle, height: Empty.circle)
-            Image(systemName: Tokens.Icons.globalGallery)
+        VStack(spacing: 0) {
+            Image(systemName: Tokens.Icons.globalCamera)
                 .resizable()
                 .scaledToFit()
-                .frame(width: Empty.glyphWidth, height: Empty.glyphHeight)
-                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .frame(width: Tokens.Sizes.globalIcon, height: Tokens.Sizes.globalIcon)
+                .frame(width: Tokens.Sizes.globalMinTouchTargetAndroid, height: Tokens.Sizes.globalMinTouchTargetAndroid)
+            if let line {
+                Text(line)
+                    .dsTextStyle(WidgetType.overlay)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
         }
+        .foregroundStyle(Tokens.Colors.widgetHomeSmallColorStateTint)
+        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
     }
 }
 
-/// The poster's avatar; without one, Locket's placeholder gradient (no glyph).
-struct WidgetAvatar: View {
-    let image: UIImage?
+// MARK: - Lock Screen (vibrant: the system renders everything in grayscale; HIG)
+
+/// The newest poster's avatar for the Lock Screen (C-23 circle, aspect-fill, full opacity — the system desaturates it);
+/// no photo: `icon.global.person` (C-23 fallback); a collage or a state: `icon.global.camera`.
+struct WidgetLockAvatar: View {
+    let content: GroupWidgetContent
     let diameter: CGFloat
-    /// The 1-pt ring (`widget.home.small.color.avatarRing`) on the Home Screen.
-    var ring: Bool
 
     var body: some View {
         ZStack {
-            if let image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
+            if content.state == .photo {
+                if let avatar = content.avatar {
+                    Image(uiImage: avatar)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: diameter, height: diameter)
+                        .clipShape(Circle())
+                } else {
+                    glyph(Tokens.Icons.globalPerson)
+                }
             } else {
-                LinearGradient(
-                    colors: [Tokens.Colors.widgetAndroidColorAvatarPlaceholderTop, Tokens.Colors.widgetAndroidColorAvatarPlaceholderBottom],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                glyph(Tokens.Icons.globalCamera)
             }
         }
         .frame(width: diameter, height: diameter)
-        .clipShape(Circle())
-        .overlay {
-            if ring {
-                Circle().strokeBorder(Tokens.Colors.widgetHomeSmallColorAvatarRing, lineWidth: Tokens.Sizes.widgetHomeSmallSizeAvatarRing)
-            }
-        }
+    }
+
+    private func glyph(_ name: String) -> some View {
+        Image(systemName: name)
+            .resizable()
+            .scaledToFit()
+            .frame(width: Tokens.Sizes.globalIcon, height: Tokens.Sizes.globalIcon)
+            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
     }
 }
 
-// MARK: - Lock Screen (vibrant: the system renders everything in grayscale)
-
-/// `.accessoryRectangular`: avatar + caption in one leading row; no caption → the avatar alone in its
-/// slot (`widget.lock.rect.layout.content`; the entry is always the newest single photo).
+/// `.accessoryRectangular` (`widget.lock.rect.layout.content`): one C-16 row — the avatar (`size.global.avatarPicker`),
+/// then `size.global.cardNameGap` after it the name (text role `listTitle`) over the group (text role `listSubtitle`),
+/// white, one line each. Collage: the group name alone (`listTitle`) with the camera glyph in the avatar slot. States: the
+/// camera glyph + the state line (`listSubtitle`); loading: the glyph alone.
 struct WidgetRectangularSlot: View {
     let content: GroupWidgetContent
 
     var body: some View {
-        HStack(spacing: Tokens.Sizes.widgetHomeSmallSizeCaptionGap) {
-            switch content.state {
-            case .photo, .collage:
-                WidgetAvatar(image: content.avatar, diameter: Tokens.Sizes.widgetHomeSmallSizeAvatar, ring: false)
-                if content.hasCaption, let caption = content.caption {
-                    Text(caption)
-                        .dsTextStyle(WidgetType.caption)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                        .truncationMode(.tail)
-                        .contentTransition(.identity)
-                }
-            case .loading, .empty, .notSetUp:
-                Image(systemName: Tokens.Icons.globalGallery)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .frame(width: Tokens.Sizes.widgetHomeSmallSizeAvatar)
-                if let text = content.emptyText {
-                    Text(text)
-                        .dsTextStyle(WidgetType.caption)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
+        HStack(spacing: Tokens.Sizes.globalCardNameGap) {
+            WidgetLockAvatar(content: content, diameter: Tokens.Sizes.globalAvatarPicker)
+            VStack(alignment: .leading, spacing: 0) {
+                switch content.state {
+                case .photo:
+                    line(content.firstName, style: WidgetType.listTitle)
+                    line(content.groupName ?? "", style: WidgetType.listSubtitle)
+                case .collage:
+                    line(content.groupName ?? "", style: WidgetType.listTitle)
+                case .empty, .notSetUp, .signedOut:
+                    if let text = content.stateLine {
+                        Text(text)
+                            .dsTextStyle(WidgetType.listSubtitle)
+                            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                            .lineLimit(2)
+                    }
+                case .loading:
+                    EmptyView()
                 }
             }
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(content.accessibilityLabel)
+        .accessibilityLabel(Text(content.accessibilityLabel))
         .accessibilityAddTraits(.isButton)
+    }
+
+    private func line(_ text: String, style: DSTextStyle) -> some View {
+        Text(text)
+            .dsTextStyle(style)
+            .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .contentTransition(.identity)
     }
 }
 
-/// `.accessoryCircular`: the newest single photo's sender avatar filling the circle
-/// (`widget.lock.rect.layout.content`).
+/// `.accessoryCircular`: the newest poster's avatar filling the circle (C-23); a collage or a state: the camera glyph.
 struct WidgetCircularSlot: View {
     let content: GroupWidgetContent
 
     var body: some View {
         GeometryReader { proxy in
-            let side = min(proxy.size.width, proxy.size.height)
-            ZStack {
-                switch content.state {
-                case .photo, .collage:
-                    WidgetAvatar(image: content.avatar, diameter: side, ring: false)
-                case .loading, .empty, .notSetUp:
-                    Image(systemName: Tokens.Icons.globalGallery)
-                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                }
-            }
-            .frame(width: proxy.size.width, height: proxy.size.height)
+            WidgetLockAvatar(content: content, diameter: min(proxy.size.width, proxy.size.height))
+                .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(content.accessibilityLabel)
+        .accessibilityLabel(Text(content.accessibilityLabel))
         .accessibilityAddTraits(.isButton)
     }
 }
 
-/// `.accessoryInline` (one line of text above the clock, styled by the system): the newest single
-/// photo's caption; without one, the `widget.home.small.a11y.photo` sentence
-/// (`widget.lock.rect.layout.content`); the empty texts. Loading: an empty line.
+/// `.accessoryInline` (one line above the clock, styled by the system): `widget.lock.inline.text` "{name} · {group}";
+/// a collage: the group name; the state lines; loading: an empty line.
 struct WidgetInlineSlot: View {
     let content: GroupWidgetContent
 
     var body: some View {
         Text(line)
-            .accessibilityLabel(content.state == .photo ? content.accessibilityLabel : line)
+            .accessibilityLabel(Text(content.state == .photo || content.state == .collage ? content.accessibilityLabel : line))
     }
 
     var line: String {
         switch content.state {
-        case .photo, .collage:
-            if content.hasCaption, let caption = content.caption { return caption }
-            return Copy.widgetHomeSmallA11yPhoto(name: content.senderName ?? "", group: content.groupName ?? "")
-        case .empty, .notSetUp: return content.emptyText ?? ""
+        case .photo: return Copy.widgetLockInlineText(name: content.firstName, group: content.groupName ?? "")
+        case .collage: return content.groupName ?? ""
+        case .empty, .notSetUp, .signedOut: return content.stateLine ?? ""
         case .loading: return ""
         }
     }

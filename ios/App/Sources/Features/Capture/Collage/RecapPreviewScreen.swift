@@ -19,8 +19,8 @@
 //
 //  1. the media page: full width, from the safe-area top to `mediaPageBottomFromScreenBottom` (94.8) above the screen
 //     bottom, corners `mediaPageCornerRadius` (26.5, continuous), content clipped. Inside it `backdrop` blurred
-//     full-bleed (`layout.global.materials.backdrop`; `RecapPreviewMetrics.backdropBlur`); with no backdrop the page is
-//     `color.global.controlOnDeep` (collage.view loading / empty / error);
+//     full-bleed (C-34 `BlurredBackdrop`: σ `size.global.backdropBlur` under `color.global.backdropDim`, L-5); with no
+//     backdrop the page is `color.global.controlOnDeep` (collage.view loading / empty / error);
 //  2. the pages: `page(index)` fills the media page; the caller lays its card out in it (`RecapPreviewMetrics.cardFrame`
 //     gives the collage card's aspect-fit box). With `pageCount` > 1 and `swipeEnabled` the pages sit in a paging
 //     `TabView` (finger-tracked, platform settle; index display hidden); `currentPage` (0-based) stays in sync both ways;
@@ -56,16 +56,6 @@ enum RecapDots: Equatable {
 /// The recap preview's measured geometry (`collage.view.layout.screen`, `collage.share.layout.pill`).
 enum RecapPreviewMetrics {
     typealias Screen = Tokens.Layouts.CollageViewLayoutScreen
-
-    /// How the backdrop is blurred. `layout.global.materials.backdrop` has no measured radius yet (C-34 Gap; the lead is
-    /// measuring σ on ST-04): until a token exists the photo sits under the platform's thinnest material (PLATFORM, as
-    /// C-34 `BlurredBackdrop`). One-line switch: `.radius(<the blur token>)`.
-    static let backdropBlur: BackdropBlur = .platformMaterial
-
-    enum BackdropBlur: Equatable {
-        case platformMaterial
-        case radius(CGFloat)
-    }
 
     /// The card inset inside the media page, top and bottom: close-circle centre (38) + `size.global.circleButton` ÷ 2 +
     /// the 20-pt circle → photo gap of `camera.sendto.layout.preview` = 76 pt (`collage.view.layout.screen` card).
@@ -179,24 +169,11 @@ struct RecapPreviewScreen<Page: View, TopLeading: View, BottomLeading: View, Pil
         ZStack {
             Tokens.Colors.globalControlOnDeep
             if let backdrop {
-                backdropView(backdrop)
-                    .accessibilityHidden(true)
+                // C-34 backdrop (`layout.global.materials.backdrop`; MERGE_DECISIONS L-5): the photo blurred σ
+                // `size.global.backdropBlur` under `color.global.backdropDim`, clipped to the media page.
+                BlurredBackdrop(source: backdrop)
             }
             pages
-        }
-    }
-
-    @ViewBuilder
-    private func backdropView(_ source: PhotoSource) -> some View {
-        switch RecapPreviewMetrics.backdropBlur {
-        case .platformMaterial:
-            ZStack {
-                PhotoView(source: source)
-                Rectangle().fill(.ultraThinMaterial)
-            }
-        case let .radius(radius):
-            PhotoView(source: source)
-                .blur(radius: radius, opaque: true)
         }
     }
 

@@ -36,6 +36,7 @@ import app.ui.foundation.GlyphInk
 import app.ui.foundation.PageRoles
 import app.ui.foundation.overlayCentred
 import app.ui.foundation.tapClickable
+import app.ui.foundation.tapLongPressable
 import app.ui.system.DsDropdownMenu
 import app.ui.system.DsMenuItem
 import app.ui.text.CapTop
@@ -103,9 +104,9 @@ fun SectionHeader(
     }
 }
 
-/** A photo cell of a C-21 grid: [accessibilityLabel] (copy) names its date / person. */
+/** A photo cell of a C-21 grid: [accessibilityLabel] (copy) names its date / person; [menu] is its long-press menu (C-29). */
 @Immutable
-data class GridCell(val key: Any, val image: Any?, val accessibilityLabel: String, val onClick: (() -> Unit)? = null)
+data class GridCell(val key: Any, val image: Any?, val accessibilityLabel: String, val onClick: (() -> Unit)? = null, val menu: List<DsMenuItem> = emptyList())
 
 /**
  * C-21 photo grid: [columns] square cells (`radius.global.photo`, 0), `size.global.stripGap` apart, full width
@@ -125,15 +126,24 @@ fun PhotoGrid(
         cells.chunked(columns.coerceAtLeast(1)).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
                 row.forEach { cell ->
-                    DsImage(
-                        cell.image,
-                        null,
-                        Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .then(if (cell.onClick != null) Modifier.tapClickable(onClick = cell.onClick) else Modifier)
-                            .clearAndSetSemantics { contentDescription = cell.accessibilityLabel },
-                    )
+                    var menuOpen by remember(cell.key) { mutableStateOf(false) }
+                    Box(Modifier.weight(1f).aspectRatio(1f)) {
+                        DsImage(
+                            cell.image,
+                            null,
+                            Modifier
+                                .matchParentSize()
+                                .clearAndSetSemantics { contentDescription = cell.accessibilityLabel }
+                                .then(
+                                    when {
+                                        cell.menu.isNotEmpty() -> Modifier.tapLongPressable(cell.onClick, { menuOpen = true }, cell.menu.map { it.text to it.onClick })
+                                        cell.onClick != null -> Modifier.tapClickable(onClick = cell.onClick)
+                                        else -> Modifier
+                                    },
+                                ),
+                        )
+                        if (cell.menu.isNotEmpty()) DsDropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, items = cell.menu)
+                    }
                 }
                 repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
             }

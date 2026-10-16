@@ -413,22 +413,22 @@ struct ChatMessageRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// Name · time on one baseline; hidden from VoiceOver (each message's label names its sender).
+    /// Name · time on one baseline; a tap opens the person's wall. Hidden from VoiceOver (each message's label names its
+    /// sender; the avatar and name are decorative next to it).
     private var runHeader: some View {
-        Button { actions.openWall(message.authorID) } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 0) {
-                Text(author?.displayName ?? "")
-                    .dsTextStyle(TextRole.listTitle)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .lineLimit(1)
-                Text(" " + SocialFormat.time(message.createdAt))
-                    .dsTextStyle(TextRole.caption)
-                    .foregroundStyle(Tokens.Colors.globalTextSecondary)
-                    .lineLimit(1)
-                    .fixedSize()
-            }
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
+            Text(author?.displayName ?? "")
+                .dsTextStyle(TextRole.listTitle)
+                .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .lineLimit(1)
+            Text(" " + SocialFormat.time(message.createdAt))
+                .dsTextStyle(TextRole.caption)
+                .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                .lineLimit(1)
+                .fixedSize()
         }
-        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+        .onTapGesture { actions.openWall(message.authorID) }
         .accessibilityHidden(true)
     }
 
@@ -450,10 +450,10 @@ struct ChatMessageRow: View {
     /// The text of a message (or a caption): after the name line its first baseline sits `rowLinePitch` below the
     /// name's; after another item, `itemGap` below it. 1–3 emoji only: `fontSize.global.headerTitle`.
     @ViewBuilder
-    private func text(_ body: String, label: String, isCaption: Bool = false) -> some View {
+    private func text(_ string: String, label: String, isCaption: Bool = false) -> some View {
         let afterHeader = row.startsRun && !isCaption && !model.hasQuote(message)
-        if let count = SocialEmojiText.emojiOnlyCount(body), count <= Int(Tokens.Counts.chatThreadCountEmojiOnlyMax) {
-            Text(body)
+        if let count = SocialEmojiText.emojiOnlyCount(string), count <= Int(Tokens.Counts.chatThreadCountEmojiOnlyMax) {
+            Text(string)
                 .dsTextStyle(SocialTextRole.emojiOnly)
                 .fixedSize()
                 .modifier(MessageMenu(row: row, model: model, actions: actions))
@@ -461,7 +461,7 @@ struct ChatMessageRow: View {
                 .accessibilityLabel(Text(label))
                 .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
         } else {
-            Text(body)
+            Text(string)
                 .dsTextRole(SocialTextRole.threadBody)
                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
                 .multilineTextAlignment(.leading)
@@ -506,7 +506,7 @@ struct ChatMessageRow: View {
             .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
         if let postID = message.postID, let summary = model.reactions[postID], !summary.isEmpty {
             ReactionChip(emoji: summary.distinctEmoji) { actions.openReactions(postID) }
-                .metricGap(Tokens.Reactions.chipTop, from: .bottom, to: .top)
+                .metricGap(Tokens.Sizes.chatReactionsDimensionChipTop, from: .bottom, to: .top)
         }
         if let caption = post?.post.caption, !caption.isEmpty {
             text(caption, label: Copy.chatThreadA11yCaption(caption: caption), isCaption: true)
@@ -619,13 +619,6 @@ struct ChatMessageRow: View {
                 .dsTextStyle(TextRole.caption)
                 .foregroundStyle(Tokens.Colors.globalTextSecondary)
         }
-    }
-}
-
-private extension Tokens {
-    /// Names the chip's top distance for readability at the use site.
-    enum Reactions {
-        static var chipTop: CGFloat { Tokens.Sizes.chatReactionsDimensionChipTop }
     }
 }
 

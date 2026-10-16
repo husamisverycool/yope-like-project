@@ -17,6 +17,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +36,9 @@ import app.ui.foundation.DsMotion
 import app.ui.foundation.PhotoScrimOverlay
 import app.ui.foundation.reduceMotion
 import app.ui.foundation.tapClickable
+import app.ui.foundation.tapLongPressable
+import app.ui.system.DsDropdownMenu
+import app.ui.system.DsMenuItem
 import app.ui.text.TextRoles
 
 /** A tile of the C-17 week strip. [accessibilityLabel] (copy) carries the full date and content ("Monday, June 26, photo by Ana"). */
@@ -40,13 +47,17 @@ sealed interface DayTile {
     val key: Any
     val accessibilityLabel: String?
 
-    /** A day with a photo: aspect-fill photo, bottom scrim, [weekday] label ("Mon"). */
+    /**
+     * A day with a photo: aspect-fill photo, bottom scrim, [weekday] label ("Mon"). [menu]: the long-press menu (native
+     * C-29 menu; also TalkBack custom actions), e.g. "Report Post" / "Block {first_name}" on someone else's photo.
+     */
     data class Photo(
         override val key: Any,
         val image: Any?,
         val weekday: String,
         override val accessibilityLabel: String,
         val onClick: (() -> Unit)? = null,
+        val menu: List<DsMenuItem> = emptyList(),
     ) : DayTile
 
     /** A day without photos: [month] / [day] / [weekday] lines on the fill. */
@@ -149,15 +160,24 @@ fun DayTileView(tile: DayTile, shape: Shape, modifier: Modifier = Modifier) {
         is DayTile.Placeholder -> null
     }
     val label = tile.accessibilityLabel
+    val menu = (tile as? DayTile.Photo)?.menu.orEmpty()
+    var menuOpen by remember { mutableStateOf(false) }
     Box(
         modifier
             .size(Tokens.Sizes.globalStripTileWidth, Tokens.Sizes.globalStripTileHeight)
             .clip(shape)
             .then(if (tile is DayTile.Photo) Modifier else Modifier.background(Tokens.Colors.globalControl))
-            .then(if (onClick != null) Modifier.tapClickable(onClick = onClick) else Modifier)
-            .then(if (label != null) Modifier.clearAndSetSemantics { contentDescription = label } else Modifier.clearAndSetSemantics { }),
+            .then(if (label != null) Modifier.clearAndSetSemantics { contentDescription = label } else Modifier.clearAndSetSemantics { })
+            .then(
+                when {
+                    menu.isNotEmpty() -> Modifier.tapLongPressable(onClick, { menuOpen = true }, menu.map { it.text to it.onClick })
+                    onClick != null -> Modifier.tapClickable(onClick = onClick)
+                    else -> Modifier
+                },
+            ),
         contentAlignment = Alignment.Center,
     ) {
+        if (menu.isNotEmpty()) DsDropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, items = menu)
         when (tile) {
             is DayTile.Photo -> {
                 DsImage(tile.image, null, Modifier.fillMaxSize())

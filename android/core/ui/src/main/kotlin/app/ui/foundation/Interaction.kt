@@ -1,11 +1,16 @@
 package app.ui.foundation
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import app.ui.haptics.rememberHaptics
 
 /*
@@ -47,5 +52,35 @@ fun Modifier.tickToggleable(value: Boolean, enabled: Boolean = true, role: Role?
     toggleable(value = value, enabled = enabled, role = role) {
         haptics.tick()
         onValueChange(it)
+    }
+}
+
+/**
+ * A tap plus a long press (a tile or cell with a context menu, e.g. `groups.screen.layout.menu` android: "DropdownMenu on
+ * long press"): the tap plays `haptic.global.tap` before [onClick] (null = no tap action); the long press plays
+ * `haptic.global.longPressStart` and calls [onLongClick]. [menuActions] (label → action, copy) are also exposed to
+ * TalkBack as custom actions, so the menu does not depend on the gesture.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+fun Modifier.tapLongPressable(
+    onClick: (() -> Unit)?,
+    onLongClick: () -> Unit,
+    menuActions: List<Pair<String, () -> Unit>> = emptyList(),
+): Modifier = composed {
+    val haptics = rememberHaptics()
+    combinedClickable(
+        role = Role.Button,
+        onLongClick = {
+            haptics.longPress()
+            onLongClick()
+        },
+        onClick = {
+            if (onClick != null) {
+                haptics.tap()
+                onClick()
+            }
+        },
+    ).semantics {
+        if (menuActions.isNotEmpty()) customActions = menuActions.map { (label, action) -> CustomAccessibilityAction(label) { action(); true } }
     }
 }

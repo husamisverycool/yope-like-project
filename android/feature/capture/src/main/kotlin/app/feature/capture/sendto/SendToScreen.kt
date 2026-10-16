@@ -330,7 +330,7 @@ private fun GroupsSection(
                 icon = null,
             )
         }
-        is SendToViewModel.Groups.Loaded -> Column(Modifier.padding(top = Dp(row.padding) - Dp(row.padding))) {
+        is SendToViewModel.Groups.Loaded -> Column {
             state.visibleGroups.forEachIndexed { index, group ->
                 if (index > 0) Hairline(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), onMedia = true)
                 GroupRow(group, covers[group.id], selected = group.id in state.selected, enabled = !state.sending && state.replyGroupId == null) { onToggle(group.id) }
