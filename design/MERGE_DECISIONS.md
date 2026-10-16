@@ -1339,3 +1339,41 @@ dark background). Files: tokens `color.global.background.android.trueBlack`, `co
 | OD7-5 | Paywall walk (Android vs spec / iOS) | busy capsule on both cards while one plan was bought; restore failures offline said "No previous purchases found"; plan pager steps played no tick; loading indicator in page grey | busy = the bought plan only (a second tap ignored); offline restore → `paywall.offline` (as iOS); `haptic.global.select` on plan pager steps; indicator in `paywall.color.planTextTertiary` | paywall.md States / Haptics | resolved |
 | OD7-6 | History perk (T1) | `free_history_days` NULL in the foundation migration | stays NULL; the perk is not listed on either platform (tests on both); iOS `default` snapshot no longer seeds it | decision 7 | resolved |
 | OD18-1 | Lock-screen widgets | provider `home_screen` (owner question) | `home_screen|keyguard`; the hub slot (≈ 4 × 3 cells) renders the Medium layout (snapshots); taps need unlock; preview covers keyguard (Glance default) | decision 18; platform docs | resolved |
+
+## Owner decisions 9, 10, 13, 17 — template covers, "members", first screen, QR invite card (OD9-*, OD10-*, OD13-*, OD17-*)
+
+Surfaces: `groups.invite`, `groups.list`, `groups.create` (step A rows), `walls.browse`, `chat.thread` (empty state). Tokens
+`groups.invite.icon.qr`, `groups.invite.fontSize.qrTagline`, `groups.invite.layout.qrCard`, `groups.list.layout.templateCovers`
+(design/tokens/account.json); copy `groups.invite.link.qr`, `groups.invite.qr.*` (account), `walls.browse.title`,
+`walls.browse.error.title`, `chat.thread.empty.invite` (social). Licences: `android/feature/account/licenses/ZXing-*`,
+`fixtures/photos/LICENSE.md` → "Shipped in the apps".
+
+### Evidence gathered in this pass
+
+| what | source | used for |
+|---|---|---|
+| Retro's link-sharing targets | TC-J5 phone 2: four 64-pt circles "QR Code · Copy Link · Instagram · Share to…"; QR glyph ink 23.2 × 23.2 pt (x 1557–1604, y 2343–2390) | target order, `groups.invite.icon.qr` |
+| Retro's QR strings and tiny print | APK-S `journal_settings_link_sharing_qr_code_cta` / `journal_broadcast_invite_option_qr_code` "QR Code", `journal_qr_code_action_sheet_title` "Share Link", `qr_card_content_subtitle` "Retro.app - Photos with Friends", `qr_card_content_member_since_template`, `friends_tab_profile_qr` "Profile QR code"; APK-X `osg.g cs1.java:165` 10 sp next to the subtitle | QR copy, `groups.invite.fontSize.qrTagline` |
+| What Retro's QR is for | TechCrunch 2024-04-04 (accessed 2026-10-16): "this very beautiful QR code that you can either save to your camera roll or print" | Save + Share (print in the share sheet) |
+| Images of Retro's in-app QR card | searched the web (TechCrunch, Engadget, Product Hunt, App Store / Play listings, Retro's site): none found; retro.app desktop pages show only the web QR (WEBD; `/j/` small QR at 0.7 scale beside "Scan to view this journal on the mobile app.") | the card is a composition (below) |
+| Quiet zone and colours | DENSO WAVE qrcode.com "QR Code requires a four-module wide margin at all sides of a symbol." (accessed 2026-10-16); Tor Browser issue 41049 (inverted dark-theme codes not read by some readers) | `quietZoneModules` 4; the card stays white in dark |
+| Retro's journal noun | retro.app `/j/` "7 members • 24 photos", "%1$s invited you to join the private journal" (RP §7); APK-S `journal_edit_members_screen_title` "Members", `journal_profile_add_members` "Add Members" | the "members" audit |
+| Template covers | every photo in `fixtures/photos/` viewed at full size; people-free photos: road-trip-window, cake-chocolate-candles, pizza-table, sunset-lake, picnic-spread, plants-shelf, succulents, coffee ×2, cats, kitten, dog, city-night-street, sunset-sea; birthday-cake-candles (blurred figure behind) and food-plates (hands and heads) excluded | `groups.list.layout.templateCovers` |
+
+### Conflicts and resolutions
+
+| # | topic | values and sources | resolution | rule / evidence | status |
+|---|---|---|---|---|---|
+| OD17-1 | Where the QR lives | RA-11 left it to the owner; decision 17: in the invite sheet | a fourth share target, first as in TC-J5: QR Code · Copy Link · Message (in Instagram's place, the platform's own messages app) · Share to…; narrow screens share the width in quarters | TC-J5 | resolved |
+| OD17-2 | The card's look | Retro's QR card art never captured; its strings point to a card with tiny print, like its recap card "2023 / nathan / retro.app" (TC-H) | the recap card shell (`layout.year.story.recapCard`, white in both appearances, L-4) with the code in its grid area; footer = group name (`displayTitle`) over the 10-pt tagline in `groups.invite.color.note` (#767676: Retro's grey on this sheet, 4.54 : 1 on white); shown in the recap preview (ST-04: blurred cover, close, Save circle, Share pill) | composition of C-34, C-11, C-09 in Retro's recap-preview order | resolved |
+| OD17-3 | Encoding | web: qrcode-generator EC H, whole-pixel modules, black on white (`web/src/render/qr.ts`); Retro's desktop QR has rounded modules | reuse the web's parameters (EC H, square whole-pixel modules, black on white) so both QR surfaces match; quiet zone made explicit (4 modules inside the white card); iOS CoreImage, Android ZXing core 3.5.3 (Apache-2.0) | task: reuse web encoding; DENSO WAVE | resolved |
+| OD17-4 | Centre image | web `/i/` puts the inviter's avatar over the code (Retro `/u/`) | none on the card: the footer names the group, and Save / Share export the card alone; EC H kept for printed wear | — | resolved |
+| OD17-5 | Copy from Retro's card | "Retro.app - Photos with Friends", "Member since %1$d" | tagline "Photos with friends and family" (domain dropped — owner's, BLOCKED; noun as `invite.appclip.card.subtitle`); "Member since" not copied (a person's join year) | copy-patterns `retro.voice.share` | resolved |
+| OD17-6 | Actions | TechCrunch: save to camera roll or print; APK: profile QR sheet has share options | Save (photo library: iOS add-only, Android MediaStore; denied → Settings alert) and Share (system sheet, which offers Print / Save Image) | — | resolved |
+| OD10-1 | "friends" audit | 11 strings contain "friend" | changed (the people of your groups): `walls.browse.title` "Friends" → "Members" (closes S-12), `walls.browse.error.title` "Error loading friends…" → "Error loading members…", `chat.thread.empty.invite` "Invite friends" → "Add members"; kept (friends in general or the Friends kind): `auth.phone.tagline`, `groups.create.type.friends` (+ `.detail`), `groups.screen.created.invite.friends`, `groups.settings.members.invite.friends` (the Friends kind's own noun, beside "Invite Family" / "Invite Roommates"), `camera.sendto.empty.detail`, `invite.web.og.description`, `invite.appclip.card.subtitle` | decision 10 | resolved |
+| OD13-1 | First screen | iOS opened the camera at every launch with a session; Android only with ≥ 1 group (`RootGate`) | iOS `AccountSession.start` waits on `LaunchingView` for `hasGroups()` (the cached list, else the first fetch; a failed fetch = none) and lands on the camera only with a group; a sign-out during the check wins | decision 13; parity with Android | resolved |
+| OD9-1 | Template covers | placeholders (REVIEW known gap) | friends `road-trip-window-3x2`, family `cake-chocolate-candles-4x5`, roommates `pizza-table-3x4`, custom `sunset-lake-9x16`; `picnic-spread-3x4` (best "friends" match) dropped for its wine (alcohol reference in a bundled asset); 216 × 291 px JPEG q80 in the iOS asset catalog (new: `ios/App/Resources/Assets.xcassets`, `ASSETCATALOG_COMPILER_APPICON_NAME` "" until the owner's icon — OWNER_SETUP §0.2) and Android `feature/account` `drawable-nodpi` | decision 9; Unsplash License | resolved |
+
+### Unresolved (capture)
+
+- One screenshot of Retro's journal "QR Code" sheet would replace the composed card with Retro's own layout.

@@ -57,7 +57,6 @@ side-by-side images are local only (git-ignored: the reference half is third-par
 
 - Landing (auth.phone): no wordmark or mark until the owner names the app (BLOCKED `{app_name}`); the screen reads
   sparse in release.
-- "Ideas to Get Started" template thumbnails are placeholder fills (template photos are an owner question).
 - Debug builds show `{app_name}` placeholders where copy names the app (release omits those elements).
 - Display faces are the closest free match, not Roslindale itself (licence: owner).
 - Component gaps logged by the Pass 4 agents (local variants built from tokens): 64-pt dark circle, header action
