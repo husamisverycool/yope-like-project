@@ -136,6 +136,7 @@ struct ProfilePhotoStep: View {
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
         .formErrorAlert(model.failureMessage, trigger: model.errorCount)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("auth.profile.photo")
     }
 }

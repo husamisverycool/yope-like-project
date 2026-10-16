@@ -64,6 +64,7 @@ struct CodeScreen: View {
             model.startResendLock()
             fieldFocused = true
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("auth.code")
     }
 

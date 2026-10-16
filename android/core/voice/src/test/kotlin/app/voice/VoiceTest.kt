@@ -234,7 +234,7 @@ class VoiceRecorderTest {
         assertEquals(2_345L, r.elapsedMs.value)
         assertEquals(100, r.levels.value.size, "the draft's waveform")
         r.resume()
-        val note = r.stop()
+        val note = r.finish()
         assertNotNull(note)
         assertEquals(2_345L, note!!.durationMs)
         assertTrue(VoiceLevels.isValid(note.levels))
@@ -260,7 +260,7 @@ class VoiceRecorderTest {
         val draft = r.draftFile()
         assertEquals(1, joined.size, "two segments: joined for the preview")
         assertEquals(draft, r.draftFile(), "the same draft is not joined again")
-        val note = r.stop()!!
+        val note = r.finish()!!
         assertEquals(draft, note.file, "the joined draft is the note")
         assertEquals(1, joined.size)
         assertEquals(1_500L, note.durationMs)
@@ -276,7 +276,7 @@ class VoiceRecorderTest {
         r.cancel()
         assertFalse(draft.exists())
         assertTrue(r.levels.value.isEmpty())
-        assertNull(r.stop())
+        assertNull(r.finish())
         r.release()
     }
 

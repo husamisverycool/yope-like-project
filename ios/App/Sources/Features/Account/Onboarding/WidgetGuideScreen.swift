@@ -63,6 +63,7 @@ struct WidgetGuideScreen: View {
                     .accessibilityIdentifier("onboarding.widget.continue")
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("onboarding.widget")
     }
 

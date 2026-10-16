@@ -44,6 +44,7 @@ struct PhoneScreen: View {
                 .transition(.opacity)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("auth.phone")
     }
 }

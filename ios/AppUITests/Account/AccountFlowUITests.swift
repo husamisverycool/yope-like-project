@@ -34,30 +34,15 @@ final class AccountFlowUITests: XCTestCase {
         target.typeText(text)
     }
 
+    /// The control carrying `identifier`: the button when there is one (a block's identifier also reaches its title and
+    /// detail text), else any element.
     @MainActor
     private func tap(_ identifier: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
-        let button = element(app, identifier)
+        let candidate = app.buttons.matching(identifier: identifier).firstMatch
+        let button = candidate.waitForExistence(timeout: 2) ? candidate : element(app, identifier)
         XCTAssertTrue(button.waitForExistence(timeout: 5), "\(identifier) missing", file: file, line: line)
         XCTAssertTrue(button.isEnabled, "\(identifier) disabled", file: file, line: line)
         button.tap()
-    }
-
-    /// The first of `identifiers` that is on screen and hittable (SwiftUI may report a row's identifier on the row or on
-    /// its capsule).
-    @MainActor
-    private func tapFirst(_ identifiers: [String], in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
-        let deadline = Date().addingTimeInterval(5)
-        while Date() < deadline {
-            for identifier in identifiers {
-                let candidate = element(app, identifier)
-                if candidate.exists, candidate.isHittable {
-                    candidate.tap()
-                    return
-                }
-            }
-            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
-        }
-        XCTFail("none of \(identifiers) on screen", file: file, line: line)
     }
 
     /// auth.phone: the landing's "Get Started" opens the phone form.
@@ -128,9 +113,13 @@ final class AccountFlowUITests: XCTestCase {
         tap("groups.list.empty.create", in: app)
 
         XCTAssertTrue(element(app, "groups.create").waitForExistence(timeout: 5))
-        // Step A: the type rows (Retro's templates); any row moves on to the cover and name.
-        XCTAssertTrue(element(app, "groups.create.type").waitForExistence(timeout: 5))
-        tapFirst(["groups.template.create", "groups.template.friends"], in: app)
+        // Step A: the type rows (Retro's templates); any row moves on to the cover and name. The rows are looked up inside
+        // the sheet: the groups list under it shows the same template rows.
+        let typeStep = element(app, "groups.create.type")
+        XCTAssertTrue(typeStep.waitForExistence(timeout: 5))
+        let friends = typeStep.buttons.matching(identifier: "groups.template.friends").firstMatch
+        XCTAssertTrue(friends.waitForExistence(timeout: 5), "the Friends template row")
+        friends.tap()
         XCTAssertTrue(element(app, "groups.create.name").waitForExistence(timeout: 5))
         XCTAssertFalse(element(app, "groups.create.submit").isEnabled, "a name is required")
         type("Lima family", into: "groups.create.name", in: app)

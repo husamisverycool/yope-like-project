@@ -126,6 +126,7 @@ struct GroupInviteView: View {
         } message: {
             Text(Copy.groupsInviteLinkTurnOffMessage)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("groups.invite")
     }
 

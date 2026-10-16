@@ -8,7 +8,7 @@ Side by side: [`paywall.android.png`](paywall.android.png) — ours left (`paywa
 
 States rendered (`android/feature/account/src/test/snapshots/paywall/`): `default-dark`, `default-light`, `default-noPhoto-historyLimited-light`, `default-noTrial-light`, `loading-light`, `monthly-light`, `nothingToRestore-light`, `offline-light`, `pending-light`, `productsUnavailable-light`, `purchaseFailed-light`, `purchasing-light`, `restoreOffline-light`, `welcome-light`, `welcome-restored-light`.
 
-**Result: 71 checks — 65 match, 2 MISS, 2 BLOCKED, 2 n/a.** (`match` includes measured, token, behaviour and copy rows.)
+**Result: 71 checks — 67 match, 2 BLOCKED, 2 n/a.** (`match` includes measured, token, behaviour and copy rows.)
 
 ## Default (paywall/default-light, -dark)
 
@@ -16,10 +16,10 @@ States rendered (`android/feature/account/src/test/snapshots/paywall/`): `defaul
 |---|---|---|---|---|---|
 | match | plan card leading inset (light): `size.global.buttonMarginH` | 20 | 20 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 | match | plan card fill (light; light in both appearances): `paywall.layout.planCard` | #FFFFFF | #FFFFFF | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png card x 60–1144… |  |
-| MISS | FREE pill trailing inset (light): `paywall.size.planPillInset` | 19.5 | 39.5 | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png row y=1487 (3.… |  |
+| match | FREE pill trailing inset (light): `paywall.size.planPillInset` | 19.5 | 19.5 | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png row y=1487 (3.… |  |
 | match | plan card leading inset (dark): `size.global.buttonMarginH` | 20 | 20 | references/auto/retro/lazyweb/retro-lazyweb-20251119-social.png x60–1145 → 20.0… |  |
 | match | plan card fill (dark; light in both appearances): `paywall.layout.planCard` | #FFFFFF | #FFFFFF | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png card x 60–1144… |  |
-| MISS | FREE pill trailing inset (dark): `paywall.size.planPillInset` | 19.5 | 39.5 | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png row y=1487 (3.… |  |
+| match | FREE pill trailing inset (dark): `paywall.size.planPillInset` | 19.5 | 19.5 | references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png row y=1487 (3.… |  |
 
 ## Tokens named in the spec
 

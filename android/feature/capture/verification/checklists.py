@@ -368,6 +368,12 @@ def widget_android_extra(s):
     s.token("label / description", "\"Group Updates\" / \"See live updates from your group\"", "receiver android:label + provider description")
     for st in ["groups", "groups-dark", "loading", "empty", "error"]:
         s.row("match", f"configure `{st}`", "C-29 title, C-16 rows + C-32 hairlines, C-28 / C-27", f"widget.android_configure-{st}.png", "", "")
+    s.section("Lock screen (owner decision 18)")
+    lk = TOKENS["widget.android.layout.lockScreen"]["value"]
+    # "|" would split the Markdown table cell.
+    s.token("`widget.android.layout.lockScreen`", lk["widgetCategory"].replace("|", "\\|"), "android:widgetCategory=\"home_screen\\|keyguard\" (WidgetProviderInfoTest)", ev("widget.android.layout.lockScreen"))
+    for st, note in [("photo", "hub slot 4 × 3 cells → Medium layout: full-bleed photo, text stack bottom-trailing"), ("collage", "Medium collage"), ("empty", "state column centred"), ("signedout", "\"Log in to see your content\"")]:
+        s.row("match", f"lock-screen hub `{st}`", "`widget.android.layout.lockScreen` size (276 × 183 dp)", f"widget.android_keyguard_{st}.png", "", note)
 
 
 def notifications():

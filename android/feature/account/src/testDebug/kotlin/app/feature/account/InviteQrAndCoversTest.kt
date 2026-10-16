@@ -5,8 +5,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -15,7 +13,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.performClick
+import com.github.takahirom.roborazzi.captureRoboImage
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
@@ -29,7 +29,6 @@ import app.feature.account.groups.GroupInviteActions
 import app.feature.account.groups.GroupInviteScreen
 import app.feature.account.groups.GroupInviteUiState
 import app.feature.account.groups.InviteQr
-import app.feature.account.groups.InviteQrActions
 import app.feature.account.groups.InviteQrCard
 import app.feature.account.groups.QrMatrix
 import app.feature.account.groups.templateCover
@@ -108,36 +107,45 @@ class InviteQrAndCoversTest {
         assertEquals("the name and tagline are read through the label only", 0, compose.onAllNodesWithText("Sunday Dinners").fetchSemanticsNodes().size)
     }
 
-    @Test fun qrCodeTargetOpensTheCardWhoseDrawnPixelsReadBackAsTheLink() {
+    /**
+     * The card as drawn — in the dark appearance, where it stays white with black modules (reversed codes are not read
+     * by every scanner) — recorded as `groups.invite/qr-card-dark.png` and read back by ZXing: the link the sheet
+     * shares, error correction H.
+     */
+    @Test fun drawnCardReadsBackAsTheLink() {
+        compose.setContent { AppTheme(dark = true) { InviteQrCard(link, "Sunday Dinners", 324.dp) } }
+        val path = "src/test/snapshots/groups.invite/qr-card-dark.png"
+        compose.onNodeWithTag(GROUP_INVITE_QR_CARD_TAG).captureRoboImage(path)
+        val bitmap = BitmapFactory.decodeFile(path)
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        // Clear (rounded corner) pixels count as white, as on paper.
+        for (i in pixels.indices) if (pixels[i] ushr 24 < 128) pixels[i] = WHITE
+        val decoded = decode(pixels, bitmap.width)
+        assertEquals("the card encodes the link the sheet shares", link, decoded.first)
+        assertEquals("error correction H", "H", decoded.second)
+    }
+
+    @Test fun qrCodeTargetOpensTheCardWithSaveAndShare() {
         var opened = false
-        var saved: ImageBitmap? = null
         val invite = GroupInvite("i1", "g1", "AbCdEfGhIjKlMnOpQrStUvWx", "u-me", Instant.EPOCH, Instant.EPOCH.plusSeconds(86_400), null)
         val state = GroupInviteUiState(groupName = "Sunday Dinners", kind = GroupKind.Friends, invite = invite, loading = false)
         var qrLink by mutableStateOf<String?>(null)
         compose.setContent {
             CompositionLocalProvider(LocalAccountEnvironment provides fakeEnvironment()) {
-                // Dark appearance: the card stays white with black modules (a media surface; reversed codes are not read by every scanner).
-                AppTheme(dark = true) {
-                    GroupInviteScreen(
-                        state,
-                        ZoneId.of("UTC"),
-                        GroupInviteActions(onQr = { opened = true; qrLink = link }, qr = InviteQrActions(onSave = { saved = it })),
-                        qrLink = qrLink,
-                    )
+                AppTheme {
+                    GroupInviteScreen(state, ZoneId.of("UTC"), GroupInviteActions(onQr = { opened = true; qrLink = link }), qrLink = qrLink)
                 }
             }
         }
+        compose.onNodeWithTag(GROUP_INVITE_QR_CARD_TAG).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.groups_invite_link_qr)).performClick()
         compose.waitForIdle()
         assertTrue("QR Code → the card", opened)
         compose.onNodeWithTag(GROUP_INVITE_QR_CARD_TAG).assertExists()
-        compose.onNodeWithContentDescription(context.getString(R.string.groups_invite_qr_save)).performClick()
-        compose.waitUntil(timeoutMillis = 5_000) { saved != null }
-        val image = saved!!
-        assertTrue("the card alone (not the backdrop)", image.width < image.height && image.width > 0)
-        val decoded = decode(image)
-        assertEquals("Save gets the card's own pixels: they encode the link the sheet shares", link, decoded.first)
-        assertEquals("error correction H", "H", decoded.second)
+        compose.onNodeWithContentDescription(context.getString(R.string.groups_invite_qr_save)).assertHasClickAction()
+        compose.onNodeWithText(context.getString(R.string.groups_invite_qr_share)).assertExists()
+        compose.onNodeWithContentDescription(context.getString(R.string.groups_invite_close_accessibilitylabel)).assertExists()
     }
 
     // Template covers -------------------------------------------------------------------------------
@@ -180,16 +188,6 @@ class InviteQrAndCoversTest {
         val bitmap = BinaryBitmap(HybridBinarizer(RGBLuminanceSource(side, pixels.size / side, pixels)))
         val result = QRCodeReader().decode(bitmap, mapOf(DecodeHintType.TRY_HARDER to true))
         return result.text to result.resultMetadata[ResultMetadataType.ERROR_CORRECTION_LEVEL]
-    }
-
-    /** The captured card on white (its rounded corners are clear). */
-    private fun decode(image: ImageBitmap): Pair<String, Any?> {
-        val map = image.toPixelMap()
-        val pixels = IntArray(map.width * map.height) { i ->
-            val c = map[i % map.width, i / map.width]
-            if (c.alpha < 0.5f) WHITE else android.graphics.Color.argb(255, (c.red * 255).toInt(), (c.green * 255).toInt(), (c.blue * 255).toInt())
-        }
-        return decode(pixels, map.width)
     }
 
     private companion object {

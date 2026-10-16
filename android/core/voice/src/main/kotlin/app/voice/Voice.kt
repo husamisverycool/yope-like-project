@@ -25,6 +25,19 @@ import java.util.UUID
 /** A finished recording: the `.m4a`, its length and its waveform (100 levels of 0…31, [VoiceLevels]). */
 data class VoiceNote(val file: File, val durationMs: Long, val levels: List<Int>)
 
+/** Earlier waveform helpers (kept while callers move to [VoiceLevels]). */
+object Waveform {
+    const val MAX_AMPLITUDE = VoiceLevels.MAX_AMPLITUDE
+
+    fun level(amplitude: Int): Float = VoiceLevels.level(amplitude)
+
+    /** Resamples [levels] into [count] bars (peak per bucket). */
+    fun bars(levels: List<Float>, count: Int): List<Float> {
+        require(count > 0)
+        return VoiceLevels.bucketPeaks(levels, count)
+    }
+}
+
 /**
  * Records voice (`chat.voice.layout.recording` / `.locked`): start, pause, continue, a playable draft while paused, stop
  * (segments joined into one `.m4a`) or cancel. Samples the input's peak level every [VoiceLevels.SAMPLING_INTERVAL_MS]
@@ -95,8 +108,20 @@ class VoiceRecorder(
         return out
     }
 
-    /** Stops and returns the recording (one file), or null when nothing usable was recorded. */
-    suspend fun stop(): VoiceNote? {
+    /** Stops and returns the recording (one file; segments joined off the main thread), or null when nothing usable. */
+    suspend fun finish(): VoiceNote? = finishWith { segments, out -> withContext(Dispatchers.IO) { joiner(segments, out) } }
+
+    /**
+     * Earlier callers' start: [output] and [samplingIntervalMs] are ignored (segments go to the recorder's directory, the
+     * level is read every [VoiceLevels.SAMPLING_INTERVAL_MS]).
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun start(output: File, samplingIntervalMs: Long) = start()
+
+    /** Earlier callers' stop: [finish] with the segments joined on the calling thread. */
+    fun stop(): VoiceNote? = kotlinx.coroutines.runBlocking { finishWith { segments, out -> joiner(segments, out) } }
+
+    private suspend fun finishWith(join: suspend (List<File>, File) -> Unit): VoiceNote? {
         if (session.state == RecordingSession.State.Idle) return null
         stopSampling()
         val result = session.finish()
@@ -113,7 +138,7 @@ class VoiceRecorder(
             else -> {
                 discardDraft()
                 val out = newFile()
-                val ok = runCatching { withContext(Dispatchers.IO) { joiner(segments, out) } }.isSuccess
+                val ok = runCatching { join(segments, out) }.isSuccess
                 if (!ok) {
                     (segments + out).forEach(File::delete)
                     return null

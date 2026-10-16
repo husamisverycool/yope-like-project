@@ -29,6 +29,7 @@ struct NotificationsPermissionScreen: View {
             }
             .accessibilityIdentifier("onboarding.notifications.continue")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("onboarding.permission.notifications")
     }
 

@@ -76,7 +76,7 @@ object TestPhotos {
 
 /** Voice without hardware: records "levels", plays instantly, synthetic envelopes. */
 class FakeVoice : VoiceServices {
-    override val levels = MutableStateFlow(listOf(0.2f, 0.6f, 0.9f, 0.4f, 0.7f))
+    override val levels = MutableStateFlow(listOf(6, 18, 27, 12, 21))
     override val playback = MutableStateFlow(VoicePlayback(null, false))
     var recording = false
     val played = ArrayList<String>()

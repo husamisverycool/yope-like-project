@@ -316,6 +316,7 @@ struct WallMineScreen: View {
             await model.run()
         }
         .socialPhotoViewer($viewer)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("walls.mine") // provenance-ok: accessibility identifier for UI tests
     }
 }

@@ -200,7 +200,8 @@ fun GroupInviteQrScreen(link: String, groupName: String, coverUrl: Any?, actions
     val layer = rememberGraphicsLayer()
     val scope = rememberCoroutineScope()
     fun capture(then: (ImageBitmap) -> Unit) {
-        scope.launch { then(layer.toImageBitmap()) }
+        // The layer holds the card once it has been drawn (before that there is nothing to save or share).
+        if (layer.size.width > 0 && layer.size.height > 0) scope.launch { then(layer.toImageBitmap()) }
     }
     RecapPreviewScreen(
         backdrop = coverUrl,

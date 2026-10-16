@@ -142,6 +142,7 @@ struct GroupsListView: View {
             action: { dependencies.router.path.append(.group(id: row.id.rawValue)) }
         )
         .lineLimit(1)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("groups.list.row")
         .dsTransition(.opacity)
     }

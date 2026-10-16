@@ -135,6 +135,7 @@ struct PhotoViewerView: View {
                 onBlocked: { target in model.authorBlocked(UserID(target.userID)) }
             )
             .socialClearsReplyHandoff()
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("photo.viewer") // provenance-ok: accessibility identifier for UI tests
     }
 

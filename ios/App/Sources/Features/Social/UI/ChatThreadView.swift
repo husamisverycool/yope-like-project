@@ -113,6 +113,7 @@ struct ChatThreadView: View {
             Text(Copy.photoViewerPermissionDetail)
         }
         .socialClearsReplyHandoff()
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("chat.thread") // provenance-ok: accessibility identifier for UI tests
     }
 

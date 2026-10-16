@@ -71,6 +71,7 @@ struct GroupFeedView: View {
             Task { await model.blocked(UserID(target.userID)) }
         }
         .reportFlow(target: $reportTarget, dependencies: dependencies)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("groups.screen")
     }
 

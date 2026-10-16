@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
@@ -25,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +34,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -47,6 +53,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -79,6 +86,7 @@ import app.ui.system.FeatureIntroSheet
 import app.ui.system.SystemAlertDialog
 import app.ui.text.CapTop
 import app.ui.text.TextRoles
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 
 /** Test tags (flow tests). */
@@ -213,13 +221,12 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
     val photoLabel = stringResource(R.string.onthisday_a11y_photo, memory.authorName, dateText)
     // Focus order: header → photo → controls (onthisday.md → Accessibility).
     Box(Modifier.fillMaxSize().semantics { contentDescription = photoLabel; traversalIndex = 0f })
-    // A state object, not its value: Crossfade keeps the content lambda of a shown memory until the memory changes, so the
-    // title reads the open state itself.
-    val modeMenuOpen = remember { mutableStateOf(false) }
-    val modeItems = listOf(
-        DsMenuItem(stringResource(R.string.onthisday_mode_day), actions.onShowDay),
-        DsMenuItem(stringResource(R.string.onthisday_mode_shuffle), actions.onShuffle),
-    )
+    // The mode menu lives outside the cross-fade (Crossfade keeps a shown memory's content until the memory changes, so
+    // state read inside it is not observed); the title row reports where it is and the menu is anchored there.
+    var modeMenuOpen by remember { mutableStateOf(false) }
+    var pageOrigin by remember { mutableStateOf(Offset.Zero) }
+    var titleRow by remember { mutableStateOf<Rect?>(null) }
+    Box(Modifier.matchParentSize().onGloballyPositioned { pageOrigin = it.positionInRoot() })
     Crossfade(targetState = memory, animationSpec = fade, label = "memoryTitle") { shown ->
         val subtitle = stringResource(
             if (state.mode == MemoryMode.Shuffle) R.string.onthisday_subtitle_shuffle else R.string.onthisday_subtitle_day,
@@ -230,8 +237,27 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
             subtitle,
             actions.onBack,
             showBack = false,
-            modeMenu = ModeMenu(modeMenuOpen, modeItems),
+            modeMenu = ModeTitleActions(onOpen = { modeMenuOpen = true }, onPlaced = { titleRow = it }),
         )
+    }
+    titleRow?.let { row ->
+        val density = LocalDensity.current
+        Box(
+            Modifier
+                .offset { IntOffset((row.left - pageOrigin.x).roundToInt(), (row.top - pageOrigin.y).roundToInt()) }
+                .size(with(density) { row.width.toDp() }, with(density) { row.height.toDp() }),
+        ) {
+            SystemAppearance {
+                DsDropdownMenu(
+                    modeMenuOpen,
+                    { modeMenuOpen = false },
+                    listOf(
+                        DsMenuItem(stringResource(R.string.onthisday_mode_day), actions.onShowDay),
+                        DsMenuItem(stringResource(R.string.onthisday_mode_shuffle), actions.onShuffle),
+                    ),
+                )
+            }
+        }
     }
     Header(null, null, actions.onBack) {
         Box {
@@ -297,7 +323,7 @@ private fun Header(
     subtitle: String?,
     onBack: () -> Unit,
     showBack: Boolean = true,
-    modeMenu: ModeMenu? = null,
+    modeMenu: ModeTitleActions? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val titleStyle = TextRoles.headerTitle
@@ -352,8 +378,8 @@ private fun Header(
     }
 }
 
-/** The title's mode menu: open state and items ("On this day…", "Shuffle" — Retro's Rewind mode menu). */
-private class ModeMenu(val open: MutableState<Boolean>, val items: List<DsMenuItem>)
+/** What the title does with a mode menu: open it, and report where it is (bounds in the root) so the menu anchors there. */
+private class ModeTitleActions(val onOpen: () -> Unit, val onPlaced: (Rect) -> Unit)
 
 /**
  * The date title with the expand chevron after it; the whole row opens the mode menu (Material 3 menu anchored to the
@@ -362,37 +388,30 @@ private class ModeMenu(val open: MutableState<Boolean>, val items: List<DsMenuIt
  * title's cap middle ([capMiddle], from the header's top).
  */
 @Composable
-private fun ModeTitle(menu: ModeMenu, capMiddle: Dp, title: @Composable (Modifier) -> Unit) {
+private fun ModeTitle(menu: ModeTitleActions, capMiddle: Dp, title: @Composable (Modifier) -> Unit) {
     val chevron = Tokens.Icons.globalChevronDown
     val ink = GlyphInk.bounds(chevron)
     val box = Tokens.Sizes.onthisdayModeChevronWidth * (chevron.viewportWidth / ink.width)
     val lead = (Tokens.Sizes.onthisdayModeChevronGap - GlyphInk.leading(chevron, box)).coerceAtLeast(0.dp)
-    val open = menu.open.value
-    println("DBGTITLE " + open)
-    Box {
-        Row(
-            Modifier
-                // No ripple: the touch area reaches up to the header's top (the title's baseline padding); the menu
-                // itself is the feedback.
-                .clickable(interactionSource = null, indication = null, role = Role.DropdownList) { println("DBGCLICK " + System.identityHashCode(menu.open)); menu.open.value = true; println("DBGSET " + menu.open.value) }
-                .semantics(mergeDescendants = true) { heading() }
-                .testTag(OnThisDayTags.MODE),
-        ) {
-            title(Modifier.weight(1f, fill = false))
-            Icon(
-                chevron,
-                contentDescription = null,
-                tint = Tokens.Colors.globalTextOnMedia,
-                modifier = Modifier
-                    .padding(start = lead)
-                    .centreAt(capMiddle + Tokens.Sizes.onthisdayModeChevronDrop)
-                    .size(box),
-            )
-        }
-        SystemAppearance {
-            println("DBGMENU " + open + " " + System.identityHashCode(menu.open))
-            DsDropdownMenu(open, { menu.open.value = false }, menu.items)
-        }
+    Row(
+        Modifier
+            .onGloballyPositioned { menu.onPlaced(it.boundsInRoot()) }
+            // No ripple: the touch area reaches up to the header's top (the title's baseline padding); the menu itself
+            // is the feedback.
+            .clickable(interactionSource = null, indication = null, role = Role.DropdownList, onClick = menu.onOpen)
+            .semantics(mergeDescendants = true) { heading() }
+            .testTag(OnThisDayTags.MODE),
+    ) {
+        title(Modifier.weight(1f, fill = false))
+        Icon(
+            chevron,
+            contentDescription = null,
+            tint = Tokens.Colors.globalTextOnMedia,
+            modifier = Modifier
+                .padding(start = lead)
+                .centreAt(capMiddle + Tokens.Sizes.onthisdayModeChevronDrop)
+                .size(box),
+        )
     }
 }
 

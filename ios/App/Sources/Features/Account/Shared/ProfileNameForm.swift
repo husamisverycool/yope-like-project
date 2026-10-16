@@ -55,6 +55,7 @@ struct ProfileNameForm: View {
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
         .formErrorAlert(model.failureMessage, trigger: model.errorCount)
         .onAppear { fieldFocused = true }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("auth.profile")
     }
 

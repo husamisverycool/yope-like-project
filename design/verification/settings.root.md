@@ -8,7 +8,7 @@ Reference image(s): `references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-
 
 Snapshots (CI, `ios/build/snapshots/account/`): `settings.root-default-light.png`, `settings.root-default-dark.png`, `settings.root-subscription-loading-light.png`, `settings.root-subscriber-light.png`, `settings.root-permissions-denied-light.png`
 
-**Summary: 35 matched · 1 approximated · 0 not matched · 2 not applicable on iOS / owner / another pass.**
+**Summary: 35 matched · 1 approximated · 0 not matched · 7 not applicable on iOS / owner / another pass.** (2026-10-16: +5 n/a rows — the Android-only Appearance section, owner decision 21.)
 
 
 ## References
@@ -38,6 +38,11 @@ Snapshots (CI, `ios/build/snapshots/account/`): `settings.root-default-light.png
 | matched | `settings.root.widgets.header` | “Widgets” (SOURCED) | `Copy.settingsRootWidgetsHeader` in SettingsRootScreen.swift |
 | matched | `settings.root.widgets.add` | “Add Widget” (SOURCED) | `Copy.settingsRootWidgetsAdd` in SettingsRootScreen.swift |
 | matched | `settings.root.widgets.detail` | “See photos from your groups on your home screen” (SOURCED) | `Copy.settingsRootWidgetsDetail` in SettingsRootScreen.swift |
+| n/a | `settings.root.appearance.header` | “Appearance” (SOURCED) | Android only (owner decision 21): iOS's dark page is already Retro's iOS #000000 |
+| n/a | `settings.root.trueBlack` | “True Black” (SOURCED) | Android only |
+| n/a | `settings.root.trueBlack.detail` | “Use true black for the dark theme.” (SOURCED) | Android only |
+| n/a | `color.global.background.android.trueBlack` | light: #FFFFFF; dark: #000000 (SOURCED) | Android only |
+| n/a | `color.global.system.surface.trueBlack` | light: #FFFFFF; dark: #000000 (SOURCED) | Android only |
 | matched | `settings.root.privacy.header` | “Privacy” (SOURCED) | `Copy.settingsRootPrivacyHeader` in SettingsRootScreen.swift |
 | matched | `settings.root.blocked` | “Blocked People” (SOURCED) | `Copy.settingsRootBlocked` in SettingsRootScreen.swift |
 | matched | `settings.root.permissions.header` | “System Permissions” (SOURCED) | `Copy.settingsRootPermissionsHeader` in SettingsRootScreen.swift |

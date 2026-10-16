@@ -67,6 +67,7 @@ struct PhoneForm: View {
                 fieldFocused = true
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("auth.phone.form")
     }
 

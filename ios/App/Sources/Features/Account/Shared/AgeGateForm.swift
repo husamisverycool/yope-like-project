@@ -67,6 +67,7 @@ struct AgeGateForm: View {
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
         .formErrorAlert(model.invalidDate ? Copy.authAgegateErrorInvalidDate : nil, trigger: model.errorCount)
         .onAppear { fieldFocused = true }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("auth.agegate")
     }
 

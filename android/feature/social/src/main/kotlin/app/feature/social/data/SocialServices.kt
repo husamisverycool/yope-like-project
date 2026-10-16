@@ -35,8 +35,8 @@ data class VoicePlayback(val key: String?, val isPlaying: Boolean, val progress:
 
 /** Voice messages: record (core:voice `VoiceRecorder`) and play (core:voice `VoicePlayer`). */
 interface VoiceServices {
-    /** Live input levels (0…1) of the running recording. */
-    val levels: StateFlow<List<Float>>
+    /** The running recording's waveform so far (100 levels of 0…31, C-36). */
+    val levels: StateFlow<List<Int>>
     val playback: StateFlow<VoicePlayback>
 
     /** Starts recording (RECORD_AUDIO granted). Throws when the recorder cannot start. */
@@ -95,7 +95,7 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
         }
     }
 
-    override val levels: StateFlow<List<Float>> get() = recorder.levels
+    override val levels: StateFlow<List<Int>> get() = recorder.levels
     override val playback: StateFlow<VoicePlayback> = state.asStateFlow()
 
     override fun startRecording() {

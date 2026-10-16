@@ -70,6 +70,7 @@ struct GroupCreateView: View {
         .dsSheetBackground()
         .dsHaptic(Tokens.Haptics.globalSelect, trigger: model.kindChoiceCount)
         .task { await model.loadForEdit() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("groups.create")
     }
 
@@ -151,6 +152,7 @@ private struct GroupCreateTypeStep: View {
         }
         .background(Tokens.Colors.globalBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("groups.create.type")
     }
 }
@@ -195,6 +197,7 @@ private struct GroupCreateDetails: View {
         .dsHaptic(Tokens.Haptics.globalSuccess, trigger: model.successCount)
         .dsHaptic(Tokens.Haptics.globalError, trigger: model.errorCount)
         .formErrorAlert(model.failureMessage, trigger: model.errorCount)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("groups.create.details")
     }
 
