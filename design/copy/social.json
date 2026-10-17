@@ -1419,6 +1419,16 @@
       "level": "SOURCED",
       "notes": "Noun swap: collage → recap."
     },
+    "week.recap.template": {
+      "text": "Let’s look back at your week",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "week.recap",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (retrospective_page_title_look_back) ('Let’s look back at your 52 weeks')",
+      "pattern": "retro.voice.retrospective ('Let’s look back at your 52 weeks', 'Here’s to another year in the books')",
+      "level": "SOURCED",
+      "notes": "The worker's recap text when no AI text is available or the AI text fails the recap-text rules (backend/worker/COPY_KEYS.md); shown as the note under the recap card. Retro's line with its count dropped (no counts, tenet 2) and its span made the group's one week. Second person and one sentence, so it passes the recap-text rules itself (design/copy-patterns.md recap-text-rules)."
+    },
     "week.edit.title": {
       "text": "Edit Recap",
       "origin": "new",

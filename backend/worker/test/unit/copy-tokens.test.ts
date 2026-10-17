@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { copyText, hasCopy, setCopyTable, WORKER_COPY_KEYS } from "../../src/copy.js";
+import { copyText, hasCopy, setCopyTable, WORKER_COPY_KEYS, type WorkerCopyKey } from "../../src/copy.js";
+import { copy as generatedCopy } from "../../src/generated/copy.js";
+import { checkRecapText, recapTextRules } from "../../src/recap/validate.js";
 import { MissingCopyError, MissingTokenError, PermanentError } from "../../src/errors.js";
 import { designToken, setTokenOverrides, tokenSource } from "../../src/tokens.js";
 import { WORKER_ROOT } from "../../src/config.js";
@@ -36,6 +38,30 @@ describe("copyText", () => {
       expect(md, key).toContain(spec.surface);
       for (const p of spec.params) expect(md, `${key} {${p}}`).toContain(`{${p}}`);
     }
+  });
+});
+
+describe("the real generated copy table (design/copy/*.json → src/generated/copy.ts)", () => {
+  // The other worker tests run on a test copy table (test/helpers/world.ts); this guard is what
+  // proves the shipped table has every key the worker reads, so no job fails with MissingCopyError.
+  it("resolves every WORKER_COPY_KEYS key, using only the placeholders the worker provides", () => {
+    setCopyTable(null);
+    const missing = Object.keys(WORKER_COPY_KEYS).filter((k) => !Object.prototype.hasOwnProperty.call(generatedCopy, k));
+    expect(missing).toEqual([]);
+    for (const [key, spec] of Object.entries(WORKER_COPY_KEYS)) {
+      expect(hasCopy(key as WorkerCopyKey), key).toBe(true);
+      const params = Object.fromEntries(spec.params.map((p) => [p, `<${p}>`]));
+      const text = copyText(key as WorkerCopyKey, params);
+      expect(text.trim(), key).not.toBe("");
+      expect(text, key).not.toMatch(/\{[a-zA-Z_][a-zA-Z0-9_]*\}/);
+    }
+  });
+
+  it("the recap template passes the recap-text rules of design/copy-patterns.md itself", () => {
+    setCopyTable(null);
+    const { rules, source } = recapTextRules();
+    expect(source).toBe("design/copy-patterns.md");
+    expect(checkRecapText(copyText("week.recap.template", { group: "Lima" }), rules)).toEqual({ ok: true, problems: [] });
   });
 });
 

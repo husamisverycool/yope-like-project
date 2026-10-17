@@ -2009,6 +2009,8 @@ public enum Copy {
     public static var weekRecapPending: String { CopyLookup.string("week.recap.pending", default: "Creating your recap…") }
     /// "Save as Album" — Retro · week.recap · new · SOURCED
     public static var weekRecapSaveAsAlbum: String { CopyLookup.string("week.recap.saveAsAlbum", default: "Save as Album") }
+    /// "Let’s look back at your week" — Retro · week.recap · adapted · SOURCED
+    public static var weekRecapTemplate: String { CopyLookup.string("week.recap.template", default: "Let’s look back at your week") }
     /// "Join a group to see its photos here." — Retro · widget.android · new · SOURCED
     public static var widgetAndroidConfigureEmpty: String { CopyLookup.string("widget.android.configure.empty", default: "Join a group to see its photos here.") }
     /// "See live updates from your group" — Retro · widget.android · adapted · SOURCED

@@ -69,13 +69,14 @@ list it — owner decision).
 
 | key | placeholders | surface | meaning |
 |---|---|---|---|
-| `week.recap.template` | `{group}` | `week.recap` | Recap text used when no AI text is available (no `ANTHROPIC_API_KEY`, refusal, API error) or when the AI text fails the copy rules. One line, lowercase, second person (the recap voice). |
+| `week.recap.template` | `{group}` | `week.recap` | Recap text used when no AI text is available (no `ANTHROPIC_API_KEY`, refusal, API error) or when the AI text fails the copy rules. One line, second person, one Sentence-case sentence (the recap voice, `retro.voice.retrospective`). |
 
-The AI-drafted text is checked against the recap voice pattern. When `design/copy-patterns.md`
-gains a fenced block tagged `recap-text-rules` (JSON with any of `lowercase`, `secondPerson`,
-`maxSentences`, `maxChars`, `noDigits`, `banned`), those rules replace the minimum rules in
+The AI-drafted text is checked against the recap voice pattern. `design/copy-patterns.md` carries a
+fenced block tagged `recap-text-rules` (JSON with any of `lowercase`, `secondPerson`, `maxSentences`,
+`maxChars`, `noDigits`, `banned`); the keys it names replace the minimum rules in
 `src/recap/validate.ts` (lowercase, second person, one sentence, no digits, no count / streak /
-guilt words).
+guilt words). Today it sets `lowercase: false` (Retro's Sentence case). The template text itself
+passes these rules (test/unit/copy-tokens.test.ts).
 
 ## Tribute video (`birthday.tribute`)
 

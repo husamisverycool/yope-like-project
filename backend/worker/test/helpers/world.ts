@@ -1,5 +1,6 @@
 // A worker wired to the local Supabase stack and to mock APNs / FCM servers, with a test copy
-// table (the real one is generated from design/copy.json and may not have the keys yet).
+// table that shows every placeholder (payload tests read them). The real generated table is
+// checked for every worker key by test/unit/copy-tokens.test.ts.
 
 import { buildRunner, buildScheduler, buildServices } from "../../src/app.js";
 import type { WorkerConfig } from "../../src/config.js";

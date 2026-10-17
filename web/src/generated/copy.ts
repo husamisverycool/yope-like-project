@@ -1005,6 +1005,7 @@ const table = {
   "week.recap.open": "View recap", // Retro · week.recap · SOURCED
   "week.recap.pending": "Creating your recap…", // Retro · week.recap · SOURCED
   "week.recap.saveAsAlbum": "Save as Album", // Retro · week.recap · SOURCED
+  "week.recap.template": "Let’s look back at your week", // Retro · week.recap · SOURCED
   "widget.android.configure.empty": "Join a group to see its photos here.", // Retro · widget.android · SOURCED
   "widget.android.description": "See live updates from your group", // Retro · widget.android · SOURCED
   "widget.android.label": "Group Updates", // Retro · widget.android · SOURCED

@@ -195,3 +195,14 @@ trademark or mascot never appears in a string.
 **Daily invitation (tenet 5)**: Retro's post reminder is the model — title "Week {number}", body a
 `retro.voice.prompt` question ("Anything from today you want to remember?"); one alert at the start of the window
 (platform §daily.liveactivity: "Use one alert, at start"); no time-sensitive level, no deadline, no brand verb.
+
+**Recap text (`week.recap`)**: the line under the recap card (AI draft or the `week.recap.template` fallback) follows
+`retro.voice.retrospective`: second person, one Sentence-case sentence ("Let’s look back at your 52 weeks",
+`retrospective_page_title_look_back`), with the tenet filters above (no digits or count words, no streak, guilt or
+lateness words). The worker reads the block below (backend/worker/src/recap/validate.ts); keys it does not name keep
+the worker's minimum rules. `lowercase: false` retires the Yope-era all-lowercase rule (`yope.voice.lowercase` →
+`retro.voice.sentence-case`, Retired patterns above).
+
+```json recap-text-rules
+{ "lowercase": false }
+```

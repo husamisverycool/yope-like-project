@@ -200,6 +200,17 @@ trademark or mascot never appears in a string.
 `retro.voice.prompt` question ("Anything from today you want to remember?"); one alert at the start of the window
 (platform §daily.liveactivity: "Use one alert, at start"); no time-sensitive level, no deadline, no brand verb.
 
+**Recap text (`week.recap`)**: the line under the recap card (AI draft or the `week.recap.template` fallback) follows
+`retro.voice.retrospective`: second person, one Sentence-case sentence ("Let’s look back at your 52 weeks",
+`retrospective_page_title_look_back`), with the tenet filters above (no digits or count words, no streak, guilt or
+lateness words). The worker reads the block below (backend/worker/src/recap/validate.ts); keys it does not name keep
+the worker's minimum rules. `lowercase: false` retires the Yope-era all-lowercase rule (`yope.voice.lowercase` →
+`retro.voice.sentence-case`, Retired patterns above).
+
+```json recap-text-rules
+{ "lowercase": false }
+```
+
 
 ## Strings
 
@@ -1209,6 +1220,7 @@ trademark or mascot never appears in a string.
 | `week.recap.open` | “View recap” | new | retro.voice.button ('Get started', 'Add a memory', 'Create a chat', 'Add to album', 'Yes, delete') | Retro · `week.recap` | references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_rewind_upsell_feed_card_cta) ('View memories') | SOURCED |
 | `week.recap.pending` | “Creating your recap…” | adapted | retro.voice.progress ('Updating…', 'Downloading…', 'Creating your collage…') | Retro · `week.recap` | references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (recap_sticker_collage_loading_message) ('Creating your collage…') | SOURCED |
 | `week.recap.saveAsAlbum` | “Save as Album” | new | retro.voice.button ('Get started', 'Add a memory', 'Create a chat', 'Add to album', 'Yes, delete'); retro.voice.title-case ('Create Recap', 'New Album', 'Edit Profile', 'Add to Album', 'Share Profile') | Retro · `week.recap` | references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_tab_empty_state_create_cta) ('Create Album') | SOURCED |
+| `week.recap.template` | “Let’s look back at your week” | adapted | retro.voice.retrospective ('Let’s look back at your 52 weeks', 'Here’s to another year in the books') | Retro · `week.recap` | references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (retrospective_page_title_look_back) ('Let’s look back at your 52 weeks') | SOURCED |
 | `widget.android.configure.empty` | “Join a group to see its photos here.” | new | retro.voice.empty-state — one sentence with a period | Retro · `widget.android` | design/copy-patterns.md `retro.voice.empty-state` ('Your chats will show up here.' — `message_inbox_empty_state_message`) | SOURCED |
 | `widget.android.description` | “See live updates from your group” | adapted | retro.voice.widget + platform.widgetDescription | Retro · `widget.android` | references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_description_friends` 'See live updates from your friends' | SOURCED |
 | `widget.android.label` | “Group Updates” | adapted | retro.voice.widget — gallery name | Retro · `widget.android` | design/copy-patterns.md `retro.voice.widget`: 'Friend Updates' (`widget_title_friends`) | SOURCED |
