@@ -32,12 +32,16 @@ final class SettingsNotificationsModel {
     /// Pause All (`settings.notifications.pauseAll`; `notification_settings.paused_until`): the end of today's pause
     /// (the next local midnight), nil when notifications are not paused.
     private(set) var pausedUntil: Date?
+    /// The opt-in memory notification (`settings.notifications.memories`; `notification_settings.memories`), off by
+    /// default and when no settings row exists.
+    private(set) var memoriesOn = false
     /// The failed change of each section (`settings.notifications.error`); the screen shows it as a message-only alert
     /// (trigger `errorCount`).
     private(set) var groupsError: String?
     private(set) var quietError: String?
     private(set) var overnightError: String?
     private(set) var pauseError: String?
+    private(set) var memoriesError: String?
     private(set) var errorCount = 0
 
     private let data: AccountDataSource
@@ -72,6 +76,7 @@ final class SettingsNotificationsModel {
             quietHoursOn = quietStart != nil && quietEnd != nil
             overnightOn = settings.overnight
             pausedUntil = settings.isPaused(at: now()) ? settings.pausedUntil : nil
+            memoriesOn = settings.memories
         }
         isLoading = false
     }
@@ -180,6 +185,21 @@ final class SettingsNotificationsModel {
         }
     }
 
+    /// The memory notification (`set_memory_alerts(p_on, p_time_zone)`, the device's zone). Optimistic; reverts with the
+    /// error alert.
+    func setMemoryAlerts(_ on: Bool) async {
+        guard on != memoriesOn else { return }
+        memoriesOn = on
+        memoriesError = nil
+        do {
+            try await data.setMemoryAlerts(on)
+        } catch {
+            memoriesOn = !on
+            memoriesError = Copy.settingsNotificationsError
+            errorCount += 1
+        }
+    }
+
     /// The latest failure's message (the alert).
-    var alertMessage: String? { pauseError ?? overnightError ?? quietError ?? groupsError }
+    var alertMessage: String? { memoriesError ?? pauseError ?? overnightError ?? quietError ?? groupsError }
 }

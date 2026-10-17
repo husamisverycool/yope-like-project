@@ -41,7 +41,10 @@ enum class AppChannel(val id: String, val importance: Int) {
     DevelopedPhotos("developed_photos", NotificationManager.IMPORTANCE_DEFAULT),
 
     /** A plan was made, changed or cancelled, and the day-before reminder (`plans`, MERGE PL-12). */
-    Plans("plans", NotificationManager.IMPORTANCE_DEFAULT);
+    Plans("plans", NotificationManager.IMPORTANCE_DEFAULT),
+
+    /** The opt-in memory notification (`push.memory`, research #15; `notifications.push.channel.memories.*`). */
+    Memories("memories", NotificationManager.IMPORTANCE_DEFAULT);
 
     companion object {
         fun forAlert(kind: PushMessage.AlertKind): AppChannel = when (kind) {
@@ -53,6 +56,7 @@ enum class AppChannel(val id: String, val importance: Int) {
             PushMessage.AlertKind.YearStory -> YearStory
             PushMessage.AlertKind.Plan -> Plans
             PushMessage.AlertKind.PhotosDeveloped -> DevelopedPhotos
+            PushMessage.AlertKind.Memory -> Memories
         }
     }
 }
@@ -249,7 +253,10 @@ object AlertNotifier {
             .applyAppearance()
         alert.groupId?.let { builder.setGroup("group:$it") }
         val tag = alert.collapseKey ?: alert.link?.let(AppLinkConfig.codec::format) ?: "alert:${alert.kind}:${now.toEpochMilli()}"
-        NotificationManagerCompat.from(context).notifyChecked(context, tag, ID_BASE + alert.kind.ordinal, builder)
+        val id = ID_BASE + alert.kind.ordinal
+        // Reply / quick reaction / Mute This Group on photo, reply and reaction alerts (AlertActions).
+        AlertActions.addTo(context, builder, alert, tag, id, channel.id)
+        NotificationManagerCompat.from(context).notifyChecked(context, tag, id, builder)
         return true
     }
 
@@ -263,7 +270,7 @@ object AlertNotifier {
     }
 }
 
-private fun NotificationManagerCompat.notifyChecked(context: Context, tag: String, id: Int, builder: NotificationCompat.Builder) {
+internal fun NotificationManagerCompat.notifyChecked(context: Context, tag: String, id: Int, builder: NotificationCompat.Builder) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
     ) return

@@ -95,6 +95,8 @@ final class DeepLinkTests: XCTestCase {
             (["type": "tribute", "tribute_id": "t", "group_id": "g"], .tribute(tributeID: "t", groupID: "g")),
             (["type": "year_story", "group_id": "g", "year": 2026], .yearStory(groupID: "g", year: 2026)),
             (["type": "year_story", "group_id": "g", "year": "2025"], .yearStory(groupID: "g", year: 2025)),
+            // the opt-in memory notification opens its photo
+            (["type": "memory", "group_id": "g", "post_id": "p"], .post(groupID: "g", postID: "p")),
             (["type": "new_post", "group_id": "g", "post_id": "p", "link": "app://chat?group=g&message=m"], .chatMessage(groupID: "g", messageID: "m")),
             (["link": "app://camera?group=g"], .camera(groupID: "g")),
         ]

@@ -1,4 +1,5 @@
-// Surface: settings.notifications — per-group notifications, quiet hours. Spec: design/surfaces/settings.notifications.md.
+// Surface: settings.notifications — Pause All, per-group notifications, quiet hours, developed photos, memories.
+// Spec: design/surfaces/settings.notifications.md.
 // References: references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png (VID-SET: grouped rows, section headers),
 // references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (APK-S: notification_settings_*, the off-permission upsell),
 // references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (H43: C-27 block, outline capsule).
@@ -73,6 +74,8 @@ data class SettingsNotificationsUiState(
     val overnightOn: Boolean = true,
     /** Pause All (`notification_settings.paused_until`): the end of today's pause (the next local midnight); null = not paused. */
     val pausedUntil: java.time.Instant? = null,
+    /** The opt-in memory notification (`notification_settings.memories`, default off; `settings.notifications.memories`). */
+    val memoriesOn: Boolean = false,
 ) {
     /** Pause All is on (`settings.notifications.pauseAll`). */
     val paused: Boolean get() = pausedUntil != null
@@ -102,6 +105,7 @@ class SettingsNotificationsViewModel(private val env: AccountEnvironment) : Acco
                     quietStart = settings?.quietStart, quietEnd = settings?.quietEnd, quietOn = settings?.quietStart != null && settings.quietEnd != null,
                     overnightOn = settings?.overnight ?: true, loaded = true,
                     pausedUntil = settings?.pausedUntil?.takeIf { until -> until.isAfter(env.clock.instant()) },
+                    memoriesOn = settings?.memories ?: false,
                 )
             }
         }
@@ -197,6 +201,25 @@ class SettingsNotificationsViewModel(private val env: AccountEnvironment) : Acco
         }
     }
 
+    /**
+     * "Memories" (the opt-in memory notification): `set_memory_alerts(p_on, p_time_zone)` with the device's zone.
+     * Optimistic; reverts with the error alert.
+     */
+    fun setMemories(on: Boolean) {
+        if (!mutable.value.online) return failed()
+        val before = mutable.value.memoriesOn
+        mutable.update { it.copy(memoriesOn = on, error = false) }
+        viewModelScope.launch {
+            try {
+                env.backend.setMemoryAlerts(on, env.zone().id)
+            } catch (t: Throwable) {
+                t.dataError()
+                mutable.update { it.copy(memoriesOn = before) }
+                failed()
+            }
+        }
+    }
+
     private fun failed() {
         mutable.update { it.copy(error = true) }
         haptic(Tokens.Haptics.globalError)
@@ -236,6 +259,7 @@ fun SettingsNotificationsRoute(nav: NavController) {
         onDismissError = vm::dismissError,
         onOvernight = vm::setOvernight,
         onPause = vm::setPaused,
+        onMemories = vm::setMemories,
     )
 }
 
@@ -252,7 +276,8 @@ internal fun pauseEndTime(context: android.content.Context, until: java.time.Ins
  * the footer (hidden with no groups); 3. Quiet Hours — switch; when on, Start / End with their times → the M3 time
  * picker; footer (the rows expand with `AnimatedVisibility`); then the overnight photos' switch (camera.overnight: row
  * `camera.overnight.settings.row` with the detail `.settings.rowDetail` ({time}: 09:00 in the locale's short time format),
- * on = the reveal push); 5. Android: "Notification Categories" → the channel settings.
+ * on = the reveal push); "Memories" (the opt-in memory notification, off by default; footer
+ * `settings.notifications.memories.footer`); 5. Android: "Notification Categories" → the channel settings.
  */
 @Composable
 fun SettingsNotificationsScreen(
@@ -268,6 +293,7 @@ fun SettingsNotificationsScreen(
     onDismissError: () -> Unit = {},
     onOvernight: (Boolean) -> Unit = {},
     onPause: (Boolean) -> Unit = {},
+    onMemories: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     var picking by remember { mutableStateOf<Boolean?>(null) } // true = start, false = end
@@ -339,6 +365,10 @@ fun SettingsNotificationsScreen(
                     ),
                 ),
             )
+            SettingsGap()
+            // The opt-in memory notification (Google Photos' memories notifications are opt-in; research #15).
+            SettingsGroup(listOf(GroupedRowSpec(stringResource(R.string.settings_notifications_memories), trailing = GroupedTrailing.Toggle(state.memoriesOn, onMemories))))
+            SettingsFooter(stringResource(R.string.settings_notifications_memories_footer))
             SettingsGap()
             SettingsGroup(listOf(navRow(stringResource(R.string.settings_notifications_categories), onClick = onCategories)))
         }

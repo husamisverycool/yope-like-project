@@ -1151,6 +1151,10 @@ public enum Copy {
     public static var inviteWebUnavailableBody: String { CopyLookup.string("invite.web.unavailable.body", default: "Contact the sender for a new link.") }
     /// "This link no longer works" — Retro · invite.web · new · SOURCED
     public static var inviteWebUnavailableTitle: String { CopyLookup.string("invite.web.unavailable.title", default: "This link no longer works") }
+    /// "Mute This Group" — Retro · notifications.push · adapted · SOURCED
+    public static var notificationsPushActionMute: String { CopyLookup.string("notifications.push.action.mute", default: "Mute This Group") }
+    /// "Reply" — Retro · notifications.push · verbatim · SOURCED
+    public static var notificationsPushActionReply: String { CopyLookup.string("notifications.push.action.reply", default: "Reply") }
     /// "You're invited to add a photo and a line for {name}'s birthday. No pressure." — Retro · notifications.push · new · SOURCED
     public static func notificationsPushBirthdayRequestBody(name: String) -> String { CopyLookup.format("notifications.push.birthdayRequest.body", default: "You're invited to add a photo and a line for {name}'s birthday. No pressure.", ["name": name]) }
     /// "{group}" — Retro · notifications.push · new · SOURCED
@@ -1167,6 +1171,10 @@ public enum Copy {
     public static func notificationsPushChannelDevelopedPhotosDescription(time: String) -> String { CopyLookup.format("notifications.push.channel.developedPhotos.description", default: "When photos taken for {time} are ready to view", ["time": time]) }
     /// "Developed Photos" — Retro · camera.overnight · new · SOURCED
     public static var notificationsPushChannelDevelopedPhotosName: String { CopyLookup.string("notifications.push.channel.developedPhotos.name", default: "Developed Photos") }
+    /// "Your memories from this day over the years" — Retro · notifications.push · adapted · SOURCED
+    public static var notificationsPushChannelMemoriesDescription: String { CopyLookup.string("notifications.push.channel.memories.description", default: "Your memories from this day over the years") }
+    /// "Memories" — Retro · notifications.push · new · SOURCED
+    public static var notificationsPushChannelMemoriesName: String { CopyLookup.string("notifications.push.channel.memories.name", default: "Memories") }
     /// "Recent posts from your groups" — Retro · notifications.push · adapted · SOURCED
     public static var notificationsPushChannelNewPostDescription: String { CopyLookup.string("notifications.push.channel.newPost.description", default: "Recent posts from your groups") }
     /// "New Posts" — Retro · notifications.push · verbatim · SOURCED
@@ -1929,6 +1937,10 @@ public enum Copy {
     public static var settingsNotificationsLiveActivity: String { CopyLookup.string("settings.notifications.liveActivity", default: "Live Activity") }
     /// "Shows the daily invitation on your Lock Screen while it's open." — Retro · settings.notifications · new · SOURCED
     public static var settingsNotificationsLiveActivityFooter: String { CopyLookup.string("settings.notifications.liveActivity.footer", default: "Shows the daily invitation on your Lock Screen while it's open.") }
+    /// "Memories" — Retro · settings.notifications · new · SOURCED
+    public static var settingsNotificationsMemories: String { CopyLookup.string("settings.notifications.memories", default: "Memories") }
+    /// "Revisit memories from this day over the years, only on days with a memory." — Retro · settings.notifications · adapted · SOURCED
+    public static var settingsNotificationsMemoriesFooter: String { CopyLookup.string("settings.notifications.memories.footer", default: "Revisit memories from this day over the years, only on days with a memory.") }
     /// "Enable push notifications to make sure that you always see the latest updates from your groups." — Retro · settings.notifications · adapted · SOURCED
     public static var settingsNotificationsOffFooter: String { CopyLookup.string("settings.notifications.off.footer", default: "Enable push notifications to make sure that you always see the latest updates from your groups.") }
     /// "Keep up to date!" — Retro · settings.notifications · verbatim · SOURCED

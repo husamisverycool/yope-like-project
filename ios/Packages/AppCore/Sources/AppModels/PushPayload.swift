@@ -45,6 +45,8 @@ public enum PushType: String, CaseIterable, Sendable {
     case tribute
     case yearStory = "year_story"
     case plan
+    /// The opt-in memory notification (docs/API.md §5.21, migration 0049): `post_id` of the memory's photo; opens it.
+    case memory
 }
 
 /// Reads loosely typed payload values (APNs JSON gives strings and numbers).

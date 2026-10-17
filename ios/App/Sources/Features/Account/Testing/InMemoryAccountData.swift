@@ -411,7 +411,8 @@ final class InMemoryAccountData: AccountDataSource {
         try await record("setQuietHours")
         settings = NotificationSettings(
             userID: try requireUser(), quietStart: start, quietEnd: end, timeZone: "UTC", updatedAt: now, // provenance-ok: test fixture
-            overnight: settings?.overnight ?? true, pausedUntil: settings?.pausedUntil
+            overnight: settings?.overnight ?? true, pausedUntil: settings?.pausedUntil,
+            memories: settings?.memories ?? false, memoryTimeZone: settings?.memoryTimeZone
         )
     }
 
@@ -419,7 +420,8 @@ final class InMemoryAccountData: AccountDataSource {
         try await record("setOvernightAlerts")
         settings = NotificationSettings(
             userID: try requireUser(), quietStart: settings?.quietStart, quietEnd: settings?.quietEnd,
-            timeZone: settings?.timeZone, updatedAt: now, overnight: on, pausedUntil: settings?.pausedUntil
+            timeZone: settings?.timeZone, updatedAt: now, overnight: on, pausedUntil: settings?.pausedUntil,
+            memories: settings?.memories ?? false, memoryTimeZone: settings?.memoryTimeZone
         )
     }
 
@@ -429,9 +431,20 @@ final class InMemoryAccountData: AccountDataSource {
         let until = paused ? Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: now)) : nil
         settings = NotificationSettings(
             userID: try requireUser(), quietStart: settings?.quietStart, quietEnd: settings?.quietEnd,
-            timeZone: settings?.timeZone, updatedAt: now, overnight: settings?.overnight ?? true, pausedUntil: until
+            timeZone: settings?.timeZone, updatedAt: now, overnight: settings?.overnight ?? true, pausedUntil: until,
+            memories: settings?.memories ?? false, memoryTimeZone: settings?.memoryTimeZone
         )
         return until
+    }
+
+    /// The memory notification on (in the fixture's zone, UTC) or off (the last zone is kept, as the server does).
+    func setMemoryAlerts(_ on: Bool) async throws {
+        try await record("setMemoryAlerts")
+        settings = NotificationSettings(
+            userID: try requireUser(), quietStart: settings?.quietStart, quietEnd: settings?.quietEnd,
+            timeZone: settings?.timeZone, updatedAt: now, overnight: settings?.overnight ?? true, pausedUntil: settings?.pausedUntil,
+            memories: on, memoryTimeZone: on ? "UTC" : settings?.memoryTimeZone // provenance-ok: test fixture
+        )
     }
 
     func hasPremium() async throws -> Bool {

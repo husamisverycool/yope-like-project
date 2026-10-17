@@ -1095,6 +1095,46 @@
       "level": "SOURCED",
       "notes": "The day-before push goes to Going and Maybe; 'you're going to' covers both in plain words."
     },
+    "notifications.push.action.reply": {
+      "text": "Reply",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/research/retro-package-copy-motion.md §6.2 (Retro APK 2026.10.1150 `CommentReplyActionReceiver`, notification action 'Reply'); Apple Messages reply from the Lock Screen (https://support.apple.com/104982, accessed 2026-10-17); Android direct reply (https://developer.android.com/develop/ui/views/notifications/build-notification, accessed 2026-10-17)",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Notification action with text input (iOS UNTextInputNotificationAction, Android RemoteInput) on new_post, reply and reaction alerts → send_message as a reply to the alert's message or photo. The field's placeholder is chat.composer.placeholderReply, its send button chat.composer.a11y.send."
+    },
+    "notifications.push.action.mute": {
+      "text": "Mute This Group",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "design/research/retro-package-copy-motion.md §6.2 (Retro APK 2026.10.1150 `CommentNotificationMuteReceiver`, notification action 'Mute This Post')",
+      "pattern": "retro.voice.button — Retro's own Title-Case action label",
+      "level": "SOURCED",
+      "notes": "Noun swap post → group: muting here is per group (set_group_muted(p_group_id, true), the same mute as groups.settings.notifications.updates / groups.settings.notifications.footer 'mute the group'). Offered on new_post, reply and reaction alerts."
+    },
+    "notifications.push.channel.memories.name": {
+      "text": "Memories",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "Google Photos memories notifications (https://support.google.com/photos/answer/9454489, accessed 2026-10-17; docs/RESEARCH_FEATURES_2026-10-17.md #15); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `notification_channel_display_name_posts` 'New Posts' (design/copy-patterns.md `retro.voice.push-channel`)",
+      "pattern": "retro.voice.push-channel — 1–3 words, Title Case",
+      "level": "SOURCED",
+      "notes": "Android channel memories: carries the opt-in memory notification (push type memory, onthisday.push.title / .body)."
+    },
+    "notifications.push.channel.memories.description": {
+      "text": "Your memories from this day over the years",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "notifications.push",
+      "evidence": "onthisday.push.body ('Relive your memories from this day over the years.', Retro on_this_week_notification_body without its count); design/copy-patterns.md `retro.voice.push-channel` ('Recent posts from users you care about')",
+      "pattern": "retro.voice.push-channel — one Sentence-case line (a fragment: no period)",
+      "level": "SOURCED",
+      "notes": "Never a number of memories (no counts)."
+    },
     "daily.capture.countdown": {
       "text": "{mm}:{ss}",
       "origin": "verbatim",

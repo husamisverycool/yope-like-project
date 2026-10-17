@@ -48,6 +48,8 @@ import app.data.repo.SettingsRepository
 import app.data.repo.TagRepository
 import app.data.repo.WidgetRepository
 import app.data.repo.YearStoryRepository
+import app.push.AlertActionPerformer
+import app.push.AlertActions
 import app.push.DeliveredAlerts
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -157,7 +159,32 @@ class DataGraph(context: Context, val config: SupabaseConfig, val options: DataO
             DeliveredAlerts.existingPosts = { ids ->
                 if (auth.currentUserId == null) null else runCatching { posts.posts(ids).map { post -> post.id }.toSet() }.getOrNull()
             }
+            // notifications.push "Actions": reply, react and mute from an alert, with the stored session.
+            AlertActions.performer = alertActionPerformer()
         }
+
+    /** The alert actions over the repositories; each waits for the stored session and fails when nobody is signed in. */
+    private fun alertActionPerformer(): AlertActionPerformer = object : AlertActionPerformer {
+        private suspend fun requireSignedIn() {
+            awaitSessionLoaded()
+            checkNotNull(auth.currentUserId) { "signed out" }
+        }
+
+        override suspend fun reply(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?) {
+            requireSignedIn()
+            chat.sendText(groupId, body, replyToPostId = replyToPostId, replyToMessageId = replyToMessageId)
+        }
+
+        override suspend fun react(postId: String, emoji: String) {
+            requireSignedIn()
+            reactions.react(postId, emoji)
+        }
+
+        override suspend fun muteGroup(groupId: String) {
+            requireSignedIn()
+            groups.setMuted(groupId, true)
+        }
+    }
 
     /** Stops everything (tests; the app's graph lives as long as the process). */
     suspend fun close() {

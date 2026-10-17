@@ -110,7 +110,8 @@ public struct DeepLinkParser: Sendable {
         let value: (DeepLinkField) -> String? = { PayloadValue.string(userInfo[$0.payloadKey]) }
         let route: DeepLinkRoute
         switch type {
-        case .newPost, .reaction: route = .post
+        // A memory opens its photo in the viewer (docs/API.md §5.21: "The apps open the photo").
+        case .newPost, .reaction, .memory: route = .post
         case .reply: route = value(.message) != nil ? .chat : .post
         case .recapReady: route = .recap
         case .birthdayRequest: route = .birthdayRequest

@@ -1149,6 +1149,10 @@
     <string name="invite_web_unavailable_body" formatted="false">Contact the sender for a new link.</string>
     <!-- Retro · invite.web · new · SOURCED -->
     <string name="invite_web_unavailable_title" formatted="false">This link no longer works</string>
+    <!-- Retro · notifications.push · adapted · SOURCED -->
+    <string name="notifications_push_action_mute" formatted="false">Mute This Group</string>
+    <!-- Retro · notifications.push · verbatim · SOURCED -->
+    <string name="notifications_push_action_reply" formatted="false">Reply</string>
     <!-- Retro · notifications.push · new · SOURCED · args: name -->
     <string name="notifications_push_birthdayrequest_body">You\'re invited to add a photo and a line for %1$s\'s birthday. No pressure.</string>
     <!-- Retro · notifications.push · new · SOURCED · args: group -->
@@ -1165,6 +1169,10 @@
     <string name="notifications_push_channel_developedphotos_description">When photos taken for %1$s are ready to view</string>
     <!-- Retro · camera.overnight · new · SOURCED -->
     <string name="notifications_push_channel_developedphotos_name" formatted="false">Developed Photos</string>
+    <!-- Retro · notifications.push · adapted · SOURCED -->
+    <string name="notifications_push_channel_memories_description" formatted="false">Your memories from this day over the years</string>
+    <!-- Retro · notifications.push · new · SOURCED -->
+    <string name="notifications_push_channel_memories_name" formatted="false">Memories</string>
     <!-- Retro · notifications.push · adapted · SOURCED -->
     <string name="notifications_push_channel_newpost_description" formatted="false">Recent posts from your groups</string>
     <!-- Retro · notifications.push · verbatim · SOURCED -->
@@ -1927,6 +1935,10 @@
     <string name="settings_notifications_liveactivity" formatted="false">Live Activity</string>
     <!-- Retro · settings.notifications · new · SOURCED -->
     <string name="settings_notifications_liveactivity_footer" formatted="false">Shows the daily invitation on your Lock Screen while it\'s open.</string>
+    <!-- Retro · settings.notifications · new · SOURCED -->
+    <string name="settings_notifications_memories" formatted="false">Memories</string>
+    <!-- Retro · settings.notifications · adapted · SOURCED -->
+    <string name="settings_notifications_memories_footer" formatted="false">Revisit memories from this day over the years, only on days with a memory.</string>
     <!-- Retro · settings.notifications · adapted · SOURCED -->
     <string name="settings_notifications_off_footer" formatted="false">Enable push notifications to make sure that you always see the latest updates from your groups.</string>
     <!-- Retro · settings.notifications · verbatim · SOURCED -->

@@ -18,8 +18,8 @@ enum NotificationPresentation {
         (userInfo[PushKey.type] as? String) == PushType.newPost.rawValue
     }
 
-    /// Thread = group id; category = push type (registered by `PushService`, no actions: none has
-    /// copy); a time-sensitive (or critical) level is lowered to `active` — never time-sensitive (tenet 5;
+    /// Thread = group id; category = push type (registered by `PushService` with the type's actions,
+    /// `NotificationAction.actions(for:)`); a time-sensitive (or critical) level is lowered to `active` — never time-sensitive (tenet 5;
     /// daily.notification C-10); `passive` (quiet hours) stays passive.
     static func apply(to content: UNMutableNotificationContent) {
         let userInfo = content.userInfo

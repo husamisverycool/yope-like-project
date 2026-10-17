@@ -576,6 +576,8 @@ const table = {
   "invite.web.rateLimited.body": "You've tried too many times. Please try again later.", // Retro · invite.web · SOURCED
   "invite.web.unavailable.body": "Contact the sender for a new link.", // Retro · invite.web · SOURCED
   "invite.web.unavailable.title": "This link no longer works", // Retro · invite.web · SOURCED
+  "notifications.push.action.mute": "Mute This Group", // Retro · notifications.push · SOURCED
+  "notifications.push.action.reply": "Reply", // Retro · notifications.push · SOURCED
   "notifications.push.birthdayRequest.body": "You're invited to add a photo and a line for {name}'s birthday. No pressure.", // Retro · notifications.push · SOURCED
   "notifications.push.birthdayRequest.title": "{group}", // Retro · notifications.push · SOURCED
   "notifications.push.channel.birthdayRequest.description": "Invitations to add to a birthday video", // Retro · notifications.push · SOURCED
@@ -584,6 +586,8 @@ const table = {
   "notifications.push.channel.dailyInvitation.name": "Daily Invitation", // Retro · daily.notification · SOURCED
   "notifications.push.channel.developedPhotos.description": "When photos taken for {time} are ready to view", // Retro · camera.overnight · SOURCED
   "notifications.push.channel.developedPhotos.name": "Developed Photos", // Retro · camera.overnight · SOURCED
+  "notifications.push.channel.memories.description": "Your memories from this day over the years", // Retro · notifications.push · SOURCED
+  "notifications.push.channel.memories.name": "Memories", // Retro · notifications.push · SOURCED
   "notifications.push.channel.newPost.description": "Recent posts from your groups", // Retro · notifications.push · SOURCED
   "notifications.push.channel.newPost.name": "New Posts", // Retro · notifications.push · SOURCED
   "notifications.push.channel.plans.description": "When someone makes, changes or cancels a plan, and the day before one you're going to", // Retro · notifications.push · SOURCED
@@ -965,6 +969,8 @@ const table = {
   "settings.notifications.groups.header": "Groups", // Retro · settings.notifications · SOURCED
   "settings.notifications.liveActivity": "Live Activity", // Apple HIG · settings.notifications · VERIFIED
   "settings.notifications.liveActivity.footer": "Shows the daily invitation on your Lock Screen while it's open.", // Retro · settings.notifications · SOURCED
+  "settings.notifications.memories": "Memories", // Retro · settings.notifications · SOURCED
+  "settings.notifications.memories.footer": "Revisit memories from this day over the years, only on days with a memory.", // Retro · settings.notifications · SOURCED
   "settings.notifications.off.footer": "Enable push notifications to make sure that you always see the latest updates from your groups.", // Retro · settings.notifications · SOURCED
   "settings.notifications.off.title": "Keep up to date!", // Retro · settings.notifications · SOURCED
   "settings.notifications.openSettings": "Enable push", // Retro · settings.notifications · SOURCED

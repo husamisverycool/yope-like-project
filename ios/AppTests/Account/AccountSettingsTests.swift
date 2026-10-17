@@ -84,6 +84,31 @@ final class AccountSettingsTests: XCTestCase {
         XCTAssertEqual(model.quietError, Copy.settingsNotificationsError)
     }
 
+    /// "Memories" (the opt-in memory notification): off by default, `set_memory_alerts` with the device's zone, a failure
+    /// returns the switch with the error alert.
+    func testMemoriesSwitchIsOffByDefaultOptimisticAndRollsBack() async {
+        let fixture = AccountFixture()
+        let model = SettingsNotificationsModel(data: fixture.data, notifications: StaticNotificationAuthorizer(status: .granted))
+        await model.load()
+        XCTAssertFalse(model.memoriesOn)
+
+        await model.setMemoryAlerts(true)
+        XCTAssertTrue(model.memoriesOn)
+        XCTAssertEqual(fixture.data.settings?.memories, true)
+        XCTAssertNotNil(fixture.data.settings?.memoryTimeZone)
+
+        fixture.data.failures["setMemoryAlerts"] = .offline
+        await model.setMemoryAlerts(false)
+        XCTAssertTrue(model.memoriesOn, "reverted")
+        XCTAssertEqual(model.memoriesError, Copy.settingsNotificationsError)
+        XCTAssertEqual(model.alertMessage, Copy.settingsNotificationsError)
+
+        // A stored row with memories on reads back on.
+        let reloaded = SettingsNotificationsModel(data: fixture.data, notifications: StaticNotificationAuthorizer(status: .granted))
+        await reloaded.load()
+        XCTAssertTrue(reloaded.memoriesOn)
+    }
+
     // MARK: settings.account
 
     func testAccountNameSaveAndRevert() async {

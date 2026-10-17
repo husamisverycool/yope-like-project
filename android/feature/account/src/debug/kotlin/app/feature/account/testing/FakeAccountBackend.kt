@@ -262,7 +262,10 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
     override suspend fun notificationSettings(): NotificationSettings? = notificationSettings.also { call("notificationSettings") }
     override suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings {
         call("setQuietHours")
-        return NotificationSettings(meId, start, end, timeZone, now, notificationSettings?.overnight ?: true, notificationSettings?.pausedUntil)
+        return NotificationSettings(
+            meId, start, end, timeZone, now, notificationSettings?.overnight ?: true, notificationSettings?.pausedUntil,
+            notificationSettings?.memories ?: false, notificationSettings?.memoryTimeZone,
+        )
             .also { notificationSettings = it }
     }
     override suspend fun setOvernightAlerts(on: Boolean): NotificationSettings {
@@ -277,6 +280,14 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
         val until = if (paused) now.atZone(zone).toLocalDate().plusDays(1).atStartOfDay(zone).toInstant() else null
         val current = notificationSettings ?: NotificationSettings(meId, null, null, null, now)
         return current.copy(pausedUntil = until, updatedAt = now).also { notificationSettings = it }
+    }
+    /** The memory notification on in [timeZone] (required, as the server) or off (the last zone is kept). */
+    override suspend fun setMemoryAlerts(on: Boolean, timeZone: String?): NotificationSettings {
+        call("setMemoryAlerts")
+        require(!on || timeZone != null) { "invalid_time_zone" }
+        val current = notificationSettings ?: NotificationSettings(meId, null, null, null, now)
+        return current.copy(memories = on, memoryTimeZone = if (on) timeZone else current.memoryTimeZone, updatedAt = now)
+            .also { notificationSettings = it }
     }
 
     // Safety ----------------------------------------------------------------------------------------

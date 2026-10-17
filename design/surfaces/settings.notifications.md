@@ -31,6 +31,11 @@ Copy: `settings.notifications.*`.
 3. **Quiet Hours**: row `settings.notifications.quietHours` with a switch; when on, two rows `settings.notifications.quietHours.start`
    / `.end` with trailing time values (`listSubtitle`, `color.global.textSecondary`) → native time pickers. Footer
    `settings.notifications.quietHours.footer`.
+3a. **Developed Photos** (`camera.overnight.settings.row`, camera.overnight) with its switch.
+3b. **Memories** (owner decision 34, research #15): one C-14 row `settings.notifications.memories` with a switch, **off by
+   default** (Google Photos' memories notifications are a setting the person turns on, support.google.com/photos/answer/9454489);
+   footer `settings.notifications.memories.footer`. On = the memory notification (`notifications.push`, type `memory`:
+   "On This Day", only on a day with a memory, at most once a day).
 4. iOS only: row `settings.notifications.liveActivity` with a switch; footer `settings.notifications.liveActivity.footer`.
 5. Android only: row `settings.notifications.categories` + chevron → the app's notification channel settings.
 
@@ -44,6 +49,7 @@ All groups follow `settings.root.layout.list` (C-14, rows ≥ `settings.root.siz
 | Pause All | C-14 + native switch | `settings.notifications.pauseAll`, `.pauseAll.footer`, `.pauseAll.until` | `set_notifications_paused(p_paused, p_time_zone)` (device zone); optimistic, reverts with the error alert; on = no notification of any kind until the next local midnight (the worker treats it like a mute of every group; widgets still update; Android channels unchanged) |
 | group row | C-14 + C-23 30 pt + native switch (`color.global.selection` / `color.global.system.primary`) | group name (data); section `settings.notifications.groups.header`, footer | `set_group_muted(group, !on)`; optimistic, reverts on error |
 | quiet hours | C-14 rows + switch + native time pickers | `settings.notifications.quietHours`, `.start`, `.end`, `.footer` | `set_quiet_hours(p_start, p_end, p_time_zone)`; off = both null |
+| Memories | C-14 + native switch | `settings.notifications.memories`, `.memories.footer` | `set_memory_alerts(p_on, p_time_zone)` (the device's IANA zone; off sends none); read from `notification_settings.memories` (no row = off); optimistic, reverts with the error alert |
 | Live Activity (iOS) | C-14 + switch | `settings.notifications.liveActivity`, `.footer` | local preference read by `daily.liveactivity` |
 | categories (Android) | C-14 + chevron | `settings.notifications.categories` | `Settings.ACTION_APP_NOTIFICATION_SETTINGS` |
 
@@ -76,7 +82,8 @@ Switches: `settings.root.layout.toggleHaptic`. Presses → `haptic.global.tap` (
 ## Data & actions
 
 - `group_members.muted` (own rows) per group; `notification_settings` (own row, docs/API.md §5.21).
-- Writes: `set_group_muted`, `set_quiet_hours`, `set_notifications_paused` (§6.3).
+- Writes: `set_group_muted`, `set_quiet_hours`, `set_notifications_paused`, `set_overnight_alerts`, `set_memory_alerts` (§6.3).
+- "Mute This Group" on an alert (`notifications.push` Actions) writes the same `group_members.muted` as the group row.
 - In: `settings.root`; `groups.settings` ("Quiet Hours" row). Out: system notification settings.
 
 ## Platform notes

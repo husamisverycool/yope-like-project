@@ -1070,7 +1070,8 @@
         "birthday_request": "IMPORTANCE_DEFAULT",
         "tribute": "IMPORTANCE_DEFAULT",
         "developed_photos": "IMPORTANCE_DEFAULT",
-        "plans": "IMPORTANCE_DEFAULT"
+        "plans": "IMPORTANCE_DEFAULT",
+        "memories": "IMPORTANCE_DEFAULT"
       },
       "source_app": "Material 3",
       "surface": "notifications.push",
@@ -1078,7 +1079,7 @@
       "evidence": "android/core/push/src/main/kotlin/app/push/Notifications.kt (AppChannel); https://developer.android.com/develop/ui/views/notifications/channels (read 2026-10-16): ‘Create a channel for each type of notification you need to send.’, ‘Users can change these settings and decide which notification channels from your app can be intrusive or visible.’; names ≤ 40, descriptions ≤ 300 characters; importance immutable; design/surfaces/camera.overnight.md (channel developed_photos, default importance); design/research/plans.md §7 (one Plans channel for the plan pushes)",
       "method": "existing channel ids; platform rule",
       "level": "PLATFORM",
-      "notes": "AppChannel.YearStory has no event the worker sends (backend/worker/COPY_KEYS.md) → no channel copy; owner decision whether to register it. developed_photos and plans added by the new-features consolidation (2026-10-16): default importance like every event channel except the daily invitation (MERGE_DECISIONS ON-9, PL-12)."
+      "notes": "AppChannel.YearStory has no event the worker sends (backend/worker/COPY_KEYS.md) → no channel copy; owner decision whether to register it. developed_photos and plans added by the new-features consolidation (2026-10-16): default importance like every event channel except the daily invitation (MERGE_DECISIONS ON-9, PL-12). memories added with the opt-in memory notification (2026-10-17, research #15): default importance, the same as every event channel."
     },
     "notifications.push.layout.ios": {
       "type": "layout",

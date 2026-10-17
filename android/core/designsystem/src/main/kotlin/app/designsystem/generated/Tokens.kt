@@ -1581,6 +1581,7 @@ object Tokens {
             const val tribute: String = "IMPORTANCE_DEFAULT"
             const val developedPhotos: String = "IMPORTANCE_DEFAULT"
             const val plans: String = "IMPORTANCE_DEFAULT"
+            const val memories: String = "IMPORTANCE_DEFAULT"
         }
         /** Apple HIG · notifications.push · iOS alert presentation for every push text · PLATFORM — token `notifications.push.layout.ios` */
         object NotificationsPushLayoutIos {

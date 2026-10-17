@@ -103,6 +103,8 @@ interface AccountBackend {
     suspend fun setOvernightAlerts(on: Boolean): NotificationSettings
     /** Pause All (`set_notifications_paused`): every notification off until the next midnight of [timeZone]. */
     suspend fun setNotificationsPaused(paused: Boolean, timeZone: String?): NotificationSettings
+    /** The opt-in memory notification (`set_memory_alerts`; `notification_settings.memories`, default off); on needs [timeZone]. */
+    suspend fun setMemoryAlerts(on: Boolean, timeZone: String?): NotificationSettings
 
     // Safety (§5.6, §6.3) -------------------------------------------------------------------------
     suspend fun blocked(): List<Block>
