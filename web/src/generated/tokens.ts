@@ -341,6 +341,7 @@ export const tokens = {
   "icon.global.random": {"ios":"dice","android":"Outlined.Casino"}, // Retro · global · PLATFORM
   "icon.global.recap": {"ios":"film.stack","android":"Outlined.VideoLibrary"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.remove": {"ios":"minus.circle","android":"Outlined.RemoveCircleOutline"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.reply": {"ios":"arrowshape.turn.up.left","android":"AutoMirrored.Rounded.Reply"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.report": {"ios":"flag","android":"Outlined.Flag"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.rewind": {"ios":"clock.arrow.circlepath","android":"Outlined.History"}, // Retro · global · PLATFORM
   "icon.global.search": {"ios":"magnifyingglass","android":"Rounded.Search"}, // Retro · global · PLATFORM

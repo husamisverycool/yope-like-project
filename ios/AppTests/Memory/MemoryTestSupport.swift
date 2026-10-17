@@ -25,6 +25,8 @@ final class MemoryTestContext {
     private(set) var openedGroups: [String] = []
     private(set) var openedOnThisDay: [String] = []
     private(set) var reports: [ReportTarget] = []
+    /// The camera opened replying with a photo: (group id, post id).
+    private(set) var photoReplies: [(groupID: String, postID: String)] = []
 
     /// 2026-10-15 12:00 UTC unless given.
     init(now: Date = MemoryTestContext.referenceNow, configure: (inout FixtureMemoryData.State) -> Void = { _ in }) {
@@ -52,6 +54,7 @@ final class MemoryTestContext {
             openGroup: { [weak self] id in self?.openedGroups.append(id) },
             openOnThisDay: { [weak self] id in self?.openedOnThisDay.append(id) },
             openReport: { [weak self] target in self?.reports.append(target) },
+            openPhotoReply: { [weak self] groupID, postID in self?.photoReplies.append((groupID, postID)) },
             toasts: toasts,
             isVoiceOverRunning: { [weak self] in self?.isVoiceOverRunning ?? false },
             cache: cache,

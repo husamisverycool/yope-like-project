@@ -26,6 +26,7 @@ const table = {
   "albums.view.error.notAllowed": "Only the person who added this photo can remove it.", // Google Photos · albums.view · SOURCED
   "albums.view.menu.add": "Add Photos", // Apple Invites · albums.view · SOURCED
   "albums.view.menu.delete": "Delete Album", // Retro · albums.view · SOURCED
+  "albums.view.menu.download": "Download Album", // Retro · albums.view · SOURCED
   "albums.view.menu.remove": "Remove from Album", // Retro · albums.view · SOURCED
   "albums.view.menu.rename": "Rename", // Retro · albums.view · SOURCED
   "albums.view.notFound": "Couldn't find album", // Retro · albums.view · SOURCED
@@ -695,6 +696,7 @@ const table = {
   "onthisday.menu.delete": "Delete Post", // Retro · onthisday · SOURCED
   "onthisday.menu.hideDay": "Hide This Day", // Timehop · onthisday · SOURCED
   "onthisday.menu.hidePhoto": "Hide Photo", // Retro · onthisday · SOURCED
+  "onthisday.menu.reply": "Reply", // Retro · onthisday · SOURCED
   "onthisday.menu.report": "Report Post", // Retro · onthisday · SOURCED
   "onthisday.menu.save": "Save to Camera Roll", // Retro · onthisday · SOURCED
   "onthisday.mode.day": "On this day…", // Retro · onthisday · SOURCED
@@ -772,10 +774,13 @@ const table = {
   "photo.viewer.a11y.play": "Play", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.previous": "Previous photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.unmute": "Unmute", // Retro · photo.viewer · SOURCED
+  "photo.viewer.caption.placeholder": "Add a caption…", // Retro · photo.viewer · SOURCED
+  "photo.viewer.caption.save": "Save", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.cancel": "Cancel", // Apple HIG · photo.viewer · PLATFORM
   "photo.viewer.delete.confirm": "Yes, delete", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.message": "It will be removed from every group you sent it to, and from chats, walls, recaps and albums.", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.title": "Delete photo?", // Retro · photo.viewer · SOURCED
+  "photo.viewer.error.caption": "Couldn't edit caption", // Retro · photo.viewer · SOURCED
   "photo.viewer.error.cover": "Couldn't change the cover. Please try again.", // Retro · photo.viewer · SOURCED
   "photo.viewer.error.coverNotReady": "This photo is still processing. Please try again in a moment.", // Retro · photo.viewer · SOURCED
   "photo.viewer.error.delete": "Couldn't delete photo. Please try again.", // Retro · photo.viewer · SOURCED
@@ -786,9 +791,11 @@ const table = {
   "photo.viewer.gone.title": "Couldn't find photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.header.groupWeek": "{group_name} · Week {week_number}", // Retro · photo.viewer · SOURCED
   "photo.viewer.header.week": "Week {week_number}", // Retro · photo.viewer · SOURCED
+  "photo.viewer.menu.addCaption": "Add a Caption", // Apple Photos · photo.viewer · SOURCED
   "photo.viewer.menu.addToAlbum": "Add to Album", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.block": "Block {name}", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.delete": "Delete", // Retro · photo.viewer · SOURCED
+  "photo.viewer.menu.editCaption": "Edit Caption", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.favorite": "Favorite", // Apple Photos · photo.viewer · SOURCED
   "photo.viewer.menu.report": "Report Post", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.save": "Save to Camera Roll", // Retro · photo.viewer · SOURCED
@@ -964,6 +971,22 @@ const table = {
   "settings.blocked.title": "Blocked People", // Retro · settings.blocked · SOURCED
   "settings.blocked.unblock": "Unblock", // Retro · settings.blocked · SOURCED
   "settings.blocked.unknown": "Someone you blocked", // Retro · settings.blocked · SOURCED
+  "settings.downloads.albumDetail": "A copy of every photo and video in this album, at full quality.", // Retro · settings.downloads · SOURCED
+  "settings.downloads.albumTitle": "Download Album", // Retro · settings.downloads · SOURCED
+  "settings.downloads.cancel": "Cancel", // Apple HIG · settings.downloads · PLATFORM
+  "settings.downloads.denied.button": "Allow Photo Access", // Retro · settings.downloads · SOURCED
+  "settings.downloads.denied.message": "Saving your photos needs access to your photo library. You can turn it on in Settings.", // Retro · settings.downloads · SOURCED
+  "settings.downloads.denied.title": "Camera Roll Access", // Retro · settings.downloads · SOURCED
+  "settings.downloads.detail": "A copy of every photo and video you shared, at full quality.", // Retro · settings.downloads · SOURCED
+  "settings.downloads.detailLibrary": "Everything is saved to your photo library.", // Retro · settings.downloads · SOURCED
+  "settings.downloads.done": "Saved!", // Retro · settings.downloads · SOURCED
+  "settings.downloads.empty": "Nothing to see here yet", // Retro · settings.downloads · SOURCED
+  "settings.downloads.error": "There was a problem. Please try again.", // Retro · settings.downloads · SOURCED
+  "settings.downloads.offline": "Could not connect. Check your connection and try again.", // Retro · settings.downloads · SOURCED
+  "settings.downloads.progress": "Downloading…", // Retro · settings.downloads · SOURCED
+  "settings.downloads.resume": "Continue", // Retro · settings.downloads · SOURCED
+  "settings.downloads.start": "Download", // Retro · settings.downloads · SOURCED
+  "settings.downloads.title": "Download My Photos", // Retro · settings.downloads · SOURCED
   "settings.hidden.day.detail": "Every photo from this day", // Retro · settings.hidden · SOURCED
   "settings.hidden.empty.message": "Photos and days you hide from On This Day show up here. Only you see what you hide.", // Retro · settings.hidden · SOURCED
   "settings.hidden.empty.title": "No hidden memories", // Retro · settings.hidden · SOURCED
@@ -997,6 +1020,7 @@ const table = {
   "settings.root.blocked": "Blocked People", // Retro · settings.root · SOURCED
   "settings.root.close.accessibilityLabel": "Close", // Apple HIG · settings.root · VERIFIED
   "settings.root.contact": "Contact Us", // Retro · settings.root · SOURCED
+  "settings.root.downloads": "Download My Photos", // Retro · settings.root · SOURCED
   "settings.root.hiddenMemories": "Hidden Memories", // Retro · settings.root · SOURCED
   "settings.root.manageSubscription": "Your Subscription", // Retro · settings.root · SOURCED
   "settings.root.notifications": "Notification Settings", // Retro · settings.root · SOURCED

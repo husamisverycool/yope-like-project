@@ -179,6 +179,14 @@ struct PhotoViewerView: View {
             } message: {
                 Text(Copy.photoViewerPermissionDetail)
             }
+            // `photo.viewer.layout.editCaption`: the platform alert with one text field (iMessage's edit, Retro's caption
+            // field); Save → edit_caption, empty removes the caption.
+            .alert(captionAlertTitle, isPresented: $model.isEditingCaption) {
+                TextField(Copy.photoViewerCaptionPlaceholder, text: $model.captionText, axis: .vertical)
+                    .onChange(of: model.captionText) { _, _ in model.limitCaptionText() }
+                Button(Copy.photoViewerCaptionSave) { Task { await model.saveCaption() } }
+                Button(Copy.photoViewerDeleteCancel, role: .cancel) { model.cancelCaptionEdit() }
+            }
             .blockConfirmation(
                 target: $blockTarget,
                 toasts: toasts,
@@ -438,11 +446,17 @@ struct PhotoViewerView: View {
 
     // MARK: Menu (`photo.viewer.layout.menu`)
 
-    /// Save to Camera Roll on every photo (owner decision 28: any member saves any photo they can see), Favorite /
-    /// Unfavorite (private, Apple Photos), Add to Album, Use as Cover (group admins), then mine: Delete (destructive);
-    /// others': Report Post (destructive) · Block {name}.
+    /// On my own photo first Edit Caption (Add a Caption when it has none; owner decision 34); then Save to Camera Roll on
+    /// every photo (owner decision 28: any member saves any photo they can see), Favorite / Unfavorite (private, Apple
+    /// Photos), Add to Album, Use as Cover (group admins), then mine: Delete (destructive); others': Report Post
+    /// (destructive) · Block {name}.
     @ViewBuilder
     private var menuItems: some View {
+        if model.canEditCurrentCaption {
+            Button { model.beginCaptionEdit() } label: {
+                Label(model.currentHasCaption ? Copy.photoViewerMenuEditCaption : Copy.photoViewerMenuAddCaption, systemImage: Tokens.Icons.globalEdit)
+            }
+        }
         if let post = model.current {
             Button { Task { await model.saveCurrent(using: SocialServices.shared.saver) } } label: {
                 Label(Copy.photoViewerMenuSave, systemImage: Tokens.Icons.globalDownload)
@@ -487,6 +501,11 @@ struct PhotoViewerView: View {
                 Text(Copy.photoViewerMenuBlock(name: firstName))
             }
         }
+    }
+
+    /// The caption alert's title: the menu item that opened it.
+    private var captionAlertTitle: String {
+        model.currentHasCaption ? Copy.photoViewerMenuEditCaption : Copy.photoViewerMenuAddCaption
     }
 
     private func report(message: Message) {
@@ -799,7 +818,7 @@ struct ViewerPostPage: View {
                     .metricGap(Tokens.Sizes.photoViewerDimensionFooterFirstBaseline, from: .top, to: .firstBaseline)
             }
             TagRunLine(
-                leadingText: SocialFormat.viewerDate(post.post.createdAt, timeZone: model.group(of: post)?.resolvedTimeZone ?? .current),
+                leadingText: dateLine,
                 run: TagRun(
                     names: model.taggedPeople(on: post.id).map { model.profiles[$0]?.socialFirstName ?? "" },
                     isTagged: model.isCurrentTagged,
@@ -849,6 +868,14 @@ struct ViewerPostPage: View {
                 }
         }
         .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+
+    /// "Wednesday, July 5", or once the caption was edited "Wednesday, July 5 · Edited" (`chat.thread.edited`, Retro's
+    /// ' · ' meta separator, `photo.viewer.layout.editCaption`).
+    private var dateLine: String {
+        let date = SocialFormat.viewerDate(post.post.createdAt, timeZone: model.group(of: post)?.resolvedTimeZone ?? .current)
+        guard model.isCaptionEdited(post) else { return date }
+        return date + " · " + Copy.chatThreadEdited // provenance-ok: Retro's meta separator between two copy / data runs
     }
 
     /// Retro's reaction slot (its heart like is do-not-copy): the chip (hidden when empty) and the add glyph.

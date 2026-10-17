@@ -71,6 +71,10 @@ struct SettingsRootScreen: View {
                         SettingsRow(Copy.settingsRootHiddenMemories, kind: .navigation { path.append(.account(.settingsHidden)) })
                             .accessibilityIdentifier("settings.root.hidden")
                             .asSettingsRow(),
+                        // Owner decision 29: every photo you shared, saved to your photo library (free).
+                        SettingsRow(Copy.settingsRootDownloads, kind: .navigation { path.append(.account(.settingsDownloads)) })
+                            .accessibilityIdentifier("settings.root.downloads")
+                            .asSettingsRow(),
                     ])
                     SettingsGroup(header: Copy.settingsRootPermissionsHeader, rows: SystemPermission.allCases.map { permission in
                         SettingsRow(

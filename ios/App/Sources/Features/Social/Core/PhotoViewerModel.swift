@@ -608,6 +608,70 @@ final class PhotoViewerModel {
         }
     }
 
+    // MARK: Caption (owner decision 34, `photo.viewer.layout.editCaption`)
+
+    /// The caption alert is open (Edit Caption / Add a Caption on my own photo).
+    var isEditingCaption = false
+    /// The alert's text field, kept to `SocialLimits.caption` characters (`limitCaptionText`).
+    var captionText = ""
+    /// The post the open alert edits (the selection may move under it).
+    @ObservationIgnored private var captionTarget: PostID?
+
+    /// My own photo that is still there: the menu's first item edits (or adds) its caption.
+    var canEditCurrentCaption: Bool { isCurrentOwn && !isCurrentGone }
+
+    /// The photo on screen has a caption (the item reads Edit Caption; without one, Add a Caption).
+    var currentHasCaption: Bool { !(current?.post.caption ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    /// The footer's date line reads "{date} · Edited" once the caption was changed (`caption_edited_at`).
+    func isCaptionEdited(_ post: PostWithMedia) -> Bool { post.post.captionEditedAt != nil }
+
+    /// Opens the caption alert with the current caption.
+    func beginCaptionEdit() {
+        guard canEditCurrentCaption, let post = current else { return }
+        captionTarget = post.id
+        captionText = post.post.caption ?? ""
+        isEditingCaption = true
+    }
+
+    /// The field stops at `posts.caption`'s 1000 characters (the alert's text field has no limit of its own).
+    func limitCaptionText() {
+        if captionText.count > SocialLimits.caption { captionText = String(captionText.prefix(SocialLimits.caption)) }
+    }
+
+    func cancelCaptionEdit() {
+        isEditingCaption = false
+        captionTarget = nil
+    }
+
+    /// "Save": `edit_caption` (blank removes the caption). The new caption shows at once with "Edited"; the server's row
+    /// replaces it. Unchanged text sends nothing. A failure puts the caption back as it was, with `haptic.global.error` and
+    /// `photo.viewer.error.caption`.
+    func saveCaption() async {
+        isEditingCaption = false
+        guard let postID = captionTarget ?? current?.id, let before = posts[postID], isOwn(before), !gone.contains(postID) else { return }
+        captionTarget = nil
+        let trimmed = String(captionText.prefix(SocialLimits.caption)).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != (before.post.caption ?? "").trimmingCharacters(in: .whitespacesAndNewlines) else { return }
+        var shown = before
+        shown.post.caption = trimmed.isEmpty ? nil : trimmed
+        shown.post.captionEditedAt = shown.post.captionEditedAt ?? Date()
+        posts[postID] = shown
+        do {
+            let row = try await data.editCaption(postID: postID, caption: trimmed)
+            posts[postID] = PostWithMedia(post: row, media: posts[postID]?.media ?? before.media)
+        } catch {
+            if posts[postID] == shown { posts[postID] = before }
+            switch SocialFailure(error) {
+            case .notFound: gone.insert(postID)
+            case .offline: isOffline = true
+            default: break
+            }
+            signals.emit(.failed)
+            signals.post(.captionFailed)
+        }
+    }
+
     /// The album picker's result (`photo.viewer.layout.albumPicker`): the photo was added or a new album saved.
     func addedToAlbum() {
         signals.emit(.success)

@@ -55,6 +55,7 @@ import app.feature.memory.yearstory.YearStoryDestination
 import app.model.AppRoute
 import app.model.SafetyReportContentRoute
 import app.model.OnThisDayRoute
+import app.model.SocialHandoff
 import app.ui.components.PlatformToast
 import app.ui.nav.emptyDestination
 import java.time.Clock
@@ -81,6 +82,11 @@ fun NavGraphBuilder.memoryDestinations(navController: NavHostController) {
             route.groupId,
             onClose = { navController.popBackStack() },
             onReport = { postId -> navController.navigate(AppRoute.SafetyReport(groupId = route.groupId, postId = postId)) },
+            // "Then & now": the camera for this group, replying to the memory with a photo — photo.viewer's reply hand-off.
+            onReply = { postId ->
+                navController.navigate(AppRoute.Camera(route.groupId))
+                navController.currentBackStackEntry?.savedStateHandle?.set(SocialHandoff.REPLY_TO_POST_ID, postId)
+            },
         )
     }
     composable<AppRoute.BirthdayAdd> {
@@ -141,6 +147,8 @@ fun OnThisDayDestination(
     groupId: String,
     onClose: () -> Unit,
     onReport: (postId: String) -> Unit,
+    /** "Reply": the camera answering the memory [postId] with a photo in this group. */
+    onReply: (postId: String) -> Unit = {},
     backend: MemoryBackend = rememberMemoryBackend(),
     files: PhotoFiles? = null,
     clock: Clock = Clock.systemUTC(),
@@ -195,6 +203,7 @@ fun OnThisDayDestination(
             onShuffle = vm::shuffle,
             onShowDay = vm::showDay,
             onShare = vm::share,
+            onReply = { vm.replyTarget()?.let(onReply) },
             onSave = {
                 val legacy = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
                 if (legacy && ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {

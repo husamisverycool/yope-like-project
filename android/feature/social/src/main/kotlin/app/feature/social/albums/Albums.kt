@@ -207,7 +207,15 @@ class AlbumUiState(menu: Boolean = false, confirmDelete: Boolean = false, adding
 
 /** `albums.view` as a page sheet (C-29) over `albums.list`. */
 @Composable
-fun AlbumViewSheet(vm: AlbumViewModel, onClose: () -> Unit, onPhoto: (String) -> Unit) {
+fun AlbumViewSheet(
+    vm: AlbumViewModel,
+    onClose: () -> Unit,
+    onPhoto: (String) -> Unit,
+    /** "Download Album" with premium: the album's download page. */
+    onDownload: () -> Unit = {},
+    /** "Download Album" without premium: the paywall at the downloads perk (when the session's prompt is still unused). */
+    onPaywall: () -> Unit = {},
+) {
     val state by vm.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val haptics = rememberHaptics()
@@ -230,6 +238,8 @@ fun AlbumViewSheet(vm: AlbumViewModel, onClose: () -> Unit, onPhoto: (String) ->
                 AlbumEffect.Removed -> PlatformToast.show(context, removedText)
                 AlbumEffect.RemoveNotAllowed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, notAllowed) }
                 AlbumEffect.Added -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, added) }
+                AlbumEffect.OpenDownload -> onDownload()
+                AlbumEffect.OpenPaywall -> onPaywall()
             }
         }
     }
@@ -238,6 +248,7 @@ fun AlbumViewSheet(vm: AlbumViewModel, onClose: () -> Unit, onPhoto: (String) ->
         AlbumViewContent(
             state, ui, onPhoto, onRename = vm::startRename, onRetry = vm::load,
             onRemove = { postId -> haptics.perform(Tokens.Haptics.globalWarning); vm.remove(postId) },
+            onDownload = vm::download,
         )
     }
     if (ui.adding) {
@@ -284,6 +295,8 @@ fun AlbumViewContent(
     onRename: () -> Unit,
     onRetry: () -> Unit,
     onRemove: (String) -> Unit = {},
+    /** "Download Album" (premium; the view model decides between the download page and the paywall). */
+    onDownload: () -> Unit = {},
 ) {
     val margin = Tokens.Sizes.globalScreenMargin
     val gap = Tokens.Sizes.globalStripGap
@@ -405,10 +418,16 @@ private fun AlbumHead(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String)
                 Capsule(stringRes(R.string.albums_view_menu_rename), onRename, Modifier.weight(1f), style = CapsuleStyle.Outline)
                 // "Add Photos" for every member (albums anyone can add to); "Delete Album" for the creator and admins.
                 val add = DsMenuItem(stringRes(R.string.albums_view_menu_add), { ui.menu = false; ui.addSession++; ui.adding = true }, icon = Tokens.Icons.globalAdd)
+                // "Download Album" (owner decision 29, premium): the lock glyph without premium (paywall.locked.badge's role).
+                val download = DsMenuItem(
+                    stringRes(R.string.albums_view_menu_download),
+                    { ui.menu = false; onDownload() },
+                    icon = if (state.premium) Tokens.Icons.globalDownload else Tokens.Icons.globalLock,
+                )
                 val delete = DsMenuItem(stringRes(R.string.albums_view_menu_delete), { ui.confirmDelete = true }, destructive = true)
                 Box {
                     IconCapsule(Tokens.Icons.globalMore, stringRes(R.string.albums_view_a11y_more), { ui.menu = true })
-                    DsDropdownMenu(ui.menu, { ui.menu = false }, if (state.canDelete) listOf(add, delete) else listOf(add))
+                    DsDropdownMenu(ui.menu, { ui.menu = false }, if (state.canDelete) listOf(add, download, delete) else listOf(add, download))
                 }
             }
         }

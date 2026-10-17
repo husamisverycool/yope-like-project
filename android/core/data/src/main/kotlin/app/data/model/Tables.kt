@@ -175,7 +175,7 @@ data class Post(
      * When the group could first see the photo (`posts.visible_at` = `revealed_at ?: created_at`, migration 0027): the week
      * and the week-strip day a photo belongs to. An overnight photo taken on Sunday night is in Monday's week.
      */
-    val visibleAt: Instant get() = revealedAt ?: createdAt
+    val visibleAt: Instant get() = visibleAtColumn ?: revealedAt ?: createdAt
 }
 
 /** §5.9 `messages` (group chat). */

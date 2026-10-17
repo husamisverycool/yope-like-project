@@ -84,6 +84,8 @@ enum SocialNotice: Equatable, Sendable {
     case albumPhotoRemoved
     /// `albums.view.error.notAllowed` (`remove_from_album` of someone else's photo).
     case removeNotAllowed
+    /// `photo.viewer.error.caption`: `edit_caption` failed; the caption is back as it was.
+    case captionFailed
 }
 
 extension SocialNotice {

@@ -62,6 +62,19 @@ class OnThisDayViewModelTest {
         assertEquals(LocalDate.of(2025, 12, 5), first.date)
     }
 
+    /** "Then & now" (owner decision 34, research #13): Reply answers the memory on screen, anyone's, and stops playing. */
+    @Test fun replyNamesTheMemoryOnScreenAndStopsPlaying() {
+        val vm = vm()
+        vm.togglePlay()
+        assertTrue(vm.page.playing)
+        assertEquals("p-2025", vm.replyTarget())
+        assertFalse(vm.page.playing)
+        vm.step(+1)
+        assertEquals("p-2023a", vm.replyTarget())
+        val loading = OnThisDayViewModel(FakeMemoryBackend.GROUP, Scenario.backend().apply { online = false }, FakePhotoFiles(), Scenario.clock, MemoryCache())
+        assertNull("no memory on screen: nothing to reply to", loading.replyTarget())
+    }
+
     @Test fun asksForTheGroupLocalDateMinusTheDayBoundary() {
         val backend = Scenario.backend()
         // 03:30 in Paris on Dec 6 is still Dec 5 (boundary 5 h, layout.onthisday.dayBoundary).

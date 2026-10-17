@@ -1688,6 +1688,16 @@
       "evidence": "design/copy-patterns.md platform.a11yLabel; design/research/platform.md §Accessibility (label the purpose, no 'button' suffix)",
       "pattern": "platform.a11yLabel",
       "level": "PLATFORM"
+    },
+    "onthisday.menu.reply": {
+      "text": "Reply",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_context_menu_reply, as chat.thread.menu.reply); the item's place: Retro's Rewind '•••' menu leads with 'Share to my week' (references/auto/retro/press/tc-2025-12-rewind-panels.png, RWP phone 2)",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (docs/RESEARCH_FEATURES_2026-10-17.md #13: Timehop 'Then & Now', Retro Rewind share). Opens the camera replying to the memory with a photo in its group only (create_post p_reply_to_post_id), as photo.viewer's camera glyph does. Glyph icon.global.reply."
     }
   }
 }

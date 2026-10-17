@@ -49,6 +49,8 @@
     <string name="albums_view_menu_add" formatted="false">Add Photos</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_menu_delete" formatted="false">Delete Album</string>
+    <!-- Retro · albums.view · adapted · SOURCED -->
+    <string name="albums_view_menu_download" formatted="false">Download Album</string>
     <!-- Retro · albums.view · new · SOURCED -->
     <string name="albums_view_menu_remove" formatted="false">Remove from Album</string>
     <!-- Retro · albums.view · new · SOURCED -->
@@ -1388,6 +1390,8 @@
     <!-- Retro · onthisday · adapted · SOURCED -->
     <string name="onthisday_menu_hidephoto" formatted="false">Hide Photo</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
+    <string name="onthisday_menu_reply" formatted="false">Reply</string>
+    <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_menu_report" formatted="false">Report Post</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_menu_save" formatted="false">Save to Camera Roll</string>
@@ -1541,6 +1545,10 @@
     <string name="photo_viewer_a11y_previous" formatted="false">Previous photo</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_a11y_unmute" formatted="false">Unmute</string>
+    <!-- Retro · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_caption_placeholder" formatted="false">Add a caption…</string>
+    <!-- Retro · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_caption_save" formatted="false">Save</string>
     <!-- Apple HIG · photo.viewer · verbatim · PLATFORM -->
     <string name="photo_viewer_delete_cancel" formatted="false">Cancel</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
@@ -1549,6 +1557,8 @@
     <string name="photo_viewer_delete_message" formatted="false">It will be removed from every group you sent it to, and from chats, walls, recaps and albums.</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_delete_title" formatted="false">Delete photo?</string>
+    <!-- Retro · photo.viewer · adapted · SOURCED -->
+    <string name="photo_viewer_error_caption" formatted="false">Couldn\'t edit caption</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_error_cover" formatted="false">Couldn\'t change the cover. Please try again.</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
@@ -1569,12 +1579,16 @@
     <string name="photo_viewer_header_groupweek">%1$s · Week %2$s</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED · args: week_number -->
     <string name="photo_viewer_header_week">Week %1$s</string>
+    <!-- Apple Photos · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_menu_addcaption" formatted="false">Add a Caption</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_addtoalbum" formatted="false">Add to Album</string>
     <!-- Retro · photo.viewer · new · SOURCED · args: name -->
     <string name="photo_viewer_menu_block">Block %1$s</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_delete" formatted="false">Delete</string>
+    <!-- Retro · photo.viewer · adapted · SOURCED -->
+    <string name="photo_viewer_menu_editcaption" formatted="false">Edit Caption</string>
     <!-- Apple Photos · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_favorite" formatted="false">Favorite</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
@@ -1925,6 +1939,38 @@
     <string name="settings_blocked_unblock" formatted="false">Unblock</string>
     <!-- Retro · settings.blocked · new · SOURCED -->
     <string name="settings_blocked_unknown" formatted="false">Someone you blocked</string>
+    <!-- Retro · settings.downloads · new · SOURCED -->
+    <string name="settings_downloads_albumdetail" formatted="false">A copy of every photo and video in this album, at full quality.</string>
+    <!-- Retro · settings.downloads · adapted · SOURCED -->
+    <string name="settings_downloads_albumtitle" formatted="false">Download Album</string>
+    <!-- Apple HIG · settings.downloads · verbatim · PLATFORM -->
+    <string name="settings_downloads_cancel" formatted="false">Cancel</string>
+    <!-- Retro · settings.downloads · verbatim · SOURCED -->
+    <string name="settings_downloads_denied_button" formatted="false">Allow Photo Access</string>
+    <!-- Retro · settings.downloads · new · SOURCED -->
+    <string name="settings_downloads_denied_message" formatted="false">Saving your photos needs access to your photo library. You can turn it on in Settings.</string>
+    <!-- Retro · settings.downloads · verbatim · SOURCED -->
+    <string name="settings_downloads_denied_title" formatted="false">Camera Roll Access</string>
+    <!-- Retro · settings.downloads · new · SOURCED -->
+    <string name="settings_downloads_detail" formatted="false">A copy of every photo and video you shared, at full quality.</string>
+    <!-- Retro · settings.downloads · new · SOURCED -->
+    <string name="settings_downloads_detaillibrary" formatted="false">Everything is saved to your photo library.</string>
+    <!-- Retro · settings.downloads · verbatim · SOURCED -->
+    <string name="settings_downloads_done" formatted="false">Saved!</string>
+    <!-- Retro · settings.downloads · verbatim · SOURCED -->
+    <string name="settings_downloads_empty" formatted="false">Nothing to see here yet</string>
+    <!-- Retro · settings.downloads · verbatim · SOURCED -->
+    <string name="settings_downloads_error" formatted="false">There was a problem. Please try again.</string>
+    <!-- Retro · settings.downloads · verbatim · SOURCED -->
+    <string name="settings_downloads_offline" formatted="false">Could not connect. Check your connection and try again.</string>
+    <!-- Retro · settings.downloads · verbatim · SOURCED -->
+    <string name="settings_downloads_progress" formatted="false">Downloading…</string>
+    <!-- Retro · settings.downloads · verbatim · SOURCED -->
+    <string name="settings_downloads_resume" formatted="false">Continue</string>
+    <!-- Retro · settings.downloads · new · SOURCED -->
+    <string name="settings_downloads_start" formatted="false">Download</string>
+    <!-- Retro · settings.downloads · adapted · SOURCED -->
+    <string name="settings_downloads_title" formatted="false">Download My Photos</string>
     <!-- Retro · settings.hidden · new · SOURCED -->
     <string name="settings_hidden_day_detail" formatted="false">Every photo from this day</string>
     <!-- Retro · settings.hidden · new · SOURCED -->
@@ -1991,6 +2037,8 @@
     <string name="settings_root_close_accessibilitylabel" formatted="false">Close</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_contact" formatted="false">Contact Us</string>
+    <!-- Retro · settings.root · adapted · SOURCED -->
+    <string name="settings_root_downloads" formatted="false">Download My Photos</string>
     <!-- Retro · settings.root · new · SOURCED -->
     <string name="settings_root_hiddenmemories" formatted="false">Hidden Memories</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->

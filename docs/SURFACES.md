@@ -147,6 +147,7 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 | `support.web` | Web page with the support address (`GET /support`, the App Store's Support URL) | 35 — the invite page's state card / column | App Store Connect "Support URL" |
 | `settings.blocked` | Blocked people | 28 + 9 (people rows) | Apple HIG / Material 3 |
 | `settings.hidden` | Hidden Memories: the photos and days you hid from your memories, to show again (owner decision 34) | 28 + 9 (rows with a capsule action) | Timehop (hidden memory settings, "UNHIDE"), Google Photos (hidden dates) |
+| `settings.downloads` | Download My Photos (free) and an album's Download Album (premium): every original saved to the photo library (owner decisions 29, 34) | 28 (a Settings page) + the C-27 block | Retro "Download your package" (retro.app /downloads), Yope "download all photos", Apple Shared Albums (save to library) |
 | `paywall` | Premium screen and perks; at most one prompt per session | 27 (Retro Premium paywall, RAW: glass close, serif headline, plan card on blurred backdrop, 60 pt capsule, "Cancel anytime") | StoreKit / Play Billing (purchase sheet, PLATFORM) |
 | `safety.report` | Report flow | 24 (native menu, red destructive) + Retro report sheet copy ("Why are you reporting this post?") | Apple HIG / Material 3 |
 | `safety.block` | Block flow | 24 + Retro confirm ("Block %1$s?") | Apple HIG / Material 3 |

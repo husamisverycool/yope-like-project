@@ -93,7 +93,12 @@ the newest). One post = one memory. The indicator starts on slot 0; slot index =
 `onthisday.nux.button` ("Try it out") which closes it. Retro shows the same intro for Rewind (`rewind_home_nux_*`).
 Never shown again (no nagging).
 
-**D. Menu ('•••', native — C-29 context menu)**, items in this order: `onthisday.menu.save` ("Save to
+**D. Menu ('•••', native — C-29 context menu)**, items in this order: `onthisday.menu.reply` ("Reply", glyph
+`icon.global.reply`, every memory — "then & now", owner decision 34, research #13: Timehop "Then & Now", Retro's Rewind menu
+leads with "Share to my week", RWP phone 2) opens the camera for this group replying to the memory with a photo —
+photo.viewer's reply-with-a-photo hand-off (iOS `PhotoReplyHandoff`, Android `SocialHandoff.REPLY_TO_POST_ID`), so the send
+goes to this group only with `create_post(p_reply_to_post_id)` and the answer shows in the chat as a photo reply to the
+memory; playing stops. Then `onthisday.menu.save` ("Save to
 Camera Roll", every memory — owner decision 28), `onthisday.menu.hidePhoto` ("Hide Photo", every memory — Retro's Rewind
 'Hide photo', RWP phone 2) and `onthisday.menu.hideDay` ("Hide This Day", every memory — Timehop "Hide your bad
 memories", Google Photos "Hide this date from all memories"; owner decision 34, research #12), then your own memory —
@@ -129,7 +134,7 @@ under the title; no haptic of its own (the platform menu's). For VoiceOver / Tal
 | date title | C-35: `font.global.display`, text role `headerTitle`, `size.global.titleTop`, `size.global.headerGap`, `color.global.textOnMedia`, `layout.onthisday.dateFormat` | — (data) | changes with the memory (cross-fade); opens the mode menu (E) |
 | expand chevron + mode menu | `icon.global.chevronDown`, `dimension.onthisday.modeChevron.width` / `.gap` / `.drop`, `fontWeight.onthisday.modeChevron`, `color.global.textOnMedia`; C-29 menu | `onthisday.mode.day`, `.mode.shuffle` | "On this day…" back to the day; "Shuffle" as the dice |
 | subtitle | text role `textButton`, `color.onthisday.subtitle`, `dimension.onthisday.subtitleBaseline` | `onthisday.subtitle.day`, `.subtitle.shuffle` | `{name}` = poster |
-| more | C-11 glass: `size.global.circleButtonPhoto`, `color.global.glass`, `icon.global.more`, `size.global.headerInset` | `onthisday.a11y.more`; menu `onthisday.menu.*` (save, hidePhoto, hideDay, delete / report), `onthisday.delete.*`, `onthisday.toast.*` (saved, deleted, hidden), `onthisday.saveFailed`, `onthisday.saveDenied.*` | native menu (D) |
+| more | C-11 glass: `size.global.circleButtonPhoto`, `color.global.glass`, `icon.global.more`, `size.global.headerInset` | `onthisday.a11y.more`; menu `onthisday.menu.*` (reply, save, hidePhoto, hideDay, delete / report), `onthisday.delete.*`, `onthisday.toast.*` (saved, deleted, hidden), `onthisday.saveFailed`, `onthisday.saveDenied.*` | native menu (D) |
 | scrim | `layout.global.photoScrim`, `color.global.scrim` | — | decorative |
 | share | C-11 large glass: `size.global.circleButtonLarge`, `color.global.glass`, `icon.global.share`, `size.global.icon`, `layout.onthisday.controls` | `onthisday.a11y.share`, `onthisday.share.subtitle` | native share sheet; your own memory only (owner decision 12) — elsewhere its place stays empty |
 | random | same, `icon.global.random` | `onthisday.a11y.shuffle` | shuffle |

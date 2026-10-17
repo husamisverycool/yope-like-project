@@ -374,4 +374,42 @@ final class CodingTests: XCTestCase {
         XCTAssertNil(media.takenOn)
         XCTAssertNil(media.batchID)
     }
+
+    /// Migration 0047: `posts.caption_edited_at` (`edit_caption`); rows from before it carry none.
+    func testEditedCaptionDecodesAndOlderPostsWithoutIt() throws {
+        let post = """
+        {"id":"0f8fad5b-d9cb-469f-a165-70867728950f","media_id":"9f1c1d2e-0000-4000-8000-000000000009",
+         "group_id":"9f1c1d2e-0000-4000-8000-000000000001","author_id":"9f1c1d2e-0000-4000-8000-000000000002",
+         "caption":"lake day","voice_path":null,"voice_duration_ms":null,"invitation_id":null,"in_window":false,
+         "reply_to_post_id":null,"created_at":"2026-10-16T08:00:00+00:00","caption_edited_at":"2026-10-17T09:30:00+00:00"}
+        """
+        let edited = try DataCoding.makeDecoder().decode(Post.self, from: Data(post.utf8))
+        XCTAssertEqual(edited.caption, "lake day")
+        XCTAssertEqual(edited.captionEditedAt, Timestamp.parse("2026-10-17T09:30:00+00:00"))
+        let older = post.replacingOccurrences(of: #","caption_edited_at":"2026-10-17T09:30:00+00:00""#, with: "")
+        XCTAssertNil(try DataCoding.makeDecoder().decode(Post.self, from: Data(older.utf8)).captionEditedAt)
+    }
+
+    /// Migration 0052: the rows of `download_items` (a Live Photo with its motion; a photo with no caption).
+    func testDownloadItemsDecode() throws {
+        let rows = """
+        [{"post_id":"0f8fad5b-d9cb-469f-a165-70867728950f","media_id":"9f1c1d2e-0000-4000-8000-000000000009",
+          "kind":"live_photo","original_path":"u/a/m/original.heic","front_original_path":null,
+          "motion_path":"u/a/m/motion.mov","caption":"lake day","taken_on":"2026-07-04",
+          "posted_at":"2026-07-04T18:00:00.123456+00:00"},
+         {"post_id":"0f8fad5b-d9cb-469f-a165-70867728950e","media_id":"9f1c1d2e-0000-4000-8000-000000000008",
+          "kind":"photo","original_path":"u/a/n/original.jpg","front_original_path":null,"motion_path":null,
+          "caption":null,"taken_on":null,"posted_at":"2026-07-03T18:00:00+00:00"}]
+        """
+        let items = try DataCoding.makeDecoder().decode([DownloadItem].self, from: Data(rows.utf8))
+        XCTAssertEqual(items.count, 2)
+        XCTAssertEqual(items[0].kind, .livePhoto)
+        XCTAssertEqual(items[0].motionPath, "u/a/m/motion.mov")
+        XCTAssertEqual(items[0].takenOn, LocalDate("2026-07-04"))
+        XCTAssertEqual(items[0].postedAt, Timestamp.parse("2026-07-04T18:00:00.123456+00:00"))
+        XCTAssertNil(items[1].caption)
+        XCTAssertNil(items[1].takenOn)
+        XCTAssertEqual(DownloadScope.mine.wireValue, "mine")
+        XCTAssertEqual(DownloadScope.album(AlbumID("9f1c1d2e-0000-4000-8000-00000000000a")).wireValue, "album")
+    }
 }

@@ -111,6 +111,16 @@ data class SearchPhotos(val groupId: String? = null) : AppRoute {
 }
 
 /**
+ * `settings.downloads` (owner decisions 29 and 34, research #2): every photo you shared ([albumId] null; settings.root →
+ * Privacy → Download My Photos, free) or one album's photos (albums.view "•••" → Download Album, premium), saved to the photo
+ * library page by page. An album's download starts at once.
+ */
+@Serializable
+data class DownloadsRoute(val albumId: String? = null) : AppRoute {
+    override val surface get() = "settings.downloads"
+}
+
+/**
  * Hand-off keys set on the destination's `SavedStateHandle` when the social screens open another
  * group's route that has no argument for them (the other group reads them; nothing else changes).
  */

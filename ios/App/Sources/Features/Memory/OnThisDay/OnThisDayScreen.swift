@@ -52,6 +52,8 @@ struct OnThisDayScreen: View {
         .memoryInteractivePop()
         .task { await model.loadIfNeeded() }
         .onDisappear { model.stopListening() }
+        // Reply: the photo-reply target is forgotten once the camera closes (as photo.viewer does).
+        .socialClearsReplyHandoff()
         .onChange(of: model.current?.id) { _, _ in
             // After a dial change the new date title is announced.
             if UIAccessibility.isVoiceOverRunning, !model.title.isEmpty {
@@ -287,12 +289,17 @@ struct OnThisDayScreen: View {
         .accessibilityIdentifier("onthisday.title")
     }
 
-    /// D. The native menu: save (every memory, owner decision 28), hide the photo or its whole day from your memories
-    /// (every memory, for you only — owner decision 34; Retro's Rewind 'Hide photo'), then delete (your memory,
-    /// destructive) or report (someone else's, destructive).
+    /// D. The native menu: first Reply (every memory: the camera answers it with a photo in this group — owner decision 34,
+    /// "then & now"; Retro's Rewind menu leads with "Share to my week"), save (every memory, owner decision 28), hide the
+    /// photo or its whole day from your memories (every memory, for you only — owner decision 34; Retro's Rewind 'Hide
+    /// photo'), then delete (your memory, destructive) or report (someone else's, destructive).
     private var moreMenu: some View {
         CircleMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.onthisdayA11yMore, style: .glass) {
             if let current = model.current {
+                Button { model.reply() } label: {
+                    Label(Copy.onthisdayMenuReply, systemImage: Tokens.Icons.globalReply)
+                }
+                .accessibilityIdentifier("onthisday.reply")
                 Button(Copy.onthisdayMenuSave) {
                     Task { await model.save() }
                 }

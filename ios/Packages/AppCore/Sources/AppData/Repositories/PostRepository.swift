@@ -219,6 +219,33 @@ public struct PostRepository: Sendable {
         }
     }
 
+    // MARK: Captions (migration 0047)
+
+    /// `edit_caption`: your own photo's caption in that group, any time; empty or blank removes it. Returns the row with
+    /// `caption_edited_at` set. Errors: `post_not_found`, `invalid_caption`.
+    public func editCaption(postID: PostID, caption: String) async throws -> Post {
+        try await client.rpc("edit_caption", ["p_post_id": .id(postID), "p_caption": .string(caption)])
+    }
+
+    // MARK: Downloads (migration 0052)
+
+    /// The largest `'mine'` page `download_items` returns (its clamp).
+    public static let downloadPageLimit = 200
+
+    /// `download_items`: `'mine'` pages newest first by `before` (the last row's `postedAt`, at most `limit` rows);
+    /// `'album'` returns every visible photo of the album in album order (`before` / `limit` do not apply; premium).
+    public func downloadItems(scope: DownloadScope, before: Date? = nil, limit: Int = 100) async throws -> [DownloadItem] {
+        var params: [String: AnyJSON] = ["p_scope": .string(scope.wireValue)]
+        switch scope {
+        case .mine:
+            if let before { params["p_before"] = .timestamp(before) }
+            params["p_limit"] = .int(min(max(limit, 1), Self.downloadPageLimit))
+        case let .album(albumID):
+            params["p_album_id"] = .id(albumID)
+        }
+        return try await client.rpc("download_items", params)
+    }
+
     // MARK: Deleting
 
     /// `delete_post` (author): removes the photo from one group; the media goes with its last post.

@@ -1,8 +1,10 @@
 package app.ui.system
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,6 +50,42 @@ fun SystemAlertDialog(
             }
         },
         dismissButton = dismissLabel?.let { { TextButton(onClick = onDismiss, enabled = !confirmBusy) { Text(it, color = scheme.primary) } } },
+    )
+}
+
+/**
+ * C-29 alert with one text field (PLATFORM: Material 3's dialog with a text input, the counterpart of iOS's alert text
+ * field): [title], the field ([value], [placeholder] as its hint, the theme's outlined field), the dismissive [dismissLabel]
+ * leading and the confirming [confirmLabel] trailing. The caller keeps [value] (and any length limit) in
+ * [onValueChange]. Shape, type and motion are the platform's, coloured by the theme's Retro scheme.
+ */
+@Composable
+fun SystemTextFieldDialog(
+    title: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    confirmLabel: String,
+    onConfirm: () -> Unit,
+    dismissLabel: String,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val scheme = MaterialTheme.colorScheme
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = modifier,
+        title = { Text(title) },
+        text = {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                placeholder = { Text(placeholder) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(confirmLabel, color = scheme.primary) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(dismissLabel, color = scheme.primary) } },
     )
 }
 

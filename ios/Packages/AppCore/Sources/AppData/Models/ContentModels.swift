@@ -142,16 +142,23 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
     public var takenOn: LocalDate?
     /// Migration 0051: the batch (several photos posted together) this photo belongs to; nil for a single photo.
     public var batchID: String?
+    /// When the author last changed the caption (`edit_caption`, migration 0047): the viewer's date line reads
+    /// "{date} · Edited"; nil when never edited.
+    public var captionEditedAt: Date?
 
     /// When the group could first see the photo (`posts.visible_at` = `revealed_at ?? created_at`, migration 0027): the
     /// week and the week-strip day a photo belongs to. An overnight photo taken on Sunday night is in Monday's week.
-    public var visibleAt: Date { revealedAt ?? createdAt }
+    public var visibleAt: Date { visibleAtColumn ?? revealedAt ?? createdAt }
+    /// The stored `posts.visible_at`: also places a library photo on the day it was taken (migration 0050); nil in rows
+    /// made on the device, where `revealedAt ?? createdAt` stands in.
+    public var visibleAtColumn: Date?
 
     public init(
         id: PostID, mediaID: MediaID, groupID: GroupID, authorID: UserID, caption: String? = nil,
         voicePath: String? = nil, voiceDurationMs: Int? = nil, voiceLevels: [Int]? = nil, invitationID: InvitationID? = nil,
         inWindow: Bool = false, replyToPostID: PostID? = nil, createdAt: Date, revealedAt: Date? = nil,
-        takenOn: LocalDate? = nil, batchID: String? = nil
+        takenOn: LocalDate? = nil, batchID: String? = nil,
+        captionEditedAt: Date? = nil, visibleAtColumn: Date? = nil
     ) {
         self.id = id
         self.mediaID = mediaID
@@ -168,6 +175,8 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         self.revealedAt = revealedAt
         self.takenOn = takenOn
         self.batchID = batchID
+        self.captionEditedAt = captionEditedAt
+        self.visibleAtColumn = visibleAtColumn
     }
 
     enum CodingKeys: String, CodingKey {
@@ -186,6 +195,71 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         case revealedAt = "revealed_at"
         case takenOn = "taken_on"
         case batchID = "batch_id"
+        case captionEditedAt = "caption_edited_at"
+        case visibleAtColumn = "visible_at"
+    }
+}
+
+/// What `download_items` lists (migration 0052): your own photos (free) or one album's (premium).
+public enum DownloadScope: Hashable, Sendable {
+    /// Every photo and video you posted that is still in one of your groups, newest first, paged by `posted_at`.
+    case mine
+    /// The album's photos you can see, all of them in album order (premium: `premium_required` otherwise).
+    case album(AlbumID)
+
+    /// `p_scope`.
+    public var wireValue: String {
+        switch self {
+        case .mine: return "mine"
+        case .album: return "album"
+        }
+    }
+}
+
+/// One row of `download_items` (migration 0052): an original to save to the photo library (Live Photo: still + motion),
+/// with its caption and the day it was taken. Never a count.
+public struct DownloadItem: Codable, Hashable, Sendable, Identifiable {
+    public var postID: PostID
+    public var mediaID: MediaID
+    public var kind: MediaKind
+    public var originalPath: String
+    /// A dual capture's front photo.
+    public var frontOriginalPath: String?
+    /// A Live Photo's motion.
+    public var motionPath: String?
+    public var caption: String?
+    /// The day it was taken (`taken_on`, else the posting day).
+    public var takenOn: LocalDate?
+    /// The post's `created_at`: the cursor of the next `'mine'` page (`p_before`).
+    public var postedAt: Date
+
+    public var id: MediaID { mediaID }
+
+    public init(
+        postID: PostID, mediaID: MediaID, kind: MediaKind, originalPath: String, frontOriginalPath: String? = nil,
+        motionPath: String? = nil, caption: String? = nil, takenOn: LocalDate? = nil, postedAt: Date
+    ) {
+        self.postID = postID
+        self.mediaID = mediaID
+        self.kind = kind
+        self.originalPath = originalPath
+        self.frontOriginalPath = frontOriginalPath
+        self.motionPath = motionPath
+        self.caption = caption
+        self.takenOn = takenOn
+        self.postedAt = postedAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case postID = "post_id"
+        case mediaID = "media_id"
+        case kind
+        case originalPath = "original_path"
+        case frontOriginalPath = "front_original_path"
+        case motionPath = "motion_path"
+        case caption
+        case takenOn = "taken_on"
+        case postedAt = "posted_at"
     }
 }
 

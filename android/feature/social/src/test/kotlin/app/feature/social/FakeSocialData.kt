@@ -226,6 +226,42 @@ class FakeSocialData(var me: String = ME) : SocialData {
         posts.values.removeAll { it.mediaId == mediaId }
     }
 
+    /** `edit_caption`: the author's own post; blank removes the caption; over 1000 characters → `invalid_caption`. */
+    override suspend fun editCaption(postId: String, caption: String): Post {
+        write("editCaption:$postId")
+        val post = posts[postId]?.takeIf { it.authorId == me } ?: throw DataException(DataError.Api(ApiError.PostNotFound, "post_not_found", 404, null))
+        val trimmed = caption.trim()
+        if (trimmed.length > 1000) throw DataException(DataError.Api(ApiError.InvalidCaption, "invalid_caption", 400, null))
+        val edited = post.copy(caption = trimmed.ifEmpty { null }, captionEditedAt = BASE.plusSeconds(3_600))
+        posts[postId] = edited
+        return edited
+    }
+
+    /** `download_items('mine')` rows (served newest first, [downloadPage] at a time) and per album (in album order). */
+    val downloads = ArrayList<app.data.model.DownloadItem>()
+    val albumDownloads = LinkedHashMap<String, List<app.data.model.DownloadItem>>()
+    var downloadPage = app.data.repo.PostRepository.DOWNLOAD_PAGE
+    /** `'album'` answers `premium_required`. */
+    var downloadsNeedPremium = false
+    var premium = false
+    /** Every `download_items` call's cursor, in order. */
+    val downloadCursors = ArrayList<Instant?>()
+
+    override suspend fun downloadItems(scope: app.data.model.DownloadScope, before: Instant?): List<app.data.model.DownloadItem> {
+        net("downloadItems")
+        downloadCursors += before
+        return when (scope) {
+            app.data.model.DownloadScope.Mine ->
+                downloads.sortedByDescending { it.postedAt }.filter { before == null || it.postedAt.isBefore(before) }.take(downloadPage)
+            is app.data.model.DownloadScope.InAlbum -> {
+                if (downloadsNeedPremium) throw DataException(DataError.Api(ApiError.PremiumRequired, "premium_required", 402, null))
+                albumDownloads[scope.albumId] ?: throw DataException(DataError.Api(ApiError.AlbumNotFound, "album_not_found", 404, null))
+            }
+        }
+    }
+
+    override suspend fun isPremium(): Boolean = premium
+
     override suspend fun reactions(postIds: Collection<String>): Map<String, List<ReactionEntry>> {
         net("reactions")
         return postIds.associateWith { reactions[it].orEmpty().toList() }

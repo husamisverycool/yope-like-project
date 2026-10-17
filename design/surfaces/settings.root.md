@@ -42,7 +42,8 @@ Header: centred `settings.root.title` (`sheetTitle`) + trailing close circle (C-
    scrims and every open screen follow at once. iOS has no such row (its dark page is already #000000, Retro's iOS).
    The row is always listed (light too): the switch names the dark theme (as AntennaPod's "Full black").
 5. **Privacy** (`settings.root.privacy.header`): row `settings.root.blocked` + chevron → `settings.blocked`; row
-   `settings.root.hiddenMemories` ("Hidden Memories") + chevron → `settings.hidden` (owner decision 34, research #12).
+   `settings.root.hiddenMemories` ("Hidden Memories") + chevron → `settings.hidden` (owner decision 34, research #12); row
+   `settings.root.downloads` ("Download My Photos") + chevron → `settings.downloads` (owner decision 29: free; research #2).
 6. **System Permissions** (`settings.root.permissions.header`): rows `settings.root.permissions.camera`, `.photos` (iOS),
    `.microphone`, `.contacts`, `.notifications`; trailing value `settings.root.permissions.denied` (`listSubtitle`,
    `color.global.textSecondary`) when denied, else none; chevron; each row → the app's page in system Settings.

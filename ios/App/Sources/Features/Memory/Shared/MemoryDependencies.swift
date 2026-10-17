@@ -24,6 +24,9 @@ struct MemoryDependencies {
     var openOnThisDay: @MainActor (String) -> Void
     /// Opens `safety.report` (account group) for a post.
     var openReport: @MainActor (ReportTarget) -> Void
+    /// Opens the camera replying with a photo to a post in its group (group id, post id): photo.viewer's reply-with-a-photo
+    /// hand-off (`PhotoReplyHandoff`, `create_post(p_reply_to_post_id)`, that group only).
+    var openPhotoReply: @MainActor (String, String) -> Void
     /// Confirmations and failures (C-26: iOS draws nothing; the message is announced to VoiceOver and kept as the
     /// screen's last confirmation).
     var toasts: ToastCenter
@@ -43,6 +46,9 @@ struct MemoryDependencies {
         openGroup: @escaping @MainActor (String) -> Void = { AppEnvironment.shared.router.path = [.group(id: $0)] },
         openOnThisDay: @escaping @MainActor (String) -> Void = { AppEnvironment.shared.router.path.append(.memory(.onThisDay(groupID: $0))) },
         openReport: @escaping @MainActor (ReportTarget) -> Void = { AppEnvironment.shared.router.modal = .account(.report($0)) },
+        openPhotoReply: @escaping @MainActor (String, String) -> Void = { groupID, postID in
+            AppEnvironment.shared.router.presentCameraReplying(toPost: postID, groupID: groupID)
+        },
         toasts: ToastCenter? = nil,
         isVoiceOverRunning: @escaping @MainActor () -> Bool = { UIAccessibility.isVoiceOverRunning },
         cache: MemoryCache = .shared,
@@ -56,6 +62,7 @@ struct MemoryDependencies {
         self.openGroup = openGroup
         self.openOnThisDay = openOnThisDay
         self.openReport = openReport
+        self.openPhotoReply = openPhotoReply
         self.toasts = toasts ?? ToastCenter()
         self.isVoiceOverRunning = isVoiceOverRunning
         self.cache = cache

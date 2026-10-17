@@ -235,6 +235,27 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertEqual(context.reports.count, 1)
     }
 
+    /// "Then & now" (owner decision 34, research #13): Reply opens the camera replying to the memory in its group, for
+    /// anyone's memory, and stops playing.
+    func testReplyOpensTheCameraReplyingToTheMemoryInItsGroup() async {
+        let context = MemoryTestContext()
+        let model = makeModel(context)
+        await model.loadIfNeeded()
+        model.togglePlay()
+        XCTAssertTrue(model.isPlaying)
+        model.reply()
+        XCTAssertFalse(model.isPlaying)
+        XCTAssertEqual(context.photoReplies.count, 1)
+        XCTAssertEqual(context.photoReplies.first?.groupID, MemoryIDs.group.rawValue)
+        XCTAssertEqual(context.photoReplies.first?.postID, MemoryIDs.post(6).rawValue, "someone else's memory: Bea's")
+        model.next()
+        model.next()
+        XCTAssertTrue(model.current?.isMine == true)
+        model.reply()
+        XCTAssertEqual(context.photoReplies.last?.postID, model.current?.id.rawValue, "your own memory too")
+        model.stopListening()
+    }
+
     func testDeletingYourMemoryAsksThenRemovesItFromTheDial() async {
         let context = MemoryTestContext()
         let model = makeModel(context)

@@ -53,6 +53,7 @@ extension SocialNotice {
         case .albumAdded: return Copy.weekEditToastAlbumSaved
         case .albumPhotoRemoved: return Copy.albumsViewToastRemoved
         case .removeNotAllowed: return Copy.albumsViewErrorNotAllowed
+        case .captionFailed: return Copy.photoViewerErrorCaption
         }
     }
 }
