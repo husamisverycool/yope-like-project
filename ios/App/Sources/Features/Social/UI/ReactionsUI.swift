@@ -87,19 +87,38 @@ struct ReactionPickerTarget: Identifiable, Hashable {
 }
 
 /// Native sheet with a grabber on `color.global.background`: the C-12 search field inside `size.global.screenMargin`
-/// (filters by the emoji's system name), "Frequently Used" (this device's recent emoji) and "All" (every emoji in
-/// Unicode order) as C-20 labels without "•••" (`size.global.sectionGap` above a label, `size.global.sectionHeaderToContent`
-/// below its baseline); `chat.reactions.count.pickerColumns` equal columns, emoji at `fontSize.global.headerTitle`. Emoji
+/// (filters by the emoji's Unicode name), "Frequently Used" (this device's recent emoji), then every emoji of Unicode's
+/// RGI set in its standard groups ("Smileys & Emotion" … "Flags", `chat.reactions.picker.group.*`) as C-20 labels
+/// without "•••" (`size.global.sectionGap` above a label, `size.global.sectionHeaderToContent` below its baseline);
+/// `chat.reactions.count.pickerColumns` equal columns, emoji at `fontSize.global.headerTitle`. An emoji with skin tones
+/// offers them on touch and hold (the system emoji keyboard, support.apple.com/102507) in a platform popover. Emoji
 /// already used on this photo sit on a `size.global.circleButton` circle in `color.global.control` (selected trait): a
-/// tap takes it back; any other tap reacts and closes the sheet.
+/// tap takes it back; any other tap reacts and closes the sheet. Only emoji this device's emoji font draws are shown.
 struct ReactionPicker: View {
     var mine: Set<String> = []
+    /// The catalog to show (snapshots pass the bundled one); nil: the device-filtered catalog, read on appear.
+    var catalog: EmojiCatalog?
     let onPick: (String) -> Void
     var onRemove: (String) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @State private var search = ""
     @State private var recent: [String] = []
+    @State private var loaded: EmojiCatalog?
+    /// The cell (section + emoji) whose skin tones are open (touch and hold).
+    @State private var variantsOf: String?
+    /// The tap that ends a touch and hold is not a pick.
+    @State private var holdEnded: String?
+
+    private var shown: EmojiCatalog { catalog ?? loaded ?? EmojiCatalog(groups: []) }
+
+    /// Unicode's standard groups in the catalog's order (tools/emoji-catalog.mjs).
+    private static let groupTitles = [
+        Copy.chatReactionsPickerGroupSmileysEmotion, Copy.chatReactionsPickerGroupPeopleBody,
+        Copy.chatReactionsPickerGroupAnimalsNature, Copy.chatReactionsPickerGroupFoodDrink,
+        Copy.chatReactionsPickerGroupTravelPlaces, Copy.chatReactionsPickerGroupActivities,
+        Copy.chatReactionsPickerGroupObjects, Copy.chatReactionsPickerGroupSymbols, Copy.chatReactionsPickerGroupFlags,
+    ]
 
     private var columns: [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: 0), count: Int(Tokens.Counts.chatReactionsCountPickerColumns))
@@ -113,10 +132,18 @@ struct ReactionPicker: View {
                     .padding(.top, Tokens.Sizes.globalScreenMargin)
                 WeekSectionList {
                     if search.isEmpty {
-                        if !recent.isEmpty { section(Copy.chatReactionsPickerFrequent, recent) }
-                        section(Copy.chatReactionsPickerAll, ReactionPicker.allEmoji)
+                        if !recent.isEmpty {
+                            section(Copy.chatReactionsPickerFrequent, key: "recent", recent.map { emoji in // provenance-ok: view identity, not shown
+                                PickerCell(emoji: emoji, entry: shown.entry(containing: emoji))
+                            })
+                        }
+                        ForEach(Array(zip(Self.groupTitles, shown.groups).enumerated()), id: \.offset) { index, pair in
+                            if !pair.1.entries.isEmpty {
+                                section(pair.0, key: String(index), pair.1.entries.map { PickerCell(emoji: $0.base.emoji, entry: $0) })
+                            }
+                        }
                     } else {
-                        grid(ReactionPicker.allEmoji.filter { SocialEmoji.name($0).localizedStandardContains(search) })
+                        grid(key: "search", shown.search(search).map { PickerCell(emoji: $0.base.emoji, entry: $0) }) // provenance-ok: view identity, not shown
                     }
                 }
                 .padding(.top, Tokens.Sizes.globalSectionGap - SocialMetrics.capTopOffset(TextRole.sectionLabel))
@@ -129,63 +156,112 @@ struct ReactionPicker: View {
         .onAppear {
             recent = Array(SocialServices.shared.flags.recentEmoji().prefix(Int(Tokens.Counts.chatReactionsCountPickerColumns)))
         }
-    }
-
-    private func section(_ title: String, _ emoji: [String]) -> some View {
-        WeekStripSection {
-            SectionHeader(title: title)
-        } content: {
-            grid(emoji)
+        .task {
+            if catalog == nil, loaded == nil { loaded = await SocialEmojiCatalog.shown() }
         }
     }
 
-    private func grid(_ emoji: [String]) -> some View {
+    /// One grid cell: the emoji shown and its catalog entry (its skin tones), when it has one.
+    private struct PickerCell: Identifiable {
+        let emoji: String
+        let entry: EmojiCatalog.Entry?
+        var id: String { emoji }
+    }
+
+    private func section(_ title: String, key: String, _ cells: [PickerCell]) -> some View {
+        WeekStripSection {
+            SectionHeader(title: title)
+        } content: {
+            grid(key: key, cells)
+        }
+    }
+
+    private func grid(key: String, _ cells: [PickerCell]) -> some View {
         LazyVGrid(columns: columns, spacing: 0) {
-            ForEach(emoji, id: \.self) { cell($0) }
+            ForEach(cells) { item in cell(item.emoji, entry: item.entry, key: key + " " + item.emoji) } // provenance-ok: view identity, not shown
         }
         .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
     }
 
-    private func cell(_ emoji: String) -> some View {
-        let isMine = mine.contains(emoji)
+    /// One emoji. With skin tones (`entry` has variants): touch and hold opens them; VoiceOver lists them as actions.
+    private func cell(_ emoji: String, entry: EmojiCatalog.Entry?, key: String) -> some View {
+        let choices: [EmojiCatalog.Emoji] = (entry?.variants.isEmpty ?? true) ? [] : (entry?.choices ?? [])
         return Button {
-            if isMine {
-                onRemove(emoji)
-            } else {
-                SocialServices.shared.flags.recordEmoji(emoji, keep: Int(Tokens.Counts.chatReactionsCountPickerColumns))
-                onPick(emoji)
-                dismiss()
+            if holdEnded == key {
+                holdEnded = nil
+                return
             }
+            choose(emoji)
         } label: {
-            Text(emoji)
-                .dsTextStyle(SocialTextRole.pickerEmoji)
-                .fixedSize()
-                .frame(minWidth: Tokens.Sizes.globalMinTouchTargetIos, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
-                .frame(maxWidth: .infinity)
-                .background {
-                    if isMine {
-                        Circle()
-                            .fill(Tokens.Colors.globalControl)
-                            .frame(width: Tokens.Sizes.globalCircleButton, height: Tokens.Sizes.globalCircleButton)
-                    }
-                }
-                .contentShape(Rectangle())
+            emojiFace(emoji)
         }
         .buttonStyle(.plain)
+        .simultaneousGesture(LongPressGesture().onEnded { _ in
+            guard !choices.isEmpty else { return }
+            holdEnded = key
+            variantsOf = key
+        })
+        .popover(isPresented: Binding(get: { variantsOf == key }, set: { if !$0 { variantsOf = nil; holdEnded = nil } })) {
+            variantGrid(choices)
+                .presentationCompactAdaptation(.popover)
+        }
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(SocialEmoji.name(emoji)))
-        .accessibilityAddTraits(isMine ? .isSelected : [])
-    }
-
-    /// Single-scalar emoji with emoji presentation, in code point order.
-    static let allEmoji: [String] = {
-        let ranges: [ClosedRange<UInt32>] = [0x2600...0x27BF, 0x1F300...0x1F5FF, 0x1F600...0x1F64F, 0x1F680...0x1F6FF, 0x1F900...0x1F9FF, 0x1FA70...0x1FAFF] // provenance-ok: Unicode emoji blocks
-        return ranges.flatMap { range in
-            range.compactMap { value -> String? in
-                guard let scalar = Unicode.Scalar(value), scalar.properties.isEmojiPresentation else { return nil }
-                return String(scalar)
+        .accessibilityAddTraits(mine.contains(emoji) ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction { choose(emoji) }
+        .accessibilityActions {
+            ForEach(choices.filter { $0.emoji != emoji }, id: \.emoji) { choice in
+                Button(choice.name) { choose(choice.emoji) }
             }
         }
-    }()
+    }
+
+    /// The base and its skin tones, `chat.reactions.count.pickerColumns` to a row at most (Unicode's order).
+    private func variantGrid(_ choices: [EmojiCatalog.Emoji]) -> some View {
+        let count = min(choices.count, Int(Tokens.Counts.chatReactionsCountPickerColumns))
+        return LazyVGrid(columns: Array(repeating: GridItem(.fixed(Tokens.Sizes.globalMinTouchTargetIos), spacing: 0), count: max(count, 1)), spacing: 0) {
+            ForEach(choices, id: \.emoji) { choice in
+                Button {
+                    variantsOf = nil
+                    holdEnded = nil
+                    choose(choice.emoji)
+                } label: {
+                    emojiFace(choice.emoji)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(choice.name))
+                .accessibilityAddTraits(mine.contains(choice.emoji) ? .isSelected : [])
+            }
+        }
+        .padding(Tokens.Sizes.globalScreenMargin)
+    }
+
+    private func emojiFace(_ emoji: String) -> some View {
+        Text(emoji)
+            .dsTextStyle(SocialTextRole.pickerEmoji)
+            .fixedSize()
+            .frame(minWidth: Tokens.Sizes.globalMinTouchTargetIos, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+            .frame(maxWidth: .infinity)
+            .background {
+                if mine.contains(emoji) {
+                    Circle()
+                        .fill(Tokens.Colors.globalControl)
+                        .frame(width: Tokens.Sizes.globalCircleButton, height: Tokens.Sizes.globalCircleButton)
+                }
+            }
+            .contentShape(Rectangle())
+    }
+
+    /// Mine → take it back; otherwise react, remember it ("Frequently Used") and close.
+    private func choose(_ emoji: String) {
+        if mine.contains(emoji) {
+            onRemove(emoji)
+        } else {
+            SocialServices.shared.flags.recordEmoji(emoji, keep: Int(Tokens.Counts.chatReactionsCountPickerColumns))
+            onPick(emoji)
+            dismiss()
+        }
+    }
 }
 
 // MARK: - Reactions sheet (`chat.reactions.layout.list`)

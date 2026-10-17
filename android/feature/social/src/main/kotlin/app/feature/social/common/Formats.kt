@@ -110,7 +110,12 @@ object EmojiNames {
     private const val VS16 = 0xFE0F
     private val SKIN_TONES = 0x1F3FB..0x1F3FF
 
+    /**
+     * The emoji's name for TalkBack ("fire", "waving hand: light skin tone", "flag: Japan"): Unicode's CLDR name from the
+     * picker's catalog once it has been read, else the characters' Unicode names.
+     */
     fun name(emoji: String): String {
+        app.feature.social.reactions.EmojiCatalog.loadedNames?.get(emoji)?.let { return it }
         val parts = emoji.codePoints().toArray()
             .filter { it != ZWJ && it != VS16 && it !in SKIN_TONES }
             .mapNotNull { cp -> Character.getName(cp)?.lowercase(Locale.ROOT) }

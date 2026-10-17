@@ -338,8 +338,10 @@ enum SocialA11y {
 // MARK: - Emoji
 
 enum SocialEmoji {
-    /// The emoji's system name ("fire"), for VoiceOver (`chat.reactions` Accessibility).
+    /// The emoji's name ("fire", "waving hand: light skin tone", "flag: Japan"), for VoiceOver (`chat.reactions`
+    /// Accessibility): Unicode's CLDR name from the picker's catalog, else the system's character names.
     static func name(_ emoji: String) -> String {
+        if let name = SocialEmojiCatalog.names[emoji] { return name }
         let mutable = NSMutableString(string: emoji) as CFMutableString
         CFStringTransform(mutable, nil, kCFStringTransformToUnicodeName, false)
         let raw = (mutable as String)

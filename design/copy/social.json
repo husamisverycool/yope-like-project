@@ -503,13 +503,86 @@
       "level": "SOURCED",
       "notes": "Same label as the iOS emoji keyboard's first category; Title Case section header (retro.voice.title-case)."
     },
-    "chat.reactions.picker.all": {
-      "text": "All",
+    "chat.reactions.picker.group.smileysEmotion": {
+      "text": "Smileys & Emotion",
       "origin": "verbatim",
-      "source_app": "Retro",
+      "source_app": "Unicode (UTS #51)",
       "surface": "chat.reactions",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (activity_tab_filter_all)",
-      "level": "SOURCED"
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: Smileys & Emotion\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 1 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@Smileys & Emotion\"); Title Case like the picker's other headers."
+    },
+    "chat.reactions.picker.group.peopleBody": {
+      "text": "People & Body",
+      "origin": "verbatim",
+      "source_app": "Unicode (UTS #51)",
+      "surface": "chat.reactions",
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: People & Body\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 2 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@People & Body\"); Title Case like the picker's other headers."
+    },
+    "chat.reactions.picker.group.animalsNature": {
+      "text": "Animals & Nature",
+      "origin": "verbatim",
+      "source_app": "Unicode (UTS #51)",
+      "surface": "chat.reactions",
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: Animals & Nature\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 3 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@Animals & Nature\"); Title Case like the picker's other headers."
+    },
+    "chat.reactions.picker.group.foodDrink": {
+      "text": "Food & Drink",
+      "origin": "verbatim",
+      "source_app": "Unicode (UTS #51)",
+      "surface": "chat.reactions",
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: Food & Drink\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 4 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@Food & Drink\"); Title Case like the picker's other headers."
+    },
+    "chat.reactions.picker.group.travelPlaces": {
+      "text": "Travel & Places",
+      "origin": "verbatim",
+      "source_app": "Unicode (UTS #51)",
+      "surface": "chat.reactions",
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: Travel & Places\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 5 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@Travel & Places\"); Title Case like the picker's other headers."
+    },
+    "chat.reactions.picker.group.activities": {
+      "text": "Activities",
+      "origin": "verbatim",
+      "source_app": "Unicode (UTS #51)",
+      "surface": "chat.reactions",
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: Activities\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 6 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@Activities\"); Title Case like the picker's other headers."
+    },
+    "chat.reactions.picker.group.objects": {
+      "text": "Objects",
+      "origin": "verbatim",
+      "source_app": "Unicode (UTS #51)",
+      "surface": "chat.reactions",
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: Objects\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 7 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@Objects\"); Title Case like the picker's other headers."
+    },
+    "chat.reactions.picker.group.symbols": {
+      "text": "Symbols",
+      "origin": "verbatim",
+      "source_app": "Unicode (UTS #51)",
+      "surface": "chat.reactions",
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: Symbols\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 8 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@Symbols\"); Title Case like the picker's other headers."
+    },
+    "chat.reactions.picker.group.flags": {
+      "text": "Flags",
+      "origin": "verbatim",
+      "source_app": "Unicode (UTS #51)",
+      "surface": "chat.reactions",
+      "evidence": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt \"# group: Flags\" (accessed 2026-10-17); the same groups name the sections of the system emoji keyboard (support.apple.com/102507: \"the category icons\") and of androidx.emoji2 emojipicker 1.6.0 (res/values: emoji_category_*)",
+      "level": "VERIFIED",
+      "notes": "Section header 9 of 9 in the reaction picker, in Unicode's group order (tools/emoji-catalog.mjs → EmojiCatalog.txt \"@Flags\"); Title Case like the picker's other headers."
     },
     "chat.reactions.activity.title": {
       "text": "Reactions",

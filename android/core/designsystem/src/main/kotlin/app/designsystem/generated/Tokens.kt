@@ -814,11 +814,12 @@ object Tokens {
         /** Locket + WhatsApp · chat.reactions · full emoji picker · SOURCED — token `chat.reactions.layout.picker` */
         object ChatReactionsLayoutPicker {
             const val presentation: String = "native sheet (C-29) with grabber; content on color.global.background"
-            const val top: String = "search field C-12, placeholder chat.reactions.picker.search"
-            const val sections: String = "chat.reactions.picker.frequent (recently used on this device), then chat.reactions.picker.all (every emoji in Unicode order); section labels text role sectionLabel (C-20 form, no •••)"
+            const val top: String = "search field C-12, placeholder chat.reactions.picker.search; matches Unicode's CLDR emoji names"
+            const val sections: String = "chat.reactions.picker.frequent (recently used on this device), then Unicode's standard groups in order (chat.reactions.picker.group.smileysEmotion … .flags): every fully-qualified emoji of the RGI set the device's emoji font draws (tools/emoji-catalog.mjs → EmojiCatalog.txt / emoji_catalog.txt); section labels text role sectionLabel (C-20 form, no •••)"
             const val grid: String = "chat.reactions.count.pickerColumns equal columns inside size.global.screenMargin; emoji at fontSize.global.headerTitle"
             const val mine: String = "emoji you already used on this photo sit on a size.global.circleButton circle in color.global.control (selected trait)"
             const val tap: String = "an emoji reacts and closes the sheet; a highlighted one unreacts"
+            const val variants: String = "an emoji with skin tones (Unicode's modifier sequences, including two-tone pairs) offers them on touch and hold in the platform popover (iOS) / menu (Android), chat.reactions.count.pickerColumns to a row, base first; TalkBack / VoiceOver list them as custom actions"
         }
         /** Locket + Apple Messages + WhatsApp · chat.reactions · quick reactions · SOURCED — token `chat.reactions.layout.quickReactions` */
         object ChatReactionsLayoutQuickReactions {

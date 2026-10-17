@@ -345,9 +345,9 @@ final class SocialSnapshotTests: XCTestCase {
         await thread.load()
         record(ChatThreadView(model: thread), "chat.reactions", "cluster", both)
 
-        record(ReactionPicker(onPick: { _ in }), "chat.reactions", "picker", navigation: false)
+        record(ReactionPicker(catalog: SocialEmojiCatalog.bundled, onPick: { _ in }), "chat.reactions", "picker", navigation: false)
         // `chat.reactions.layout.unreact`: my reactions selected in the picker.
-        record(ReactionPicker(mine: ["💖", "🔥"], onPick: { _ in }, onRemove: { _ in }), "chat.reactions", "picker-mine", navigation: false)
+        record(ReactionPicker(mine: ["💖", "🔥"], catalog: SocialEmojiCatalog.bundled, onPick: { _ in }, onRemove: { _ in }), "chat.reactions", "picker-mine", navigation: false)
 
         let summary = thread.reactions[SocialDemo.p1] ?? ReactionSummary()
         record(

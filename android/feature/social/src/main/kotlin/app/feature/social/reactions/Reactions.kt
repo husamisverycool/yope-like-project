@@ -12,6 +12,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,6 +63,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import app.data.repo.ReactionEntry
 import app.designsystem.R
 import app.designsystem.generated.Tokens
@@ -208,40 +217,54 @@ fun PhotoContextMenu(
     }
 }
 
-/** One picker item: a section label or an emoji cell. */
+/** One picker item: a section label or an emoji cell ([entry]: its catalog entry with the skin tones, when known). */
 private sealed interface PickerItem {
     data class Section(val label: String) : PickerItem
-    data class Cell(val emoji: String, val section: Int) : PickerItem
+    data class Cell(val emoji: String, val section: Int, val entry: CatalogEntry?) : PickerItem
 }
 
 /**
  * The emoji picker (`chat.reactions.layout.picker`): native sheet (C-29) on the page colour; C-12 search field
- * (`chat.reactions.picker.search`) inside `size.global.screenMargin`; "Frequently Used" (this device) and "All"
- * (Unicode order) as C-20 labels (`sectionLabel`; `size.global.sectionGap` above, `size.global.sectionHeaderToContent`
- * below the baseline); `chat.reactions.count.pickerColumns` equal columns, emoji at `fontSize.global.headerTitle`.
- * Emoji you already used ([mine]) sit on a `size.global.circleButton` circle in `color.global.control` (selected
- * trait) and unreact. Tap → react and close.
+ * (`chat.reactions.picker.search`, Unicode names) inside `size.global.screenMargin`; "Frequently Used" (this device),
+ * then every emoji of Unicode's RGI set in its standard groups (`chat.reactions.picker.group.*`, "Smileys & Emotion" …
+ * "Flags") as C-20 labels (`sectionLabel`; `size.global.sectionGap` above, `size.global.sectionHeaderToContent` below
+ * the baseline); `chat.reactions.count.pickerColumns` equal columns, emoji at `fontSize.global.headerTitle`. An emoji
+ * with skin tones offers them on touch and hold (the platform menu, as the system emoji picker's variant popup); TalkBack
+ * lists them as custom actions. Emoji you already used ([mine]) sit on a `size.global.circleButton` circle in
+ * `color.global.control` (selected trait) and unreact. Tap → react and close. Only emoji the system font draws show.
  */
 @Composable
 fun ReactionPickerSheet(mine: Set<String>, onPick: (String) -> Unit, onUnreact: (String) -> Unit, onDismiss: () -> Unit) {
     val context = LocalContext.current
     var query by remember { mutableStateOf(TextFieldValue()) }
     val frequent = remember { EmojiCatalog.recent(context) }
-    val all = remember { EmojiCatalog.all(context) }
+    val catalog by produceState(EmojiCatalog.shownIfReady) {
+        if (value == null) value = withContext(Dispatchers.Default) { EmojiCatalog.shown(context) }
+    }
     val frequentLabel = stringRes(R.string.chat_reactions_picker_frequent)
-    val allLabel = stringRes(R.string.chat_reactions_picker_all)
-    val items: List<PickerItem> = remember(query.text, frequent, all) {
-        val q = query.text.trim().lowercase()
+    // Unicode's standard groups, in the catalog's order (tools/emoji-catalog.mjs).
+    val groupLabels = listOf(
+        stringRes(R.string.chat_reactions_picker_group_smileysemotion), stringRes(R.string.chat_reactions_picker_group_peoplebody),
+        stringRes(R.string.chat_reactions_picker_group_animalsnature), stringRes(R.string.chat_reactions_picker_group_fooddrink),
+        stringRes(R.string.chat_reactions_picker_group_travelplaces), stringRes(R.string.chat_reactions_picker_group_activities),
+        stringRes(R.string.chat_reactions_picker_group_objects), stringRes(R.string.chat_reactions_picker_group_symbols),
+        stringRes(R.string.chat_reactions_picker_group_flags),
+    )
+    val items: List<PickerItem> = remember(query.text, frequent, catalog, groupLabels) {
+        val data = catalog ?: EmojiCatalogData(emptyList())
+        val q = query.text.trim()
         if (q.isNotEmpty()) {
-            (frequent + all).distinct().filter { EmojiNames.name(it).contains(q) }.map { PickerItem.Cell(it, 0) }
+            data.search(q).map { PickerItem.Cell(it.base.emoji, 0, it) }
         } else buildList {
             if (frequent.isNotEmpty()) {
                 add(PickerItem.Section(frequentLabel))
-                frequent.forEach { add(PickerItem.Cell(it, 1)) }
+                frequent.forEach { add(PickerItem.Cell(it, 1, data.entryContaining(it))) }
             }
-            if (all.isNotEmpty()) {
-                add(PickerItem.Section(allLabel))
-                all.forEach { add(PickerItem.Cell(it, 2)) }
+            data.groups.zip(groupLabels).forEachIndexed { index, (group, label) ->
+                if (group.entries.isNotEmpty()) {
+                    add(PickerItem.Section(label))
+                    group.entries.forEach { add(PickerItem.Cell(it.base.emoji, index + 2, it)) }
+                }
             }
         }
     }
@@ -267,10 +290,16 @@ fun ReactionPickerSheet(mine: Set<String>, onPick: (String) -> Unit, onUnreact: 
                 }) { item ->
                     when (item) {
                         is PickerItem.Section -> SectionLabel(item.label)
-                        is PickerItem.Cell -> PickerCell(item.emoji, item.emoji in mine, onPick = {
-                            EmojiCatalog.remember(context, item.emoji)
-                            onPick(item.emoji)
-                        }, onUnreact = { onUnreact(item.emoji) })
+                        is PickerItem.Cell -> {
+                            val choose: (String) -> Unit = { emoji ->
+                                if (emoji in mine) onUnreact(emoji)
+                                else {
+                                    EmojiCatalog.remember(context, emoji)
+                                    onPick(emoji)
+                                }
+                            }
+                            PickerCell(item.emoji, mine, item.entry?.takeIf { it.variants.isNotEmpty() }?.choices.orEmpty(), choose)
+                        }
                     }
                 }
             }
@@ -294,20 +323,59 @@ private fun SectionLabel(text: String) {
     )
 }
 
-/** One picker cell; a reaction of yours sits on the `color.global.control` circle with the selected trait. */
+/**
+ * One picker cell; a reaction of yours sits on the `color.global.control` circle with the selected trait. With skin tones
+ * ([choices]: the base and its variants), touch and hold opens them in the platform menu (`chat.reactions.count.pickerColumns`
+ * to a row), and TalkBack offers each as a custom action.
+ */
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
-private fun PickerCell(emoji: String, mine: Boolean, onPick: () -> Unit, onUnreact: () -> Unit) {
+private fun PickerCell(emoji: String, mine: Set<String>, choices: List<CatalogEmoji>, onChoose: (String) -> Unit) {
     val name = EmojiNames.name(emoji)
+    val haptics = rememberHaptics()
+    var tones by remember { mutableStateOf(false) }
     Box(
         Modifier
             .aspectRatio(1f)
-            .tapClickable { if (mine) onUnreact() else onPick() }
+            .combinedClickable(
+                onClick = { haptics.tap(); onChoose(emoji) },
+                onLongClick = if (choices.isEmpty()) null else ({ haptics.longPress(); tones = true }),
+            )
             .semantics(mergeDescendants = true) {
                 contentDescription = name
-                selected = mine
+                selected = emoji in mine
+                if (choices.isNotEmpty()) {
+                    customActions = choices.filter { it.emoji != emoji }.map { c -> CustomAccessibilityAction(c.name) { onChoose(c.emoji); true } }
+                }
             },
         contentAlignment = Alignment.Center,
     ) {
+        EmojiFace(emoji, emoji in mine)
+        if (choices.isNotEmpty()) {
+            DropdownMenu(expanded = tones, onDismissRequest = { tones = false }) {
+                FlowRow(maxItemsInEachRow = Tokens.Counts.chatReactionsCountPickerColumns) {
+                    choices.forEach { c ->
+                        Box(
+                            Modifier
+                                .size(Tokens.Sizes.globalMinTouchTargetAndroid)
+                                .tapClickable { tones = false; onChoose(c.emoji) }
+                                .semantics(mergeDescendants = true) {
+                                    contentDescription = c.name
+                                    selected = c.emoji in mine
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) { EmojiFace(c.emoji, c.emoji in mine) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** The emoji at `fontSize.global.headerTitle`; yours on the `size.global.circleButton` circle in `color.global.control`. */
+@Composable
+private fun EmojiFace(emoji: String, mine: Boolean) {
+    Box(contentAlignment = Alignment.Center) {
         if (mine) Box(Modifier.size(Tokens.Sizes.globalCircleButton).background(Tokens.Colors.globalControl, CircleShape))
         Text(emoji, style = emojiStyle(Tokens.FontSizes.globalHeaderTitle), maxLines = 1)
     }

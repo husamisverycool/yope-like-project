@@ -1,6 +1,7 @@
 // Posting, chat, reactions, self-tags, deletion RPCs and the policies of media,
 // posts, messages, reactions and post_tags.
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   closeDb,
@@ -318,6 +319,26 @@ describe('react / unreact', () => {
     const rows = await select(c.client, 'reactions', (q) => q.eq('post_id', post.id));
     expect(rows).toHaveLength(6);
     expect(await jobsWhere('push.reaction', { post_id: post.id, emoji: '❤️' })).toHaveLength(1);
+  });
+
+  it('accepts every emoji the reaction pickers offer (skin tones, ZWJ sequences, flags, keycaps, tags)', async () => {
+    // The pickers' catalog (tools/emoji-catalog.mjs: Unicode's fully-qualified RGI set, groups and skin-tone variants).
+    const catalog = readFileSync(new URL('../../ios/App/Resources/EmojiCatalog.txt', import.meta.url), 'utf8');
+    const all = catalog
+      .split('\n')
+      .filter((l) => l && !l.startsWith('# ') && !l.startsWith('@')) // "#️⃣" is an emoji, "# " a comment
+      .map((l) => l.replace(/^\+/, '').split('\t')[0]);
+    expect(all.length).toBeGreaterThan(3900);
+    expect(new Set(all).size).toBe(all.length);
+    const rejected = await sql<{ e: string }>('select e from unnest($1::text[]) e where not coalesce(private.is_emoji(e), false)', [all]);
+    expect(rejected.map((r) => r.e)).toEqual([]);
+    // The longest sequences and each kind of sequence, end to end through `react`.
+    const post = (await postPhoto(a, [g1.id])).posts[0];
+    const longest = all.reduce((x, y) => ([...y].length > [...x].length ? y : x));
+    for (const e of ['❤️', '☺️', '👋🏿', '🫱🏻‍🫲🏿', '🧑🏽‍🦯‍➡️', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '#️⃣', '🇺🇳', longest]) {
+      const r = await rpc(b.client, 'react', { p_post_id: post.id, p_emoji: e });
+      expect(r).toMatchObject({ post_id: post.id, emoji: e });
+    }
   });
 
   it('rejects non-emoji and invisible posts', async () => {

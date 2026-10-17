@@ -384,19 +384,20 @@
       "type": "layout",
       "value": {
         "presentation": "native sheet (C-29) with grabber; content on color.global.background",
-        "top": "search field C-12, placeholder chat.reactions.picker.search",
-        "sections": "chat.reactions.picker.frequent (recently used on this device), then chat.reactions.picker.all (every emoji in Unicode order); section labels text role sectionLabel (C-20 form, no •••)",
+        "top": "search field C-12, placeholder chat.reactions.picker.search; matches Unicode's CLDR emoji names",
+        "sections": "chat.reactions.picker.frequent (recently used on this device), then Unicode's standard groups in order (chat.reactions.picker.group.smileysEmotion … .flags): every fully-qualified emoji of the RGI set the device's emoji font draws (tools/emoji-catalog.mjs → EmojiCatalog.txt / emoji_catalog.txt); section labels text role sectionLabel (C-20 form, no •••)",
         "grid": "chat.reactions.count.pickerColumns equal columns inside size.global.screenMargin; emoji at fontSize.global.headerTitle",
         "mine": "emoji you already used on this photo sit on a size.global.circleButton circle in color.global.control (selected trait)",
-        "tap": "an emoji reacts and closes the sheet; a highlighted one unreacts"
+        "tap": "an emoji reacts and closes the sheet; a highlighted one unreacts",
+        "variants": "an emoji with skin tones (Unicode's modifier sequences, including two-tone pairs) offers them on touch and hold in the platform popover (iOS) / menu (Android), chat.reactions.count.pickerColumns to a row, base first; TalkBack / VoiceOver list them as custom actions"
       },
       "source_app": "Locket + WhatsApp",
       "surface": "chat.reactions",
       "element": "full emoji picker",
-      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (search + Frequently Used + sections); references/auto/whatsapp/help/faq-424198503229937-react-iphone.png ('tap + to choose from more emoji')",
+      "evidence": "references/auto/locket/frames/locket-tt-7460656081153445163-15.000s-emoji-picker-sheet-search-popular.jpg (search + Frequently Used + sections); references/auto/whatsapp/help/faq-424198503229937-react-iphone.png ('tap + to choose from more emoji'); https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt (groups, CLDR order, fully-qualified sequences, names; accessed 2026-10-17); support.apple.com/102507 ('To change the skin tone of certain emoji, touch and hold an emoji'; 'the category icons'; 'Search Emoji')",
       "method": "mechanics of two references drawn with Retro components (C-29, C-12, C-20, C-11)",
       "level": "SOURCED",
-      "notes": "Locket's curated 'Popular' list is dropped (MERGE RS-8)."
+      "notes": "Locket's curated 'Popular' list is dropped (MERGE RS-8). 2026-10-17: the single 'All' section (single code points only, no ❤️ / flags / skin tones / ZWJ sequences on iOS) became Unicode's full set in its standard groups with skin tones on touch and hold, on both platforms from one generated catalog."
     },
     "chat.reactions.count.pickerColumns": {
       "type": "count",

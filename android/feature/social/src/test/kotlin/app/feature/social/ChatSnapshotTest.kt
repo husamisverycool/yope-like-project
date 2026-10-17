@@ -197,6 +197,8 @@ class ChatSnapshotTest : SnapshotBase() {
 
     @Test fun reactionsPicker() {
         val (data, state) = loaded()
+        // The device catalog is read off the main thread on first use; read here so the sheet opens with it.
+        app.feature.social.reactions.EmojiCatalog.shown(androidx.test.core.app.ApplicationProvider.getApplicationContext())
         chat(state, ChatUiState(pickerFor = "p-1"), data, screen = true)
     }
 
