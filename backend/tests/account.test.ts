@@ -218,6 +218,8 @@ describe('app_config / public_app_config', () => {
       'free_history_days',
       'invitation_window_seconds',
       'max_group_members',
+      'message_edit_max',
+      'message_edit_window_s',
       'min_age_years',
       'overnight_reveal_local_time',
       'video_max_ms',

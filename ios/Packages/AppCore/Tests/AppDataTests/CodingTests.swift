@@ -149,10 +149,11 @@ final class CodingTests: XCTestCase {
     func testEveryAPIErrorCodeOfTheContractIsKnown() {
         // docs/API.md §3 table (keep in sync).
         let documented = """
-        not_authenticated not_group_member not_group_admin not_album_owner post_not_eligible under_minimum_age
+        not_authenticated not_group_member not_group_admin not_album_owner not_allowed post_not_eligible under_minimum_age
         premium_required video_too_long post_not_found media_not_found message_not_found member_not_found user_not_found
         invite_not_found recap_not_found album_not_found request_not_found target_not_found invite_revoked
-        invite_expired group_full already_posted recap_not_ready tribute_closed age_gate_not_configured
+        invite_expired group_full already_posted recap_not_ready media_not_ready edit_window_closed tribute_closed
+        age_gate_not_configured
         invalid_name invalid_kind invalid_time_zone invalid_waking_window invalid_path invalid_caption invalid_voice
         invalid_body invalid_emoji invalid_items invalid_text invalid_line invalid_reason invalid_platform
         invalid_token invalid_quiet_hours invalid_birthday invalid_birthdate reply_group_mismatch cannot_target_self

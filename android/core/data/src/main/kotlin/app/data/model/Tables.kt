@@ -160,6 +160,8 @@ data class Post(
     @SerialName("question_id") val questionId: String? = null,
     /** The stored `posts.visible_at` (migration 0027); null in rows made on the device. Read [visibleAt]. Last, so positional calls keep working. */
     @SerialName("visible_at") val visibleAtColumn: Instant? = null,
+    /** Migration 0047: when the author last changed the caption (`edit_caption`); null when never edited. */
+    @SerialName("caption_edited_at") val captionEditedAt: Instant? = null,
 ) {
     /**
      * When the group could first see the photo (`posts.visible_at` = `revealed_at ?: created_at`, migration 0027): the week
@@ -184,6 +186,18 @@ data class Message(
     @SerialName("created_at") val createdAt: Instant,
     /** A voice message's waveform: 100 levels of 0…31 (§5.9 `voice_levels`); null when it has none. Last, so positional calls keep working. */
     @SerialName("voice_levels") val voiceLevels: List<Int>? = null,
+    /** Migration 0047: when the author last edited the text (`edit_message`); null when never edited ("Edited" under it). */
+    @SerialName("edited_at") val editedAt: Instant? = null,
+)
+
+/** §5.10a `message_reactions` (migration 0047): one reaction per person per message, rows only, never a number. */
+@Serializable
+data class MessageReaction(
+    @SerialName("message_id") val messageId: String,
+    @SerialName("user_id") val userId: String,
+    val emoji: String,
+    @SerialName("group_id") val groupId: String,
+    @SerialName("created_at") val createdAt: Instant,
 )
 
 /** §5.10 `reactions`: rows `(user, emoji)`, never a number. */

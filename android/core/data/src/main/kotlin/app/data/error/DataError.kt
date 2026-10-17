@@ -63,6 +63,7 @@ enum class ApiError(val wire: String, val httpStatus: Int) {
     AlreadyPosted("already_posted", 409),
     RecapNotReady("recap_not_ready", 409),
     MediaNotReady("media_not_ready", 409),
+    EditWindowClosed("edit_window_closed", 409),
     TributeClosed("tribute_closed", 409),
     AgeGateNotConfigured("age_gate_not_configured", 503),
     InvalidName("invalid_name", 400),

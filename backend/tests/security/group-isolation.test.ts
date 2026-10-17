@@ -206,6 +206,11 @@ describe('group isolation: RPCs', () => {
     // search (0040): G by id is refused; across the outsider's own groups G's caption finds nothing (tests/search.test.ts)
     search_photos: { args: () => ({ p_text: 'seeded', p_group_id: seeded.group.id }), expect: 'error' },
     group_history_months: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' }, // jump to a date (0045)
+    // reactions on messages and edits (0047): a G message or photo is not the outsider's to react to or edit
+    react_to_message: { args: () => ({ p_message_id: seeded.messageIds[0], p_emoji: '🔥' }), expect: 'error' },
+    unreact_to_message: { args: () => ({ p_message_id: seeded.messageIds[0] }), expect: 'error' },
+    edit_message: { args: () => ({ p_message_id: seeded.messageIds[0], p_body: 'x' }), expect: 'error' },
+    edit_caption: { args: () => ({ p_post_id: seeded.postIds[0], p_caption: 'x' }), expect: 'error' },
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {

@@ -119,6 +119,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `recap_not_ready` | 409 | The recap is still being generated (`status <> 'ready'`). |
 | `media_not_ready` | 409 | `set_group_cover_from_post`: the photo's display rendition is not made yet (seconds after posting). |
 | `tribute_closed` | 409 | The tribute request is past its due time. |
+| `edit_window_closed` | 409 | `edit_message`: the message is older than `message_edit_window_s` or was already edited `message_edit_max` times (migration 0047). |
 | `age_gate_not_configured` | 503 | Minimum age not configured yet; the age gate fails closed. |
 | `invalid_name` | 400 | Name empty or longer than 80 characters (groups, albums). |
 | `invalid_kind` | 400 | Wrong kind (e.g. `photo` in `send_message`, deleting a photo message with `delete_message`). |
@@ -285,7 +286,8 @@ block with you.
 | `media_id` | uuid | |
 | `group_id` | uuid | |
 | `author_id` | uuid | = media owner |
-| `caption` | text? | ≤ 1000 chars |
+| `caption` | text? | ≤ 1000 chars; the author changes it with `edit_caption` |
+| `caption_edited_at` | timestamptz? | set by `edit_caption` (migration 0047): the viewer shows "{date} · Edited"; null when never edited |
 | `voice_path`, `voice_duration_ms` | text?, int? | optional voice note (both or neither) |
 | `voice_levels` | smallint[]? | the voice note's waveform: exactly 100 levels, each 0–31, sampled while recording (see §6.2 `create_post`); null when the note has none (sent before 2026-10-16 or by a client that sent none) or there is no voice note |
 | `invitation_id` | uuid? | set only when posted inside that group's open daily invitation |
@@ -314,6 +316,7 @@ Group chat. Read: members, minus authors with a block with you.
 | `reply_to_post_id` | uuid? | reply to a specific photo; set to null if that photo is deleted (the reply stays) |
 | `reply_to_message_id` | uuid? | reply to a message; null if it was deleted |
 | `created_at` | timestamptz | |
+| `edited_at` | timestamptz? | set by `edit_message` (migration 0047): show "Edited" under the message; null when never edited |
 
 Chat thread: `from("messages").select().eq("group_id", g).order("created_at", ascending: false).limit(50)`.
 Photo messages carry `post_id`. Load the post (and its media) by id, and render the
@@ -329,6 +332,20 @@ you cannot see. Rows only; show who reacted with what, never a number.
 | `post_id`, `user_id`, `emoji` | uuid, uuid, text | primary key: one row per user + post + emoji |
 | `group_id` | uuid | copied from the post (for realtime filters) |
 | `created_at` | timestamptz | |
+
+### 5.10a `message_reactions`
+
+Reactions on chat messages (migration 0047; iOS Tapbacks, Locket chat reactions). Read: members, minus reactions by
+people with a block with you, minus reactions on messages by people with a block with you. Rows only, never a number.
+
+| Column | Type | Notes |
+|---|---|---|
+| `message_id`, `user_id` | uuid, uuid | primary key: **one reaction per person per message** (a new emoji replaces yours) |
+| `emoji` | text | any emoji (the `react` rule) |
+| `group_id` | uuid | the message's group (for realtime filters) |
+| `created_at` | timestamptz | when the current emoji was set |
+
+Text and voice messages only: a photo message is reacted to through its post (`react`); joined / left lines take none.
 
 ### 5.11 `post_tags`
 
@@ -747,6 +764,31 @@ Your own text/voice message. A photo message is removed with `delete_post`
 (`invalid_kind`). Errors: `message_not_found`. Members get a `message_deleted`
 broadcast.
 
+#### `react_to_message` / `unreact_to_message`
+```
+react_to_message(p_message_id uuid, p_emoji text) → message_reactions
+unreact_to_message(p_message_id uuid) → void
+```
+Sets or replaces your one reaction on a text or voice message (migration 0047), or removes it. No push. Errors:
+`message_not_found` (not a member, a block either way), `invalid_kind` (photo, joined, left), `invalid_emoji`.
+A removal is broadcast as `message_reactions_changed`.
+
+#### `edit_message`
+```
+edit_message(p_message_id uuid, p_body text) → messages
+```
+Your own text message, within `message_edit_window_s` (900 s) of sending and at most `message_edit_max` (5) times
+(Apple Messages). Sets `edited_at`; earlier text is not kept. The same text again changes nothing. No push; members
+get the Realtime UPDATE. Errors: `message_not_found`, `invalid_kind` (not text), `invalid_body`,
+`edit_window_closed` 409 (also when the settings are NULL).
+
+#### `edit_caption`
+```
+edit_caption(p_post_id uuid, p_caption text) → posts
+```
+Your own photo's caption in that group, any time; empty or blank removes it. Sets `caption_edited_at`. Errors:
+`post_not_found`, `invalid_caption`.
+
 #### `react` / `unreact`
 ```
 react(p_post_id uuid, p_emoji text) → reactions
@@ -1085,7 +1127,7 @@ Rules:
 
 ### 8.1 Postgres changes (inserts and updates)
 
-Published tables: `messages`, `posts`, `reactions`. **Inserts and updates only.** Each
+Published tables: `messages`, `posts`, `reactions`, `message_reactions` (and the plans tables). **Inserts and updates only.** Each
 event is checked against the subscriber's RLS, so you only get rows you could select
 (your groups, minus blocks). Subscribe per open group:
 
@@ -1098,7 +1140,8 @@ await ch.subscribe()
 ```
 
 `UPDATE` events happen when a reply loses its target (`reply_to_*` set to null after a
-deletion).
+deletion), when a message or a caption is edited (`edit_message`, `edit_caption`), and when someone changes their
+reaction to a message.
 
 ### 8.2 Private broadcast topic `group:<group_id>` (deletions)
 
@@ -1111,6 +1154,7 @@ join; others get an authorization error. Clients cannot send on it. Events:
 | `post_deleted` | `{ "post_id", "media_id" }` | remove the post and its chat photo message; drop it from walls, recaps, albums |
 | `message_deleted` | `{ "message_id" }` | remove the message |
 | `reactions_changed` | `{ "post_id" }` | refetch that post's reactions |
+| `message_reactions_changed` | `{ "message_id" }` | refetch that message's reactions (migration 0047) |
 
 Realtime does not apply RLS to DELETE events, so deletions are never published as
 postgres changes. That keeps other groups' deletions from reaching anyone.
@@ -1239,6 +1283,7 @@ A NULL value means "not sourced yet", and the dependent feature fails closed (ex
 | `invite_ttl_seconds` | NULL = links never expire (owner decision 27; migration 0026) | no | `create_invite` |
 | `birthday_request_lead_days` | 7 | no | `due_birthday_requests` |
 | `year_story_release_month_day` | "12-01" | no | `due_year_stories` |
+| `message_edit_window_s` / `message_edit_max` | 900 / 5 (Apple Messages; migration 0047) | yes | `edit_message` (fails closed if NULL); the apps offer Edit only inside them |
 | `weekly_question_keys` | the nine keys `question.weekly.q01` … `q09` in order (owner decision 30, migration 0024) | yes | `current_group_question` |
 | `job_lock_timeout_seconds` / `job_backoff_base_seconds` / `job_backoff_max_seconds` | 600 / 30 / 3600 | no | job queue |
 

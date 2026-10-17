@@ -13,6 +13,7 @@ import app.data.model.GroupInvite
 import app.data.model.GroupMember
 import app.data.model.Media
 import app.data.model.Message
+import app.data.model.MessageReaction
 import app.data.model.NotificationSettings
 import app.data.model.Post
 import app.data.model.PostTag
@@ -76,6 +77,7 @@ class SchemaConformanceIntegrationTest {
         "posts" to Post.serializer().descriptor,
         "messages" to Message.serializer().descriptor,
         "reactions" to Reaction.serializer().descriptor,
+        "message_reactions" to MessageReaction.serializer().descriptor,
         "selfie_reactions" to SelfieReaction.serializer().descriptor,
         "post_tags" to PostTag.serializer().descriptor,
         "daily_invitations" to DailyInvitation.serializer().descriptor,

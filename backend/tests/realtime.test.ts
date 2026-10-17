@@ -30,12 +30,13 @@ afterAll(async () => {
 });
 
 describe('realtime', () => {
-  it('publishes inserts and updates of the chat, posts, reactions and plans only', async () => {
+  it('publishes inserts and updates of the chat, its reactions, posts, reactions and plans only', async () => {
     const rows = await sql<{ tablename: string }>(
       `select tablename from pg_publication_tables where pubname = 'supabase_realtime' order by 1`,
     );
     // developing_posts is never published (clients read only group_developing); its changes are a broadcast
     expect(rows.map((r) => r.tablename)).toEqual([
+      'message_reactions',
       'messages',
       'plan_answers',
       'plans',

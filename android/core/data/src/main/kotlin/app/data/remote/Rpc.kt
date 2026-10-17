@@ -32,6 +32,11 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
         setOf("p_body", "p_voice_path", "p_voice_duration_ms", "p_voice_levels", "p_reply_to_post_id", "p_reply_to_message_id"),
     ),
     DeleteMessage("delete_message", setOf("p_message_id")),
+    /** Migration 0047: one reaction per person on a text or voice message; editing a text message or a caption. */
+    ReactToMessage("react_to_message", setOf("p_message_id", "p_emoji")),
+    UnreactToMessage("unreact_to_message", setOf("p_message_id")),
+    EditMessage("edit_message", setOf("p_message_id", "p_body")),
+    EditCaption("edit_caption", setOf("p_post_id", "p_caption")),
     React("react", setOf("p_post_id", "p_emoji")),
     Unreact("unreact", setOf("p_post_id", "p_emoji")),
     TagSelf("tag_self", setOf("p_post_id")),
@@ -140,6 +145,7 @@ object Tables {
     const val POSTS = "posts"
     const val MESSAGES = "messages"
     const val REACTIONS = "reactions"
+    const val MESSAGE_REACTIONS = "message_reactions"
     const val SELFIE_REACTIONS = "selfie_reactions"
     const val POST_TAGS = "post_tags"
     const val DAILY_INVITATIONS = "daily_invitations"
