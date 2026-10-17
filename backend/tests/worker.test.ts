@@ -301,4 +301,43 @@ describe('due_year_stories', () => {
     expect(await sql(`select 1 from public.jobs where kind = 'year.compute' and payload ->> 'year_story_id' = $1`, [rows[0].id])).toHaveLength(1);
     expect((await run('2027-12-15T00:00:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
   });
+
+  it('refreshes each story once on 31 December at the end of the waking window, without a second creation (decision 31)', async () => {
+    const g = await createGroup(u[3], [], { tz: 'Europe/Paris', start: '08:00', end: '22:00' });
+    const p = await postPhoto(u[3], [g.id]);
+    await sql(`update public.posts set created_at = '2028-03-01T10:00:00Z' where id = $1`, [p.posts[0].id]);
+    const run = (iso: string) => rpc<any[]>(admin, 'due_year_stories', { p_now: iso });
+    const [story] = (await run('2028-12-01T12:00:00Z')).filter((r) => r.group_id === g.id);
+    const refreshes = () => sql(`select 1 from public.jobs where kind = 'year.recompute' and payload ->> 'year_story_id' = $1`, [story.id]);
+    await run('2028-12-31T20:59:00Z'); // 21:59 Paris
+    expect(await refreshes()).toHaveLength(0);
+    expect((await run('2028-12-31T21:01:00Z')).filter((r) => r.group_id === g.id)).toEqual([]); // 22:01: no new story…
+    expect(await refreshes()).toHaveLength(1); // …one refresh
+    const [row] = await sql(`select refreshed_at, announced_at from public.year_stories where id = $1`, [story.id]);
+    expect(row.refreshed_at).not.toBeNull();
+    expect(row.announced_at).toBeNull(); // the worker announces; a refresh never does
+    await run('2029-01-02T12:00:00Z');
+    expect(await refreshes()).toHaveLength(1);
+  });
+
+  it('a self-tag on a photo of a ready story recomputes it; clients cannot run the scheduler', async () => {
+    const [x, y] = await createUsers(2, 'YrTag');
+    const g = await createGroup(x, [y], { tz: 'UTC' });
+    const { posts } = await postPhoto(x, [g.id]);
+    const [story] = await sql(
+      `insert into public.year_stories (group_id, year, status, data, post_ids, generated_at) values ($1, 2026, 'ready', '{}'::jsonb, $2::uuid[], now()) returning id`,
+      [g.id, [posts[0].id]],
+    );
+    const recomputes = () => sql(`select 1 from public.jobs where kind = 'year.recompute' and payload ->> 'year_story_id' = $1 and status = 'queued'`, [story.id]);
+    const tag = await y.client.from('post_tags').insert({ post_id: posts[0].id, user_id: y.id });
+    expect(tag.error).toBeNull();
+    expect(await recomputes()).toHaveLength(1);
+    const [kept] = await sql(`select status from public.year_stories where id = $1`, [story.id]);
+    expect(kept.status).toBe('ready'); // stays readable while it is recomputed
+    const untag = await y.client.from('post_tags').delete().eq('post_id', posts[0].id).eq('user_id', y.id);
+    expect(untag.error).toBeNull();
+    expect(await recomputes()).toHaveLength(1); // merged into the queued job
+    const { error } = await x.client.rpc('due_year_stories', {});
+    expect(error).not.toBeNull();
+  });
 });
