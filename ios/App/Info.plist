@@ -7,6 +7,10 @@
 <dict>
 	<key>AppGroupIdentifier</key>
 	<string>$(APP_GROUP_ID)</string>
+	<!-- The App Clip's Keychain access group: its sign-in is moved into the app at first launch
+	     (SessionStorage.appSession; the associated-appclip-app-identifiers entitlement grants the access). -->
+	<key>AppClipKeychainAccessGroup</key>
+	<string>$(AppIdentifierPrefix)$(APP_BUNDLE_ID).Clip</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<!-- Silent widget pushes for muted groups (docs/SPEC_FLAGS.md T6). -->

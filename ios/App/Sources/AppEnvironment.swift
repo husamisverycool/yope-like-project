@@ -96,7 +96,13 @@ final class AppEnvironment {
                 await deliveredNotifications.withdraw(posts: posts, messages: messages)
             }
         )
-        let data = try? DataEnvironment.live(configuration: configuration, widgetStore: widgetStore, hooks: hooks)
+        // An App Clip join signed the person in already: its Keychain session moves into the app (no second SMS code).
+        let sessionStorage = SessionStorage.appSession(
+            clipAccessGroup: bundle.object(forInfoDictionaryKey: "AppClipKeychainAccessGroup") as? String // provenance-ok: Info.plist key
+        )
+        let data = try? DataEnvironment.live(
+            configuration: configuration, sessionStorage: sessionStorage, widgetStore: widgetStore, hooks: hooks
+        )
         self.data = data
 
         #if DEBUG

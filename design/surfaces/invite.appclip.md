@@ -74,7 +74,10 @@ Pill press → none (iOS; `haptic.global.tap` is Android-only). Joined → `hapt
 - `GET https://<domain>/i/<token>/preview.json` (signed image URLs from the web origin) — before sign-in.
 - Sign-in: `signInWithOTP` / `verifyOTP` / `confirm_age` / profile update (docs/API.md §2). Join: `join_group(p_token)`
   (§6.1, §9.3; errors `invite_not_found`, `invite_revoked`, `invite_expired`, `group_full`).
-- The token and the session are written to the App Group container so the full app continues without asking again.
+- The invite token goes through the App Group container (`InviteHandoff`); the session stays in the clip's Keychain
+  item, which the full app reads at its first launch and moves into its own (iOS 15.4+: "information that the App
+  Clip stores in the keychain is accessible to its corresponding full app", Apple, "Sharing data between your App
+  Clip and your full app"; `SessionStorage.appSession`), so the full app opens signed in without a second SMS code.
 - Association: `invite.appclip.layout.association` (AASA `appclips` + advanced experience for `https://<domain>/i/`).
 
 ## Platform notes
