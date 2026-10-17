@@ -9,8 +9,10 @@ import {
   createUser,
   createUsers,
   expectRpcError,
+  getConfig,
   rpc,
   select,
+  setConfig,
   sql,
   upload,
   type TestUser,
@@ -94,13 +96,17 @@ describe('update_group (admin only)', () => {
 });
 
 describe('invites', () => {
-  it('any member creates an invite; it expires after invite_ttl_seconds', async () => {
+  it('any member creates an invite; it never expires (decision 27: invite_ttl_seconds NULL)', async () => {
+    expect(await getConfig('invite_ttl_seconds')).toBeNull();
     const g = await createGroup(a, [b]);
     const inv = await rpc(b.client, 'create_invite', { p_group_id: g.id });
     expect(inv.token).toMatch(/^[A-Za-z0-9_-]{24}$/);
-    const ttl = (new Date(inv.expires_at).getTime() - Date.now()) / 1000;
-    expect(ttl).toBeGreaterThan(604800 - 60);
-    expect(ttl).toBeLessThan(604800 + 60);
+    expect(inv.expires_at).toBeNull();
+    // a year later the link still previews and joins
+    await sql(`update public.group_invites set created_at = now() - interval '400 days' where token = $1`, [inv.token]);
+    expect((await rpc(anon, 'invite_preview', { p_token: inv.token })).group_name).toBe('Test group');
+    const [late] = await createUsers(1, 'LateJoiner');
+    expect((await rpc(late.client, 'join_group', { p_token: inv.token })).id).toBe(g.id);
     await expectRpcError(rpc(stranger.client, 'create_invite', { p_group_id: g.id }), 'not_group_member', 403);
     // members see the group's invites; others do not
     expect((await select(a.client, 'group_invites')).map((i: any) => i.token)).toContain(inv.token);
@@ -165,7 +171,17 @@ describe('invites', () => {
     const inv2 = await rpc(b.client, 'create_invite', { p_group_id: g.id });
     await rpc(b.client, 'revoke_invite', { p_token: inv2.token }); // creator
 
-    const inv3 = await rpc(a.client, 'create_invite', { p_group_id: g.id });
+    // with a lifetime configured (invite_ttl_seconds set), a link past its expiry is refused
+    await setConfig('invite_ttl_seconds', 604800);
+    let inv3: any;
+    try {
+      inv3 = await rpc(a.client, 'create_invite', { p_group_id: g.id });
+      const ttl = (new Date(inv3.expires_at).getTime() - Date.now()) / 1000;
+      expect(ttl).toBeGreaterThan(604800 - 60);
+      expect(ttl).toBeLessThan(604800 + 60);
+    } finally {
+      await setConfig('invite_ttl_seconds', null);
+    }
     await sql(`update public.group_invites set expires_at = now() - interval '1 second' where token = $1`, [inv3.token]);
     await expectRpcError(rpc(anon, 'invite_preview', { p_token: inv3.token }), 'invite_expired', 410);
     await expectRpcError(rpc(stranger.client, 'join_group', { p_token: inv3.token }), 'invite_expired', 410);

@@ -534,3 +534,19 @@ Locket (Gold) research owns the paywall's look and other copy.
 | `platform.alertMessage` | Only if it adds value; complete sentences, sentence case, punctuation | HIG Alerts §Content |
 | `platform.alertButton` | 1–2 word verb describing the result, title-style caps, no punctuation; "Cancel" for cancel; "OK" only informational | "View All", "Reply", "Ignore", "Erase", "Convert", "Clear", "Delete" (HIG Alerts) |
 | `platform.widgetDescription` | Starts with an action verb; no "This widget shows…"; sentence-style caps; one per widget kind | "See the current weather conditions and forecast for a location"; "Keep track of your upcoming events and meetings." (HIG Widgets) |
+
+## auth.agegate — minimum age (owner decision 26, read 2026-10-17)
+
+The age every reference app's published terms set for sign-up. `app_config.min_age_years` = 13 (migration
+`20261017000026_min_age_and_lasting_invites.sql`); the refusal copy reads `{min_age}` from `public_app_config`.
+
+| app | published rule (verbatim) | source | terms date |
+|---|---|---|---|
+| BeReal | §1 "To use our services, you must be a REAL human …" — "who is at least 13 years old." (a parent or guardian may also need to consent where the local age of consent is higher) | https://bereal.com/en/terms | last updated September 11, 2026 |
+| Locket | "If you are under 13 years of age, you are not authorized to use the Service, with or without registering." (13–17 with a parent's or guardian's approval) | https://locket.camera/terms | effective May 25, 2022 |
+| Retro | users who "are between 13 years and 17 years old and your parent or legal guardian must agree to be bound by these Terms" (18+ without that condition) | https://retro.app/terms | last updated April 18, 2024 |
+| Yope | §1d "You affirm that you are 13 years of age or older" | design/research/yope-a.md §2.3 | — |
+
+All four agree on 13; it is also COPPA's threshold (16 CFR 312.2: a "child" is under 13). The parental-consent clauses
+for 13–17 are a legal-terms matter for the owner's own Terms of Use (docs/OWNER_SETUP.md), not an app screen: none of
+the references asks for consent in the sign-up flow.

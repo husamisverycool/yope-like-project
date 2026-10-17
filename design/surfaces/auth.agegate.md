@@ -7,8 +7,9 @@ FAQ, `docs/PLATFORM_CONSTRAINTS.md` §9), drawn as the onboarding form compositi
 (MERGE RA-4). API: `docs/API.md` §2, §6.3 (`confirm_age`, `set_birthday`), §12 item 6. Tokens: `auth.agegate.*`.
 Copy: `auth.agegate.*`.
 
-**Minimum age:** `app_config.min_age_years` is unset (owner decision). No age appears before submission; the refusal
-uses `{min_age}` from `public_app_config.min_age_years`; while it is null `confirm_age` fails closed
+**Minimum age:** 13 (`app_config.min_age_years`, owner decision 26; the sign-up age in BeReal's, Locket's, Retro's and
+Yope's terms, design/research/platform.md "auth.agegate — minimum age"). No age appears before submission; the refusal
+uses `{min_age}` from `public_app_config.min_age_years`; should the value ever be unset, `confirm_age` fails closed
 (`age_gate_not_configured`, the "not open yet" state).
 
 ## References
@@ -94,6 +95,6 @@ Press → `haptic.global.tap` (Android). Switch → system (`settings.root.layou
 
 | item | status | owner action / capture |
 |---|---|---|
-| `min_age_years` | owner decision (docs/API.md §12 item 6) | set the value; the copy needs no change |
+| `min_age_years` | closed: 13 (owner decision 26, migration 20261017000026) | — |
 | auth user on refusal | `confirm_age` stores nothing, but the phone account exists | backend / owner confirmation |
 | Retro form layout | composition | raw screenshots of the first sign-up steps (RV §6) |

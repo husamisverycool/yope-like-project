@@ -139,22 +139,23 @@ describe('set_birthday', () => {
 
 describe('confirm_age', () => {
   it('fails closed while min_age_years is not configured', async () => {
-    expect(await getConfig('min_age_years')).toBeNull();
-    await expectRpcError(rpc(a.client, 'confirm_age', { p_birthdate: '1990-01-01' }), 'age_gate_not_configured', 503);
+    try {
+      await setConfig('min_age_years', null);
+      await expectRpcError(rpc(a.client, 'confirm_age', { p_birthdate: '1990-01-01' }), 'age_gate_not_configured', 503);
+    } finally {
+      await setConfig('min_age_years', 13);
+    }
   });
 
-  it('rejects under-age birthdates and records the confirmation otherwise', async () => {
-    try {
-      await setConfig('min_age_years', 13);
-      const [{ d }] = await sql<{ d: string }>(`select to_char(current_date - interval '12 years', 'YYYY-MM-DD') as d`);
-      await expectRpcError(rpc(a.client, 'confirm_age', { p_birthdate: d }), 'under_minimum_age', 403);
-      await expectRpcError(rpc(a.client, 'confirm_age', { p_birthdate: '2999-01-01' }), 'invalid_birthdate', 400);
-      const r = await rpc(a.client, 'confirm_age', { p_birthdate: '2000-02-29' });
-      expect(r.age_confirmed_at).not.toBeNull();
-      expect(r.birthday).toBeNull(); // the age-gate birthdate is not stored
-    } finally {
-      await setConfig('min_age_years', null);
-    }
+  it('is 13 (decision 26): rejects under-age birthdates and records the confirmation otherwise', async () => {
+    expect(await getConfig('min_age_years')).toBe(13);
+    const [{ d12 }] = await sql<{ d12: string }>(`select to_char(current_date - interval '13 years' + interval '1 day', 'YYYY-MM-DD') as d12`);
+    await expectRpcError(rpc(a.client, 'confirm_age', { p_birthdate: d12 }), 'under_minimum_age', 403);
+    await expectRpcError(rpc(a.client, 'confirm_age', { p_birthdate: '2999-01-01' }), 'invalid_birthdate', 400);
+    const [{ d13 }] = await sql<{ d13: string }>(`select to_char(current_date - interval '13 years' - interval '1 day', 'YYYY-MM-DD') as d13`);
+    const r = await rpc(a.client, 'confirm_age', { p_birthdate: d13 });
+    expect(r.age_confirmed_at).not.toBeNull();
+    expect(r.birthday).toBeNull(); // the age-gate birthdate is not stored
   });
 });
 
@@ -197,9 +198,9 @@ describe('app_config / public_app_config', () => {
     expect(await getConfig('default_waking_start')).toBe('09:48');
     expect(await getConfig('default_waking_end')).toBe('21:12');
     expect(await getConfig('collage_option')).toBe('B');
-    for (const k of ['free_history_days', 'min_age_years']) {
-      expect(await getConfig(k), k).toBeNull();
-    }
+    expect(await getConfig('free_history_days')).toBeNull();
+    expect(await getConfig('min_age_years')).toBe(13); // decision 26, migration 0026
+    expect(await getConfig('invite_ttl_seconds')).toBeNull(); // decision 27: links do not expire
     // an optional owner override; NULL = the end of each group's waking window (migration 0014)
     expect(await getConfig('weekly_recap_local_time')).toBeNull();
     expect(await getConfig('invitation_window_seconds')).toBe(120);

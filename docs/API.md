@@ -63,9 +63,11 @@ Contents
   `profiles` (with `display_name` = `user_metadata.display_name`, or `""`) and
   `profile_private`. To set the name, pass `data: ["display_name": "Ana Lima"]` at OTP
   sign-in, or update `profiles` afterwards ([5.0](#50-direct-writes-allowed)).
-- **Age gate** (`auth.agegate`): call `confirm_age(p_birthdate)`. While the minimum age
-  is not configured it fails with `age_gate_not_configured` (503). The client must treat
-  that as "cannot continue" and not skip the step. The birthdate is **not stored**. If the
+- **Age gate** (`auth.agegate`): call `confirm_age(p_birthdate)`. The minimum age is 13
+  (`min_age_years`, owner decision 26, migration 0026); under it the call fails with
+  `under_minimum_age` (403). Should the minimum ever be unset it fails with
+  `age_gate_not_configured` (503); the client must treat that as "cannot continue" and not
+  skip the step. The birthdate is **not stored**. If the
   user also opts in to birthday tributes, call `set_birthday` with the same date.
 - **Avatar**: upload to `avatars/<uid>/<uuid>.jpg`, then update `profiles.avatar_path`.
 - **Push**: after permission is granted (and on every token change) call
@@ -229,7 +231,8 @@ Read: members of the group (to share a link again).
 | `group_id` | uuid | |
 | `token` | text | 24 chars, URL-safe, 144 random bits; the link is `https://<domain>/i/<token>` |
 | `created_by` | uuid | |
-| `created_at`, `expires_at` | timestamptz | lifetime `invite_ttl_seconds` (7 days) |
+| `created_at` | timestamptz | |
+| `expires_at` | timestamptz? | null = the link never expires (owner decision 27: `invite_ttl_seconds` is NULL, migration 0026); a link works until it is revoked. Set only if a lifetime is configured |
 | `revoked_at` | timestamptz? | set by `revoke_invite`, or when the creator leaves |
 
 ### 5.6 `blocks`
@@ -545,8 +548,10 @@ Errors: `not_group_member`, `not_group_admin`, `invalid_name`, `invalid_time_zon
 ```
 create_invite(p_group_id uuid) → group_invites
 ```
-Any member. Returns the invite with its `token` and `expires_at`. Build the link as
-`https://<domain>/i/<token>`. Errors: `not_group_member`.
+Any member. Returns the invite with its `token`; `expires_at` is null (links do not expire,
+owner decision 27) unless `invite_ttl_seconds` is set. Build the link as
+`https://<domain>/i/<token>`. Turning link sharing off or resetting the link is
+`revoke_invite` (then `create_invite` for the new link). Errors: `not_group_member`.
 
 #### `revoke_invite`
 ```
@@ -576,15 +581,17 @@ empty). `inviter_avatar_path` is the avatar of the invite's creator while they a
 (the same path as their entry in `members`), else null (migration 0016). Non-members cannot read the objects behind `cover_path` / `avatar_path`, so the
 web invite page (service role) signs them. The App Clip and the apps (before joining)
 get the same preview with signed URLs from that web endpoint. Errors:
-`invite_not_found`, `invite_revoked`, `invite_expired`.
+`invite_not_found`, `invite_revoked`, and `invite_expired` only for a link that has an
+`expires_at` in the past (none since migration 0026).
 
 #### `join_group`
 ```
 join_group(p_token text) → groups
 ```
 Adds the caller as `member`. Idempotent: if you are already a member it returns the group
-even when the invite has since been revoked or has expired. Race-safe cap of 30 members.
-Errors: `invite_not_found`, `invite_revoked`, `invite_expired`, `group_full`.
+even when the invite has since been revoked. Race-safe cap of 30 members.
+Errors: `invite_not_found`, `invite_revoked`, `group_full`, and `invite_expired` only for a
+link with an `expires_at` in the past (none since migration 0026).
 
 #### `remove_member`
 ```
@@ -941,8 +948,8 @@ socket reconnects. Pushes (`push.*` jobs) wake the app and widgets.
 ### 9.3 Join from a link
 1. Before sign-in: show `invite_preview(token)` (anon). Signed image URLs come from the
    web endpoint.
-2. After sign-in and onboarding: `join_group(token)`. Handle `group_full`,
-   `invite_expired`, `invite_revoked`.
+2. After sign-in and onboarding: `join_group(token)`. Handle `group_full` and
+   `invite_revoked` (`invite_expired` shares the revoked page; links no longer expire).
 
 ### 9.4 Post a photo
 1. `let mediaId = UUID()`. Upload the original to `u/<uid>/<mediaId>/original.jpg`. Also
@@ -1035,8 +1042,8 @@ A NULL value means "not sourced yet", and the dependent feature fails closed (ex
 | `week_start_isodow` | 1 (Monday) | yes | history weeks, recap weeks |
 | `free_history_days` | NULL (unlimited) | yes | `group_history_weeks` for non-premium |
 | `max_group_members` | 30 | yes | member cap trigger |
-| `min_age_years` | NULL (from `design/research/platform.md` / App Store rating) | yes | `confirm_age` fails closed until set |
-| `invite_ttl_seconds` | 604800 (7 days) | no | `create_invite` |
+| `min_age_years` | 13 (owner decision 26; BeReal, Locket, Retro and Yope terms, `design/research/platform.md`; migration 0026) | yes | `confirm_age` (fails closed if NULL) |
+| `invite_ttl_seconds` | NULL = links never expire (owner decision 27; migration 0026) | no | `create_invite` |
 | `birthday_request_lead_days` | 7 | no | `due_birthday_requests` |
 | `year_story_release_month_day` | "12-01" | no | `due_year_stories` |
 | `weekly_question_keys` | the nine keys `question.weekly.q01` … `q09` in order (owner decision 30, migration 0024) | yes | `current_group_question` |
@@ -1058,9 +1065,8 @@ described here and is easy to change.
    Implemented: admins only.
 3. **Albums**: any member can rename; only the creator or an admin can delete.
 4. **`free_history_days`**: NULL = unlimited history for everyone (premium decision pending).
-5. **Invite link lifetime**: `invite_ttl_seconds` = 7 days.
-6. **Age gate values**: `min_age_years` is NULL (from platform research / App Store
-   rating). Until it is set, nobody can pass `confirm_age`. The server does **not**
+5. **Invite link lifetime**: decided (owner decision 27): no expiry (`invite_ttl_seconds` NULL).
+6. **Age gate values**: `min_age_years` = 13 (owner decision 26). The server does **not**
    require `age_confirmed_at` for other RPCs. Decide whether `create_group` /
    `join_group` / `create_post` should require it.
 7. **Default waking window** (`default_waking_*` = 09:48–21:12, the only observed BeReal
