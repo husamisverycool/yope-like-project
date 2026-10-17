@@ -455,17 +455,23 @@
       "evidence": "Retro's weekly journal (ISO weeks, retro.voice.formats); Apple Journal notifications only on a schedule the person sets and 'touch and hold the suggestion, then tap Remove' (support.apple.com Journal pages, VERIFIED); BeReal one moment for everyone (design/research/bereal.md §2) — design/research/overnight-and-questions.md §3.1 Q-1, Q-5, Q-6",
       "method": "Retro's week as the cadence; one shared question (BeReal) instead of Apple's per-person refresh",
       "level": "SOURCED",
-      "notes": "Rotation is question.weekly.layout.rotation (BLOCKED)."
+      "notes": "Rotation is question.weekly.layout.rotation (lead decision 30)."
     },
     "question.weekly.layout.rotation": {
       "type": "layout",
-      "value": null,
+      "value": {
+        "order": "app_config.weekly_question_keys: the whole catalogue in its order, question.weekly.q01 … question.weekly.q09",
+        "start": "each group's first question is the first key",
+        "repeats": "after the last key the catalogue starts again (questions asked so far modulo the catalogue length)",
+        "perGroupOffset": "none: every group follows the same order from its own first week"
+      },
       "source_app": "Retro",
       "surface": "question.weekly",
       "element": "order of the questions from week to week (order, repeats, per-group offset)",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_0..7` (Retro shows its 8 prompts in a fixed order); no reference rotates a weekly group question — design/research/overnight-and-questions.md §9",
-      "level": "BLOCKED",
-      "notes": "Lead decision. Split out of the draft's question.weekly.layout.schedule ('rotation: BLOCKED') so the schedule can ship. Server: app_config weekly_question_keys is NULL until decided, so no question is asked (docs/API.md §14.4)."
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-17 decision 30 ('the catalogue is asked in order, a new question each week'); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_0..7` (Retro shows its 8 prompts in a fixed order) — design/research/overnight-and-questions.md §9",
+      "method": "Retro's fixed prompt order applied to the catalogue, one question per group week (lead decision 30)",
+      "level": "SOURCED",
+      "notes": "Closed by lead decision 30 (was BLOCKED, MERGE WQ-5). Server: migration 20261017000024 sets app_config weekly_question_keys to the nine keys in order; current_group_question picks key number (questions asked so far mod 9)."
     },
     "question.weekly.layout.cameraPill": {
       "type": "layout",
@@ -486,13 +492,18 @@
     },
     "question.weekly.layout.defaultOn": {
       "type": "layout",
-      "value": null,
+      "value": {
+        "newGroups": true,
+        "setting": "groups.weekly_question (default true); an admin turns it off or on in groups.settings (question.weekly.settings.row)",
+        "existingGroups": "keep their value"
+      },
       "source_app": "Retro",
       "surface": "question.weekly",
       "element": "whether the weekly question is on for a new group",
-      "evidence": "Apple Journal: prompts opt-in at first launch; Retro: reminder cadence chosen during onboarding — design/research/overnight-and-questions.md §9",
-      "level": "BLOCKED",
-      "notes": "Lead decision; the references disagree and neither is a group setting. Server today: groups.weekly_question default off, turned on by an admin (docs/API.md §14.4)."
+      "evidence": "docs/OWNER_DECISIONS.md 2026-10-17 decision 30 ('on by default for new groups, an admin can turn it off'); Retro shows its 'what to share' prompt cards as cards in the home feed, with no opt-in step (design/research/overnight-and-questions.md §3 'where' row, R-NUX: references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `nux_card_title_what_to_share_0..7`)",
+      "method": "lead decision 30 between the two references (Apple Journal: opt-in at first launch; Retro: prompt cards shown in the feed): Retro's, the visual anchor",
+      "level": "SOURCED",
+      "notes": "Closed by lead decision 30 (was BLOCKED, MERGE WQ-4). Server: migration 20261017000024 sets groups.weekly_question default true; tenet 5 holds (no push, no tally, an admin can turn it off, each member can remove the card for the week)."
     },
     "groups.invite.size.coverWidth": {
       "type": "dimension",

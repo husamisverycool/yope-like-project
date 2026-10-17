@@ -1037,6 +1037,7 @@ A NULL value means "not sourced yet", and the dependent feature fails closed (ex
 | `invite_ttl_seconds` | 604800 (7 days) | no | `create_invite` |
 | `birthday_request_lead_days` | 7 | no | `due_birthday_requests` |
 | `year_story_release_month_day` | "12-01" | no | `due_year_stories` |
+| `weekly_question_keys` | the nine keys `question.weekly.q01` … `q09` in order (owner decision 30, migration 0024) | yes | `current_group_question` |
 | `job_lock_timeout_seconds` / `job_backoff_base_seconds` / `job_backoff_max_seconds` | 600 / 30 / 3600 | no | job queue |
 
 Change a value with SQL as the service role / postgres
@@ -1193,9 +1194,11 @@ turned overnight alerts off. Broadcast `developing_changed` (no payload) on crea
 
 ### 14.4 Weekly question (Retro prompt cards, Apple Journal)
 
-Off unless a group admin turns it on (`set_group_weekly_question(p_group_id, p_on)`; `groups.weekly_question`, default
-off) **and** `app_config.weekly_question_keys` lists the questions (copy keys `question.weekly.q*`, asked in order) —
-NULL until the catalogue and its order are decided, so nothing is asked today. No push, no reminder, no streak.
+On for groups created from 2026-10-17 (owner decision 30, migration 0024: `groups.weekly_question` default true; groups
+created before keep their value); a group admin turns it off or on with `set_group_weekly_question(p_group_id, p_on)`.
+`app_config.weekly_question_keys` lists the questions: the whole catalogue `question.weekly.q01` … `q09`, asked in that
+order, one per group week, starting again after the last (with the key set to NULL nothing is asked). No push, no
+reminder, no streak.
 
 - `current_group_question(p_group_id) → (id, question_key, week_start, hidden_by_me)` — this group week's question,
   created on first read; no row when off.

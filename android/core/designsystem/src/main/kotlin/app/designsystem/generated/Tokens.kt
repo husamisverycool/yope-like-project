@@ -1667,6 +1667,19 @@ object Tokens {
             const val maxLines: Float = 4f
             const val counter: String = "none (no names, no number of answers, no 'you answered' mark)"
         }
+        /** Retro · question.weekly · whether the weekly question is on for a new group · SOURCED — token `question.weekly.layout.defaultOn` */
+        object QuestionWeeklyLayoutDefaultOn {
+            const val newGroups: Boolean = true
+            const val setting: String = "groups.weekly_question (default true); an admin turns it off or on in groups.settings (question.weekly.settings.row)"
+            const val existingGroups: String = "keep their value"
+        }
+        /** Retro · question.weekly · order of the questions from week to week (order, repeats, per-group offset) · SOURCED — token `question.weekly.layout.rotation` */
+        object QuestionWeeklyLayoutRotation {
+            const val order: String = "app_config.weekly_question_keys: the whole catalogue in its order, question.weekly.q01 … question.weekly.q09"
+            const val start: String = "each group's first question is the first key"
+            const val repeats: String = "after the last key the catalogue starts again (questions asked so far modulo the catalogue length)"
+            const val perGroupOffset: String = "none: every group follows the same order from its own first week"
+        }
         /** Retro · question.weekly · when the weekly question changes and who gets it · SOURCED — token `question.weekly.layout.schedule` */
         object QuestionWeeklyLayoutSchedule {
             const val cadence: String = "one question per group week"

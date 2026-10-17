@@ -9,6 +9,7 @@ import {
   createMedia,
   createUsers,
   expectRpcError,
+  getConfig,
   jobsWhere,
   postPhoto,
   rpc,
@@ -372,22 +373,39 @@ describe('overnight photos', () => {
 });
 
 describe('weekly question', () => {
-  it('nothing is asked while the group has it off or no questions are configured', async () => {
-    expect(await rpc<any[]>(b.client, 'current_group_question', { p_group_id: g.id })).toEqual([]);
-    await expectRpcError(rpc(b.client, 'set_group_weekly_question', { p_group_id: g.id, p_on: true }), 'not_group_admin', 403);
-    await rpc(a.client, 'set_group_weekly_question', { p_group_id: g.id, p_on: true });
-    try {
-      expect(await rpc<any[]>(b.client, 'current_group_question', { p_group_id: g.id })).toEqual([]); // no keys yet
-    } finally {
-      await rpc(a.client, 'set_group_weekly_question', { p_group_id: g.id, p_on: false });
-    }
-    await expectRpcError(rpc(stranger.client, 'current_group_question', { p_group_id: g.id }), 'not_group_member', 403);
+  const CATALOGUE = Array.from({ length: 9 }, (_, i) => `question.weekly.q0${i + 1}`);
+
+  it('is on for a new group with the whole catalogue in order (decision 30); an admin turns it off', async () => {
+    expect(await getConfig('weekly_question_keys')).toEqual(CATALOGUE);
+    const [x, y] = await createUsers(2, 'QOn');
+    const grp = await createGroup(x, [y]);
+    expect((await sql(`select weekly_question from public.groups where id = $1`, [grp.id]))[0].weekly_question).toBe(true);
+    const [q] = await rpc<any[]>(y.client, 'current_group_question', { p_group_id: grp.id });
+    expect(q).toMatchObject({ question_key: 'question.weekly.q01', hidden_by_me: false });
+
+    await expectRpcError(rpc(y.client, 'set_group_weekly_question', { p_group_id: grp.id, p_on: false }), 'not_group_admin', 403);
+    await rpc(x.client, 'set_group_weekly_question', { p_group_id: grp.id, p_on: false });
+    expect(await rpc<any[]>(y.client, 'current_group_question', { p_group_id: grp.id })).toEqual([]);
+    await expectRpcError(rpc(y.client, 'answer_question', { p_post_id: (await postPhoto(y, [grp.id])).posts[0].id, p_question_id: q.id }), 'question_off', 409);
+    await rpc(x.client, 'set_group_weekly_question', { p_group_id: grp.id, p_on: true });
+    expect((await rpc<any[]>(y.client, 'current_group_question', { p_group_id: grp.id }))[0].id).toBe(q.id);
+    await expectRpcError(rpc(stranger.client, 'current_group_question', { p_group_id: grp.id }), 'not_group_member', 403);
   });
 
-  it('once on: one question per group week, asked in order; a member removes it for themself; answers are posts', async () => {
+  it('nothing is asked while no questions are configured', async () => {
+    const [x] = await createUsers(1, 'QNone');
+    const grp = await createGroup(x, []);
+    await setConfig('weekly_question_keys', null);
+    try {
+      expect(await rpc<any[]>(x.client, 'current_group_question', { p_group_id: grp.id })).toEqual([]);
+    } finally {
+      await setConfig('weekly_question_keys', CATALOGUE);
+    }
+  });
+
+  it('one question per group week, asked in order and again from the start; a member removes it for themself; answers are posts', async () => {
     const [x, y, z] = await createUsers(3, 'Qst');
     const grp = await createGroup(x, [y, z]);
-    await rpc(x.client, 'set_group_weekly_question', { p_group_id: grp.id, p_on: true });
     await setConfig('weekly_question_keys', ['question.weekly.q01', 'question.weekly.q02']);
     try {
       const [q] = await rpc<any[]>(y.client, 'current_group_question', { p_group_id: grp.id });
@@ -413,8 +431,13 @@ describe('weekly question', () => {
       const { posts: late } = await postPhoto(y, [grp.id]);
       await expectRpcError(rpc(y.client, 'answer_question', { p_post_id: late[0].id, p_question_id: q.id }), 'question_closed', 409);
       expect((await rpc(y.client, 'answer_question', { p_post_id: posts[0].id, p_question_id: null })).question_id).toBeNull();
+
+      // the week after: the catalogue starts again
+      await sql(`update public.group_questions set week_start = week_start - 7 where id = $1`, [q.id]);
+      await sql(`update public.group_questions set week_start = week_start - 7 where id = $1`, [next.id]);
+      expect((await rpc<any[]>(y.client, 'current_group_question', { p_group_id: grp.id }))[0].question_key).toBe('question.weekly.q01');
     } finally {
-      await setConfig('weekly_question_keys', null);
+      await setConfig('weekly_question_keys', CATALOGUE);
     }
   });
 });

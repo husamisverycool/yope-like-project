@@ -275,8 +275,8 @@ surface specs.
 | edge rule: photo taken at 08:59 reveals at 09:00 (seconds later) vs the next day | Dispo documents only "9 AM the next morning" / "every day at 9am" | an owner test in Dispo at 08:55 |
 | "delete everything still developing" | no reference shows it (F-2) | lead decision (no reference needed if declined) |
 | the "Develop" header label above the control | dropped for space (Dispo has it; Retro's TC-REC control has no label); comprehension of "9 AM · Now" alone untested | owner check with two non-technical members |
-| question rotation order and the full list | Retro shows 8 prompts in a fixed order; no reference for a weekly group rotation | lead decision on the list (proposed in `question.weekly.md`) |
-| weekly question default on / off for new groups | Apple: opt-in at first launch; Retro: reminder cadence chosen at onboarding | lead decision |
+| ~~question rotation order and the full list~~ | closed 2026-10-17 by lead decision 30 (docs/OWNER_DECISIONS.md): the nine-key catalogue in order, again from the start after the last (`question.weekly.layout.rotation`) | — |
+| ~~weekly question default on / off for new groups~~ | closed 2026-10-17 by lead decision 30: on for new groups, an admin can turn it off (`question.weekly.layout.defaultOn`) | — |
 | question shown inside `photo.viewer` | no reference labels a photo viewer with a prompt | one screenshot of any app showing a prompt above an answer photo |
 | Retro prompt-card layout | strings and background only (R-NUX); card not captured | one screenshot of Retro's "Ideas to share" card on iOS |
 

@@ -83,8 +83,10 @@ action hides only one card for one week).
 ### E. Turning it off for the group
 
 A switch in `groups.settings` (`question.weekly.settings.row` / `.rowDetail`), with the same permission as the group's
-other settings. **Default for new groups: BLOCKED (lead decision, `question.weekly.layout.defaultOn`)** — Apple asks at first launch; Retro asks the reminder
-cadence during onboarding.
+other settings. **Default for new groups: on** (`question.weekly.layout.defaultOn`, lead decision 30, docs/OWNER_DECISIONS.md
+2026-10-17): Retro shows its prompt cards in the feed without an opt-in; Apple asks at first launch. Existing groups keep their
+value. The questions come in the catalogue's order, one per group week, starting again after the last
+(`question.weekly.layout.rotation`).
 
 ## Elements
 
@@ -171,8 +173,8 @@ BeReal: Bonus lock for late posters, "late" labels, in-capture instructions ("Sm
 
 | item | status | smallest capture / decision |
 |---|---|---|
-| question rotation (order, repeats, per-group offset) | BLOCKED (`question.weekly.layout.rotation`, WQ-5) | lead decision; Retro shows its 8 prompts in a fixed order |
-| default on / off for new groups | BLOCKED (`question.weekly.layout.defaultOn`, WQ-4) | lead decision |
+| question rotation (order, repeats, per-group offset) | closed: lead decision 30 (`question.weekly.layout.rotation`, WQ-5) | — |
+| default on / off for new groups | closed: on, lead decision 30 (`question.weekly.layout.defaultOn`, WQ-4) | — |
 | question shown in `photo.viewer` / `week.history` / recaps | BLOCKED (not shown) | one screenshot of any app labelling an answer photo with its prompt |
 | Retro's own prompt-card layout | not captured (strings + background only) | one iOS screenshot of Retro's "Ideas to share" card |
 | who may switch the feature off | follows `groups.settings` permissions | — |

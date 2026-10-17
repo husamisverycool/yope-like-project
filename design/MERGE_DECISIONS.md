@@ -1525,15 +1525,15 @@ reference assigned to that surface in `docs/SURFACES.md` wins; the tenets gate e
 | WQ-1 | Shared or personal question | Apple Journal: per-person prompts with refresh; BeReal: one moment for everyone | one question per group per week, the same for every member | "answers show together" needs one shared question | resolved |
 | WQ-2 | Card look | Apple REFLECTION card (#DD5A58, caps tracked eyebrow, refresh glyph, ≈14.5 corners); Retro prompt cards (photo + dark gradient, one CTA) | Retro feed card (C-18) in Apple's eyebrow → prompt → action order: label line above, question in `displaySmall`, C-06 primary / C-09 light pill | identity = Retro | resolved |
 | WQ-3 | Notifications | Apple: only on a schedule the person sets; Retro: member-chosen reminder cadence | no push for the question | tenet 5 (a second, unrequested alert) | resolved |
-| WQ-4 | Default for a new group | Apple: opt-in at first launch; Retro: cadence chosen during onboarding | `question.weekly.layout.defaultOn` BLOCKED | the references disagree and neither is a group setting | BLOCKED (lead) |
-| WQ-5 | Rotation | Retro's 8 prompts in a fixed order; no reference rotates a weekly group question | `question.weekly.layout.rotation` BLOCKED, split out of the draft's `question.weekly.layout.schedule` so the schedule (SOURCED) can ship | no evidence | BLOCKED (lead) |
+| WQ-4 | Default for a new group | Apple: opt-in at first launch; Retro: cadence chosen during onboarding, prompt cards shown in the feed | `question.weekly.layout.defaultOn` = on for new groups, an admin can turn it off | docs/OWNER_DECISIONS.md 2026-10-17 decision 30 (lead) | resolved 2026-10-17 (was BLOCKED) |
+| WQ-5 | Rotation | Retro's 8 prompts in a fixed order; no reference rotates a weekly group question | `question.weekly.layout.rotation` = the catalogue q01–q09 in order, again from the start after the last; `app_config.weekly_question_keys` (migration 20261017000024) | docs/OWNER_DECISIONS.md 2026-10-17 decision 30 (lead) and Retro's fixed order | resolved 2026-10-17 (was BLOCKED) |
 | WQ-6 | Question list | Retro's 8 NUX prompts include "Took a nice fit pic?", "Took a cute selfie?", "Something unfortunate happened?" | q02–q06 Retro (+ "this week"), q07–q08 Apple Journal, q01 the brief's example, q09 Retro's retrospective line; the three above not used | tenet "Real, not performed" and the light tone (OQ F-4) | resolved |
 | WQ-7 | Card action | Retro "Add a memory" | "Add a photo" | noun swap (answers are photos) | resolved |
 
 ### BLOCKED items (debug-only outputs; `design/BLOCKED.md`)
 
-Tokens `camera.overnight.layout.stackCards` (ON-8), `question.weekly.layout.rotation` (WQ-5),
-`question.weekly.layout.defaultOn` (WQ-4); copy `plans.page.went` (past-plan list label: Partiful's word appears only as
+Token `camera.overnight.layout.stackCards` (ON-8) (`question.weekly.layout.rotation` (WQ-5) and
+`question.weekly.layout.defaultOn` (WQ-4) closed 2026-10-17 by lead decision 30); copy `plans.page.went` (past-plan list label: Partiful's word appears only as
 "{n} Went") and `widget.countdown.empty.noPlans` (no reference widget shows an empty plan state). Behaviour gaps with no
 proposed token stay in each spec's Gaps table: selfie enlarged view, stored-selfie mirroring, selfie resolution, hold
 timeout, Android capture layer; plan album day boundary, the same-day word (widget and plan page), answer-lock time,

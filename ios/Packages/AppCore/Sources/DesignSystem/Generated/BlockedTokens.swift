@@ -9,12 +9,6 @@ public enum BlockedTokens {
         /// Lapse · camera.overnight · developing stack drawn in the camera's leading 64-pt slot in 9 AM mode (card size and fan) · BLOCKED
         /// token: `camera.overnight.layout.stackCards`
         public static var cameraOvernightLayoutStackCards: Never { fatalError("BLOCKED token camera.overnight.layout.stackCards") }
-        /// Retro · question.weekly · whether the weekly question is on for a new group · BLOCKED
-        /// token: `question.weekly.layout.defaultOn`
-        public static var questionWeeklyLayoutDefaultOn: Never { fatalError("BLOCKED token question.weekly.layout.defaultOn") }
-        /// Retro · question.weekly · order of the questions from week to week (order, repeats, per-group offset) · BLOCKED
-        /// token: `question.weekly.layout.rotation`
-        public static var questionWeeklyLayoutRotation: Never { fatalError("BLOCKED token question.weekly.layout.rotation") }
     }
 }
 #endif

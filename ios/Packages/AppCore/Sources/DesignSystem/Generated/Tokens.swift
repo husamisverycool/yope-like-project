@@ -1928,6 +1928,21 @@ public enum Tokens {
             public static let maxLines: CGFloat = 4
             public static let counter: String = "none (no names, no number of answers, no 'you answered' mark)"
         }
+        /// Retro · question.weekly · whether the weekly question is on for a new group · SOURCED
+        /// token: `question.weekly.layout.defaultOn`
+        public enum QuestionWeeklyLayoutDefaultOn {
+            public static let newGroups: Bool = true
+            public static let setting: String = "groups.weekly_question (default true); an admin turns it off or on in groups.settings (question.weekly.settings.row)"
+            public static let existingGroups: String = "keep their value"
+        }
+        /// Retro · question.weekly · order of the questions from week to week (order, repeats, per-group offset) · SOURCED
+        /// token: `question.weekly.layout.rotation`
+        public enum QuestionWeeklyLayoutRotation {
+            public static let order: String = "app_config.weekly_question_keys: the whole catalogue in its order, question.weekly.q01 … question.weekly.q09"
+            public static let start: String = "each group's first question is the first key"
+            public static let repeats: String = "after the last key the catalogue starts again (questions asked so far modulo the catalogue length)"
+            public static let perGroupOffset: String = "none: every group follows the same order from its own first week"
+        }
         /// Retro · question.weekly · when the weekly question changes and who gets it · SOURCED
         /// token: `question.weekly.layout.schedule`
         public enum QuestionWeeklyLayoutSchedule {
