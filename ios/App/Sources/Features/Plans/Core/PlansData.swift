@@ -36,6 +36,9 @@ protocol PlansDataSource: Sendable {
     func clearAnswer(planID: PlanID) async throws
     /// Uploads a cover JPEG the way group covers are uploaded; returns its storage path.
     func uploadCover(jpeg: Data) async throws -> String
+    /// Refetch signals for the group's plans: a plan or an answer inserted or updated by anyone (Realtime, docs/API.md
+    /// §14.2), and each time the subscription becomes live (changes during a gap are lost, §8.3).
+    func planChanges(groupID: GroupID) -> AsyncStream<Void>
 }
 
 /// What the weekly question card, its camera hand-off, the `groups.settings` switch and the developing tile read and
@@ -162,6 +165,24 @@ struct LivePlansData: PlansDataSource {
     func uploadCover(jpeg: Data) async throws -> String {
         try await environment.uploader.uploadCover(jpeg: jpeg)
     }
+
+    func planChanges(groupID: GroupID) -> AsyncStream<Void> {
+        let events = environment.realtime.events(for: groupID, filter: .changes)
+        return AsyncStream { continuation in
+            let task = Task {
+                for await event in events {
+                    switch event {
+                    case .plansChanged, .subscribed, .resubscribed:
+                        continuation.yield(())
+                    default:
+                        break
+                    }
+                }
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
 }
 
 /// AppData-backed question and developing source used by the app.
@@ -242,6 +263,7 @@ struct UnconfiguredPlansData: PlansDataSource, QuestionDataSource {
     func answer(planID: PlanID, _ answer: PlanAnswerKind) async throws { throw DataError.notConfigured }
     func clearAnswer(planID: PlanID) async throws { throw DataError.notConfigured }
     func uploadCover(jpeg: Data) async throws -> String { throw DataError.notConfigured }
+    func planChanges(groupID: GroupID) -> AsyncStream<Void> { AsyncStream { $0.finish() } }
     func currentQuestion(groupID: GroupID) async throws -> GroupQuestion? { throw DataError.notConfigured }
     func answers(questionID: GroupQuestionID, groupID: GroupID) async throws -> [PostWithMedia] { throw DataError.notConfigured }
     func hideQuestion(id: GroupQuestionID) async throws { throw DataError.notConfigured }

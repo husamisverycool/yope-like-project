@@ -28,6 +28,14 @@ final class PlanRowModel {
         next.map { PlanFormats.rowLine(startsAt: $0.startsAt, allDay: $0.allDay, localDate: $0.localDate, timeZone: timeZone) }
     }
 
+    /// Refetches on the group's plan changes (a plan made, edited, cancelled or restored by another member; docs/API.md
+    /// §14.2 Realtime) until the calling task ends.
+    func followChanges() async {
+        for await _ in services.plans.planChanges(groupID: groupID) {
+            await refresh()
+        }
+    }
+
     func refresh() async {
         do {
             next = try await services.plans.nextPlans(groupID: groupID).first
@@ -64,6 +72,7 @@ struct PlanRowEntry: View {
         }
         .dsAnimation(ComponentMotion.fade, value: model.next?.id)
         .task(id: PlansServices.shared.revision) { await model.refresh() }
+        .task { await model.followChanges() }
         .accessibilityIdentifier("groups.screen.plan")
     }
 

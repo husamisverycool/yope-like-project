@@ -61,6 +61,8 @@ struct PlanPageView: View {
         .background(Tokens.Colors.globalBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .task(id: PlansServices.shared.revision) { await model.refresh() }
+        // Someone else's answer or change, live (the page waits for the plan, then follows its group).
+        .task(id: model.plan?.groupID) { await model.followChanges() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await model.refresh() } }
         }

@@ -20,6 +20,10 @@ public enum GroupEvent: Hashable, Sendable {
     /// Overnight photos were set to develop or were revealed in the group (`developing_changed`, no payload; docs/API.md
     /// §14.3): refetch the posts and the developing state.
     case developingChanged
+    /// A plan of the group or an answer to one was inserted or updated (`plans`, `plan_answers`; docs/API.md §14.2
+    /// "Realtime: inserts and updates of both tables"): refetch the plans. Rows are not decoded: the screens refetch what
+    /// RLS lets them read (a Can't go only reaches its author and the plan's maker).
+    case plansChanged
     /// The topic was joined (first join; `realtime:group-<id>` or `realtime:group:<id>`).
     case subscribed(topic: String)
     /// The subscription is live again after a dropped connection: refetch the visible page
@@ -45,7 +49,8 @@ public struct GroupEventFilter: OptionSet, Hashable, Sendable {
     public let rawValue: Int
     public init(rawValue: Int) { self.rawValue = rawValue }
 
-    /// Inserts and updates of posts, messages, reactions and selfie reactions (`postgres_changes`, channel `group-<id>`).
+    /// Inserts and updates of posts, messages, reactions, selfie reactions, plans and plan answers (`postgres_changes`,
+    /// channel `group-<id>`).
     public static let changes = GroupEventFilter(rawValue: 1 << 0)
     /// The private `group:<id>` broadcast topic: deletions and reaction removals.
     public static let deletions = GroupEventFilter(rawValue: 1 << 1)
@@ -58,8 +63,8 @@ public struct GroupEventFilter: OptionSet, Hashable, Sendable {
 ///
 /// Per group there are up to two channels, each opened on first use and closed when its last
 /// subscriber goes away:
-/// - `group-<id>`: `postgres_changes` INSERT/UPDATE on messages, posts, reactions, selfie_reactions filtered by
-///   `group_id` (RLS applies, so only rows the caller could select arrive);
+/// - `group-<id>`: `postgres_changes` INSERT/UPDATE on messages, posts, reactions, selfie_reactions, plans and
+///   plan_answers filtered by `group_id` (RLS applies, so only rows the caller could select arrive);
 /// - `group:<id>` (private): broadcasts `post_deleted`, `message_deleted`, `reactions_changed`, `developing_changed`;
 ///   only current members can join.
 public actor RealtimeHub {
@@ -176,6 +181,10 @@ public actor RealtimeHub {
         let reactionInserts = channel.postgresChange(InsertAction.self, schema: "public", table: "reactions", filter: filter)
         let selfieInserts = channel.postgresChange(InsertAction.self, schema: "public", table: "selfie_reactions", filter: filter)
         let selfieUpdates = channel.postgresChange(UpdateAction.self, schema: "public", table: "selfie_reactions", filter: filter)
+        let planInserts = channel.postgresChange(InsertAction.self, schema: "public", table: "plans", filter: filter)
+        let planUpdates = channel.postgresChange(UpdateAction.self, schema: "public", table: "plans", filter: filter)
+        let answerInserts = channel.postgresChange(InsertAction.self, schema: "public", table: "plan_answers", filter: filter)
+        let answerUpdates = channel.postgresChange(UpdateAction.self, schema: "public", table: "plan_answers", filter: filter)
         box.tasks.append(forward(postInserts, groupID: groupID) { try GroupEvent.postInserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         box.tasks.append(forward(postUpdates, groupID: groupID) { try GroupEvent.postUpdated($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         box.tasks.append(forward(messageInserts, groupID: groupID) { try GroupEvent.messageInserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
@@ -183,6 +192,12 @@ public actor RealtimeHub {
         box.tasks.append(forward(reactionInserts, groupID: groupID) { try GroupEvent.reactionInserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         box.tasks.append(forward(selfieInserts, groupID: groupID) { try GroupEvent.selfieReactionUpserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         box.tasks.append(forward(selfieUpdates, groupID: groupID) { try GroupEvent.selfieReactionUpserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
+        for plans in [planInserts, answerInserts] {
+            box.tasks.append(forward(plans, groupID: groupID) { _ in GroupEvent.plansChanged })
+        }
+        for plans in [planUpdates, answerUpdates] {
+            box.tasks.append(forward(plans, groupID: groupID) { _ in GroupEvent.plansChanged })
+        }
         return box
     }
 

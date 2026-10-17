@@ -34,6 +34,7 @@ final class FakePlansData: PlansDataSource, QuestionDataSource, @unchecked Senda
     private let lock = NSLock()
     private var state = State()
     private var continuations: [UUID: (GroupID, AsyncStream<Void>.Continuation)] = [:]
+    private var planContinuations: [UUID: (GroupID, AsyncStream<Void>.Continuation)] = [:]
     private let clock: @Sendable () -> Date
 
     init(me: UserID?, clock: @escaping @Sendable () -> Date = { Date() }) {
@@ -68,6 +69,16 @@ final class FakePlansData: PlansDataSource, QuestionDataSource, @unchecked Senda
     private func requireMe() throws -> UserID {
         guard let me = read(\.me) else { throw DataError.notSignedIn }
         return me
+    }
+
+    /// Tells `planChanges` subscribers of `groupID` (another member answered, or changed a plan).
+    func notifyPlans(groupID: GroupID) {
+        let targets: [AsyncStream<Void>.Continuation] = {
+            lock.lock()
+            defer { lock.unlock() }
+            return planContinuations.values.filter { $0.0 == groupID }.map(\.1)
+        }()
+        targets.forEach { $0.yield(()) }
     }
 
     /// Tells `postChanges` subscribers of `groupID` (an answer arrived).
@@ -282,6 +293,21 @@ final class FakePlansData: PlansDataSource, QuestionDataSource, @unchecked Senda
     func developing(groupID: GroupID) async throws -> OvernightStatus {
         try record("developing")
         return read { $0.developing[groupID] ?? .notDeveloping }
+    }
+
+    func planChanges(groupID: GroupID) -> AsyncStream<Void> {
+        let (stream, continuation) = AsyncStream<Void>.makeStream()
+        let id = UUID()
+        lock.lock()
+        planContinuations[id] = (groupID, continuation)
+        lock.unlock()
+        continuation.onTermination = { [weak self] _ in
+            guard let self else { return }
+            self.lock.lock()
+            self.planContinuations[id] = nil
+            self.lock.unlock()
+        }
+        return stream
     }
 
     func postChanges(groupID: GroupID) -> AsyncStream<Void> {

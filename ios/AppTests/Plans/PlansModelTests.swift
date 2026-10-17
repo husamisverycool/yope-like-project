@@ -237,6 +237,43 @@ final class PlansModelTests: XCTestCase {
         XCTAssertNil(skipped.next, "a canceled plan is not upcoming")
     }
 
+    func testAnotherMembersAnswerShowsWhileThePageIsOpen() async {
+        let fixture = PlansFixture()
+        fixture.addDinner()
+        let model = PlanPageModel(planID: PlansFixture.planID, services: fixture.services)
+        await model.followChanges() // returns at once: before the plan is read there is no group to follow
+        await model.refresh()
+        let following = Task { await model.followChanges() }
+        defer { following.cancel() }
+        // Cleo answers Going on her phone and Realtime tells the group (run 107: Theo's Going never reached Maya's
+        // open plan page).
+        fixture.data.update { state in
+            state.answers.removeAll { $0.userID == PlansFixture.cleo }
+            state.answers.append(
+                PlanAnswer(planID: PlansFixture.planID, userID: PlansFixture.cleo, groupID: PlansFixture.groupID, answer: .going, answeredAt: PlansFixture.now)
+            )
+        }
+        await waitUntil {
+            fixture.data.notifyPlans(groupID: PlansFixture.groupID)
+            return model.people(.going).map(\.firstName) == ["Ana", "Ben", "Cleo"]
+        }
+        XCTAssertEqual(model.people(.maybe), [])
+    }
+
+    func testPlanRowFollowsAPlanMadeElsewhere() async {
+        let fixture = PlansFixture()
+        let row = PlanRowModel(groupID: PlansFixture.groupID, services: fixture.services)
+        await row.refresh()
+        XCTAssertNil(row.next)
+        let following = Task { await row.followChanges() }
+        defer { following.cancel() }
+        fixture.addDinner() // Ana makes the plan on her phone
+        await waitUntil {
+            fixture.data.notifyPlans(groupID: PlansFixture.groupID)
+            return row.next?.title == "Dinner at ours"
+        }
+    }
+
     // MARK: question.weekly
 
     func testQuestionCardShowsUntilRemoved() async {

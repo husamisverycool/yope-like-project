@@ -113,6 +113,15 @@ final class PlanPageModel {
 
     // MARK: Loading
 
+    /// Refetches on the group's plan changes (another member's answer, an edit, a cancel or restore; docs/API.md §14.2
+    /// Realtime) until the calling task ends. Nothing before the plan is loaded (its group is not known yet).
+    func followChanges() async {
+        guard let groupID = plan?.groupID else { return }
+        for await _ in data.planChanges(groupID: groupID) {
+            await refresh()
+        }
+    }
+
     /// Fetches the plan, its group, members, answers and (after its day) its photos.
     func refresh() async {
         let data = self.data

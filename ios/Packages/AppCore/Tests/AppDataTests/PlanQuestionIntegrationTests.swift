@@ -124,6 +124,44 @@ final class PlanQuestionIntegrationTests: XCTestCase {
         XCTAssertTrue(outsiderAnswers.isEmpty)
     }
 
+    /// Realtime (§14.2 "inserts and updates of both tables"): another member's plan, answer and cancel reach Maya's
+    /// group subscription as `plansChanged` (her plan page and the group's plan row refetch on it).
+    func testRealtimeTellsTheGroupOfPlansAndAnswers() async throws {
+        try await LocalStack.requireWebSockets()
+        let maya = try await users.make("Maya")
+        let theo = try await users.make("Theo")
+        let group = try await group(maya, theo)
+        let events = EventRecorder(maya.data.realtime.events(for: group.id, filter: .changes))
+        defer { events.stop() }
+        let joined = await eventually { events.contains { $0 == .subscribed(topic: "realtime:group-\(group.id.rawValue)") } }
+        XCTAssertTrue(joined, "\(events.events)")
+        // Postgres changes need a moment after the join; probe with a chat message until one arrives.
+        let ready = await eventually(timeout: 20) {
+            _ = try? await theo.data.chat.sendText(groupID: group.id, body: "probe")
+            try? await Task.sleep(nanoseconds: 700_000_000)
+            return events.contains { if case let .messageInserted(message) = $0 { return message.body == "probe" }; return false }
+        }
+        XCTAssertTrue(ready, "postgres_changes never delivered: \(events.events)")
+        func changes() -> Int { events.events.filter { $0 == .plansChanged }.count }
+
+        let plan = try await theo.data.plans.create(
+            groupID: group.id,
+            fields: PlanFields(title: "Picnic \(users.runID)", startsAt: Date().addingTimeInterval(2 * 86_400), allDay: true)
+        )
+        let made = await eventually { changes() >= 1 }
+        XCTAssertTrue(made, "the plan and Theo's own Going: \(events.events)")
+        var seen = changes()
+
+        _ = try await theo.data.plans.answer(planID: plan.id, .maybe)
+        let answered = await eventually { changes() > seen }
+        XCTAssertTrue(answered, "Theo's answer changed: \(events.events)")
+        seen = changes()
+
+        _ = try await theo.data.plans.cancel(id: plan.id)
+        let canceled = await eventually { changes() > seen }
+        XCTAssertTrue(canceled, "the plan was cancelled: \(events.events)")
+    }
+
     func testWeeklyQuestionSwitchCatalogueAnswerAndRemove() async throws {
         let maya = try await users.make("Maya")
         let theo = try await users.make("Theo")
