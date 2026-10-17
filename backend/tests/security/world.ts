@@ -29,6 +29,7 @@ export interface SeededGroup {
   yearStoryId: string;
   planId: string;
   questionId: string;
+  memoryHideId: string;
   objectPaths: string[];
 }
 
@@ -199,6 +200,11 @@ export async function seedFullGroup(users: TestUser[], name = 'Seeded'): Promise
   await rpc(d.client, 'hide_question', { p_question_id: question.id });
   await rpc(b.client, 'answer_question', { p_post_id: p2[0].id, p_question_id: question.id });
 
+  // memories for one person only (0038): c hides a's photo, a hides a day, b hearts a's photo
+  const memoryHide = await rpc(c.client, 'hide_memory', { p_media_id: m1.id });
+  await rpc(a.client, 'hide_memory', { p_day: '2024-05-03' });
+  await rpc(b.client, 'set_favorite', { p_media_id: m1.id, p_on: true });
+
   // account-scoped rows
   await rpc(a.client, 'register_device', {
     p_platform: 'ios',
@@ -232,6 +238,7 @@ export async function seedFullGroup(users: TestUser[], name = 'Seeded'): Promise
     yearStoryId: ys.id,
     planId: plan.id,
     questionId: question.id,
+    memoryHideId: memoryHide.id,
     objectPaths,
   };
 }

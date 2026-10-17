@@ -883,7 +883,7 @@ on_this_day(p_group_id uuid, p_local_date date)
 ```
 Posts from the same month and day (group time zone) in earlier years, newest first, by the
 day each photo was **taken** (`created_at`; an overnight photo keeps its own day). Not
-limited by `free_history_days`. Errors: `not_group_member`, `invalid_argument`.
+limited by `free_history_days`. Leaves out the photos and days the caller hid (`hide_memory`, migration 0038). Errors: `not_group_member`, `invalid_argument`.
 
 #### `update_recap`
 ```
@@ -942,6 +942,45 @@ someone you share no group with or have a block with. Take the first row with a 
 may not be made yet). `my_memories`: for each day from `p_from` for `p_days` (1–14), the newest photo you posted or
 tagged yourself in that was taken on that month and day in an earlier year, in `p_time_zone` (the device's IANA zone),
 in a group you are still in; a day with none has no row. Errors: `invalid_argument` 400.
+Since migration 0038 `my_memories` (and `on_this_day`) leave out the photos and days you hid (`hide_memory` below).
+
+#### `hide_memory` / `unhide_memory` / `my_hidden_memories` (hide a memory, migration 0038)
+```
+hide_memory(p_media_id uuid = null, p_day date = null) → memory_hides
+unhide_memory(p_id uuid) → void
+my_hidden_memories() → table(id uuid, media_id uuid, day date, created_at timestamptz, post_id uuid, group_id uuid,
+                             kind media_kind, thumb_path text, taken_at timestamptz)
+```
+For you only (Google Photos "Remove this photo from this memory" / "Hide this date from all memories"; Retro Rewind,
+Timehop). Pass exactly one of `p_media_id` (a photo you can see — by media, so every group it was sent to) or `p_day` (a
+calendar day: every photo taken that day). The photo or day leaves **your** `on_this_day`, the Memories widget
+(`my_memories`) and the On This Day shuffle; nothing changes for anyone else. Idempotent (hiding again returns the
+row). `unhide_memory` deletes one of your rows (unknown ids: no-op). `my_hidden_memories` is Settings → Hidden
+Memories, newest hide first: hidden days (`day` set, photo columns null) and hidden photos you can still see (with
+their first post in your groups and `thumb_path`, the thumbnail or the original until renditions exist).
+Table `memory_hides(id, user_id, media_id?, day?, created_at)`: read your own rows (`select()`), e.g. to filter the
+shuffle's picks — drop a pick whose `media_id` is hidden or whose taken day (group time zone) is a hidden `day`.
+Rows go with the photo (`delete_media` / `delete_post` of its last post) and with the account.
+Errors: `invalid_argument` 400 (neither or both, a day in the future), `media_not_found` 404.
+**Other memory readers** (server): `private.memory_hidden(p_user uuid, p_media uuid, p_day date) → boolean`, with
+`p_day` = the photo's local day as that surface reckons it (group zone for On This Day, device zone for the widget).
+
+#### `set_favorite` / `my_favorites` (private favorites, migration 0038)
+```
+set_favorite(p_media_id uuid, p_on boolean) → void
+my_favorites(p_before timestamptz = null, p_limit int = 60)
+  → table(media_id uuid, post_id uuid, group_id uuid, group_name text, author_id uuid, kind media_kind,
+          thumb_path text, display_path text, widget_path text, taken_at timestamptz, favorited_at timestamptz)
+```
+A heart only you see (Apple Photos Favorites): on any photo you can see, by media. Nobody else can read it — not the
+author, not the group; no count, never used to rank recaps or year stories (spec flag T2; the only database functions
+that read `favorites` are these two, test `memories-private.test.ts`). `my_favorites`: your favorites you can still see,
+newest heart first, one row per photo with its first post in your groups (the group it opens in); page with
+`p_before` = the last `favorited_at`; `p_limit` 1–200. `thumb_path` / `display_path` fall back to the original until
+renditions exist; `widget_path` is null until then — **a favorites widget** reads this function and takes rows with a
+`widget_path`. Table `favorites(user_id, media_id, created_at)`: your own rows (`select()` to draw the heart in the
+viewer). Leaving the group or a block hides a favorite; deleting the photo removes it.
+Errors: `invalid_argument` 400 (null argument), `media_not_found` 404 (adding a photo you cannot see).
 
 ## 7. Storage
 

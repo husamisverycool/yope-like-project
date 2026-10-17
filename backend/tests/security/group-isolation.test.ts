@@ -192,6 +192,12 @@ describe('group isolation: RPCs', () => {
     widget_people: { args: () => ({}), expect: 'own-account' },
     newest_photos_of: { args: () => ({ p_user_id: gUsers[0].id }), expect: 'empty' },
     my_memories: { args: () => ({ p_from: '2027-01-01', p_days: 3, p_time_zone: 'UTC' }), expect: 'own-account' },
+    // memories for you only (0038): a G photo is not the outsider's to hide or favorite; the lists are the caller's own
+    hide_memory: { args: () => ({ p_media_id: seeded.mediaIds[0] }), expect: 'error' },
+    unhide_memory: { args: () => ({ p_id: seeded.memoryHideId }), expect: 'empty' },
+    my_hidden_memories: { args: () => ({}), expect: 'own-account' },
+    set_favorite: { args: () => ({ p_media_id: seeded.mediaIds[0], p_on: true }), expect: 'error' },
+    my_favorites: { args: () => ({}), expect: 'own-account' },
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {
