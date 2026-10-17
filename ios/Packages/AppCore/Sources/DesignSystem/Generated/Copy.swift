@@ -1847,6 +1847,12 @@ public enum Copy {
     public static var settingsNotificationsOffTitle: String { CopyLookup.string("settings.notifications.off.title", default: "Keep up to date!") }
     /// "Enable push" — Retro · settings.notifications · verbatim · SOURCED
     public static var settingsNotificationsOpenSettings: String { CopyLookup.string("settings.notifications.openSettings", default: "Enable push") }
+    /// "Pause All" — Retro · settings.notifications · verbatim · SOURCED
+    public static var settingsNotificationsPauseAll: String { CopyLookup.string("settings.notifications.pauseAll", default: "Pause All") }
+    /// "Turn off all notifications for the day" — Retro · settings.notifications · verbatim · SOURCED
+    public static var settingsNotificationsPauseAllFooter: String { CopyLookup.string("settings.notifications.pauseAll.footer", default: "Turn off all notifications for the day") }
+    /// "Until {time}" — Material 3 · settings.notifications · verbatim · PLATFORM
+    public static func settingsNotificationsPauseAllUntil(time: String) -> String { CopyLookup.format("settings.notifications.pauseAll.until", default: "Until {time}", ["time": time]) }
     /// "Quiet Hours" — Retro · settings.notifications · new · SOURCED
     public static var settingsNotificationsQuietHours: String { CopyLookup.string("settings.notifications.quietHours", default: "Quiet Hours") }
     /// "End" — Retro · settings.notifications · new · SOURCED

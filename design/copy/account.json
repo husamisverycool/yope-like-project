@@ -2977,7 +2977,6 @@
       "pattern": "retro.voice.settings",
       "level": "SOURCED"
     },
-    "settings.notifications.liveActivity": {
     "settings.notifications.pauseAll": {
       "text": "Pause All",
       "origin": "verbatim",
@@ -3005,6 +3004,7 @@
       "level": "PLATFORM",
       "notes": "Shown under Pause All while it is on; {time} is the end (the next local midnight) in the locale's short time format."
     },
+    "settings.notifications.liveActivity": {
       "text": "Live Activity",
       "origin": "new",
       "source_app": "Apple HIG",
