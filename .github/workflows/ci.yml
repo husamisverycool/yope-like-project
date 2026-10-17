@@ -9,6 +9,10 @@ on:
         description: Re-record every Android Roborazzi baseline and commit the changed images to this branch
         type: boolean
         default: false
+      commit_screens:
+        description: Commit the iOS demo tour's and the Android journey's screenshots to this branch (design/screens/)
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -255,6 +259,8 @@ jobs:
   android-e2e:
     name: android e2e
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     timeout-minutes: 40
     needs: detect
     if: needs.detect.outputs.android == 'true' && needs.detect.outputs.backend == 'true'
@@ -307,6 +313,9 @@ jobs:
           disable-animations: true
           working-directory: android
           script: bash ../.github/scripts/android-e2e.sh
+      - name: commit the journey's screens
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.commit_screens }}
+        run: bash .github/scripts/commit-screens.sh android/build/e2e design/screens/android-journey
       - name: upload screenshots, semantics dumps, logcat and the test report
         if: always()
         uses: actions/upload-artifact@v4
@@ -623,6 +632,8 @@ jobs:
   ios-demo-tour:
     name: ios demo tour (the Jolt demo's screens)
     runs-on: macos-15
+    permissions:
+      contents: write
     timeout-minutes: 60
     needs: detect
     if: needs.detect.outputs.ios == 'true'
@@ -651,6 +662,9 @@ jobs:
           xcodebuild -project App.xcodeproj -scheme AppUITests -destination "id=$SIM" -derivedDataPath build -resultBundlePath build/DemoTour.xcresult CODE_SIGNING_ALLOWED=NO 'OTHER_SWIFT_FLAGS=$(inherited) -D DEMO' -only-testing:AppUITests/DemoTourUITests test 2>&1 | tee xcodebuild-tour.log | grep -E "error:|Test Case|Executed|BUILD|\*\*" || true
           mkdir -p tour && (xcrun xcresulttool export attachments --path build/DemoTour.xcresult --output-path tour || true)
           grep -q "\*\* TEST SUCCEEDED \*\*" xcodebuild-tour.log
+      - name: commit the tour's screens
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.commit_screens }}
+        run: bash .github/scripts/commit-screens.sh ios/tour design/screens/ios-demo xcresult
       - name: upload the screenshots
         if: always()
         uses: actions/upload-artifact@v4
