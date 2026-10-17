@@ -161,6 +161,39 @@ data class HiddenMemory(
     val isDay: Boolean get() = day != null
 }
 
+/**
+ * One row of `download_items` (migration 0052): an original to save to the photo library (a Live Photo's still with its
+ * [motionPath]), its caption and the day it was taken. `'mine'` pages by [postedAt] (`p_before`); never a count.
+ */
+@Serializable
+data class DownloadItem(
+    @SerialName("post_id") val postId: String,
+    @SerialName("media_id") val mediaId: String,
+    val kind: MediaKind,
+    @SerialName("original_path") val originalPath: String,
+    @SerialName("front_original_path") val frontOriginalPath: String? = null,
+    @SerialName("motion_path") val motionPath: String? = null,
+    val caption: String? = null,
+    /** The day it was taken (`taken_on`, else the posting day). */
+    @SerialName("taken_on") val takenOn: LocalDate? = null,
+    @SerialName("posted_at") val postedAt: Instant,
+)
+
+/** What `download_items` lists (`p_scope`): your own photos (free) or one album's (premium). */
+sealed interface DownloadScope {
+    val wire: String
+
+    /** Every photo and video you posted that is still in one of your groups, newest first, paged by `posted_at`. */
+    data object Mine : DownloadScope {
+        override val wire: String get() = "mine"
+    }
+
+    /** The album's photos you can see, all of them in album order (premium: `premium_required` otherwise). */
+    data class InAlbum(val albumId: String) : DownloadScope {
+        override val wire: String get() = "album"
+    }
+}
+
 /** One row of `create_overnight_post` (§14.3): a group the photo develops in, and when. */
 @Serializable
 data class DevelopingPost(

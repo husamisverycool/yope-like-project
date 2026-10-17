@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.outlined.MenuBook as AutoMir
 import androidx.compose.material.icons.automirrored.outlined.Send as AutoMirroredOutlinedSend
 import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos as AutoMirroredRoundedArrowBackIos
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight as AutoMirroredRoundedKeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.Reply as AutoMirroredRoundedReply
 import androidx.compose.material.icons.automirrored.rounded.VolumeOff as AutoMirroredRoundedVolumeOff
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp as AutoMirroredRoundedVolumeUp
 import androidx.compose.material.icons.outlined.AccountCircle as OutlinedAccountCircle
@@ -561,6 +562,8 @@ object Tokens {
         val globalRecap: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedVideoLibrary
         /** Apple HIG / Material 3 · global · remove from album (menu item) · PLATFORM — token `icon.global.remove` */
         val globalRemove: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedRemoveCircleOutline
+        /** Apple HIG / Material 3 · global · reply to a memory with a photo (onthisday menu item 'Reply') · PLATFORM — token `icon.global.reply` */
+        val globalReply: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedReply
         /** Apple HIG / Material 3 · global · report (menu item; outline per the icon style) · PLATFORM — token `icon.global.report` */
         val globalReport: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedFlag
         /** Retro · global · Rewind / on-this-day tab · PLATFORM — token `icon.global.rewind` */

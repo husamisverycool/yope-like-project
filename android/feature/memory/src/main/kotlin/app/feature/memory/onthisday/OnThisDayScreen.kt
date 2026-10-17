@@ -109,6 +109,8 @@ data class OnThisDayActions(
     /** Mode menu "On this day…": back to the day's memories (from shuffle). */
     val onShowDay: () -> Unit = {},
     val onShare: () -> Unit = {},
+    /** "Reply" ("then & now", owner decision 34): the camera answering the memory with a photo in its group. */
+    val onReply: () -> Unit = {},
     val onSave: () -> Unit = {},
     /** "Hide Photo": this photo leaves your memories (for you only). */
     val onHidePhoto: () -> Unit = {},
@@ -278,6 +280,8 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
                     menuOpen,
                     { menuOpen = false },
                     buildList {
+                        // Owner decision 34 ("then & now"; Retro's Rewind menu leads with "Share to my week"): any memory.
+                        add(DsMenuItem(stringResource(R.string.onthisday_menu_reply), actions.onReply, icon = Tokens.Icons.globalReply))
                         add(DsMenuItem(stringResource(R.string.onthisday_menu_save), actions.onSave))
                         // Owner decision 34: hide a memory, for you only (Retro's Rewind 'Hide photo'; Timehop's hidden days).
                         add(DsMenuItem(stringResource(R.string.onthisday_menu_hidephoto), actions.onHidePhoto))

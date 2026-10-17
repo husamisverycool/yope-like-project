@@ -345,6 +345,17 @@ class OnThisDayViewModel(
      */
     fun isMine(memory: Memory): Boolean = memory.authorId == backend.currentUserId
 
+    /**
+     * "Reply" ("then & now", owner decision 34; Timehop "Then & Now", Retro's Rewind share): any memory. Playing stops; the
+     * memory's post id comes back for the camera, which answers it with a photo in this group only
+     * (`create_post(p_reply_to_post_id)`, as photo.viewer's camera glyph does). Null when no memory shows.
+     */
+    fun replyTarget(): String? {
+        val page = _state.value as? OnThisDayState.Page ?: return null
+        if (page.playing) _state.value = page.copy(playing = false)
+        return page.memory.postId
+    }
+
     /** "Save to Camera Roll" (any memory you can see, owner decision 28): the original into the photo library; toast saved / failed. */
     fun save(accessGranted: Boolean = true) {
         val memory = (_state.value as? OnThisDayState.Page)?.memory ?: return

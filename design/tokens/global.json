@@ -3503,6 +3503,19 @@
       "element": "remove from album (menu item)",
       "evidence": "SF Symbols 7 'minus.circle'; Compose material-icons-extended 1.7.8 Icons.Outlined.RemoveCircleOutline (Google Photos album 'Remove', support.google.com/photos/answer/6128849)"
     },
+    "icon.global.reply": {
+      "level": "PLATFORM",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "type": "icon",
+      "value": {
+        "ios": "arrowshape.turn.up.left",
+        "android": "AutoMirrored.Rounded.Reply"
+      },
+      "element": "reply to a memory with a photo (onthisday menu item 'Reply')",
+      "evidence": "SF Symbols 7 'arrowshape.turn.up.left' (the reply glyph of Apple Mail and Messages' reply action); Compose material-icons-extended 1.7.8 Icons.AutoMirrored.Rounded.Reply (Material Symbols 'reply', mirrored in right-to-left layouts)",
+      "notes": "Owner decision 34 (docs/RESEARCH_FEATURES_2026-10-17.md #13, 'then & now'). No reply glyph existed; the platforms' own reply symbol, with the variant rule of icon.global.variantRule (Rounded on Android)."
+    },
     "icon.global.variantRule": {
       "level": "PLATFORM",
       "source_app": "Retro",

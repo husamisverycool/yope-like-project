@@ -29,8 +29,11 @@ Page sheet (C-29) over `albums.list`, content on `color.global.background`, scro
 4. **Action row** (C-06) `albums.view.dimension.metaToActions` below the meta baseline, inside `size.global.screenMargin`:
    outline capsule `albums.view.menu.rename` ("Rename", fills the row) and an outline icon capsule
    (`size.global.iconPillWidth`, `icon.global.more`) `size.global.pillGap` after it → native menu with
-   `albums.view.menu.add` ("Add Photos", every member — albums anyone can add to, migration 0039) and, for the album's
-   creator and group admins, `albums.view.menu.delete` (red).
+   `albums.view.menu.add` ("Add Photos", every member — albums anyone can add to, migration 0039),
+   `albums.view.menu.download` ("Download Album", every member — premium, owner decision 29: `icon.global.download` with
+   premium, `icon.global.lock` without; with premium it opens `settings.downloads` for this album, which starts at once;
+   without, the paywall at the full-quality downloads perk under `paywall.layout.promptRule`) and, for the album's creator
+   and group admins, `albums.view.menu.delete` (red).
 5. **Grid** `walls.mine.dimension.actionsToWeeks` below the capsules: the album's items in `position` order (the saved order;
    no date headers — RS-21), `albums.view.count.gridColumns` columns inside `size.global.screenMargin`,
    `size.global.stripGap` gaps, cells `albums.view.aspectRatio.gridCell` (aspect fill). The grid's outer contour rounds at
@@ -83,7 +86,7 @@ delete"), cancel `photo.viewer.delete.cancel` → `delete_album` → the sheet c
 | name | text role `displayMedium`, `font.global.display`; `albums.view.dimension.coverToTitle` | album name (data) | header trait |
 | meta | text role `listSubtitle`; `albums.view.dimension.titleToMeta` | `albums.list.row.subtitle` / `.row.subtitleMine` | — |
 | Rename capsule | C-06 outline; `size.global.pillHeight`, `albums.view.dimension.metaToActions` | `albums.view.menu.rename` | rename sheet |
-| more capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `icon.global.more` | `albums.view.a11y.more` | menu: `albums.view.menu.add` (everyone), `albums.view.menu.delete` (creator / admin) |
+| more capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `icon.global.more` | `albums.view.a11y.more` | menu: `albums.view.menu.add` (everyone), `albums.view.menu.download` (everyone; premium), `albums.view.menu.delete` (creator / admin) |
 | grid cell | C-21 album grid; `albums.view.count.gridColumns`, `.aspectRatio.gridCell`, `.radius.grid`, `size.global.stripGap` | `photo.viewer.a11y.photo` | → `photo.viewer` (context = album order); long press → `albums.view.menu.remove` when allowed |
 
 ## States
@@ -148,7 +151,8 @@ rounds only its outer corners; `Menu` on the capsule; `confirmationDialog`. Andr
 ## Do-not-copy
 
 - "6 members · 307 photos" counts; "Share" / link sharing / QR / Instagram story sticker (albums are private to the group);
-  notes composer, sort order, download-all, admin permission settings.
+  notes composer, sort order, admin permission settings. (Download-all was left out until owner decision 29 / 34 made it
+  "Download Album", premium.)
 - The user-styled cover title on the cover image; the book overlay texture (`/journal-overlay.webp`).
 
 ## Gaps

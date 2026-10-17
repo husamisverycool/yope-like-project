@@ -6,6 +6,8 @@ import app.data.error.DbFailure
 import app.data.error.dataCall
 import app.data.model.Developing
 import app.data.model.DevelopingPost
+import app.data.model.DownloadItem
+import app.data.model.DownloadScope
 import app.data.model.Media
 import app.data.model.NewMedia
 import app.data.model.Post
@@ -154,6 +156,32 @@ class PostRepository(private val api: Api, private val cache: OfflineCache, priv
     suspend fun myDeveloping(): Developing =
         api.rpcList(Rpc.MyDeveloping, Developing.serializer()).firstOrNull() ?: Developing(developing = false, revealAt = null)
 
+    /**
+     * `edit_caption` (migration 0047): your own photo's caption in that group, any time; empty or blank removes it. The row
+     * with `caption_edited_at` set. Errors: `post_not_found`, `invalid_caption`.
+     */
+    suspend fun editCaption(postId: String, caption: String): Post = api.rpc(Rpc.EditCaption, Post.serializer()) {
+        put("p_post_id", postId)
+        put("p_caption", caption)
+    }
+
+    /**
+     * `download_items` (migration 0052): [DownloadScope.Mine] newest first, [before] = the last row's `posted_at`, at most
+     * [limit] rows (≤ [DOWNLOAD_PAGE_MAX]); [DownloadScope.InAlbum] every visible photo of the album in album order (premium,
+     * `premium_required`; [before] / [limit] do not apply).
+     */
+    suspend fun downloadItems(scope: DownloadScope, before: Instant? = null, limit: Int = DOWNLOAD_PAGE): List<DownloadItem> =
+        api.rpcList(Rpc.DownloadItems, DownloadItem.serializer()) {
+            put("p_scope", scope.wire)
+            when (scope) {
+                DownloadScope.Mine -> {
+                    opt("p_before", before)
+                    put("p_limit", limit.coerceIn(1, DOWNLOAD_PAGE_MAX))
+                }
+                is DownloadScope.InAlbum -> put("p_album_id", scope.albumId)
+            }
+        }
+
     /** Author only: removes the photo from one group (the media goes with its last post). */
     suspend fun deletePost(postId: String) = api.rpcUnit(Rpc.DeletePost) { put("p_post_id", postId) }
 
@@ -162,6 +190,9 @@ class PostRepository(private val api: Api, private val cache: OfflineCache, priv
 
     companion object {
         const val FEED_PAGE = 30
+        /** `download_items('mine')`: the API's default page and its clamp (docs/API.md `download_items`). */
+        const val DOWNLOAD_PAGE = 100
+        const val DOWNLOAD_PAGE_MAX = 200
         /** Ids per `in.(…)` filter, keeping URLs short. */
         private const val IN_CHUNK = 100
     }

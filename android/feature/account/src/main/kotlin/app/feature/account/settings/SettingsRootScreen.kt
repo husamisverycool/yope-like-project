@@ -50,6 +50,7 @@ import app.feature.account.paywall.PlanPeriod
 import app.feature.account.platform.ExternalActions
 import app.feature.account.platform.LegalLinks
 import app.model.AppRoute
+import app.model.DownloadsRoute
 import app.model.OnboardingWidgetFromSettingsRoute
 import app.ui.components.Avatar
 import app.ui.components.GroupedPosition
@@ -174,6 +175,7 @@ fun SettingsRootRoute(nav: NavController) {
             onWidgets = { nav.navigate(OnboardingWidgetFromSettingsRoute) },
             onBlocked = { nav.navigate(AppRoute.SettingsBlocked) },
             onHidden = { nav.navigate(AppRoute.SettingsHidden) },
+            onDownloads = { nav.navigate(DownloadsRoute()) },
             onPermission = { PermissionChecks.openSafely(context, PermissionChecks.appSettingsIntent(context)) },
             onUrl = { ExternalActions.openInAppBrowser(context, it) },
             onMail = { ExternalActions.mail(context, it) },
@@ -195,6 +197,8 @@ data class SettingsRootActions(
     val onBlocked: () -> Unit = {},
     /** Privacy → Hidden Memories (settings.hidden). */
     val onHidden: () -> Unit = {},
+    /** Privacy → Download My Photos (settings.downloads, the social group's page). */
+    val onDownloads: () -> Unit = {},
     val onPermission: () -> Unit = {},
     val onUrl: (String) -> Unit = {},
     val onMail: (String) -> Unit = {},
@@ -208,7 +212,7 @@ data class SettingsRootActions(
  * Subscription (Premium → paywall; subscribers "Your Subscription" with Annual / Monthly → the Play subscription page; the
  * platform indicator while the store answers); Notifications; Widgets ("Add Widget" → onboarding.widget); Appearance
  * (Android only: the "True Black" switch row, owner decision 21 — Retro's true-black dark scheme); Privacy
- * (Blocked People, Hidden Memories); System Permissions (Camera, Microphone, Contacts, Push Notifications — "Denied" when denied → the
+ * (Blocked People, Hidden Memories, Download My Photos → settings.downloads); System Permissions (Camera, Microphone, Contacts, Push Notifications — "Denied" when denied → the
  * app's page in system Settings); About (Contact Us, Privacy Policy, Terms of Use — each omitted while its
  * `config/app.json` value is BLOCKED — and Version); Sign Out (confirmed; the row shows the indicator while it runs).
  */
@@ -267,6 +271,8 @@ fun SettingsRootScreen(
                 listOf(
                     navRow(stringResource(R.string.settings_root_blocked), onClick = actions.onBlocked),
                     navRow(stringResource(R.string.settings_root_hiddenmemories), onClick = actions.onHidden),
+                    // Owner decision 29: every photo you shared, saved to your photo library (free).
+                    navRow(stringResource(R.string.settings_root_downloads), onClick = actions.onDownloads),
                 ),
             )
             // System Permissions

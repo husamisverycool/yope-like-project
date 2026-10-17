@@ -129,6 +129,9 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
     /// When an overnight photo developed and joined the group (`revealed_at`, docs/API.md §14.3); nil for a post shared
     /// at once. Photos revealed together share it.
     public var revealedAt: Date?
+    /// When the author last changed the caption (`edit_caption`, migration 0047): the viewer's date line reads
+    /// "{date} · Edited"; nil when never edited.
+    public var captionEditedAt: Date?
 
     /// When the group could first see the photo (`posts.visible_at` = `revealed_at ?? created_at`, migration 0027): the
     /// week and the week-strip day a photo belongs to. An overnight photo taken on Sunday night is in Monday's week.
@@ -137,7 +140,8 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
     public init(
         id: PostID, mediaID: MediaID, groupID: GroupID, authorID: UserID, caption: String? = nil,
         voicePath: String? = nil, voiceDurationMs: Int? = nil, voiceLevels: [Int]? = nil, invitationID: InvitationID? = nil,
-        inWindow: Bool = false, replyToPostID: PostID? = nil, createdAt: Date, revealedAt: Date? = nil
+        inWindow: Bool = false, replyToPostID: PostID? = nil, createdAt: Date, revealedAt: Date? = nil,
+        captionEditedAt: Date? = nil
     ) {
         self.id = id
         self.mediaID = mediaID
@@ -152,6 +156,7 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         self.replyToPostID = replyToPostID
         self.createdAt = createdAt
         self.revealedAt = revealedAt
+        self.captionEditedAt = captionEditedAt
     }
 
     enum CodingKeys: String, CodingKey {
@@ -168,6 +173,70 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         case replyToPostID = "reply_to_post_id"
         case createdAt = "created_at"
         case revealedAt = "revealed_at"
+        case captionEditedAt = "caption_edited_at"
+    }
+}
+
+/// What `download_items` lists (migration 0052): your own photos (free) or one album's (premium).
+public enum DownloadScope: Hashable, Sendable {
+    /// Every photo and video you posted that is still in one of your groups, newest first, paged by `posted_at`.
+    case mine
+    /// The album's photos you can see, all of them in album order (premium: `premium_required` otherwise).
+    case album(AlbumID)
+
+    /// `p_scope`.
+    public var wireValue: String {
+        switch self {
+        case .mine: return "mine"
+        case .album: return "album"
+        }
+    }
+}
+
+/// One row of `download_items` (migration 0052): an original to save to the photo library (Live Photo: still + motion),
+/// with its caption and the day it was taken. Never a count.
+public struct DownloadItem: Codable, Hashable, Sendable, Identifiable {
+    public var postID: PostID
+    public var mediaID: MediaID
+    public var kind: MediaKind
+    public var originalPath: String
+    /// A dual capture's front photo.
+    public var frontOriginalPath: String?
+    /// A Live Photo's motion.
+    public var motionPath: String?
+    public var caption: String?
+    /// The day it was taken (`taken_on`, else the posting day).
+    public var takenOn: LocalDate?
+    /// The post's `created_at`: the cursor of the next `'mine'` page (`p_before`).
+    public var postedAt: Date
+
+    public var id: MediaID { mediaID }
+
+    public init(
+        postID: PostID, mediaID: MediaID, kind: MediaKind, originalPath: String, frontOriginalPath: String? = nil,
+        motionPath: String? = nil, caption: String? = nil, takenOn: LocalDate? = nil, postedAt: Date
+    ) {
+        self.postID = postID
+        self.mediaID = mediaID
+        self.kind = kind
+        self.originalPath = originalPath
+        self.frontOriginalPath = frontOriginalPath
+        self.motionPath = motionPath
+        self.caption = caption
+        self.takenOn = takenOn
+        self.postedAt = postedAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case postID = "post_id"
+        case mediaID = "media_id"
+        case kind
+        case originalPath = "original_path"
+        case frontOriginalPath = "front_original_path"
+        case motionPath = "motion_path"
+        case caption
+        case takenOn = "taken_on"
+        case postedAt = "posted_at"
     }
 }
 

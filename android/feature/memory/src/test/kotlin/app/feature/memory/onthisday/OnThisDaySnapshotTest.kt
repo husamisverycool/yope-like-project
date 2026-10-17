@@ -99,6 +99,8 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.onNodeWithTag(OnThisDayTags.SHARE).assertDoesNotExist()
         compose.onNodeWithTag(OnThisDayTags.MORE).performClick()
         compose.mainClock.advanceTimeBy(settleMillis)
+        // Owner decision 34 ("then & now"): Reply leads the menu on every memory.
+        compose.onNodeWithText("Reply").assertExists()
         compose.onNodeWithText("Save to Camera Roll").assertExists()
         // Owner decision 34: any memory hides from your own memories (the photo or its whole day).
         compose.onNodeWithText("Hide Photo").assertExists()
@@ -117,6 +119,8 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.onNodeWithTag(OnThisDayTags.SHARE).assertExists()
         compose.onNodeWithTag(OnThisDayTags.MORE).performClick()
         compose.mainClock.advanceTimeBy(settleMillis)
+        // Owner decision 34 ("then & now"): Reply leads the menu on every memory.
+        compose.onNodeWithText("Reply").assertExists()
         compose.onNodeWithText("Save to Camera Roll").assertExists()
         compose.onNodeWithText("Hide Photo").assertExists()
         compose.onNodeWithText("Hide This Day").assertExists()

@@ -4415,6 +4415,168 @@
       "evidence": "design/copy-patterns.md retro.voice.second-person (\"we\" when the app must speak) and retro.voice.error's web line \"Need help or a new link? Contact the person who sent you this package.\" (retro.app /downloads, references/auto/retro/web/retro.app-web-copy-excerpts.txt): a question, then what to do; Google Play's requirement of a way to request deletion without the app (support.google.com/googleplay/android-developer/answer/13327111)",
       "pattern": "retro.voice.second-person",
       "level": "SOURCED"
+    },
+    "settings.root.downloads": {
+      "text": "Download My Photos",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "settings.root",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_settings_title_download_all` ('Download all photos'); Retro 'Download your package' (references/auto/retro/web/retro.app-web-copy-excerpts.txt /downloads); Yope 'download all photos' (design/research/yope-a.md §2.13)",
+      "pattern": "retro.voice.settings (Title-Case row)",
+      "level": "SOURCED",
+      "notes": "Privacy section, after Hidden Memories. Free (owner decision 29). Opens settings.downloads. Noun swap: all photos → my photos (only your own)."
+    },
+    "settings.downloads.title": {
+      "text": "Download My Photos",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "settings.root.downloads (the row that opens it); design/copy-patterns.md retro.voice.title-case (tool screen title)",
+      "pattern": "retro.voice.title-case",
+      "level": "SOURCED"
+    },
+    "settings.downloads.detail": {
+      "text": "A copy of every photo and video you shared, at full quality.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "Retro 'Download your package' (references/auto/retro/web/retro.app-web-copy-excerpts.txt /downloads: the package of what was shared); design/copy-patterns.md retro.voice.empty-state (one-sentence explanation with a period)",
+      "pattern": "retro.voice.empty-state ('Add some photos or videos to your album!', 'Postcards that you send to yourself or a friend will appear here')",
+      "level": "SOURCED",
+      "notes": "No caption or date is promised: the photo library has no caption field the apps can write."
+    },
+    "settings.downloads.albumTitle": {
+      "text": "Download Album",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "albums.view.menu.download (the item that opens it)",
+      "pattern": "retro.voice.title-case",
+      "level": "SOURCED"
+    },
+    "settings.downloads.albumDetail": {
+      "text": "A copy of every photo and video in this album, at full quality.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "settings.downloads.detail (noun swap: you shared → in this album)",
+      "pattern": "retro.voice.empty-state",
+      "level": "SOURCED"
+    },
+    "settings.downloads.detailLibrary": {
+      "text": "Everything is saved to your photo library.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "design/copy-patterns.md retro.voice.second-person; photo.viewer.permission.detail ('Saving a photo needs access to your photo library.')",
+      "pattern": "retro.voice.empty-state",
+      "level": "SOURCED"
+    },
+    "settings.downloads.start": {
+      "text": "Download",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /j/ ('Download Retro'); design/copy-patterns.md retro.voice.button (1–3 words, verb first)",
+      "pattern": "retro.voice.button ('Get started', 'Add a memory', 'Add to album')",
+      "level": "SOURCED",
+      "notes": "C-05 primary capsule: starts saving from the newest photo."
+    },
+    "settings.downloads.resume": {
+      "text": "Continue",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `retro_membership_paywall_cta_continue`",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "The capsule when an earlier download stopped before the end: it goes on from the last saved photo (the place is kept on the device)."
+    },
+    "settings.downloads.progress": {
+      "text": "Downloading…",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_settings_download_all_success_message`",
+      "pattern": "retro.voice.progress",
+      "level": "SOURCED",
+      "notes": "Under the progress bar while saving; also its accessibility value. Never a number of photos (tenet 2)."
+    },
+    "settings.downloads.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "settings.downloads",
+      "evidence": "design/research/platform.md (HIG Alerts: 'Cancel')",
+      "level": "PLATFORM",
+      "notes": "C-06 outline capsule while saving: stops after the photo being saved; Continue goes on from there."
+    },
+    "settings.downloads.done": {
+      "text": "Saved!",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_address_success_message)",
+      "pattern": "retro.voice.confirmation",
+      "level": "SOURCED",
+      "notes": "Shown (and announced) when every photo was saved; haptic.global.success."
+    },
+    "settings.downloads.empty": {
+      "text": "Nothing to see here yet",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `activity_tab_empty_message`",
+      "pattern": "retro.voice.empty-state",
+      "level": "SOURCED",
+      "notes": "download_items returned nothing (no photo of yours in your groups, or an empty album)."
+    },
+    "settings.downloads.error": {
+      "text": "There was a problem. Please try again.",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (error_message_generic)",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED",
+      "notes": "A page or a photo failed; the photos saved so far stay saved and Continue goes on from the last one."
+    },
+    "settings.downloads.offline": {
+      "text": "Could not connect. Check your connection and try again.",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /downloads ('Could not connect. Check your connection and try again.')",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
+    },
+    "settings.downloads.denied.title": {
+      "text": "Camera Roll Access",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt rewind_home_no_permission_upsell_title",
+      "pattern": "retro.voice.permission",
+      "level": "SOURCED"
+    },
+    "settings.downloads.denied.message": {
+      "text": "Saving your photos needs access to your photo library. You can turn it on in Settings.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (composer_permission_upsell_message); photo.viewer.permission.detail ('Saving a photo needs access to your photo library. You can turn it on in Settings.')",
+      "pattern": "retro.voice.permission ('Camera Roll Access' / 'Rewind uses your camera roll to show you memories from past years. These photos are only visible to you.' / 'Allow Photo Access')",
+      "level": "SOURCED",
+      "notes": "The platform alert when add-only photo access is denied; the button opens the app's page in system Settings."
+    },
+    "settings.downloads.denied.button": {
+      "text": "Allow Photo Access",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.downloads",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt rewind_home_no_permission_upsell_cta",
+      "pattern": "retro.voice.permission",
+      "level": "SOURCED"
     }
   }
 }

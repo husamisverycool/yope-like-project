@@ -20,6 +20,8 @@ enum AccountRoute: Hashable {
     case settingsBlocked
     /// `settings.hidden` (Hidden Memories: the photos and days you hid from your memories).
     case settingsHidden
+    /// `settings.downloads` (Download My Photos: every photo you shared, saved to the photo library; free).
+    case settingsDownloads
     /// `onboarding.widget` opened from settings.root → Widgets.
     case settingsWidgets
     /// The Yope-era group profile page, gone in the redesign (MERGE RA-9): chat.thread's header still opens it; it shows
@@ -120,6 +122,9 @@ struct AccountDestination: View {
             SettingsBlockedScreen()
         case .settingsHidden:
             SettingsHiddenScreen()
+        case .settingsDownloads:
+            // The social group's download page (it saves through the social screens' photo saver).
+            MyPhotosDownloadScreen()
         case .settingsWidgets:
             SettingsWidgetsPage()
         case let .groupProfile(groupID), let .groupSettings(groupID):

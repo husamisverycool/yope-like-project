@@ -148,6 +148,18 @@ struct LiveSocialData: SocialDataSource {
         await environment.signedURLs.invalidate(mediaID: id)
     }
 
+    func editCaption(postID: PostID, caption: String) async throws -> Post {
+        let post = try await environment.posts.editCaption(postID: postID, caption: caption)
+        memo.replace(post: post)
+        return post
+    }
+
+    // MARK: Downloads
+
+    func downloadItems(_ scope: DownloadScope, before: Date?) async throws -> [DownloadItem] {
+        try await environment.posts.downloadItems(scope: scope, before: before, limit: SocialPaging.downloads)
+    }
+
     // MARK: Reactions and self-tags
 
     func reactions(postIDs: [PostID]) async throws -> [Reaction] {
@@ -362,6 +374,8 @@ struct UnconfiguredSocialData: SocialDataSource {
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { [] }
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] { [] }
     func deleteMedia(id: MediaID) async throws { try fail() as Void }
+    func editCaption(postID: PostID, caption: String) async throws -> Post { try fail() }
+    func downloadItems(_ scope: DownloadScope, before: Date?) async throws -> [DownloadItem] { try fail() }
     func reactions(postIDs: [PostID]) async throws -> [Reaction] { try fail() }
     func react(postID: PostID, emoji: String) async throws -> Reaction { try fail() }
     func unreact(postID: PostID, emoji: String) async throws { try fail() as Void }
@@ -428,6 +442,13 @@ final class SocialMemo: @unchecked Sendable {
         defer { lock.unlock() }
         for id in asked { posts[id] = nil }
         for post in found { posts[post.id] = post }
+    }
+
+    /// An edited post (`edit_caption`) replaces the session copy, keeping its media.
+    func replace(post: Post) {
+        lock.lock()
+        defer { lock.unlock() }
+        if let known = posts[post.id] { posts[post.id] = PostWithMedia(post: post, media: known.media) }
     }
 
     func forget(mediaID: MediaID) {

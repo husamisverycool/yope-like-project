@@ -148,8 +148,14 @@ struct AlbumScreen: View {
     @State private var confirmingDelete = false
     /// "Add Photos" (`albums.view.layout.add`).
     @State private var adding = false
+    /// "Download Album" (settings.downloads, premium).
+    @State private var downloading = false
+    /// The paywall at the downloads perk: asked by the menu item, or by the download sheet once it is gone.
+    @State private var paywallOpen = false
+    @State private var paywallAfterDownload = false
     @State private var toasts = ToastCenter()
     @Environment(\.dismiss) private var dismiss
+    @Environment(AccountDependencies.self) private var account: AccountDependencies?
 
     init(groupID: String, albumID: String, initialName: String? = nil) {
         self.init(model: AlbumModel(groupID: GroupID(groupID), albumID: AlbumID(albumID), data: SocialServices.shared.data), initialName: initialName)
@@ -194,6 +200,20 @@ struct AlbumScreen: View {
                 model: AlbumAddModel(groupID: model.groupID, albumID: model.albumID, excluding: model.postIDs, data: SocialServices.shared.data),
                 onDone: { Task { await model.photosAdded() } }
             )
+        }
+        .sheet(isPresented: $downloading, onDismiss: {
+            guard paywallAfterDownload else { return }
+            paywallAfterDownload = false
+            openPaywall()
+        }) {
+            AlbumDownloadSheet(albumID: model.albumID, onNeedsPremium: { paywallAfterDownload = true })
+        }
+        .fullScreenCover(isPresented: $paywallOpen) {
+            if let account {
+                PaywallScreen()
+                    .environment(account)
+                    .environment(\.storageURLResolver, account.storageURLResolver)
+            }
         }
         .sheet(isPresented: $model.isRenaming) {
             SocialNameSheet(
@@ -270,6 +290,14 @@ struct AlbumScreen: View {
                     Button { adding = true } label: {
                         Label(Copy.albumsViewMenuAdd, systemImage: Tokens.Icons.globalAdd)
                     }
+                    // Premium (owner decision 29): with it the download sheet; without, the lock glyph and the paywall at
+                    // the full-quality downloads perk.
+                    Button { downloadTapped() } label: {
+                        Label(
+                            Copy.albumsViewMenuDownload,
+                            systemImage: AlbumDownloadGate.isPremium ? Tokens.Icons.globalDownload : Tokens.Icons.globalLock
+                        )
+                    }
                     if model.canDelete {
                         Button(Copy.albumsViewMenuDelete, role: .destructive) { confirmingDelete = true }
                     }
@@ -310,6 +338,20 @@ struct AlbumScreen: View {
 
     private func open(_ postID: PostID) {
         viewer = PhotoViewerContext(postIDs: model.postIDs, start: postID, groupID: model.groupID)
+    }
+
+    private func downloadTapped() {
+        if AlbumDownloadGate.isPremium {
+            downloading = true
+        } else {
+            openPaywall()
+        }
+    }
+
+    /// The paywall at the downloads perk when the session's one prompt is still available (`paywall.layout.promptRule`).
+    private func openPaywall() {
+        guard account != nil, AlbumDownloadGate.claimPaywall() else { return }
+        paywallOpen = true
     }
 }
 

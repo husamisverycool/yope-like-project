@@ -51,6 +51,8 @@ public enum Copy {
     public static var albumsViewMenuAdd: String { CopyLookup.string("albums.view.menu.add", default: "Add Photos") }
     /// "Delete Album" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewMenuDelete: String { CopyLookup.string("albums.view.menu.delete", default: "Delete Album") }
+    /// "Download Album" — Retro · albums.view · adapted · SOURCED
+    public static var albumsViewMenuDownload: String { CopyLookup.string("albums.view.menu.download", default: "Download Album") }
     /// "Remove from Album" — Retro · albums.view · new · SOURCED
     public static var albumsViewMenuRemove: String { CopyLookup.string("albums.view.menu.remove", default: "Remove from Album") }
     /// "Rename" — Retro · albums.view · new · SOURCED
@@ -1379,6 +1381,8 @@ public enum Copy {
     public static var onthisdayMenuHideDay: String { CopyLookup.string("onthisday.menu.hideDay", default: "Hide This Day") }
     /// "Hide Photo" — Retro · onthisday · adapted · SOURCED
     public static var onthisdayMenuHidePhoto: String { CopyLookup.string("onthisday.menu.hidePhoto", default: "Hide Photo") }
+    /// "Reply" — Retro · onthisday · verbatim · SOURCED
+    public static var onthisdayMenuReply: String { CopyLookup.string("onthisday.menu.reply", default: "Reply") }
     /// "Report Post" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayMenuReport: String { CopyLookup.string("onthisday.menu.report", default: "Report Post") }
     /// "Save to Camera Roll" — Retro · onthisday · verbatim · SOURCED
@@ -1533,6 +1537,10 @@ public enum Copy {
     public static var photoViewerA11yPrevious: String { CopyLookup.string("photo.viewer.a11y.previous", default: "Previous photo") }
     /// "Unmute" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerA11yUnmute: String { CopyLookup.string("photo.viewer.a11y.unmute", default: "Unmute") }
+    /// "Add a caption…" — Retro · photo.viewer · verbatim · SOURCED
+    public static var photoViewerCaptionPlaceholder: String { CopyLookup.string("photo.viewer.caption.placeholder", default: "Add a caption…") }
+    /// "Save" — Retro · photo.viewer · verbatim · SOURCED
+    public static var photoViewerCaptionSave: String { CopyLookup.string("photo.viewer.caption.save", default: "Save") }
     /// "Cancel" — Apple HIG · photo.viewer · verbatim · PLATFORM
     public static var photoViewerDeleteCancel: String { CopyLookup.string("photo.viewer.delete.cancel", default: "Cancel") }
     /// "Yes, delete" — Retro · photo.viewer · verbatim · SOURCED
@@ -1541,6 +1549,8 @@ public enum Copy {
     public static var photoViewerDeleteMessage: String { CopyLookup.string("photo.viewer.delete.message", default: "It will be removed from every group you sent it to, and from chats, walls, recaps and albums.") }
     /// "Delete photo?" — Retro · photo.viewer · new · SOURCED
     public static var photoViewerDeleteTitle: String { CopyLookup.string("photo.viewer.delete.title", default: "Delete photo?") }
+    /// "Couldn't edit caption" — Retro · photo.viewer · adapted · SOURCED
+    public static var photoViewerErrorCaption: String { CopyLookup.string("photo.viewer.error.caption", default: "Couldn't edit caption") }
     /// "Couldn't change the cover. Please try again." — Retro · photo.viewer · new · SOURCED
     public static var photoViewerErrorCover: String { CopyLookup.string("photo.viewer.error.cover", default: "Couldn't change the cover. Please try again.") }
     /// "This photo is still processing. Please try again in a moment." — Retro · photo.viewer · new · SOURCED
@@ -1561,12 +1571,16 @@ public enum Copy {
     public static func photoViewerHeaderGroupWeek(groupName: String, weekNumber: String) -> String { CopyLookup.format("photo.viewer.header.groupWeek", default: "{group_name} · Week {week_number}", ["group_name": groupName, "week_number": weekNumber]) }
     /// "Week {week_number}" — Retro · photo.viewer · verbatim · SOURCED
     public static func photoViewerHeaderWeek(weekNumber: String) -> String { CopyLookup.format("photo.viewer.header.week", default: "Week {week_number}", ["week_number": weekNumber]) }
+    /// "Add a Caption" — Apple Photos · photo.viewer · verbatim · SOURCED
+    public static var photoViewerMenuAddCaption: String { CopyLookup.string("photo.viewer.menu.addCaption", default: "Add a Caption") }
     /// "Add to Album" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuAddToAlbum: String { CopyLookup.string("photo.viewer.menu.addToAlbum", default: "Add to Album") }
     /// "Block {name}" — Retro · photo.viewer · new · SOURCED
     public static func photoViewerMenuBlock(name: String) -> String { CopyLookup.format("photo.viewer.menu.block", default: "Block {name}", ["name": name]) }
     /// "Delete" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuDelete: String { CopyLookup.string("photo.viewer.menu.delete", default: "Delete") }
+    /// "Edit Caption" — Retro · photo.viewer · adapted · SOURCED
+    public static var photoViewerMenuEditCaption: String { CopyLookup.string("photo.viewer.menu.editCaption", default: "Edit Caption") }
     /// "Favorite" — Apple Photos · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuFavorite: String { CopyLookup.string("photo.viewer.menu.favorite", default: "Favorite") }
     /// "Report Post" — Retro · photo.viewer · verbatim · SOURCED
@@ -1917,6 +1931,38 @@ public enum Copy {
     public static var settingsBlockedUnblock: String { CopyLookup.string("settings.blocked.unblock", default: "Unblock") }
     /// "Someone you blocked" — Retro · settings.blocked · new · SOURCED
     public static var settingsBlockedUnknown: String { CopyLookup.string("settings.blocked.unknown", default: "Someone you blocked") }
+    /// "A copy of every photo and video in this album, at full quality." — Retro · settings.downloads · new · SOURCED
+    public static var settingsDownloadsAlbumDetail: String { CopyLookup.string("settings.downloads.albumDetail", default: "A copy of every photo and video in this album, at full quality.") }
+    /// "Download Album" — Retro · settings.downloads · adapted · SOURCED
+    public static var settingsDownloadsAlbumTitle: String { CopyLookup.string("settings.downloads.albumTitle", default: "Download Album") }
+    /// "Cancel" — Apple HIG · settings.downloads · verbatim · PLATFORM
+    public static var settingsDownloadsCancel: String { CopyLookup.string("settings.downloads.cancel", default: "Cancel") }
+    /// "Allow Photo Access" — Retro · settings.downloads · verbatim · SOURCED
+    public static var settingsDownloadsDeniedButton: String { CopyLookup.string("settings.downloads.denied.button", default: "Allow Photo Access") }
+    /// "Saving your photos needs access to your photo library. You can turn it on in Settings." — Retro · settings.downloads · new · SOURCED
+    public static var settingsDownloadsDeniedMessage: String { CopyLookup.string("settings.downloads.denied.message", default: "Saving your photos needs access to your photo library. You can turn it on in Settings.") }
+    /// "Camera Roll Access" — Retro · settings.downloads · verbatim · SOURCED
+    public static var settingsDownloadsDeniedTitle: String { CopyLookup.string("settings.downloads.denied.title", default: "Camera Roll Access") }
+    /// "A copy of every photo and video you shared, at full quality." — Retro · settings.downloads · new · SOURCED
+    public static var settingsDownloadsDetail: String { CopyLookup.string("settings.downloads.detail", default: "A copy of every photo and video you shared, at full quality.") }
+    /// "Everything is saved to your photo library." — Retro · settings.downloads · new · SOURCED
+    public static var settingsDownloadsDetailLibrary: String { CopyLookup.string("settings.downloads.detailLibrary", default: "Everything is saved to your photo library.") }
+    /// "Saved!" — Retro · settings.downloads · verbatim · SOURCED
+    public static var settingsDownloadsDone: String { CopyLookup.string("settings.downloads.done", default: "Saved!") }
+    /// "Nothing to see here yet" — Retro · settings.downloads · verbatim · SOURCED
+    public static var settingsDownloadsEmpty: String { CopyLookup.string("settings.downloads.empty", default: "Nothing to see here yet") }
+    /// "There was a problem. Please try again." — Retro · settings.downloads · verbatim · SOURCED
+    public static var settingsDownloadsError: String { CopyLookup.string("settings.downloads.error", default: "There was a problem. Please try again.") }
+    /// "Could not connect. Check your connection and try again." — Retro · settings.downloads · verbatim · SOURCED
+    public static var settingsDownloadsOffline: String { CopyLookup.string("settings.downloads.offline", default: "Could not connect. Check your connection and try again.") }
+    /// "Downloading…" — Retro · settings.downloads · verbatim · SOURCED
+    public static var settingsDownloadsProgress: String { CopyLookup.string("settings.downloads.progress", default: "Downloading…") }
+    /// "Continue" — Retro · settings.downloads · verbatim · SOURCED
+    public static var settingsDownloadsResume: String { CopyLookup.string("settings.downloads.resume", default: "Continue") }
+    /// "Download" — Retro · settings.downloads · new · SOURCED
+    public static var settingsDownloadsStart: String { CopyLookup.string("settings.downloads.start", default: "Download") }
+    /// "Download My Photos" — Retro · settings.downloads · adapted · SOURCED
+    public static var settingsDownloadsTitle: String { CopyLookup.string("settings.downloads.title", default: "Download My Photos") }
     /// "Every photo from this day" — Retro · settings.hidden · new · SOURCED
     public static var settingsHiddenDayDetail: String { CopyLookup.string("settings.hidden.day.detail", default: "Every photo from this day") }
     /// "Photos and days you hide from On This Day show up here. Only you see what you hide." — Retro · settings.hidden · new · SOURCED
@@ -1979,6 +2025,8 @@ public enum Copy {
     public static var settingsRootCloseAccessibilityLabel: String { CopyLookup.string("settings.root.close.accessibilityLabel", default: "Close") }
     /// "Contact Us" — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootContact: String { CopyLookup.string("settings.root.contact", default: "Contact Us") }
+    /// "Download My Photos" — Retro · settings.root · adapted · SOURCED
+    public static var settingsRootDownloads: String { CopyLookup.string("settings.root.downloads", default: "Download My Photos") }
     /// "Hidden Memories" — Retro · settings.root · new · SOURCED
     public static var settingsRootHiddenMemories: String { CopyLookup.string("settings.root.hiddenMemories", default: "Hidden Memories") }
     /// "Your Subscription" — Retro · settings.root · verbatim · SOURCED

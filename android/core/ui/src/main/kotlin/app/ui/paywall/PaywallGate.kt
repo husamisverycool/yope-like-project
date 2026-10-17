@@ -2,6 +2,7 @@ package app.ui.paywall
 
 import androidx.navigation.NavController
 import app.model.AppRoute
+import app.model.PaywallPerkRoute
 import app.model.SessionPromptGate
 
 /**
@@ -12,8 +13,9 @@ import app.model.SessionPromptGate
  * keeps its "Premium" badge, `paywall.locked.badge`). The settings premium row opens
  * [AppRoute.Paywall] directly (navigation the person chose; not counted).
  */
-fun NavController.openPaywallFromLockedPerk(gate: SessionPromptGate = SessionPromptGate.process): Boolean {
+fun NavController.openPaywallFromLockedPerk(gate: SessionPromptGate = SessionPromptGate.process, perk: String? = null): Boolean {
     if (!gate.tryClaim()) return false
-    navigate(AppRoute.Paywall)
+    // [perk] (`Perk.wire`, e.g. "export" for full-quality downloads): the paywall opens at that perk's page.
+    navigate(if (perk != null) PaywallPerkRoute(perk) else AppRoute.Paywall)
     return true
 }

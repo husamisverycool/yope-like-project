@@ -132,6 +132,7 @@ import app.ui.haptics.rememberHaptics
 import app.ui.system.DsDropdownMenu
 import app.ui.system.DsMenuItem
 import app.ui.system.SystemAlertDialog
+import app.ui.system.SystemTextFieldDialog
 import app.ui.text.CapTop
 import app.ui.text.TextRoles
 import kotlinx.coroutines.launch
@@ -148,11 +149,13 @@ data class ViewerNav(
     val reportSelfie: (groupId: String, selfieId: String, userId: String) -> Unit = { _, _, _ -> },
 )
 
-/** What the menu's Favorite, Use as Cover and the album picker do (set by [PhotoViewerScreen] from its view model). */
+/** What the menu's Favorite, Use as Cover, the album picker and the caption dialog do (set by [PhotoViewerScreen] from its view model). */
 class ViewerMenuActions(
     val toggleFavorite: () -> Unit = {},
     val useAsCover: () -> Unit = {},
     val addedToAlbum: () -> Unit = {},
+    /** The caption dialog's Save (`edit_caption`). */
+    val saveCaption: (String) -> Unit = {},
 )
 
 /** Transient UI state of the viewer (menus, sheets, dialogs), hoisted for tests. */
@@ -167,8 +170,12 @@ class ViewerUiState(
     selfieLayer: SelfieMode? = null,
     confirmRemoveSelfie: String? = null,
     albumPicker: Boolean = false,
+    captionDraft: String? = null,
 ) {
     var menu by mutableStateOf(menu)
+
+    /** The caption dialog's text while it is open (Edit Caption / Add a Caption); null = closed. */
+    var captionDraft by mutableStateOf(captionDraft)
 
     /** "Add to Album": the album picker (`photo.viewer.layout.albumPicker`). */
     var albumPicker by mutableStateOf(albumPicker)
@@ -233,8 +240,16 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         coverNotReady = stringRes(R.string.photo_viewer_error_covernotready),
         coverFailed = stringRes(R.string.photo_viewer_error_cover),
         addedToAlbum = stringRes(R.string.week_edit_toast_albumsaved),
+        captionFailed = stringRes(R.string.photo_viewer_error_caption),
     )
-    ui.menuActions = remember(vm) { ViewerMenuActions(toggleFavorite = vm::toggleFavorite, useAsCover = vm::useAsCover, addedToAlbum = vm::addedToAlbum) }
+    ui.menuActions = remember(vm) {
+        ViewerMenuActions(
+            toggleFavorite = vm::toggleFavorite,
+            useAsCover = vm::useAsCover,
+            addedToAlbum = vm::addedToAlbum,
+            saveCaption = { text -> vm.saveCaption(text) },
+        )
+    }
     LaunchedEffect(vm) {
         vm.effects.collect { effect ->
             when (effect) {
@@ -253,6 +268,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
                 ViewerEffect.CoverNotReady -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.coverNotReady) }
                 ViewerEffect.CoverFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.coverFailed) }
                 ViewerEffect.AddedToAlbum -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, texts.addedToAlbum) }
+                ViewerEffect.CaptionFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.captionFailed) }
             }
         }
     }
@@ -321,6 +337,7 @@ private class ViewerTexts(
     val coverNotReady: String,
     val coverFailed: String,
     val addedToAlbum: String,
+    val captionFailed: String,
 )
 
 /** The viewer without its view model (snapshots render this with fixed states). Dark in both appearances. */
@@ -671,12 +688,14 @@ private fun PhotoArea(
 private val DEFAULT_ASPECT: Float get() = Tokens.Sizes.globalStripTileWidth / Tokens.Sizes.globalStripTileHeight
 
 /**
- * The viewer's menu (`photo.viewer.layout.menu`): save on every photo (owner decision 28: any member saves any photo
- * they can see), Favorite / Unfavorite (private, Apple Photos), Add to Album, Use as Cover (group admins), then delete
- * (yours) or report + block {name} (others').
+ * The viewer's menu (`photo.viewer.layout.menu`): on your own photo first Edit Caption (Add a Caption without one; owner
+ * decision 34), then save on every photo (owner decision 28: any member saves any photo they can see), Favorite /
+ * Unfavorite (private, Apple Photos), Add to Album, Use as Cover (group admins), then delete (yours) or report + block
+ * {name} (others').
  */
 @Composable
 private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, onSave: () -> Unit): List<DsMenuItem> {
+    val caption = stringRes(if (state.hasCaption) R.string.photo_viewer_menu_editcaption else R.string.photo_viewer_menu_addcaption)
     val save = stringRes(R.string.photo_viewer_menu_save)
     val favorite = stringRes(R.string.photo_viewer_menu_favorite)
     val unfavorite = stringRes(R.string.photo_viewer_menu_unfavorite)
@@ -687,6 +706,7 @@ private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNa
     val block = stringRes(R.string.photo_viewer_menu_block, state.current?.author?.firstName.orEmpty())
     val actions = ui.menuActions
     return buildList {
+        if (state.canEditCaption) add(DsMenuItem(caption, { ui.captionDraft = state.current?.post?.caption.orEmpty() }, icon = Tokens.Icons.globalEdit))
         if (state.current?.media != null) add(DsMenuItem(save, onSave, icon = Tokens.Icons.globalDownload))
         if (state.current?.post != null && state.current?.gone != true) {
             if (state.favorite) add(DsMenuItem(unfavorite, actions.toggleFavorite, icon = Tokens.Icons.globalUnfavorite))
@@ -716,7 +736,10 @@ private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, vo
     val post = photo.post ?: return
     val pitch = Tokens.Sizes.photoViewerDimensionFooterLinePitch
     val caption = post.caption?.takeIf { it.isNotBlank() }
-    val date = Formats.viewerDate(post.createdAt, photo.zone ?: java.time.ZoneId.systemDefault())
+    val day = Formats.viewerDate(post.createdAt, photo.zone ?: java.time.ZoneId.systemDefault())
+    // "{date} · Edited" once the caption was changed (`caption_edited_at`, `chat.thread.edited`; Retro's ' · ' separator).
+    val edited = stringRes(R.string.chat_thread_edited)
+    val date = if (post.captionEditedAt != null) day + SEPARATOR + edited else day
     // The memory group's tag run (tagging.md A) gets the tags of the viewer's `post_tags` read, in tag order.
     val tagged = if (photo.loaded) photo.tagged.map { id -> TaggedPerson(id, photo.people[id]?.firstName.orEmpty(), photoModel(photo.people[id]?.avatarPath)) } else null
     val me = state.me?.let { id -> TaggedPerson(id, photo.people[id]?.firstName.orEmpty(), photoModel(photo.people[id]?.avatarPath)) }
@@ -1036,6 +1059,23 @@ private fun ViewerDialogs(
                 dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
                 onDismiss = { ui.confirmDelete = false },
                 destructive = true,
+            )
+        }
+        // `photo.viewer.layout.editCaption`: the platform alert with one text field; Save → edit_caption (blank removes it).
+        ui.captionDraft?.let { draft ->
+            SystemTextFieldDialog(
+                title = stringRes(if (state.hasCaption) R.string.photo_viewer_menu_editcaption else R.string.photo_viewer_menu_addcaption),
+                value = draft,
+                onValueChange = { ui.captionDraft = it.take(PhotoViewerViewModel.CAPTION_MAX) },
+                placeholder = stringRes(R.string.photo_viewer_caption_placeholder),
+                confirmLabel = stringRes(R.string.photo_viewer_caption_save),
+                onConfirm = {
+                    ui.captionDraft = null
+                    ui.menuActions.saveCaption(draft)
+                },
+                dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
+                onDismiss = { ui.captionDraft = null },
+                modifier = Modifier.testTag("photo.viewer.caption"),
             )
         }
         val albumPost = photo.post

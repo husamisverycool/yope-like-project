@@ -97,6 +97,8 @@ data class AlbumViewState(
     val creatorName: String? = null,
     val mine: Boolean = false,
     val me: String? = null,
+    /** Premium (owner decision 29): "Download Album" downloads; without it the item carries the lock and opens the paywall. */
+    val premium: Boolean = false,
 ) {
     enum class Phase { Loading, Ready, NotFound, Error, OfflineEmpty }
 
@@ -129,6 +131,10 @@ sealed interface AlbumEffect {
     data object RemoveNotAllowed : AlbumEffect
     /** The add sheet put photos in the album ("Added to Album!"). */
     data object Added : AlbumEffect
+    /** "Download Album" with premium: the download page for this album (settings.downloads). */
+    data object OpenDownload : AlbumEffect
+    /** "Download Album" without premium: the paywall at the full-quality downloads perk (once per session). */
+    data object OpenPaywall : AlbumEffect
 }
 
 @Serializable
@@ -161,6 +167,18 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
         load()
         viewModelScope.launch { data.events(groupId).collect(::onEvent) }
         viewModelScope.launch { data.online.distinctUntilChanged().drop(1).collect { if (it) load() } }
+        viewModelScope.launch {
+            val premium = data.isPremium()
+            _state.update { it.copy(premium = premium) }
+        }
+    }
+
+    /**
+     * "Download Album" (owner decision 29, premium): with premium the download page ([AlbumEffect.OpenDownload]); without,
+     * the paywall at the full-quality downloads perk ([AlbumEffect.OpenPaywall]; the screen applies the once-per-session rule).
+     */
+    fun download() {
+        _effects.tryEmit(if (_state.value.premium) AlbumEffect.OpenDownload else AlbumEffect.OpenPaywall)
     }
 
     fun load() {

@@ -676,6 +676,9 @@ public enum Tokens {
         /// Apple HIG / Material 3 · global · remove from album (menu item) · PLATFORM
         /// token: `icon.global.remove`
         public static let globalRemove: String = "minus.circle"
+        /// Apple HIG / Material 3 · global · reply to a memory with a photo (onthisday menu item 'Reply') · PLATFORM
+        /// token: `icon.global.reply`
+        public static let globalReply: String = "arrowshape.turn.up.left"
         /// Apple HIG / Material 3 · global · report (menu item; outline per the icon style) · PLATFORM
         /// token: `icon.global.report`
         public static let globalReport: String = "flag"

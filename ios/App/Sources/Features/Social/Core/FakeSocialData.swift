@@ -72,6 +72,15 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var historyMonths: [GroupID: [HistoryMonth]] = [:]
         /// Every `search_photos` query asked, with its `before` cursor, in order.
         var searches: [(query: PhotoSearchQuery, before: Date?)] = []
+        /// `download_items('mine')` rows (any order; served newest first).
+        var downloads: [DownloadItem] = []
+        /// `download_items('album')` rows per album, in album order.
+        var albumDownloads: [AlbumID: [DownloadItem]] = [:]
+        /// `'album'` answers `premium_required`.
+        var downloadsNeedPremium = false
+        var downloadPageSize = SocialPaging.downloads
+        /// Every `download_items` call with its cursor, in order.
+        var downloadCalls: [(scope: DownloadScope, before: Date?)] = []
         var cachedAlbums: [GroupID: [AlbumWithItems]] = [:]
         var cachedGroups: [PhotoGroup]?
         var cachedMembers: [GroupID: [MemberProfile]] = [:]
@@ -364,6 +373,45 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
             state.selfies.removeAll { gone.contains($0.postID) }
             state.favorites[id] = nil
             state.deletedMedia.append(id)
+        }
+    }
+
+    /// `edit_caption`: the author's own post; blank removes the caption; > 1000 characters → `invalid_caption`.
+    func editCaption(postID: PostID, caption: String) async throws -> Post {
+        await hold("editCaption")
+        try call("editCaption")
+        let me = read { $0.me }
+        guard var post = read({ $0.posts.first { $0.id == postID } }), post.post.authorID == me else {
+            throw DataError.api(.postNotFound)
+        }
+        let trimmed = caption.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count <= SocialLimits.caption else { throw DataError.api(.invalidCaption) }
+        post.post.caption = trimmed.isEmpty ? nil : trimmed
+        post.post.captionEditedAt = tick()
+        let edited = post
+        update { state in
+            if let index = state.posts.firstIndex(where: { $0.id == postID }) { state.posts[index] = edited }
+        }
+        return edited.post
+    }
+
+    /// `download_items`: `.mine` = `downloads` newest first, pages of `downloadPageSize` before the cursor; `.album` =
+    /// `albumDownloads[id]` at once (`premium_required` while `downloadsNeedPremium`, `album_not_found` when absent).
+    func downloadItems(_ scope: DownloadScope, before: Date?) async throws -> [DownloadItem] {
+        await hold("downloadItems")
+        try call("downloadItems")
+        update { $0.downloadCalls.append((scope, before)) }
+        switch scope {
+        case .mine:
+            return read { state in
+                let sorted = state.downloads.sorted { $0.postedAt > $1.postedAt }
+                let page = sorted.filter { item in before.map { item.postedAt < $0 } ?? true }
+                return Array(page.prefix(state.downloadPageSize))
+            }
+        case let .album(albumID):
+            if read({ $0.downloadsNeedPremium }) { throw DataError.api(.premiumRequired) }
+            guard let items = read({ $0.albumDownloads[albumID] }) else { throw DataError.api(.albumNotFound) }
+            return items
         }
     }
 

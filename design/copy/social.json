@@ -2407,6 +2407,66 @@
       "evidence": "design/components.md C-11",
       "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
+    },
+    "photo.viewer.menu.editCaption": {
+      "text": "Edit Caption",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_creation_flow_edit_cover_title` ('Edit Cover'); Apple Photos' caption field ('Add a Caption', https://support.apple.com/guide/iphone/iph3d110f84/ios, accessed 2026-10-17)",
+      "pattern": "retro.voice.menu-labels ('Share to my week', 'Add to Album', 'Hide photo', 'Delete from Photos', 'Copy Link'); retro.voice.title-case",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (docs/RESEARCH_FEATURES_2026-10-17.md #8). Noun swap: Cover → Caption. First item of the viewer's menu on your own photo when it has a caption; opens the caption alert (edit_caption, any time)."
+    },
+    "photo.viewer.menu.addCaption": {
+      "text": "Add a Caption",
+      "origin": "verbatim",
+      "source_app": "Apple Photos",
+      "surface": "photo.viewer",
+      "evidence": "https://support.apple.com/guide/iphone/iph3d110f84/ios (accessed 2026-10-17: swipe up on a photo, then 'Add a Caption')",
+      "pattern": "retro.voice.menu-labels; retro.voice.title-case",
+      "level": "SOURCED",
+      "notes": "Shown instead of Edit Caption on your own photo without a caption; also the alert's title then."
+    },
+    "photo.viewer.caption.placeholder": {
+      "text": "Add a caption…",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_box_caption_placeholder` (design/copy-patterns.md retro.voice.placeholder)",
+      "pattern": "retro.voice.placeholder",
+      "level": "SOURCED",
+      "notes": "The caption alert's one text field (≤ 1000 characters, posts.caption); empty removes the caption."
+    },
+    "photo.viewer.caption.save": {
+      "text": "Save",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (edit_profile_save, as albums.view.rename.save)",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "The caption alert's confirming action → edit_caption. Cancel is photo.viewer.delete.cancel."
+    },
+    "photo.viewer.error.caption": {
+      "text": "Couldn't edit caption",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_send_failed_title) (\"Couldn't send comment\"); chat.thread.edit.error (\"Couldn't edit message\")",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Android Toast / iOS announcement with haptic.global.error when edit_caption fails; the caption stays as it was. Verb and noun swap: send comment → edit caption."
+    },
+    "albums.view.menu.download": {
+      "text": "Download Album",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "albums.view",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_settings_title_download_all` ('Download all photos'); `journal_settings_title_delete_journal` ('Delete Album', the menu's casing)",
+      "pattern": "retro.voice.menu-labels; retro.voice.title-case ('Delete Album', 'Add Photos')",
+      "level": "SOURCED",
+      "notes": "Owner decisions 29 / 34 (research #2): premium (download_items('album'), premium_required). Without premium the item carries icon.global.lock and opens the paywall at the full-quality downloads perk (paywall.layout.promptRule)."
     }
   }
 }

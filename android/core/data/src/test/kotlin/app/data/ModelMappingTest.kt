@@ -2,6 +2,8 @@ package app.data
 
 import app.data.model.Collage
 import app.data.model.DataJson
+import app.data.model.DownloadItem
+import app.data.model.DownloadScope
 import app.data.model.Entitlement
 import app.data.model.Group
 import app.data.model.HistoryMonth
@@ -255,5 +257,34 @@ class ModelMappingTest {
         val overnight = DataJson.decodeFromString(Post.serializer(), row)
         assertEquals(Instant.parse("2026-10-12T07:00:00Z"), overnight.visibleAt)
         assertEquals(taken, overnight.createdAt)
+    }
+
+    /** Migration 0047 (`caption_edited_at`) and 0052 (`download_items` rows; the RPC's parameters). */
+    @Test fun editedCaptionsAndDownloadRowsDecode() {
+        val row = """{"id":"p","media_id":"m","group_id":"g","author_id":"u","caption":"lake day","voice_path":null,"voice_duration_ms":null,
+            "invitation_id":null,"in_window":false,"reply_to_post_id":null,"created_at":"2026-10-11T21:30:00Z",
+            "caption_edited_at":"2026-10-17T09:30:00+00:00"}"""
+        assertEquals(Instant.parse("2026-10-17T09:30:00Z"), DataJson.decodeFromString(Post.serializer(), row).captionEditedAt)
+        val rows = """[{"post_id":"p1","media_id":"m1","kind":"live_photo","original_path":"u/a/m1/original.heic",
+            "front_original_path":null,"motion_path":"u/a/m1/motion.mov","caption":"lake day","taken_on":"2026-07-04",
+            "posted_at":"2026-07-04T18:00:00.123456+00:00"},
+            {"post_id":"p2","media_id":"m2","kind":"video","original_path":"u/a/m2/original.mp4","front_original_path":null,
+            "motion_path":null,"caption":null,"taken_on":null,"posted_at":"2026-07-03T18:00:00+00:00"}]"""
+        val items = DataJson.decodeFromString(ListSerializer(DownloadItem.serializer()), rows)
+        assertEquals(MediaKind.LivePhoto, items[0].kind)
+        assertEquals("u/a/m1/motion.mov", items[0].motionPath)
+        assertEquals(LocalDate.of(2026, 7, 4), items[0].takenOn)
+        assertEquals(Instant.parse("2026-07-04T18:00:00.123456Z"), items[0].postedAt)
+        assertEquals(MediaKind.Video, items[1].kind)
+        assertNull(items[1].takenOn)
+
+        val mine = rpcArgs(Rpc.DownloadItems) {
+            put("p_scope", DownloadScope.Mine.wire)
+            put("p_before", Instant.parse("2026-07-04T18:00:00Z"))
+            put("p_limit", 100)
+        }
+        assertEquals(JsonPrimitive("mine"), mine["p_scope"])
+        assertEquals("album", DownloadScope.InAlbum("a1").wire)
+        assertThrows(IllegalArgumentException::class.java) { rpcArgs(Rpc.EditCaption) { put("p_post_id", "p") } }
     }
 }

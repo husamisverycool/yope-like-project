@@ -71,6 +71,14 @@ protocol SocialDataSource: Sendable {
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia]
     /// `delete_media`: removes the photo everywhere (owner only).
     func deleteMedia(id: MediaID) async throws
+    /// `edit_caption` (migration 0047): my own photo's caption in its group, any time; empty or blank removes it. The row
+    /// with `caption_edited_at` set.
+    func editCaption(postID: PostID, caption: String) async throws -> Post
+
+    // MARK: Downloads (migration 0052, settings.downloads)
+    /// `download_items`: `.mine` newest first, `before` pages back (the last row's `postedAt`, pages of
+    /// `SocialPaging.downloads`); `.album` every photo of the album at once (premium: `premium_required`).
+    func downloadItems(_ scope: DownloadScope, before: Date?) async throws -> [DownloadItem]
 
     // MARK: Reactions and self-tags (§5.10, §5.11)
     /// Rows `(user, emoji)`, oldest first. Never a count.
@@ -170,6 +178,14 @@ enum SocialPaging {
     static let favorites = 60
     /// `search.photos`: `search_photos(p_limit: 60)` (the API's default page).
     static let search = 60
+    /// `settings.downloads`: `download_items('mine', p_limit: 100)` (the API's default page).
+    static let downloads = 100
+}
+
+/// Lengths fixed by the API contract (docs/API.md §5.8).
+enum SocialLimits {
+    /// `posts.caption`: ≤ 1000 characters (`edit_caption` refuses more with `invalid_caption`).
+    static let caption = 1000
 }
 
 /// What `search.photos` asks `search_photos` (migration 0040): every criterion given must match. No face or AI search.

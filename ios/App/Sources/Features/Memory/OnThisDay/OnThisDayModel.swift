@@ -506,6 +506,15 @@ final class OnThisDayModel {
         return MemoryShareImage(url: url, name: current.id.rawValue, data: data)
     }
 
+    /// "Reply" ("then & now", owner decision 34; Timehop "Then & Now", Retro's Rewind "Share to my week"): any memory. The
+    /// camera opens replying to the memory with a photo in this group only (`create_post(p_reply_to_post_id)`), as the
+    /// viewer's camera glyph does; the answer shows in the chat as a photo reply. Playing stops.
+    func reply() {
+        guard let current else { return }
+        stopPlaying()
+        dependencies.openPhotoReply(groupID.rawValue, current.id.rawValue)
+    }
+
     /// "Report Post" (someone else's memory) → `safety.report` (target kind post).
     func report() {
         guard let current, !current.isMine else { return }

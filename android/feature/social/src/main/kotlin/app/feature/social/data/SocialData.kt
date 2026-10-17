@@ -8,6 +8,8 @@ import app.data.model.Album
 import app.data.model.AlbumItem
 import app.data.model.ChatTyping
 import app.data.model.Collage
+import app.data.model.DownloadItem
+import app.data.model.DownloadScope
 import app.data.model.FavoritePhoto
 import app.data.model.Group
 import app.data.model.HistoryMonth
@@ -96,6 +98,21 @@ interface SocialData {
     suspend fun revealedWith(post: Post): List<String> = emptyList()
     suspend fun media(ids: Collection<String>): List<Media>
     suspend fun deleteMedia(mediaId: String)
+    /**
+     * `edit_caption` (migration 0047): your own photo's caption in its group, any time; empty or blank removes it. The row
+     * with `caption_edited_at` set.
+     */
+    suspend fun editCaption(postId: String, caption: String): Post = throw DataException(DataError.NotConfigured)
+
+    /**
+     * `download_items` (migration 0052, settings.downloads): [DownloadScope.Mine] newest first, [before] = the last row's
+     * `posted_at` (pages of [app.data.repo.PostRepository.DOWNLOAD_PAGE]); [DownloadScope.InAlbum] every photo at once
+     * (premium: `premium_required`).
+     */
+    suspend fun downloadItems(scope: DownloadScope, before: Instant?): List<DownloadItem> = throw DataException(DataError.NotConfigured)
+
+    /** The premium entitlement (Download Album's lock); false when it cannot be read. */
+    suspend fun isPremium(): Boolean = false
 
     suspend fun reactions(postIds: Collection<String>): Map<String, List<ReactionEntry>>
     suspend fun react(postId: String, emoji: String)
@@ -224,6 +241,9 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
         post.revealedAt?.let { graph.posts.revealed(post.groupId, it).map(Post::id) }.orEmpty()
     override suspend fun media(ids: Collection<String>) = graph.posts.media(ids)
     override suspend fun deleteMedia(mediaId: String) = graph.posts.deleteMedia(mediaId)
+    override suspend fun editCaption(postId: String, caption: String): Post = graph.posts.editCaption(postId, caption)
+    override suspend fun downloadItems(scope: DownloadScope, before: Instant?): List<DownloadItem> = graph.posts.downloadItems(scope, before)
+    override suspend fun isPremium(): Boolean = runCatching { graph.entitlements.isPremium() }.getOrDefault(false)
 
     override suspend fun reactions(postIds: Collection<String>) = graph.reactions.reactionsFor(postIds)
     override suspend fun react(postId: String, emoji: String) {

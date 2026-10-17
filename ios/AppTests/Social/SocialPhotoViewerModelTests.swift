@@ -2,6 +2,7 @@
 @testable import App
 import AppData
 import AppModels
+import DesignSystem
 import Foundation
 import XCTest
 
@@ -420,5 +421,91 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         data.update { $0.holds.remove("replies") }
         await task.value
         XCTAssertEqual(model.currentComments.count, 1)
+    }
+
+    // MARK: Caption (owner decision 34, `photo.viewer.layout.editCaption`)
+
+    func testOnlyMyOwnPhotosOfferTheCaptionItem() async {
+        let theirs = makeModel()
+        await theirs.load()
+        XCTAssertFalse(theirs.canEditCurrentCaption, "someone else's photo: no Edit Caption")
+        theirs.beginCaptionEdit()
+        XCTAssertFalse(theirs.isEditingCaption)
+
+        let mine = makeModel(start: SocialDemo.p3)
+        await mine.load()
+        XCTAssertTrue(mine.canEditCurrentCaption)
+        XCTAssertFalse(mine.currentHasCaption, "no caption yet: Add a Caption")
+        let captioned = makeModel(start: SocialDemo.p6, ids: [SocialDemo.p6])
+        await captioned.load()
+        XCTAssertTrue(captioned.currentHasCaption, "a caption: Edit Caption")
+    }
+
+    func testSavingACaptionShowsItWithEditedAndCallsEditCaption() async throws {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data, start: SocialDemo.p3)
+        await model.load()
+        let post = try XCTUnwrap(model.current)
+        XCTAssertFalse(model.isCaptionEdited(post))
+        model.beginCaptionEdit()
+        XCTAssertTrue(model.isEditingCaption)
+        XCTAssertEqual(model.captionText, "")
+        model.captionText = "  sunday hike  "
+        await model.saveCaption()
+        XCTAssertFalse(model.isEditingCaption)
+        XCTAssertEqual(model.current?.post.caption, "sunday hike")
+        XCTAssertTrue(model.current.map(model.isCaptionEdited) ?? false, "the date line reads '… · Edited'")
+        XCTAssertEqual(data.read { $0.posts.first { $0.id == SocialDemo.p3 }?.post.caption }, "sunday hike")
+        XCTAssertEqual(data.read { $0.calls.filter { $0 == "editCaption" }.count }, 1)
+
+        // The same text again sends nothing.
+        model.beginCaptionEdit()
+        XCTAssertEqual(model.captionText, "sunday hike", "the alert opens on the current caption")
+        await model.saveCaption()
+        XCTAssertEqual(data.read { $0.calls.filter { $0 == "editCaption" }.count }, 1)
+
+        // Empty removes it.
+        model.beginCaptionEdit()
+        model.captionText = "   "
+        await model.saveCaption()
+        XCTAssertNil(model.current?.post.caption)
+        XCTAssertFalse(model.currentHasCaption)
+    }
+
+    func testCaptionFailureKeepsTheCaptionAndSaysSo() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data, start: SocialDemo.p6, ids: [SocialDemo.p6])
+        await model.load()
+        data.update { $0.failOnce.insert("editCaption") }
+        model.beginCaptionEdit()
+        model.captionText = "beach day"
+        await model.saveCaption()
+        XCTAssertEqual(model.current?.post.caption, "picnic", "the caption stays as it was")
+        XCTAssertFalse(model.current.map(model.isCaptionEdited) ?? true)
+        XCTAssertEqual(model.signals.feedback?.kind, .failed, "haptic.global.error")
+        XCTAssertEqual(model.signals.notice?.notice, .captionFailed)
+        XCTAssertEqual(SocialNotice.captionFailed.text, Copy.photoViewerErrorCaption)
+    }
+
+    func testTheCaptionFieldStopsAtTheAPILimit() async {
+        let model = makeModel(start: SocialDemo.p3)
+        await model.load()
+        model.beginCaptionEdit()
+        model.captionText = String(repeating: "a", count: SocialLimits.caption + 20)
+        model.limitCaptionText()
+        XCTAssertEqual(model.captionText.count, SocialLimits.caption)
+    }
+
+    func testAnotherDevicesCaptionEditArrivesLive() async throws {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        var post = try XCTUnwrap(model.current).post
+        post.caption = "first snow!"
+        post.captionEditedAt = SocialDemo.monday
+        await model.handle(.postUpdated(post))
+        XCTAssertEqual(model.current?.post.caption, "first snow!")
+        XCTAssertTrue(model.current.map(model.isCaptionEdited) ?? false)
+        XCTAssertNotNil(model.current?.media, "the media stays")
     }
 }

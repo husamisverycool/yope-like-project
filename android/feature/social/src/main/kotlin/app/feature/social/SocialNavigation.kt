@@ -51,8 +51,17 @@ import app.feature.social.week.WeekEditViewModel
 import app.feature.social.week.WeekHistoryScreen
 import app.feature.social.week.WeekRecapListSheet
 import app.feature.social.week.WeekRecapScreen
+import androidx.compose.ui.res.stringResource
+import app.data.model.DownloadScope
+import app.designsystem.R
+import app.feature.social.downloads.DownloadRoute
+import app.feature.social.downloads.DownloadViewModel
+import app.feature.social.downloads.GalleryDownloadSaver
+import app.feature.social.downloads.PrefsDownloadCursors
 import app.model.AppRoute
+import app.model.DownloadsRoute
 import app.model.FavoritesRoute
+import app.ui.paywall.openPaywallFromLockedPerk
 import app.model.PhotoContext
 import app.model.PhotoViewerIn
 import app.model.SafetyReportMessageRoute
@@ -216,10 +225,39 @@ fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
                 vm,
                 onClose = { navController.popBackStack() },
                 onPhoto = { postId -> navController.navigate(PhotoViewerIn(route.groupId, postId, PhotoContext.Album, route.albumId)) },
+                onDownload = { navController.navigate(DownloadsRoute(route.albumId)) },
+                onPaywall = { navController.openPaywallFromLockedPerk(perk = PAYWALL_PERK_EXPORT) },
+            )
+        }
+    }
+    // settings.downloads: settings.root → Download My Photos (free), or an album's Download Album (premium; starts at once).
+    composable<DownloadsRoute> { entry ->
+        val route = entry.toRoute<DownloadsRoute>()
+        SocialHost { data ->
+            val context = LocalContext.current
+            val gallery = app.feature.social.common.LocalSocialServices.current.gallery
+            val scope = route.albumId?.let { DownloadScope.InAlbum(it) } ?: DownloadScope.Mine
+            val vm = viewModel(key = "downloads:${route.albumId}") {
+                DownloadViewModel(data, scope, GalleryDownloadSaver(context.applicationContext, data, gallery), PrefsDownloadCursors(context))
+            }
+            DownloadRoute(
+                vm,
+                title = stringResource(if (route.albumId != null) R.string.settings_downloads_albumtitle else R.string.settings_downloads_title),
+                detail = stringResource(if (route.albumId != null) R.string.settings_downloads_albumdetail else R.string.settings_downloads_detail),
+                gallery = gallery,
+                onBack = { navController.popBackStack() },
+                onPaywall = {
+                    navController.popBackStack()
+                    navController.openPaywallFromLockedPerk(perk = PAYWALL_PERK_EXPORT)
+                },
+                autoStart = route.albumId != null,
             )
         }
     }
 }
+
+/** The paywall perk of full-quality downloads (account's `Perk.Export.wire`; iOS `PaywallPerk.export`). */
+private const val PAYWALL_PERK_EXPORT = "export"
 
 /** Sheets over the screen below: a full-window dialog destination whose content is the native sheet. */
 private val SheetDialog = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)

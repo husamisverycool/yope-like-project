@@ -78,6 +78,7 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 
 | item | shown | glyph | copy | action |
 |---|---|---|---|---|
+| Edit Caption / Add a Caption | your photo (owner decision 34, research #8), first | `icon.global.edit` | `photo.viewer.menu.editCaption` (it has a caption) / `.menu.addCaption` | the caption alert (`photo.viewer.layout.editCaption`, below) |
 | Save to Camera Roll | every photo (owner decision 28) | `icon.global.download` | `photo.viewer.menu.save` | saves the original (Live Photo: still + motion) → Android Toast `photo.viewer.toast.saved` / iOS announcement; `haptic.global.success` |
 | Favorite / Unfavorite | every photo; the item says what a tap does (Apple Photos) | `icon.global.favorite` / `icon.global.unfavorite` | `photo.viewer.menu.favorite` / `.menu.unfavorite` | `set_favorite(p_media_id, p_on)`: applied at once, `haptic.global.select`; failed → back as it was, `haptic.global.error`, Android Toast / iOS announcement `photo.viewer.error.favorite` |
 | Add to Album | every photo | `icon.global.albums` | `photo.viewer.menu.addToAlbum` | the album picker (below) |
@@ -90,7 +91,20 @@ Save is on every photo the viewer can see (owner decision 28: any member saves a
 Apple Shared Albums lets subscribers save shared items, support.apple.com/108314). Sharing to other apps stays your own
 photos only (decision 12). Someone else's photo shows Save, Report and Block.
 
-Order: Save to Camera Roll · Favorite · Add to Album · Use as Cover · then Delete (yours) or Report Post · Block {name}.
+Order: (yours) Edit Caption · Save to Camera Roll · Favorite · Add to Album · Use as Cover · then Delete (yours) or Report
+Post · Block {name}.
+
+### Edit a caption (`photo.viewer.layout.editCaption`; owner decision 34, research #8)
+
+Retro lets its members change a photo's caption at any time; so does `edit_caption` (migration 0047). The menu's first item
+on your own photo opens the **platform alert with one text field** (iOS `.alert` with a `TextField`; Android the Material 3
+dialog with an outlined field, `SystemTextFieldDialog`): title = the item's label, the field prefilled with the caption
+(placeholder `photo.viewer.caption.placeholder`, Retro's "Add a caption…"; at most 1000 characters, `posts.caption`),
+`photo.viewer.delete.cancel` and `photo.viewer.caption.save`. Save → `edit_caption(p_post_id, p_caption)`; empty or blank
+removes the caption; the same text again sends nothing. The new caption shows at once and the date line reads
+"{date} · Edited" (`chat.thread.edited`, Retro's ' · ' meta separator) once `caption_edited_at` is set — for everyone, from
+the Realtime UPDATE on `posts` (the chat thread's photo message shows the new caption the same way). Failure: the caption is
+back as it was, `haptic.global.error` + Android Toast / iOS announcement `photo.viewer.error.caption`.
 
 **Favorites are private** (Apple Photos Favorites; owner decision 34, docs/RESEARCH_FEATURES_2026-10-17.md #19): only the
 person who favorites a photo ever sees it — no heart on the photo for anyone else, no count, no notification. The

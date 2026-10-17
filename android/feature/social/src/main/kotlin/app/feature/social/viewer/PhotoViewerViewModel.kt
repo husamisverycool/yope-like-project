@@ -91,6 +91,12 @@ data class ViewerState(
 
     /** "Use as Cover": you are an admin of the photo's group and the photo is still there. */
     val canUseAsCover: Boolean get() = current?.gone != true && current?.post?.groupId?.let { it in adminGroups } == true
+
+    /** Your own photo that is still there: the menu's first item edits (or adds) its caption (owner decision 34). */
+    val canEditCaption: Boolean get() = mine && current?.gone != true && current?.post != null
+
+    /** The photo on screen has a caption: "Edit Caption"; without one "Add a Caption". */
+    val hasCaption: Boolean get() = !current?.post?.caption.isNullOrBlank()
 }
 
 /** What the viewer keeps of a photo for offline (`photo.viewer` → States → offline). */
@@ -128,6 +134,8 @@ sealed interface ViewerEffect {
     data object CoverFailed : ViewerEffect
     /** The album picker put the photo in an album ("Added to Album!", `week.edit.toast.albumSaved`). */
     data object AddedToAlbum : ViewerEffect
+    /** `edit_caption` failed: the caption is back as it was (`photo.viewer.error.caption`). */
+    data object CaptionFailed : ViewerEffect
 }
 
 /**
@@ -392,6 +400,34 @@ class PhotoViewerViewModel(
         _effects.tryEmit(ViewerEffect.AddedToAlbum)
     }
 
+    /**
+     * "Save" in the caption dialog (`photo.viewer.layout.editCaption`): `edit_caption` on your own photo, any time; blank
+     * removes the caption, unchanged text sends nothing. The new caption shows at once with "Edited"; the server's row
+     * replaces it; a failure puts the caption back with [ViewerEffect.CaptionFailed].
+     */
+    fun saveCaption(text: String, postId: String? = _state.value.current?.postId) {
+        val photo = _state.value.photos.firstOrNull { it.postId == postId } ?: return
+        val post = photo.post ?: return
+        if (photo.gone || post.authorId != _state.value.me) return
+        val caption = text.take(CAPTION_MAX).trim()
+        if (caption == post.caption.orEmpty().trim()) return
+        val shown = post.copy(caption = caption.ifEmpty { null }, captionEditedAt = post.captionEditedAt ?: java.time.Instant.now())
+        update(post.id) { it.copy(post = shown) }
+        viewModelScope.launch {
+            try {
+                val row = data.editCaption(post.id, caption)
+                update(post.id) { it.copy(post = row) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                val error = e.dataError()
+                if (error is DataError.Api && error.code == ApiError.PostNotFound) update(post.id) { it.copy(gone = true) }
+                else update(post.id) { if (it.post == shown) it.copy(post = post) else it }
+                _effects.emit(ViewerEffect.CaptionFailed)
+            }
+        }
+    }
+
     private fun subscribe(group: String) {
         if (subscriptions.containsKey(group)) return
         subscriptions[group] = viewModelScope.launch { data.events(group).collect(::onEvent) }
@@ -444,6 +480,8 @@ class PhotoViewerViewModel(
                 }
             }
             is GroupEvent.MessageDeleted -> _state.update { s -> s.copy(photos = s.photos.map { p -> p.copy(comments = p.comments.filterNot { it.id == event.messageId }) }) }
+            // A caption edited on another device (`edit_caption`) or a reply losing its target: the post changes in place.
+            is GroupEvent.PostUpdated -> update(event.post.id) { p -> if (p.post == null) p else p.copy(post = event.post) }
             else -> Unit
         }
     }
@@ -666,10 +704,13 @@ class PhotoViewerViewModel(
         _state.update { s -> s.copy(photos = s.photos.map { if (it.postId == id) transform(it) else it }) }
     }
 
-    private companion object {
-        const val MAX_PAGES = 20
-        const val FEED_PAGE = 30
-        const val WALL_PAGE = 50
-        const val FAVORITES_PAGE = 200
+    companion object {
+        private const val MAX_PAGES = 20
+        private const val FEED_PAGE = 30
+        private const val WALL_PAGE = 50
+        private const val FAVORITES_PAGE = 200
+
+        /** `posts.caption`: at most 1000 characters (docs/API.md §5.8; `invalid_caption` above). */
+        const val CAPTION_MAX = 1000
     }
 }
