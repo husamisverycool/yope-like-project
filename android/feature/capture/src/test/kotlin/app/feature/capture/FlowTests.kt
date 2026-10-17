@@ -300,8 +300,8 @@ class FlowTests {
             assertEquals("Daily Invitation", channel.name)
             assertEquals("The daily invitation to share a photo with your group", channel.description)
             assertEquals(NotificationManager.IMPORTANCE_HIGH, channel.importance)
-            // No channel for an event the worker never sends.
-            assertEquals(null, manager.getNotificationChannel(AppChannel.YearStory.id))
+            // The year story's one push has its channel (owner decision 31).
+            assertEquals("Year in Photos", manager.getNotificationChannel(AppChannel.YearStory.id)?.name)
 
             val now = Instant.parse("2026-10-15T12:00:00Z")
             val payload = mapOf(

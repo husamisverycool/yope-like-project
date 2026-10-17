@@ -1663,6 +1663,8 @@ public enum Copy {
     public static func safetyBlockTitle(firstName: String) -> String { CopyLookup.format("safety.block.title", default: "Block {first_name}?", ["first_name": firstName]) }
     /// "Unblocked {first_name}" — Retro · safety.block · new · SOURCED
     public static func safetyBlockUndone(firstName: String) -> String { CopyLookup.format("safety.block.undone", default: "Unblocked {first_name}", ["first_name": firstName]) }
+    /// "More" — Retro · safety.report · new · VERIFIED
+    public static var safetyReportA11yMore: String { CopyLookup.string("safety.report.a11y.more", default: "More") }
     /// "Cancel" — Apple HIG · safety.report · verbatim · VERIFIED
     public static var safetyReportCancel: String { CopyLookup.string("safety.report.cancel", default: "Cancel") }
     /// "There was a problem. Please try again." — Retro · safety.report · verbatim · SOURCED
@@ -1673,14 +1675,22 @@ public enum Copy {
     public static var safetyReportErrorTitle: String { CopyLookup.string("safety.report.error.title", default: "Couldn't send report") }
     /// "Left group" — Retro · safety.report · adapted · SOURCED
     public static var safetyReportLeft: String { CopyLookup.string("safety.report.left", default: "Left group") }
+    /// "Report Collage" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportMenuItemCollage: String { CopyLookup.string("safety.report.menuItem.collage", default: "Report Collage") }
     /// "Report Group" — Retro · safety.report · adapted · SOURCED
     public static var safetyReportMenuItemGroup: String { CopyLookup.string("safety.report.menuItem.group", default: "Report Group") }
     /// "Report Message" — Retro · safety.report · adapted · SOURCED
     public static var safetyReportMenuItemMessage: String { CopyLookup.string("safety.report.menuItem.message", default: "Report Message") }
+    /// "Report Plan" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportMenuItemPlan: String { CopyLookup.string("safety.report.menuItem.plan", default: "Report Plan") }
     /// "Report Post" — Retro · safety.report · verbatim · SOURCED
     public static var safetyReportMenuItemPost: String { CopyLookup.string("safety.report.menuItem.post", default: "Report Post") }
+    /// "Report Recap" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportMenuItemRecap: String { CopyLookup.string("safety.report.menuItem.recap", default: "Report Recap") }
     /// "Report Profile" — Retro · safety.report · verbatim · SOURCED
     public static var safetyReportMenuItemUser: String { CopyLookup.string("safety.report.menuItem.user", default: "Report Profile") }
+    /// "Report Video" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportMenuItemVideo: String { CopyLookup.string("safety.report.menuItem.video", default: "Report Video") }
     /// "Block {first_name}" — Retro · safety.report · adapted · SOURCED
     public static func safetyReportNextStepsBlock(firstName: String) -> String { CopyLookup.format("safety.report.nextSteps.block", default: "Block {first_name}", ["first_name": firstName]) }
     /// "Leave the group" — Retro · safety.report · adapted · SOURCED
@@ -1699,16 +1709,24 @@ public enum Copy {
     public static var safetyReportReasonOther: String { CopyLookup.string("safety.report.reason.other", default: "Other") }
     /// "Submitted!" — Retro · safety.report · verbatim · SOURCED
     public static var safetyReportSentTitle: String { CopyLookup.string("safety.report.sent.title", default: "Submitted!") }
+    /// "Why are you reporting this collage?" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportTitleCollage: String { CopyLookup.string("safety.report.title.collage", default: "Why are you reporting this collage?") }
     /// "What's wrong with this group?" — Retro · safety.report · adapted · SOURCED
     public static var safetyReportTitleGroup: String { CopyLookup.string("safety.report.title.group", default: "What's wrong with this group?") }
     /// "Why are you reporting this message?" — Retro · safety.report · adapted · SOURCED
     public static var safetyReportTitleMessage: String { CopyLookup.string("safety.report.title.message", default: "Why are you reporting this message?") }
+    /// "Why are you reporting this plan?" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportTitlePlan: String { CopyLookup.string("safety.report.title.plan", default: "Why are you reporting this plan?") }
     /// "Why are you reporting this post?" — Retro · safety.report · verbatim · SOURCED
     public static var safetyReportTitlePost: String { CopyLookup.string("safety.report.title.post", default: "Why are you reporting this post?") }
+    /// "Why are you reporting this recap?" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportTitleRecap: String { CopyLookup.string("safety.report.title.recap", default: "Why are you reporting this recap?") }
     /// "Why are you reporting this selfie?" — Retro · safety.report · adapted · SOURCED
     public static var safetyReportTitleSelfie: String { CopyLookup.string("safety.report.title.selfie", default: "Why are you reporting this selfie?") }
     /// "What's wrong with this profile?" — Retro · safety.report · verbatim · SOURCED
     public static var safetyReportTitleUser: String { CopyLookup.string("safety.report.title.user", default: "What's wrong with this profile?") }
+    /// "Why are you reporting this video?" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportTitleVideo: String { CopyLookup.string("safety.report.title.video", default: "Why are you reporting this video?") }
     /// "Cancel" — Apple HIG · settings.account · verbatim · VERIFIED
     public static var settingsAccountAlertCancel: String { CopyLookup.string("settings.account.alert.cancel", default: "Cancel") }
     /// "Birthday" — Retro · settings.account · new · SOURCED

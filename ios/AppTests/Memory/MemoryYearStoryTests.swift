@@ -94,9 +94,10 @@ final class MemoryYearStoryTests: XCTestCase {
         let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .loaded)
-        // intro, look back, moments, month, most-reacted setup + 3 photos, together setup + 1 day, outro, summary.
-        XCTAssertEqual(model.cards.count, 12)
-        XCTAssertEqual(model.position, Copy.yearStoryPosition(position: "1", total: "11"), "position among the cards before the summary")
+        // intro, look back, moments, month, most-reacted setup + 3 photos, tagged setup + 1 photo (post 2 is already a
+        // most-reacted card), together setup + 1 day, outro, summary.
+        XCTAssertEqual(model.cards.count, 14)
+        XCTAssertEqual(model.position, Copy.yearStoryPosition(position: "1", total: "13"), "position among the cards before the summary")
         XCTAssertNotNil(model.coverURL, "the cover: the first most-reacted photo")
         // The recap card: most-reacted first, then the story's posts, deduplicated, full rows of 4 only.
         XCTAssertEqual(model.summary?.grid.map(\.postID), [2, 1, 3, 4, 5, 6, 7, 8].map(MemoryIDs.post))
@@ -318,7 +319,29 @@ final class MemoryYearStoryTests: XCTestCase {
         XCTAssertEqual(offlineModel.phase, .offline)
     }
 
-    func testEntryShowsOnlyWhileThisYearsStoryIsReady() async {
+    func testSelfTaggedPhotosSayWhoIsInThemWithoutNumbers() async {
+        let context = MemoryTestContext()
+        let model = YearStoryModel(groupID: MemoryIDs.group, year: year, dependencies: context.dependencies)
+        await model.loadIfNeeded()
+        let tagged = model.cards.compactMap { card -> YearStoryPhoto? in
+            if case let .tagged(photo) = card { return photo }
+            return nil
+        }
+        XCTAssertEqual(tagged.map(\.postID), [MemoryIDs.post(5)], "post 2 is already shown as a most-reacted card")
+        XCTAssertEqual(tagged.first?.taggedNames, ["Caio"])
+        XCTAssertEqual(tagged.first?.trailing, Copy.taggingWith(names: MemoryFormat.names(["Caio"])))
+        XCTAssertNil(tagged.first?.trailing.rangeOfCharacter(from: .decimalDigits), "no count")
+        let setup = model.cards.firstIndex(of: .taggedSetup)
+        XCTAssertNotNil(setup)
+        XCTAssertEqual(model.cards[setup!].headline, Copy.yearStoryTaggedTitle)
+        XCTAssertEqual(YearStoryCard.tagged(tagged[0]).isShareable, false, "Bea's photo: not yours to share (owner decision 12)")
+        model.removePost(MemoryIDs.post(5))
+        XCTAssertFalse(model.cards.contains(.taggedSetup), "an empty list loses its setup card")
+        XCTAssertEqual(YearStoryModel.spread(Array(1...10), count: 5), [1, 3, 6, 8, 10], "evenly over the year, first and last included")
+        XCTAssertEqual(YearStoryModel.spread([1, 2], count: 5), [1, 2])
+    }
+
+    func testEntryKeepsEveryReadyStoryNewestFirst() async {
         let context = MemoryTestContext()
         let entry = YearStoryEntryModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
         await entry.refresh()
@@ -333,5 +356,22 @@ final class MemoryYearStoryTests: XCTestCase {
         let hidden = YearStoryEntryModel(groupID: MemoryIDs.group, dependencies: none.dependencies)
         await hidden.refresh()
         XCTAssertNil(hidden.content)
+
+        // Last year's story stays after 1 January (owner decision 31); a pending story has no card.
+        let past = MemoryTestContext { state in
+            let current = state.yearStories[0]
+            var last = current
+            last.id = YearStoryID(UUID())
+            last.year = current.year - 1
+            var older = current
+            older.id = YearStoryID(UUID())
+            older.year = current.year - 2
+            older.status = .pending
+            state.yearStories = [older, last]
+        }
+        let kept = YearStoryEntryModel(groupID: MemoryIDs.group, dependencies: past.dependencies)
+        await kept.refresh()
+        XCTAssertEqual(kept.entries.map(\.year), [year - 1])
+        XCTAssertEqual(kept.entries.first?.content.subtitle, Copy.yearStoryEntrySubtitle(year: String(year - 1)))
     }
 }

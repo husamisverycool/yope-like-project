@@ -516,6 +516,16 @@
       "level": "SOURCED",
       "notes": "Introduces the collages of days every member answered; no names of who was missing (tenets)."
     },
+    "year.story.tagged.title": {
+      "text": "The moments you were in",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "year.story",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt retrospective_page_title_most_tagged_friend ('You made the most memories with %1$s' — Retro's Year in Photos page built from tags); tagging.toggle ('I'm in this', the self-tag)",
+      "pattern": "retro.voice.retrospective (second-person page headline, 'This is where you spent most of your time', 'The moments you reacted to most')",
+      "level": "SOURCED",
+      "notes": "Setup card of the photos the group's members tagged themselves in (self_tagged, directive: self-tagging powers year stories). Retro's page ranks a top friend by tags — do-not-copy (tenet 2): no name is singled out, no count; 'you' = the group's members. Each photo card says who is in it with tagging.with."
+    },
     "year.story.outro.title": {
       "text": "Here’s to another year in the books",
       "origin": "verbatim",

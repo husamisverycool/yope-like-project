@@ -35,10 +35,11 @@ passive in quiet hours; never time-sensitive).
 | weekly recap ready (`recap.generate`) | `notifications.push.recapReady.title` → "{group}" | `notifications.push.recapReady.body` → "This week's recap is ready." | `recap` | `week.recap` (`app://recap`) |
 | birthday request (`push.birthday_request`) — never to the birthday person; once | `notifications.push.birthdayRequest.title` → "{group}" | `notifications.push.birthdayRequest.body` → "You're invited to add a photo and a line for {name}'s birthday. No pressure." | `birthday_request` | `birthday.request` |
 | tribute for you (`tribute.render` delivered) | `notifications.push.tribute.title` → "Happy birthday!" | `notifications.push.tribute.body` → "{group} made you a birthday video." | `tribute` | `birthday.tribute` |
+| year story ready (`push.year_story`, once: the first time the story is ready; the 31 December refresh and other recomputes never notify — owner decision 31) | `notifications.push.yearStory.title` → "{group}" | `notifications.push.yearStory.body` → "Your {year} Recap is ready." | `year_story` | `year.story` (`app://year-story`) |
 
 Android channels (system settings): `notifications.push.channel.newPost.*` ("New Posts"), `.reactionsReplies.*`
 ("Post Activity"), `.recap.*` ("Weekly Recaps"), `.birthdayRequest.*` ("Birthday Requests"), `.tribute.*` ("Birthday
-Videos"), `.dailyInvitation.*` ("Daily Invitation", surface `daily.notification`); widget refresh:
+Videos"), `.yearStory.*` ("Year in Photos"), `.dailyInvitation.*` ("Daily Invitation", surface `daily.notification`); widget refresh:
 `widget.arrival.android.*` ("Background Work").
 
 ## Elements
@@ -79,7 +80,8 @@ system-drawn in the current appearance.
 ## Data & actions
 
 Worker payload keys: `type` (`daily_invitation`, `new_post`, `reaction`, `reply`, `recap_ready`, `birthday_request`,
-`tribute`) + `group_id` / `post_id` / `message_id` / `invitation_id` / `recap_id` / `request_id` / `tribute_id`
+`tribute`, `year_story`) + `group_id` / `post_id` / `message_id` / `invitation_id` / `recap_id` / `request_id` / `tribute_id` /
+`year` (`year_story`: the story's year, a string)
 (`ios/Packages/AppCore/Sources/AppModels/PushPayload.swift`, DeepLinkParser). `widget` and `daily_invitation_ended`
 are silent.
 
@@ -96,7 +98,8 @@ can remove a delivered notification from the server, so with the app not running
 
 - iOS: `UNNotificationContent` from APNs; Live Activity start alert for the invitation (`daily.liveactivity`).
 - Android: channels registered before posting (`NotificationChannels.register` with these strings); importance fixed at
-  creation (`notifications.push.layout.channels`). `AppChannel.YearStory` has no event — no copy (owner decision).
+  creation (`notifications.push.layout.channels`). `AppChannel.YearStory` carries the year story's one push
+  (`notifications.push.channel.yearStory.*`).
 - Text changes need no code change: the worker reads the keys at run time; placeholders are a subset of those it fills.
 
 ## Do-not-copy
@@ -113,5 +116,5 @@ counts. Every trademark.
 |---|---|---|
 | Retro push banners as rendered (iOS / Android) | strings only (APK) | 2 screenshots of a Retro "just posted" notification (iOS + Android) |
 | "Week {number}" as the invitation title (Retro's form) | needs a week placeholder the worker does not send | worker change |
-| `AppChannel.YearStory` copy | owner decision | owner |
+| `AppChannel.YearStory` copy | closed 2026-10-17: the worker sends `year_story` once (owner decision 31) | — |
 | Android small icon | BLOCKED (owner app icon) | owner asset |

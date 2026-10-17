@@ -262,6 +262,10 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         try await record(.yearStory).yearStories.first { $0.groupID == groupID && $0.year == year }
     }
 
+    func yearStories(groupID: GroupID) async throws -> [YearStory] {
+        try await record(.yearStory).yearStories.filter { $0.groupID == groupID }.sorted { $0.year > $1.year }
+    }
+
     func collages(ids: [CollageID]) async throws -> [Collage] {
         let wanted = Set(ids)
         return try await record(.collages).collages.filter { wanted.contains($0.id) }
@@ -365,7 +369,7 @@ extension FixtureMemoryData {
             post(9, author: ids.friend, at: yearsAgo(3, hour: 20), shape: (3, 5)),
         ]
         state.myTags = [ids.post(2)]
-        state.otherTags = [ids.post(2): [ids.friend], ids.post(6): [ids.friend, ids.other]]
+        state.otherTags = [ids.post(2): [ids.friend], ids.post(5): [ids.other], ids.post(6): [ids.friend, ids.other]]
         state.onThisDay = [
             OnThisDayItem(postID: ids.post(6), mediaID: ids.media(6), authorID: ids.friend, createdAt: yearsAgo(1, hour: 22), yearsAgo: 1),
             OnThisDayItem(postID: ids.post(9), mediaID: ids.media(9), authorID: ids.friend, createdAt: yearsAgo(3, hour: 20), yearsAgo: 3),
@@ -402,6 +406,7 @@ extension FixtureMemoryData {
                 "collage_id": .string(ids.collage.rawValue),
                 "post_ids": .array([ids.post(1), ids.post(2), ids.post(3)].map { .string($0.rawValue) }),
             ])]),
+            "self_tagged": .array([ids.post(5), ids.post(2)].map { .string($0.rawValue) }),
         ])
         state.yearStories = [YearStory(
             id: YearStoryID(UUID()), groupID: ids.group, year: year, status: .ready, data: data,

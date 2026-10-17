@@ -785,7 +785,7 @@ private fun CardPager(friends: List<GroupPhoto>, zone: ZoneId, actions: GroupScr
         horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardGap),
     ) {
         friends.forEach { photo ->
-            val day = photo.post.createdAt.atZone(zone).toLocalDate()
+            val day = photo.post.visibleAt.atZone(zone).toLocalDate()
             FriendCard(
                 name = photo.authorFirstName.orEmpty(),
                 avatar = photo.authorAvatarUrl,

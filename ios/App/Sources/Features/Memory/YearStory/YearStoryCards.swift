@@ -13,7 +13,7 @@ import UIKit
 ///   block `size.width − 2 × dimension.year.story.frame.padding` wide (`YearStoryTextBlock`);
 /// - **photo** — the photo full bleed (aspect-fill) under the scrim; footer: the date (`layout.year.story.dateFormat`,
 ///   display serif `displaySmall`) leading, `year.story.mostReacted.photo` ("Post by {name}", `listTitle`) trailing — no
-///   number, rank or reaction glyph (T2);
+///   number, rank or reaction glyph (T2); a self-tagged photo's trailing line is `tagging.with` ("with Ana and Rui");
 /// - **collage** — the collage fitted whole (never cropped) on its own blurred backdrop, scrim, the date;
 /// - **summary** — the style in view: the recap card (`layout.year.story.recapCard`) on the blurred cover, or the cover
 ///   full bleed with the year (`headerTitle`), the group name (`listTitle`) and under it the app line
@@ -35,8 +35,8 @@ struct YearStoryCardContent: View {
         ZStack {
             Tokens.Colors.globalBackgroundDeep
             switch card {
-            case let .mostReacted(photo):
-                photoPage(url: photo.imageURL, date: photo.date, trailing: Copy.yearStoryMostReactedPhoto(name: photo.name),
+            case let .mostReacted(photo), let .tagged(photo):
+                photoPage(url: photo.imageURL, date: photo.date, trailing: photo.trailing,
                           label: Copy.yearStoryA11yPhoto(name: photo.name, date: MemoryFormat.weekdayMonthDay(photo.date)))
             case let .togetherDay(collage):
                 collagePage(collage)

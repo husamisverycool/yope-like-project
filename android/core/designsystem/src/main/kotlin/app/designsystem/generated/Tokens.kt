@@ -1740,6 +1740,11 @@ object Tokens {
             const val user: String = "It's impersonating someone · It's inappropriate · Other"
             const val group: String = "It's impersonating someone · It's inappropriate · Other"
             const val selfie: String = "I don't like it · Nudity or sexual activity · Other"
+            const val plan: String = "I don't like it · Nudity or sexual activity · Other"
+            const val tribute: String = "I don't like it · Nudity or sexual activity · Other"
+            const val yearStory: String = "I don't like it · Nudity or sexual activity · Other"
+            const val collage: String = "I don't like it · Nudity or sexual activity · Other"
+            const val recap: String = "I don't like it · Nudity or sexual activity · Other"
             const val sent: String = "the reason's English text is sent as p_reason (docs/API.md report)"
         }
         /** Apple HIG · settings.account · confirmation alerts / dialogs (delete account, sign out, leave group, remove member, turn off link) · VERIFIED — token `settings.account.layout.alert` */

@@ -21,9 +21,8 @@ import java.util.Date
  */
 object ChannelCopy {
     /**
-     * Channels with an event the worker actually sends. `AppChannel.YearStory` has no sent event
-     * and no copy: registering it would advertise a notification that never comes (owner
-     * decision, design/surfaces/notifications.push.md → Platform notes).
+     * Channels with an event the worker actually sends (every channel since the worker sends the
+     * year story's one push, `push.year_story`, owner decision 31).
      */
     val registered: List<AppChannel> = AppChannel.entries.filter { nameRes(it) != null }
 
@@ -34,7 +33,7 @@ object ChannelCopy {
         AppChannel.Recap -> R.string.notifications_push_channel_recap_name
         AppChannel.BirthdayRequest -> R.string.notifications_push_channel_birthdayrequest_name
         AppChannel.Tribute -> R.string.notifications_push_channel_tribute_name
-        AppChannel.YearStory -> null
+        AppChannel.YearStory -> R.string.notifications_push_channel_yearstory_name
         AppChannel.DevelopedPhotos -> R.string.notifications_push_channel_developedphotos_name
         AppChannel.Plans -> R.string.notifications_push_channel_plans_name
     }
@@ -46,7 +45,7 @@ object ChannelCopy {
         AppChannel.Recap -> R.string.notifications_push_channel_recap_description
         AppChannel.BirthdayRequest -> R.string.notifications_push_channel_birthdayrequest_description
         AppChannel.Tribute -> R.string.notifications_push_channel_tribute_description
-        AppChannel.YearStory -> null
+        AppChannel.YearStory -> R.string.notifications_push_channel_yearstory_description
         AppChannel.DevelopedPhotos -> R.string.notifications_push_channel_developedphotos_description
         AppChannel.Plans -> R.string.notifications_push_channel_plans_description
     }

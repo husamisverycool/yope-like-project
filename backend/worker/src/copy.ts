@@ -77,6 +77,16 @@ export const WORKER_COPY_KEYS = {
     surface: "notifications.push",
     meaning: "Body of the recap-ready notification.",
   },
+  "notifications.push.yearStory.title": {
+    params: ["group", "year"],
+    surface: "notifications.push",
+    meaning: "Title when the group's year story is first ready (sent once; the 31 December refresh never notifies).",
+  },
+  "notifications.push.yearStory.body": {
+    params: ["group", "year"],
+    surface: "notifications.push",
+    meaning: "Body of the year-story-ready notification ({year} = the story's year). No counts.",
+  },
   "notifications.push.birthdayRequest.title": {
     params: ["name", "group"],
     surface: "notifications.push",

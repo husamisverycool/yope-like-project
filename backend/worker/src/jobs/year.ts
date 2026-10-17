@@ -5,11 +5,17 @@
 //   busiest_month   the month with the most photos (1–12; no number of photos)
 //   most_reacted    photos with reactions, most-reacted first — post ids only, no numbers
 //   everyone_days   days on which every member answered the daily moment on time, with the collage
-// post_ids lists every photo of the year, so deleting any of them recomputes the story (counts change).
+//   self_tagged     the photos at least one member tagged themselves in ("I'm in this"), in time order —
+//                   post ids only: no names, no counts, no ranking (the clients say who is in each)
+// post_ids lists every photo of the year, so deleting any of them recomputes the story (counts change),
+// as does a self-tag added or removed on one of them (migration 0031).
+// A photo belongs to the year in which the group could first see it (posts.visible_at, migration 0027).
+// The first time a story is ready the group hears once (push.year_story, year_stories.announced_at);
+// the 31 December refresh and every other recompute stay silent (owner decision 31).
 
 import { maybe, must, selectIn } from "../db.js";
 import { loadGroup } from "../push/audience.js";
-import { str, type JobContext } from "../services.js";
+import { enqueue, str, type JobContext } from "../services.js";
 import { localMidnight, localParts } from "../time.js";
 import { POST_COLUMNS, type CollageRow, type InvitationRow, type PostRow, type YearStoryRow } from "../types.js";
 
@@ -21,6 +27,7 @@ export interface YearStoryData {
   busiest_month: { month: number } | null;
   most_reacted: string[];
   everyone_days: Array<{ local_date: string; invitation_id: string; collage_id: string; post_ids: string[] }>;
+  self_tagged: string[];
 }
 
 export async function yearCompute(ctx: JobContext): Promise<void> {
@@ -76,6 +83,9 @@ export async function yearCompute(ctx: JobContext): Promise<void> {
     }
   }
 
+  const tagged = new Set((await selectIn<{ post_id: string }>(ctx.db, "post_tags", "post_id", "post_id", posts.map((p) => p.id))).map((t) => t.post_id));
+  const selfTagged = posts.filter((p) => tagged.has(p.id)).map((p) => p.id);
+
   const data: YearStoryData = {
     version: 1,
     year: story.year,
@@ -84,6 +94,7 @@ export async function yearCompute(ctx: JobContext): Promise<void> {
     busiest_month: busiest === null ? null : { month: busiest },
     most_reacted: mostReacted,
     everyone_days: everyoneDays,
+    self_tagged: selfTagged,
   };
   must(
     await ctx.db
@@ -93,4 +104,11 @@ export async function yearCompute(ctx: JobContext): Promise<void> {
     "year story update",
   );
   ctx.log.info("year story computed", { year_story_id: id, year: story.year, posts: posts.length, everyone_days: everyoneDays.length });
+  // announced once, the first time it is ready (a story of an empty year has nothing to show)
+  if (!posts.length) return;
+  const first = must(
+    await ctx.db.from("year_stories").update({ announced_at: ctx.now().toISOString() }).eq("id", id).is("announced_at", null).select("id"),
+    "year story announce",
+  ) as Array<{ id: string }>;
+  if (first.length) await enqueue(ctx.db, "push.year_story", { year_story_id: id, group_id: story.group_id }, { dedupeKey: `push.year_story:${id}` });
 }

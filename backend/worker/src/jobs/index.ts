@@ -21,6 +21,7 @@ import {
   pushRecapReady,
   pushSelfieReaction,
   pushTribute,
+  pushYearStory,
 } from "./push.js";
 import { recapGenerate } from "./recap.js";
 import { tributeRender } from "./tribute.js";
@@ -36,6 +37,7 @@ export const REALTIME_KINDS: Record<string, Handler> = {
   "push.birthday_request": pushBirthdayRequest,
   "push.recap_ready": pushRecapReady, // worker-enqueued by recap.generate
   "push.tribute": pushTribute, // worker-enqueued by tribute.render after delivery
+  "push.year_story": pushYearStory, // worker-enqueued by year.compute, once per story
   "push.selfie_reaction": pushSelfieReaction,
   "push.plan_created": pushPlanCreated,
   "push.plan_tomorrow": pushPlanTomorrow,
@@ -64,7 +66,7 @@ export const HEAVY_KINDS: Record<string, Handler> = {
 export const HANDLERS: Record<string, Handler> = { ...REALTIME_KINDS, ...HEAVY_KINDS };
 
 /** Kinds the worker itself enqueues (not in the SQL). */
-export const WORKER_ENQUEUED_KINDS = ["invitation.end", "push.recap_ready", "push.tribute"];
+export const WORKER_ENQUEUED_KINDS = ["invitation.end", "push.recap_ready", "push.tribute", "push.year_story"];
 
 export function lanes(config: Pick<WorkerConfig, "lanes">): LaneSpec[] {
   return [

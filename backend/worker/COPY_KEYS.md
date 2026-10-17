@@ -42,6 +42,8 @@ Each notification has a title and a body (Android requires a title; iOS shows bo
 | `notifications.push.reply.body.photo` | `{name}`, `{group}` | `notifications.push` | Body when someone answers your photo with a photo. |
 | `notifications.push.recapReady.title` | `{group}` | `notifications.push` | The group's weekly recap is ready. |
 | `notifications.push.recapReady.body` | `{group}` | `notifications.push` | Body of the recap-ready notification. |
+| `notifications.push.yearStory.title` | `{group}`, `{year}` | `notifications.push` | The group's year story is ready: sent once, the first time (owner decision 31); the 31 December refresh and other recomputes never notify. |
+| `notifications.push.yearStory.body` | `{group}`, `{year}` | `notifications.push` | Body of the year-story-ready notification. No counts. |
 | `notifications.push.birthdayRequest.title` | `{name}`, `{group}` | `notifications.push` | Private request to contribute a photo and a line to `{name}`'s birthday tribute. Never sent to `{name}`. Sent once, no reminders. |
 | `notifications.push.birthdayRequest.body` | `{name}`, `{group}` | `notifications.push` | Body of the request (wrapped-tribute-partiful.copy.json proposes `notifications.push.birthdayRequest` as one string; split here into title/body). |
 | `notifications.push.tribute.title` | `{group}` | `notifications.push` | To the birthday person: the tribute their group made is ready. |
@@ -61,9 +63,7 @@ Each notification has a title and a body (Android requires a title; iOS shows bo
 | `camera.overnight.push.title` | `{group}` | `camera.overnight` | The group's overnight photos have developed (one per group and reveal time; members can turn these off). |
 | `camera.overnight.push.body` | `{group}` | `camera.overnight` | Body of the photos-developed notification. No count, no names. |
 
-Not sent (no type in the shared push contract, or not in the brief): ordinary chat messages that
-are not replies; "year story ready" (`year_story` exists in the contract but the brief does not
-list it — owner decision).
+Not sent: ordinary chat messages that are not replies.
 
 ## Weekly recap (`week.recap`)
 

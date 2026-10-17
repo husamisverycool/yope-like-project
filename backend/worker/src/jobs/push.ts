@@ -7,6 +7,8 @@
 //   push.birthday_request members except the honoree and anyone with a block with them
 //   push.recap_ready     members, after recap.generate (worker-enqueued)
 //   push.tribute         the honoree only, after the tribute is rendered and delivered (worker-enqueued)
+//   push.year_story      members, once, the first time the group's year story is ready (worker-enqueued by
+//                        year.compute; the 31 December refresh and other recomputes never notify)
 //   push.selfie_reaction the photo's author, once per person per photo ("reaction" type, opens the photo)
 //   push.plan_created    members except the plan's maker
 //   push.plan_tomorrow   24 hours before a plan, members who answered Going or Maybe (the maker included)
@@ -26,7 +28,7 @@ import { apnsAlert, fitText, type AlertSpec } from "../push/payloads.js";
 import type { DeviceSend } from "../push/service.js";
 import { str, type JobContext } from "../services.js";
 import { localTime, localWhen, unixSeconds } from "../time.js";
-import { firstName, MEDIA_COLUMNS, PLAN_COLUMNS, POST_COLUMNS, type MediaRow, type MessageRow, type PlanRow, type PostRow, type RecapRow, type TributeRequestRow, type TributeRow } from "../types.js";
+import { firstName, MEDIA_COLUMNS, PLAN_COLUMNS, POST_COLUMNS, type MediaRow, type MessageRow, type PlanRow, type PostRow, type RecapRow, type TributeRequestRow, type TributeRow, type YearStoryRow } from "../types.js";
 import { widgetFieldsForPost } from "./widget.js";
 
 function recipientsExcept(audience: Audience, exclude: Set<string>, blocked: Set<string>): Member[] {
@@ -197,6 +199,30 @@ export async function pushRecapReady(ctx: JobContext): Promise<void> {
   };
   const sends = audience.members.filter((m) => !m.muted).flatMap((m) => alertSends(m, spec, now));
   await ctx.push.dispatch(sends, { label: "recap_ready", group_id: recap.group_id, recap_id: recap.id });
+}
+
+export async function pushYearStory(ctx: JobContext): Promise<void> {
+  const story = maybe(
+    await ctx.db.from("year_stories").select("id, group_id, year, status, data, post_ids, asset_paths").eq("id", str(ctx.job.payload, "year_story_id")).maybeSingle(),
+    "year story",
+  ) as YearStoryRow | null;
+  // only for a story that exists and can be opened (a recompute may have it pending: try again later)
+  if (!story) return;
+  if (story.status !== "ready") throw new Error(`year story ${story.id} is not ready yet`);
+  const now = ctx.now();
+  const audience = await loadAudience(ctx.db, story.group_id, now);
+  if (!audience) return;
+  const params = { group: audience.group.name, year: story.year };
+  const spec: Omit<AlertSpec, "quiet"> = {
+    type: "year_story",
+    groupId: story.group_id,
+    ids: { year: String(story.year) },
+    title: copyText("notifications.push.yearStory.title", params),
+    body: copyText("notifications.push.yearStory.body", params),
+    collapseKey: `year:${story.id}`,
+  };
+  const sends = audience.members.filter((m) => !m.muted).flatMap((m) => alertSends(m, spec, now));
+  await ctx.push.dispatch(sends, { label: "year_story", group_id: story.group_id, year_story_id: story.id });
 }
 
 export async function pushTribute(ctx: JobContext): Promise<void> {

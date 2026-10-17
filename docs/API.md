@@ -150,7 +150,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `device_platform` | `ios`, `android` |
 | `invitation_status` | `scheduled`, `fired`, `closed`, `cancelled` |
 | `render_status` | `pending`, `ready`, `failed` |
-| `report_target_kind` | `post`, `message`, `user`, `group` |
+| `report_target_kind` | `post`, `message`, `user`, `group`, `selfie` (0018), `plan`, `tribute`, `year_story`, `collage`, `recap` (0032) |
 
 ## 5. Tables and views
 
@@ -452,11 +452,18 @@ Read: members.
 | `group_id` | uuid | |
 | `year` | int | |
 | `status` | render_status | |
-| `data` | jsonb? | the tap-through story pages, written by the worker (format owned by the worker; null while computing) |
-| `post_ids` | uuid[] | posts used |
-| `asset_paths` | text[] | share cards etc. under `g/<group_id>/year/<year>/…` |
+| `data` | jsonb? | the tap-through story pages, written by the worker (`YearStoryData` v1, `backend/worker/src/jobs/year.ts`; null while computing): `year`, `time_zone`, `moments_shared` (the one group-level number), `busiest_month` `{month}`, `most_reacted` (post ids, no numbers), `everyone_days` (`local_date`, `invitation_id`, `collage_id`, `post_ids`), `self_tagged` (post ids a member tagged themselves in, time order — no names, no counts; added 2026-10-17, absent before) |
+| `post_ids` | uuid[] | posts used (the year's photos by `posts.visible_at`) |
+| `asset_paths` | text[] | share cards etc. under `g/<group_id>/year/<year>/…` (none today: share images are drawn on the device) |
 | `generated_at` | timestamptz? | |
+| `refreshed_at` | timestamptz? | when `due_year_stories` queued the one 31 December refresh (migration 0031) |
+| `announced_at` | timestamptz? | when the worker queued the story's one push (`push.year_story`) |
 | `created_at` | timestamptz | |
+
+Stories are kept for good (owner decision 31): list every `ready` story of the group (`order("year", ascending:
+false)`) for the memory cards, not only the current year's. A story is computed from 1 December, refreshed once on
+31 December at the end of the group's waking window, and recomputed when one of its photos is deleted or gains or loses
+a self-tag; it is announced once.
 
 ### 5.20 `devices`
 
@@ -763,8 +770,10 @@ Idempotent. Errors: `cannot_target_self`, `user_not_found` (block only).
 report(p_target_kind report_target_kind, p_target_id uuid, p_reason text) → uuid
 ```
 Reports a post or message of one of your groups, a person you share a group with (or
-have a block with), or one of your groups. Returns the report id. A block does not stop
-you reporting. Errors: `target_not_found`, `invalid_reason`. Jobs: `moderation.report`.
+have a block with), or one of your groups; since 0018 a selfie reaction you can see; since 0032
+another member's plan (`plans.id`), a birthday video you can watch (`tributes.id`), a year story,
+a collage or a weekly recap of one of your groups (by their ids). Returns the report id. A block
+does not stop you reporting. Errors: `target_not_found`, `invalid_reason`. Jobs: `moderation.report`.
 
 #### `register_device` / `unregister_device`
 ```
@@ -1008,7 +1017,7 @@ whose target no longer exists must be completed as a no-op.
 | `due_weekly_recaps(p_now timestamptz = now()) → setof weekly_recaps` | Call every few minutes. Creates the recap of the week that ended by the latest recap moment for groups with photos visible that week (`posts.visible_at`, migration 0027). The recap moment is `weekly_recap_isodow` (Sunday) at the **end of the group's waking window** (its own hours, else `default_waking_end`; a window that wraps past midnight ends early on Monday): the last waking moment of its week, group-local and DST-safe. `weekly_recap_local_time`, when set, overrides that time for every group. A group with no known window and no override gets no recap. Enqueues `recap.generate`. Returns only rows it created. |
 | `due_birthday_requests(p_now) → setof tribute_requests` | Creates requests `birthday_request_lead_days` (7) before an opted-in member's birthday (group-local; Feb 29 → Feb 28 in common years), in groups with another member. Enqueues `push.birthday_request`. |
 | `due_tributes(p_now) → setof tributes` | Closes due requests; creates a tribute (+ `tribute.render`) only if someone contributed. |
-| `due_year_stories(p_now) → setof year_stories` | From `year_story_release_month_day` (12-01) local, once per group that posted that year. Enqueues `year.compute`. |
+| `due_year_stories(p_now) → setof year_stories` | From `year_story_release_month_day` (12-01) local, once per group with photos visible that year. Enqueues `year.compute`. Also refreshes each story once at the end of its group's waking window on 31 December (`refreshed_at`; `year.recompute`, no push; stories never refreshed are caught up; unknown window = no refresh). Returns only rows it created. |
 | `release_job(p_job_id bigint, p_worker_id text) → boolean` | A stopping worker hands a running job back: `queued`, runnable now, the attempt not counted (or `cancelled` if a newer queued duplicate exists). false if not locked by this worker. |
 | `apply_revenuecat_event(p_event_id text, p_user_id uuid, p_event_type text, p_event_at timestamptz, p_expires_at timestamptz, p_change boolean = true) → text` | RevenueCat webhook (worker `POST /webhooks/revenuecat`): upserts the `premium` entitlement once per event id; an event older than the newest applied one for that user is recorded but not applied. Returns `applied`, `duplicate`, `stale` or `ignored`. |
 
@@ -1027,13 +1036,14 @@ Job kinds and payloads:
 | `recap.generate` | `{recap_id, group_id, week_start}` | `recap.generate:<id>` | choose/order items + text (AI, log `ai_cost_log`), set `status = ready` |
 | `push.birthday_request` | `{request_id, group_id, honoree_id}` | `push.birthday_request:<id>` | notify members except the honoree and anyone blocked with them |
 | `tribute.render` / `tribute.rerender` | `{tribute_id, …}` | `tribute.*:<id>` | render the video from current contributions; deliver at/after `due_at` (set `delivered_at`) and notify the honoree |
-| `year.compute` / `year.recompute` | `{year_story_id, …}` | `year.*:<id>` | compute `data`, `post_ids`, `asset_paths` |
+| `year.compute` / `year.recompute` | `{year_story_id, …}` | `year.*:<id>` | compute `data`, `post_ids`, `asset_paths`; `year.recompute` also follows the 31 December refresh, deletions and self-tag changes (trigger on `post_tags`) |
 | `storage.delete` | `{bucket, paths[], prefixes[]}` | — | delete the exact paths and everything under each prefix through the Storage API |
 | `auth.delete_user` | `{user_id}` | `auth.delete_user:<id>` | `auth.admin.deleteUser(user_id)` |
 | `moderation.report` | `{report_id}` | — | route to moderation |
 | `invitation.end` | `{invitation_id, group_id, channel_id, apns_env}` | `invitation.end:<id>` | enqueued by `invitation.fire` at `closes_at`: Live Activity end (broadcast channel) + Android `daily_invitation_ended` |
 | `push.recap_ready` | `{recap_id, group_id}` | `push.recap_ready:<id>` | enqueued by `recap.generate` once the recap is ready |
 | `push.tribute` | `{tribute_id, group_id}` | `push.tribute:<id>` | enqueued by `tribute.render` after the tribute is rendered and delivered: notify the honoree |
+| `push.year_story` | `{year_story_id, group_id}` | `push.year_story:<id>` | enqueued by `year.compute` the first time the story is ready (`announced_at`): notify members (not muted; quiet hours silent), type `year_story` with `year` |
 
 The worker's push payloads, rendition sizes and widget refresh rules are in
 `docs/WIDGET_REFRESH.md` and `backend/worker/` (`src/push/payloads.ts`).

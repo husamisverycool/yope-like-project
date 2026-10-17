@@ -54,6 +54,8 @@ protocol MemoryDataSource: Sendable {
 
     // year.story
     func yearStory(groupID: GroupID, year: Int) async throws -> YearStory?
+    /// Every year story of the group, newest year first (kept for good: owner decision 31).
+    func yearStories(groupID: GroupID) async throws -> [YearStory]
     func collages(ids: [CollageID]) async throws -> [Collage]
 
     // tagging
@@ -205,6 +207,10 @@ struct LiveMemoryData: MemoryDataSource {
 
     func yearStory(groupID: GroupID, year: Int) async throws -> YearStory? {
         try await environment.memories.yearStory(groupID: groupID, year: year)
+    }
+
+    func yearStories(groupID: GroupID) async throws -> [YearStory] {
+        try await environment.memories.yearStories(groupID: groupID)
     }
 
     func collages(ids: [CollageID]) async throws -> [Collage] {

@@ -29,10 +29,18 @@ everyone answered the daily moment. It ends on Retro's recap preview, from which
 
 ## Structure
 
-**A. Entry (placed by `groups.screen`).** While `year_stories` has a row for the group with `status = 'ready'` for the
-current year: a Retro feed card with title `year.story.entry.title` ("Year in Photos"), line
-`year.story.entry.subtitle` ("{year} Recap"), action `year.story.entry.button` ("View memories"). Card component and
-position belong to the `groups.screen` pass. Tap → B (full-screen).
+**A. Entry (placed by `groups.screen`).** One Retro feed card per `year_stories` row of the group with
+`status = 'ready'`, newest year first, side by side in the feed pager (`size.global.cardGap`): title
+`year.story.entry.title` ("Year in Photos"), line `year.story.entry.subtitle` ("{year} Recap"), action
+`year.story.entry.button` ("View memories"). A story appears once ready (from 1 December) and **stays for good** (owner
+decision 31: kept in the group's memories; nothing removes it on 1 January). Card component and position belong to the
+`groups.screen` pass. Tap → B (full-screen) for that year.
+
+**When.** The story is computed on 1 December (`year_story_release_month_day`) and **refreshed on 31 December** at the
+end of the group's waking window (the weekly recap's "last waking moment"), so December counts; deleting a photo or
+adding / removing a self-tag recomputes it too. The group hears **once**, the first time it is ready
+(`notifications.push.yearStory.*`, type `year_story`, Android channel "Year in Photos"); refreshes never notify
+(owner decision 31).
 
 **B. Player** (full-screen cover; media — dark in both appearances: render the subtree in the dark appearance,
 `layout.global.appearance.media`). Page `color.global.backgroundDeep`. Top to bottom:
@@ -93,6 +101,8 @@ position belong to the `groups.screen` pass. Tap → B (full-screen).
 | 4 | busiest month | text | headline `year.story.busiestMonth.title` (`{month}` = `data.busiest_month.month` as `layout.year.story.monthFormat`) | yes |
 | 5 | most-reacted, setup | text | headline `year.story.mostReacted.title` | no |
 | 6…10 | most-reacted photos | photo | the first `count.year.story.listLength` ids of `data.most_reacted`, in that order (T2) | your own photo only |
+| — | self-tagged, setup | text | headline `year.story.tagged.title` ("The moments you were in") | no |
+| — | self-tagged photos | photo | up to `count.year.story.listLength` of `data.self_tagged` (photos a member tagged themselves in, "I'm in this") not already shown above, spread evenly over the year, in time order; footer trailing `tagging.with` ("with Ana and Rui": who tagged themselves in it) — no count, no ranking (directive: self-tagging powers year stories; Retro's "most tagged friend" ranking is do-not-copy) | your own photo only |
 | 11 | together, setup | text | headline `year.story.together.title`, subline `year.story.together.aside` | no |
 | 12…16 | everyone-was-there days | collage | the first `count.year.story.listLength` entries of `data.everyone_days` (chronological) | yes |
 | 17 | outro | text | headline `year.story.outro.title` ("Here’s to another year in the books") | yes |

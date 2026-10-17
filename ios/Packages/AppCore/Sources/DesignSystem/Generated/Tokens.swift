@@ -2012,6 +2012,11 @@ public enum Tokens {
             public static let user: String = "It's impersonating someone · It's inappropriate · Other"
             public static let group: String = "It's impersonating someone · It's inappropriate · Other"
             public static let selfie: String = "I don't like it · Nudity or sexual activity · Other"
+            public static let plan: String = "I don't like it · Nudity or sexual activity · Other"
+            public static let tribute: String = "I don't like it · Nudity or sexual activity · Other"
+            public static let yearStory: String = "I don't like it · Nudity or sexual activity · Other"
+            public static let collage: String = "I don't like it · Nudity or sexual activity · Other"
+            public static let recap: String = "I don't like it · Nudity or sexual activity · Other"
             public static let sent: String = "the reason's English text is sent as p_reason (docs/API.md report)"
         }
         /// Apple HIG · settings.account · confirmation alerts / dialogs (delete account, sign out, leave group, remove member, turn off link) · VERIFIED

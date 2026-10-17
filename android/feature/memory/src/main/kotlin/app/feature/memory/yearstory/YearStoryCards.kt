@@ -3,6 +3,7 @@
 // mechanics references/auto/wrapped/frames/wrapped24-rec-emilycraig-sheet-every3s.png (reveal).
 package app.feature.memory.yearstory
 
+import android.icu.text.ListFormatter
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -51,6 +52,7 @@ import app.ui.text.CapTop
 import app.ui.text.TextRoles
 import app.ui.text.capTopAt
 import app.ui.foundation.endAtLastBaseline
+import java.util.Locale
 
 /** Headline and subline copy of a text card (null subline = headline only); null for photo, collage and summary cards. */
 @Composable
@@ -60,9 +62,10 @@ internal fun cardText(card: StoryCard): Pair<String, String?>? = when (card) {
     is StoryCard.Moments -> stringResource(R.string.year_story_moments_count, card.groupName, MemoryFormats.number(card.count)) to null
     is StoryCard.BusiestMonth -> stringResource(R.string.year_story_busiestmonth_title, MemoryFormats.storyMonth(card.month)) to null
     StoryCard.MostReactedSetup -> stringResource(R.string.year_story_mostreacted_title) to null
+    StoryCard.TaggedSetup -> stringResource(R.string.year_story_tagged_title) to null
     StoryCard.TogetherSetup -> stringResource(R.string.year_story_together_title) to stringResource(R.string.year_story_together_aside)
     StoryCard.Outro -> stringResource(R.string.year_story_outro_title) to null
-    is StoryCard.MostReactedPhoto, is StoryCard.TogetherDay, StoryCard.Summary -> null
+    is StoryCard.Photo, is StoryCard.TogetherDay, StoryCard.Summary -> null
 }
 
 /**
@@ -98,7 +101,7 @@ internal fun StoryCardPage(card: StoryCard, recap: StoryRecap, revealed: Boolean
 @Composable
 internal fun BoxScope.CardBackground(card: StoryCard, recap: StoryRecap, backdropDrawn: Boolean, onSettled: () -> Unit, software: Boolean) {
     when (card) {
-        is StoryCard.MostReactedPhoto -> {
+        is StoryCard.Photo -> {
             val label = stringResource(R.string.year_story_a11y_photo, card.name, MemoryFormats.spokenDate(card.date))
             MemoryImage(card.url, null, Modifier.fillMaxSize().clearAndSetSemantics { contentDescription = label }, software = software, onSettled = onSettled)
         }
@@ -137,14 +140,19 @@ internal fun exportImages(card: StoryCard, style: SummaryStyle, recap: StoryReca
  * headline in the display serif (text role `displayMedium`, `color.global.textOnMedia`, header, announced) and the
  * subline (text role `textButton`) its cap top `dimension.birthday.request.headlineToMessage` below the headline's
  * baseline, revealed (Motion); photo cards — footer: the date (`layout.year.story.dateFormat`, `displaySmall`) and
- * `year.story.mostReacted.photo` ("Post by {name}", `listTitle`); collage cards — footer: the date.
+ * `year.story.mostReacted.photo` ("Post by {name}", `listTitle`) — a self-tagged photo: `tagging.with` ("with Ana and
+ * Rui"), who is in it, never a count; collage cards — footer: the date.
  */
 @Composable
 internal fun BoxScope.CardForeground(card: StoryCard, revealed: Boolean) {
     when (card) {
-        is StoryCard.MostReactedPhoto -> RecapFooter(
+        is StoryCard.Photo -> RecapFooter(
             MemoryFormats.storyDate(card.date),
-            stringResource(R.string.year_story_mostreacted_photo, card.name),
+            if (card is StoryCard.TaggedPhoto) {
+                stringResource(R.string.tagging_with, ListFormatter.getInstance(Locale.getDefault()).format(card.names))
+            } else {
+                stringResource(R.string.year_story_mostreacted_photo, card.name)
+            },
             null,
             TextRoles.displaySmall,
             Tokens.Colors.globalTextOnMedia,

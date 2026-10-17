@@ -52,6 +52,37 @@ class YearStoryViewModelTest {
         assertEquals(listOf("postId", "url", "name", "date", "isMine"), StoryCard.MostReactedPhoto::class.java.declaredFields.map { it.name }.filterNot { it.startsWith("$") })
     }
 
+    @Test fun selfTaggedPhotosSayWhoIsInThemWithoutNumbersOrRanking() {
+        val backend = Scenario.backend().apply {
+            tags += "p-r2" to FakeMemoryBackend.ANA // already a most-reacted card: not shown twice
+            tags += "p-y3" to FakeMemoryBackend.BEN
+            tags += "p-y3" to FakeMemoryBackend.CLEO
+            val base = yearStories.getValue(GROUP to 2026)
+            yearStories[GROUP to 2026] = base.copy(
+                data = Rows.storyData(
+                    mostReacted = listOf("p-r1", "p-r2", "p-r3", "p-r4", "p-r5", "p-r6"),
+                    days = listOf(Triple("2026-04-02", "col-1", listOf("p-r1", "p-r2")), Triple("2026-09-21", "col-2", listOf("p-r4"))),
+                    selfTagged = listOf("p-r2", "p-y3", "p-tagged"),
+                ),
+            )
+        }
+        val model = vm(backend)
+        val cards = model.story.cards
+        val at = cards.indexOf(StoryCard.TaggedSetup)
+        assertEquals("after the most-reacted photos", "MostReactedPhoto", cards[at - 1]::class.simpleName)
+        val tagged = cards.filterIsInstance<StoryCard.TaggedPhoto>()
+        assertEquals(listOf("p-y3", "p-tagged"), tagged.map { it.postId })
+        assertEquals(listOf(listOf("Ben", "Cleo"), listOf("Jesus")), tagged.map { it.names })
+        assertEquals(listOf(true, false), tagged.map { it.isMine }) // p-y3 is the signed-in member's own photo
+        assertEquals(listOf("postId", "url", "name", "date", "names", "isMine"), StoryCard.TaggedPhoto::class.java.declaredFields.map { it.name }.filterNot { it.startsWith("$") })
+        // every tagged photo deleted: no setup card left
+        backend.deletions.tryEmit("p-y3")
+        backend.deletions.tryEmit("p-tagged")
+        assertFalse(StoryCard.TaggedSetup in model.story.cards)
+        assertEquals(listOf(1, 3, 6, 8, 10), YearStoryViewModel.spread((1..10).toList(), 5))
+        assertEquals(listOf(1, 2), YearStoryViewModel.spread(listOf(1, 2), 5))
+    }
+
     @Test fun photosHiddenByABlockAreSkippedNotReplaced() {
         val backend = Scenario.backend().apply { blocked += FakeMemoryBackend.BEN }
         val photos = vm(backend).story.cards.filterIsInstance<StoryCard.MostReactedPhoto>()
@@ -156,10 +187,17 @@ class YearStoryViewModelTest {
         assertEquals(1284, YearStoryData.parse(Rows.storyData())?.momentsShared)
     }
 
-    @Test fun entryShowsOnlyAReadyStoryOfTheCurrentYear() = runTest {
-        assertEquals(2026, readyStoryYear(Scenario.backend(), GROUP, Scenario.clock))
+    @Test fun entryKeepsEveryReadyStoryNewestFirst() = runTest {
+        assertEquals(listOf(2026), readyStoryYears(Scenario.backend(), GROUP))
+        // last year's story stays after 1 January (owner decision 31); a pending story has no card
+        val past = Scenario.backend().apply {
+            yearStories[GROUP to 2025] = Rows.yearStory(Rows.storyData(year = 2025), year = 2025)
+            yearStories[GROUP to 2024] = Rows.yearStory(null, RenderStatus.Pending, year = 2024)
+        }
+        assertEquals(listOf(2026, 2025), readyStoryYears(past, GROUP))
         val pending = Scenario.backend().apply { yearStories[GROUP to 2026] = Rows.yearStory(null, RenderStatus.Pending) }
-        assertNull(readyStoryYear(pending, GROUP, Scenario.clock))
+        assertEquals(emptyList<Int>(), readyStoryYears(pending, GROUP))
+        assertNull(readyStoryYears(Scenario.backend().apply { online = false }, GROUP))
     }
 
     @Test fun cachedStoryPaintsFirstAndKeepsTheCard() = runTest {

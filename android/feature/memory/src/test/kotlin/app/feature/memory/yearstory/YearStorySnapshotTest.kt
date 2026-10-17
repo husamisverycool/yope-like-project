@@ -58,6 +58,12 @@ internal val sampleRecap = StoryRecap(
     photos = (1..16).map { n -> RecapPhoto("y$n", TestImages.url("y$n-thumb", 1, 1), "Ana", LocalDate.of(2026, 1 + n % 12, 1 + n)) },
 )
 
+/** The self-tag section (setup + one photo), recorded on its own so the indices above stay as they are. */
+internal val taggedCards: List<StoryCard> = listOf(
+    StoryCard.TaggedSetup,
+    StoryCard.TaggedPhoto("p3", TestImages.url("r3", 3, 4), "Ben", LocalDate.of(2026, 6, 1), listOf("Ana", "Cleo")),
+)
+
 private fun cardName(card: StoryCard): String = when (card) {
     is StoryCard.Intro -> "01-intro"
     StoryCard.LookBack -> "02-look-back"
@@ -65,6 +71,8 @@ private fun cardName(card: StoryCard): String = when (card) {
     is StoryCard.BusiestMonth -> "04-busiest-month"
     StoryCard.MostReactedSetup -> "05-most-reacted-setup"
     is StoryCard.MostReactedPhoto -> "06-most-reacted-photo-${card.postId}"
+    StoryCard.TaggedSetup -> "06b-tagged-setup"
+    is StoryCard.TaggedPhoto -> "06c-tagged-photo"
     StoryCard.TogetherSetup -> "07-together-setup"
     is StoryCard.TogetherDay -> "08-together-day"
     StoryCard.Outro -> "09-outro"
@@ -89,6 +97,8 @@ class YearStorySnapshotTest : SnapshotTest() {
     @Test fun mostReactedSetup() = card(4)
     @Test fun mostReactedPhoto() = card(5)
     @Test fun mostReactedPhotoLandscape() = card(6)
+    @Test fun taggedSetup() = story("card-" + cardName(taggedCards[0]), YearStoryState.Story(taggedCards, 0, sampleRecap, paused = true))
+    @Test fun taggedPhoto() = story("card-" + cardName(taggedCards[1]), YearStoryState.Story(taggedCards, 1, sampleRecap, paused = true))
     @Test fun togetherSetup() = card(7)
     @Test fun togetherDay() = card(8)
     @Test fun outro() = card(9)

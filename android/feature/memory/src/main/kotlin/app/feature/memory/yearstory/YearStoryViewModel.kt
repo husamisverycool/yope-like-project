@@ -38,6 +38,11 @@ data class YearStoryData(
     /** Post ids, most-reacted first; never with numbers (T2). */
     val mostReacted: List<String>,
     val everyoneDays: List<EveryoneDay>,
+    /**
+     * The photos at least one member tagged themselves in ("I'm in this"), in time order; ids only — no names, no counts
+     * (the cards say who is in each). Empty in stories computed before 2026-10-17.
+     */
+    val selfTagged: List<String> = emptyList(),
 ) {
     data class EveryoneDay(val localDate: LocalDate, val collageId: String, val postIds: List<String>)
 
@@ -58,6 +63,7 @@ data class YearStoryData(
                     val collage = d["collage_id"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
                     EveryoneDay(date, collage, d["post_ids"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }.orEmpty())
                 }.orEmpty(),
+                selfTagged = o["self_tagged"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }.orEmpty(),
             )
         }.getOrNull()
     }
@@ -86,10 +92,38 @@ sealed interface StoryCard {
     /** 5: "The moments you reacted to most". */
     data object MostReactedSetup : StoryCard
 
-    /** 6…10: one most-reacted photo, in the worker's order — no number, rank or reaction glyph (T2). [isMine]: you posted it. */
-    data class MostReactedPhoto(val postId: String, val url: String?, val name: String, val date: LocalDate, val isMine: Boolean = false) : StoryCard {
+    /** A photo card (full bleed, the date and a trailing line); shared only when it is your own (owner decision 12). */
+    sealed interface Photo : StoryCard {
+        val postId: String
+        val url: String?
+        /** The poster's first name. */
+        val name: String
+        val date: LocalDate
+        val isMine: Boolean
         override val shareable get() = isMine
     }
+
+    /** 6…10: one most-reacted photo, in the worker's order — no number, rank or reaction glyph (T2). [isMine]: you posted it. */
+    data class MostReactedPhoto(
+        override val postId: String,
+        override val url: String?,
+        override val name: String,
+        override val date: LocalDate,
+        override val isMine: Boolean = false,
+    ) : Photo
+
+    /** "The moments you were in": the photos members tagged themselves in (self-tags power the year story). */
+    data object TaggedSetup : StoryCard
+
+    /** One self-tagged photo, in time order: [names] = who tagged themselves in it (`tagging.with`), never a count. */
+    data class TaggedPhoto(
+        override val postId: String,
+        override val url: String?,
+        override val name: String,
+        override val date: LocalDate,
+        val names: List<String>,
+        override val isMine: Boolean = false,
+    ) : Photo
 
     /** 11: "You didn't go through these moments alone" + "Some days, everyone was there". */
     data object TogetherSetup : StoryCard
@@ -232,9 +266,10 @@ class YearStoryViewModel(
     fun onPostDeleted(postId: String) = _state.update { s ->
         if (s !is YearStoryState.Story) return@update s
         val current = s.card
-        val kept = s.cards.filterNot { (it is StoryCard.MostReactedPhoto && it.postId == postId) || (it is StoryCard.TogetherDay && postId in it.postIds) }
+        val kept = s.cards.filterNot { (it is StoryCard.Photo && it.postId == postId) || (it is StoryCard.TogetherDay && postId in it.postIds) }
         val cards = kept.filterNot { c ->
             (c == StoryCard.MostReactedSetup && kept.none { it is StoryCard.MostReactedPhoto }) ||
+                (c == StoryCard.TaggedSetup && kept.none { it is StoryCard.TaggedPhoto }) ||
                 (c == StoryCard.TogetherSetup && kept.none { it is StoryCard.TogetherDay })
         }
         val left = s.recap.photos.filterNot { it.postId == postId }
@@ -285,6 +320,8 @@ class YearStoryViewModel(
                     isMine = backend.currentUserId != null && post.authorId == backend.currentUserId,
                 )
             }
+            // Self-tagged photos not already shown above, spread evenly over the year; each says who is in it.
+            val tagged = taggedPhotos(backend, data, zone, exclude = photos.map { it.postId }.toSet(), known = media)
             val together = days.mapNotNull { day ->
                 val collage = collages[day.collageId] ?: return@mapNotNull null
                 StoryCard.TogetherDay(collage.id, collage.imagePath?.let(urls::get), day.localDate, day.postIds)
@@ -307,6 +344,10 @@ class YearStoryViewModel(
                     add(StoryCard.MostReactedSetup)
                     addAll(photos)
                 }
+                if (tagged.isNotEmpty()) {
+                    add(StoryCard.TaggedSetup)
+                    addAll(tagged)
+                }
                 if (together.isNotEmpty()) {
                     add(StoryCard.TogetherSetup)
                     addAll(together)
@@ -315,6 +356,41 @@ class YearStoryViewModel(
                 add(StoryCard.Summary)
             }
             return cards to recap
+        }
+
+        /**
+         * The self-tagged photos (`data.self_tagged`) not in [exclude], at most `count.year.story.listLength` spread evenly
+         * over the year, in time order; posts hidden by a block (RLS) are skipped. Each carries the first names of the
+         * members who tagged themselves in it (the tags the caller can read) — names only, never a count or a ranking.
+         */
+        suspend fun taggedPhotos(backend: MemoryBackend, data: YearStoryData, zone: ZoneId, exclude: Set<String>, known: Map<String, Media> = emptyMap()): List<StoryCard.TaggedPhoto> {
+            val wanted = data.selfTagged.filter { it !in exclude }
+            if (wanted.isEmpty()) return emptyList()
+            val order = wanted.withIndex().associate { it.value to it.index }
+            val posts = backend.posts(wanted).filter { it.id in order }.sortedBy { order.getValue(it.id) }
+            val missing = posts.map { it.mediaId }.filter { it !in known }.distinct()
+            val media = known + (if (missing.isEmpty()) emptyMap() else backend.media(missing).associateBy { it.id })
+            val picked = spread(posts.filter { media[it.mediaId] != null }, Tokens.Counts.yearStoryListLength)
+            if (picked.isEmpty()) return emptyList()
+            val inIt = picked.associate { p -> p.id to backend.postTags(p.id).map { it.userId } }
+            val names = backend.profiles((inIt.values.flatten() + picked.map { it.authorId }).distinct()).associate { it.id to it.firstName.orEmpty() }
+            val urls = backend.signedUrls(picked.mapNotNull { p -> media[p.mediaId]?.imagePath(Media.Rendition.Display) }.toSet())
+            return picked.mapNotNull { p ->
+                val people = inIt[p.id].orEmpty().mapNotNull { names[it]?.takeIf(String::isNotEmpty) }
+                if (people.isEmpty()) return@mapNotNull null // every tag removed (or hidden) since the story was computed
+                StoryCard.TaggedPhoto(
+                    p.id, media[p.mediaId]?.let { urls[it.imagePath(Media.Rendition.Display)] }, names[p.authorId].orEmpty(),
+                    p.createdAt.atZone(zone).toLocalDate(), people,
+                    isMine = backend.currentUserId != null && p.authorId == backend.currentUserId,
+                )
+            }
+        }
+
+        /** [count] items spread evenly over [items] (first and last included), in order. */
+        fun <T> spread(items: List<T>, count: Int): List<T> {
+            if (items.size <= count || count <= 1) return items.take(count.coerceAtLeast(0))
+            val step = (items.size - 1).toDouble() / (count - 1)
+            return (0 until count).map { items[Math.round(it * step).toInt()] }
         }
 
         /** Candidate ids read for the recap grid: twice the grid, so posts hidden by a block can be skipped. */

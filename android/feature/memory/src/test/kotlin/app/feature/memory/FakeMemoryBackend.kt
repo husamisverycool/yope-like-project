@@ -232,6 +232,7 @@ object Rows {
         busiest: Int? = 7,
         mostReacted: List<String> = emptyList(),
         days: List<Triple<String, String, List<String>>> = emptyList(),
+        selfTagged: List<String> = emptyList(),
     ): JsonElement = buildJsonObject {
         put("version", 1)
         put("year", year)
@@ -239,6 +240,7 @@ object Rows {
         put("moments_shared", moments)
         if (busiest != null) putJsonObject("busiest_month") { put("month", busiest) }
         put("most_reacted", buildJsonArray { mostReacted.forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } })
+        put("self_tagged", buildJsonArray { selfTagged.forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } })
         put(
             "everyone_days",
             buildJsonArray {

@@ -1,9 +1,9 @@
 // tribute.render / tribute.rerender edge cases and year.compute.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { setTokenOverrides } from "../../src/tokens.js";
-import { closeDb, createGroup, createUsers, objectsUnder, postPhoto, rpc, sql, type TestGroup, type TestUser } from "../helpers/db.js";
+import { closeDb, createGroup, createUsers, objectsUnder, postPhoto, registerDevice, rpc, sql, type TestGroup, type TestUser } from "../helpers/db.js";
 import { TEST_TRIBUTE_TOKENS } from "../helpers/tokens.js";
-import { startWorld, type World } from "../helpers/world.js";
+import { apnsDeviceSends, startWorld, type World } from "../helpers/world.js";
 
 let w: World;
 let u: TestUser[];
@@ -78,7 +78,51 @@ describe("year.compute", () => {
     await w.runner.runUntilIdle({ kinds: ["year.compute"] });
     const [s] = await sql(`select * from public.year_stories where id = $1`, [story.id]);
     expect(s.status).toBe("ready");
-    expect(s.data).toEqual({ version: 1, year, time_zone: "UTC", moments_shared: 3, busiest_month: { month: 7 }, most_reacted: [p1.id, p3.id], everyone_days: [] });
+    expect(s.data).toEqual({ version: 1, year, time_zone: "UTC", moments_shared: 3, busiest_month: { month: 7 }, most_reacted: [p1.id, p3.id], everyone_days: [], self_tagged: [] });
     expect([...s.post_ids].sort()).toEqual([p1.id, p2.id, p3.id].sort());
+  });
+
+  it("lists the photos members tagged themselves in (ids only), tells the group once, and stays silent on recomputes", async () => {
+    const [a, b, c] = await createUsers(3, "YearTag");
+    const grp = await createGroup(a!, [b!, c!], { name: "Year tags", tz: "UTC" });
+    const ios = await registerDevice(b!, "ios");
+    const year = 2024;
+    const q1 = (await postPhoto(a!, [grp.id])).post;
+    const q2 = (await postPhoto(b!, [grp.id])).post;
+    const q3 = (await postPhoto(c!, [grp.id])).post;
+    await sql(`update public.posts set created_at = timestamptz '2024-02-01 10:00:00Z' where id = $1`, [q1.id]);
+    await sql(`update public.posts set created_at = timestamptz '2024-05-01 10:00:00Z' where id = $1`, [q2.id]);
+    await sql(`update public.posts set created_at = timestamptz '2024-09-01 10:00:00Z' where id = $1`, [q3.id]);
+    // b is in a's photo and in c's photo; c too in c's photo: still listed once, in time order, with no names or counts
+    for (const [user, post] of [[b, q3], [b, q1], [c, q3]] as const) {
+      const { error } = await user!.client.from("post_tags").insert({ post_id: post.id, user_id: user!.id });
+      expect(error).toBeNull();
+    }
+    const [story] = await sql(`insert into public.year_stories (group_id, year) values ($1, $2) returning id`, [grp.id, year]);
+    await sql(`select private.enqueue('year.compute', jsonb_build_object('year_story_id', $1::uuid, 'group_id', $2::uuid, 'year', $3::int), 'year.compute:' || $1, now())`, [story.id, grp.id, year]);
+    await w.runner.runUntilIdle({ kinds: ["year.compute", "push.year_story"] });
+    const [s] = await sql(`select status, data, announced_at from public.year_stories where id = $1`, [story.id]);
+    expect(s.status).toBe("ready");
+    expect(s.data.self_tagged).toEqual([q1.id, q3.id]);
+    expect(JSON.stringify(s.data)).not.toContain(b!.id);
+    expect(s.announced_at).not.toBeNull();
+    const sent = () => apnsDeviceSends(w.apns).filter((x) => x.token === ios.push_token && x.payload?.type === "year_story");
+    expect(sent()).toHaveLength(1);
+    expect(sent()[0]!.payload).toMatchObject({ type: "year_story", group_id: grp.id, year: "2024" });
+    expect(sent()[0]!.payload.aps.alert).toEqual({ title: "[notifications.push.yearStory.title] group=Year tags year=2024", body: "[notifications.push.yearStory.body] group=Year tags year=2024" });
+
+    // untagging recomputes (trigger) without a second push
+    const { error } = await c!.client.from("post_tags").delete().eq("post_id", q3.id).eq("user_id", c!.id);
+    expect(error).toBeNull();
+    await sql(`update public.jobs set run_at = now() where dedupe_key = $1 and status = 'queued'`, [`year.recompute:${story.id}`]);
+    await w.runner.runUntilIdle({ kinds: ["year.recompute", "push.year_story"] });
+    const [after] = await sql(`select data from public.year_stories where id = $1`, [story.id]);
+    expect(after.data.self_tagged).toEqual([q1.id, q3.id]); // b is still in q3
+    await b!.client.from("post_tags").delete().eq("post_id", q3.id).eq("user_id", b!.id);
+    await sql(`update public.jobs set run_at = now() where dedupe_key = $1 and status = 'queued'`, [`year.recompute:${story.id}`]);
+    await w.runner.runUntilIdle({ kinds: ["year.recompute", "push.year_story"] });
+    const [last] = await sql(`select data from public.year_stories where id = $1`, [story.id]);
+    expect(last.data.self_tagged).toEqual([q1.id]);
+    expect(sent()).toHaveLength(1);
   });
 });

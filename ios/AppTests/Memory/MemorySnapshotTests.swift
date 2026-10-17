@@ -248,6 +248,8 @@ final class MemorySnapshotTests: XCTestCase {
         case .busiestMonth: return "busiest-month"
         case .mostReactedSetup: return "most-reacted-setup"
         case .mostReacted: return "most-reacted-photo"
+        case .taggedSetup: return "tagged-setup"
+        case .tagged: return "tagged-photo"
         case .togetherSetup: return "together-setup"
         case .togetherDay: return "together-day"
         case .outro: return "outro"

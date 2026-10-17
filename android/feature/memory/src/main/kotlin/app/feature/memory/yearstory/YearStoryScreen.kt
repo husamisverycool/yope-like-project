@@ -204,7 +204,7 @@ private fun TapZones(state: YearStoryState.Story, actions: YearStoryActions) {
 private const val PRELOAD_AHEAD = 2
 
 private fun imageUrl(card: StoryCard): String? = when (card) {
-    is StoryCard.MostReactedPhoto -> card.url
+    is StoryCard.Photo -> card.url
     is StoryCard.TogetherDay -> card.url
     else -> null
 }
