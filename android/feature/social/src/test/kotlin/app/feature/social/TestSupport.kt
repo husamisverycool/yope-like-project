@@ -127,6 +127,10 @@ class FakeVoice : VoiceServices {
         playback.value = playback.value.copy(isPlaying = false)
     }
 
+    override fun seek(key: String, fraction: Float) {
+        if (playback.value.key == key) playback.value = playback.value.copy(progress = fraction.coerceIn(0f, 1f))
+    }
+
     override suspend fun levels(key: String, url: String): List<Int> = LEVELS
     override fun release() = Unit
 

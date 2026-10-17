@@ -276,6 +276,24 @@
       "method": "documented behaviour of two references",
       "level": "SOURCED"
     },
+    "chat.voice.layout.scrub": {
+      "type": "layout",
+      "value": {
+        "when": "while the note plays or is paused part-way (chat.voice.layout.playback); an idle capsule has no drag (scrolling and the thread's gestures pass through)",
+        "drag": "a horizontal drag that starts on the capsule (past the platform's touch slop) seeks: the position = the finger's x along the waveform (C-36, chat.voice.dimension.waveform) ÷ its width, clamped to 0…1; the played bars and the elapsed label follow the finger; a playing note keeps playing from there, a paused note stays paused",
+        "tap": "a tap still plays / pauses (a drag never toggles)",
+        "stepMs": 5000,
+        "accessibility": "the capsule is also adjustable while it plays or is paused part-way: VoiceOver swipe up / down (accessibilityAdjustableAction), TalkBack's adjust (progress range 0…duration with setProgress) move the position stepMs forward / back, clamped to the note; the value is the elapsed time spoken (chat.voice.a11y.play's {duration} format); idle: no change",
+        "haptic": "none (the playback is the feedback)"
+      },
+      "source_app": "Apple Voice Memos + YouTube",
+      "surface": "chat.voice",
+      "element": "seeking a voice note by dragging along its waveform, and by accessibility increments",
+      "evidence": "drag: https://support.apple.com/guide/iphone/make-a-recording-iph4d2a39a3b/ios ('To change where playback begins, drag the waveform left or right', accessed 2026-10-17) — Apple's own audio waveform is dragged to seek; increments: https://developer.apple.com/documentation/swiftui/view/accessibilityadjustableaction(_:) ('Adds an accessibility adjustable action to the view … VoiceOver'), https://developer.android.com/reference/kotlin/androidx/compose/ui/semantics/SemanticsActions#SetProgress() (the progress-bar action TalkBack adjusts); stepMs: https://support.google.com/youtube/answer/7631406 ('Left/Right arrow on the seek bar | Seek backward/forward 5 seconds', accessed 2026-10-17)",
+      "method": "documented behaviour of the references; the drag maps the finger's position (the waveform is the seek bar) rather than Voice Memos' drag under a fixed playhead, since the capsule's waveform has no playhead (C-36)",
+      "level": "SOURCED",
+      "notes": "Closes the chat.voice gap 'scrubbing by dragging along the waveform'. Bars and colours unchanged (no playhead dot: do-not-copy)."
+    },
     "chat.voice.layout.recording": {
       "type": "layout",
       "value": {

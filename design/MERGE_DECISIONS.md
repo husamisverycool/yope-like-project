@@ -1314,7 +1314,7 @@ continue / preview to a locked recording (both platforms had none). Measurements
 playback of the kept note) while iOS had lock and a stopped draft; both now follow `chat.voice.layout.locked` and the
 note capsule (rule 9: both platforms behave the same).
 
-**Not built.** Scrubbing along the waveform (WhatsApp / Messages drag to seek): the capsule stays one button (C-36 Gaps).
+**Built since** (`chat.voice.layout.scrub`). Scrubbing along the waveform: while a note plays or is paused part-way a horizontal drag seeks (Apple Voice Memos drags its waveform to change where playback begins); the tap stays play / pause; VoiceOver / TalkBack adjust in 5-s steps.
 
 ## Owner decisions 7, 18, 21 — premium, true black, lock-screen widgets (OD7-*, OD18-*, OD21-*)
 

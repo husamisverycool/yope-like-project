@@ -107,10 +107,50 @@ final class SocialVoicePlayback {
         }
     }
 
+    /// `chat.voice.layout.scrub`: moves `key` (playing or paused part-way) to `fraction` (0…1) of the note; a playing
+    /// note plays on from there, a paused one stays paused. Does nothing for any other note.
+    func seek(key: String, toFraction fraction: Double) {
+        guard currentKey == key, player.currentURL != nil else { return }
+        player.seek(toFraction: fraction)
+    }
+
+    /// One accessibility step (`chat.voice.layout.scrub` `stepMs`) forward or back while `key` plays or is paused
+    /// part-way; idle: nothing.
+    func step(key: String, forward: Bool) {
+        guard let progress = progress(key) else { return }
+        seek(key: key, toFraction: VoiceScrub.step(from: progress, durationMs: player.durationMs, forward: forward))
+    }
+
     func stop() {
         player.stop()
         currentKey = nil
         loadingKey = nil
+    }
+}
+
+/// `chat.voice.layout.scrub`: the positions a drag along the waveform and the accessibility steps seek to. Pure.
+enum VoiceScrub {
+    /// The waveform's left edge in the capsule's (left-to-right) coordinates: `leadingInset` (padding + glyph + gap)
+    /// from the leading edge — the right edge in a right-to-left layout.
+    static func waveformMinX(capsuleWidth: CGFloat, leadingInset: CGFloat, waveformWidth: CGFloat, rightToLeft: Bool) -> CGFloat {
+        rightToLeft ? capsuleWidth - leadingInset - waveformWidth : leadingInset
+    }
+
+    /// The note's position under the finger at `x`: its share of the waveform (drawn left to right), clamped to 0…1.
+    static func fraction(x: CGFloat, waveformMinX: CGFloat, waveformWidth: CGFloat) -> Double {
+        guard waveformWidth > 0 else { return 0 }
+        return Double(min(1, max(0, (x - waveformMinX) / waveformWidth)))
+    }
+
+    /// One step of `stepMs` (`chat.voice.layout.scrub`) forward or back from `progress` of a `durationMs` note, clamped
+    /// to 0…1; a note of unknown length does not move.
+    static func step(
+        from progress: Double, durationMs: Int, forward: Bool,
+        stepMs: Double = Double(Tokens.Layouts.ChatVoiceLayoutScrub.stepMs)
+    ) -> Double {
+        guard durationMs > 0 else { return progress }
+        let delta = stepMs / Double(durationMs)
+        return min(1, max(0, progress + (forward ? delta : -delta)))
     }
 }
 
@@ -154,11 +194,18 @@ struct VoiceCapsule: View {
     /// `chat.voice.a11y.messageMine` / `.message`.
     let accessibilityLabel: String
 
+    @Environment(\.layoutDirection) private var layoutDirection
+    /// A drag along the waveform is seeking (`chat.voice.layout.scrub`); the drag stays attached until it ends.
+    @State private var isScrubbing = false
+    @State private var capsuleWidth: CGFloat = 0
+
     private var playback: SocialVoicePlayback { SocialServices.shared.playback }
 
     var body: some View {
         let playing = playback.isPlaying(key)
         let failed = playback.hasFailed(key)
+        // `chat.voice.layout.scrub`: playing or paused part-way — a horizontal drag seeks, VoiceOver adjusts.
+        let scrubbable = !failed && playback.progress(key) != nil
         Button {
             Task { _ = await playback.toggle(key: key, path: path, localFile: localFile, needsLevels: levels == nil) }
         } label: {
@@ -201,13 +248,61 @@ struct VoiceCapsule: View {
             .dsAnimation(ComponentMotion.crossfade, value: playing)
         }
         .buttonStyle(.plain)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { capsuleWidth = $0 }
+        // The drag wins over the button only once it moves (a tap still plays / pauses); idle capsules have none, so the
+        // thread scrolls and the viewer pages through them.
+        .highPriorityGesture(scrubGesture, including: scrubbable || isScrubbing ? .all : .subviews)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityLabel))
-        .accessibilityValue(Text(failed ? Copy.chatVoiceErrorPlay : ""))
+        .accessibilityValue(Text(accessibilityValue(failed: failed, scrubbable: scrubbable)))
         .accessibilityAddTraits(.isButton)
         .accessibilityAction(named: Text(playing ? Copy.chatVoiceA11yPause : Copy.chatVoiceA11yPlay(duration: SocialFormat.spokenDuration(milliseconds: durationMs)))) {
             Task { _ = await playback.toggle(key: key, path: path, localFile: localFile, needsLevels: levels == nil) }
         }
+        // `chat.voice.layout.scrub` accessibility: swipe up / down moves `stepMs` while playing or paused part-way.
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: playback.step(key: key, forward: true)
+            case .decrement: playback.step(key: key, forward: false)
+            @unknown default: break
+            }
+        }
+    }
+
+    /// The error line, else the elapsed time while the note can be adjusted, else nothing.
+    private func accessibilityValue(failed: Bool, scrubbable: Bool) -> String {
+        if failed { return Copy.chatVoiceErrorPlay }
+        guard scrubbable else { return "" }
+        return SocialFormat.spokenDuration(milliseconds: playback.elapsedMs(key) ?? 0)
+    }
+
+    /// `chat.voice.layout.scrub`: a horizontal drag (the platform's drag distance) seeks to the finger's place along the
+    /// waveform; a drag that starts vertically does nothing.
+    private var scrubGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if !isScrubbing {
+                    guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                    isScrubbing = true
+                }
+                playback.seek(key: key, toFraction: scrubFraction(at: value.location.x))
+            }
+            .onEnded { value in
+                if isScrubbing { playback.seek(key: key, toFraction: scrubFraction(at: value.location.x)) }
+                isScrubbing = false
+            }
+    }
+
+    /// The note's position under `x` (the capsule's coordinates): the waveform starts after the leading padding, the
+    /// glyph and the gap (`chat.voice.layout.capsule`).
+    private func scrubFraction(at x: CGFloat) -> Double {
+        let width = Tokens.Sizes.chatVoiceDimensionWaveform
+        let inset = Tokens.Sizes.globalPillPaddingLeading + SocialMetrics.scaled(Tokens.Sizes.globalIconSmall, like: TextRole.pill)
+            + Tokens.Sizes.globalPillIconGap
+        let minX = VoiceScrub.waveformMinX(
+            capsuleWidth: capsuleWidth, leadingInset: inset, waveformWidth: width, rightToLeft: layoutDirection == .rightToLeft
+        )
+        return VoiceScrub.fraction(x: x, waveformMinX: minX, waveformWidth: width)
     }
 }
 

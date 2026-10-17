@@ -1230,6 +1230,16 @@ public enum Tokens {
             public static let haptic: String = "none on start / stop / pause / continue (HIG: do not disturb the microphone); haptic.global.send when sent"
             public static let pause: String = "locked: pause stops the recording into a draft that can be played, continued, deleted or sent (chat.voice.layout.locked); holding has no pause"
         }
+        /// Apple Voice Memos + YouTube · chat.voice · seeking a voice note by dragging along its waveform, and by accessibility increments · SOURCED
+        /// token: `chat.voice.layout.scrub`
+        public enum ChatVoiceLayoutScrub {
+            public static let when: String = "while the note plays or is paused part-way (chat.voice.layout.playback); an idle capsule has no drag (scrolling and the thread's gestures pass through)"
+            public static let drag: String = "a horizontal drag that starts on the capsule (past the platform's touch slop) seeks: the position = the finger's x along the waveform (C-36, chat.voice.dimension.waveform) ÷ its width, clamped to 0…1; the played bars and the elapsed label follow the finger; a playing note keeps playing from there, a paused note stays paused"
+            public static let tap: String = "a tap still plays / pauses (a drag never toggles)"
+            public static let stepMs: CGFloat = 5000
+            public static let accessibility: String = "the capsule is also adjustable while it plays or is paused part-way: VoiceOver swipe up / down (accessibilityAdjustableAction), TalkBack's adjust (progress range 0…duration with setProgress) move the position stepMs forward / back, clamped to the note; the value is the elapsed time spoken (chat.voice.a11y.play's {duration} format); idle: no change"
+            public static let haptic: String = "none (the playback is the feedback)"
+        }
         /// Meta developer docs (standards: accessibility thresholds, share-image specs) · collage.share · the image handed to the share sheet · VERIFIED
         /// token: `collage.share.layout.export`
         public enum CollageShareLayoutExport {
