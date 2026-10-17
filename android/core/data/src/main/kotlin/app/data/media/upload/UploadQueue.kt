@@ -66,6 +66,16 @@ data class NewPost(
      * p_invitation_ids`, migration 0035). Last, so positional calls keep working.
      */
     val invitationIds: List<String>? = null,
+    /**
+     * `media.taken_on` (migration 0050): the day a library photo was taken, in the device's zone — the date only, never a
+     * time or a place; null for camera photos. Last, so positional calls keep working.
+     */
+    val takenOn: java.time.LocalDate? = null,
+    /**
+     * `media.batch_id` (migration 0051): one id for every photo of one selection (several photos in one post, at most
+     * `batch_max_photos`); null for a single photo. Last, so positional calls keep working.
+     */
+    val batchId: String? = null,
 ) {
     init {
         require(groupIds.isNotEmpty()) { "no groups" }
@@ -140,6 +150,8 @@ class UploadQueue(
                 questionId = post.questionId?.takeIf { post.questionGroupId in post.groupIds },
                 questionGroupId = post.questionGroupId?.takeIf { post.questionId != null && it in post.groupIds },
                 invitationIds = post.invitationIds?.takeIf { it.isNotEmpty() },
+                takenOn = post.takenOn,
+                batchId = post.batchId,
             )
             if (draft.files.any { it.size > StoragePaths.MAX_OBJECT_BYTES }) {
                 throw DataException(DataError.Storage(app.data.error.StorageFailure.TooLarge, null, null))

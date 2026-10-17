@@ -31,6 +31,11 @@ struct AppRootView: View {
             }
             .onChange(of: scenePhase) { _, phase in
                 environment.scenePhaseChanged(phase)
+                // share.in: items still waiting in the App Group inbox (the extension could not open the app) are taken
+                // when the app comes to the foreground.
+                if phase == .active, ShareInbox.forBundle(.main).hasItems {
+                    environment.router.openShareInbox()
+                }
             }
     }
 }

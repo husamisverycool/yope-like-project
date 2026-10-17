@@ -558,6 +558,16 @@
       "level": "SOURCED",
       "notes": "Label of the icon-only voice capsule."
     },
+    "camera.sendto.a11y.selection": {
+      "text": "Selected photos",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "camera.sendto",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `composer_lost_changes_warning_messages` ('Any media you selected will not be added') and `composer_remove_selected_media` (Retro's composer names its strip the selected media); design/copy-patterns.md `platform.a11yLabel`",
+      "pattern": "platform.a11yLabel — a description of the strip, Sentence case; no number of photos (tenet 2)",
+      "level": "SOURCED",
+      "notes": "Accessibility label of the selection strip (camera.sendto, several photos in one post — docs/RESEARCH_FEATURES_2026-10-17.md #1). Videos in the selection are photos here, as Retro calls its composer's media 'Photos taken since …' (`composer_header_template_current_week`)."
+    },
     "widget.home.small.gallery.name": {
       "text": "Group Updates",
       "origin": "adapted",

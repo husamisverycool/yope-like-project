@@ -40,9 +40,10 @@ struct CameraCaptureView: View {
                 SendToView(model: makeSendTo(media), sheetAppearance: systemAppearance)
             }
             .sheet(isPresented: $isPickerPresented) {
-                CaptureLibraryPicker { media in
+                // Up to `batch_max_photos` items: one send-to for the selection (several photos in one post).
+                CaptureLibraryPicker(selectionLimit: model.selectionLimit) { picked in
                     isPickerPresented = false
-                    if let media { model.didPick(media) }
+                    model.didPick(picked)
                 }
                 .ignoresSafeArea()
             }
@@ -55,7 +56,8 @@ struct CameraCaptureView: View {
                 .preferredColorScheme(systemAppearance)
             }
             .alert(Copy.cameraCaptureVideoTooLongTitle, isPresented: $model.isVideoTooLong) {
-                Button(Copy.cameraCaptureVideoTooLongDismiss, role: .cancel) {}
+                // The rest of a selection goes on to send-to once the alert closes.
+                Button(Copy.cameraCaptureVideoTooLongDismiss, role: .cancel) { model.videoTooLongDismissed() }
             } message: {
                 Text(Copy.cameraCaptureVideoTooLongMessage(duration: CaptureVideoLimit.spoken))
             }
@@ -67,6 +69,8 @@ struct CameraCaptureView: View {
                 }
             }
             .task { await model.appear() }
+            // share.in: photos shared from another app arrive as a library selection (on appear and on each new share).
+            .task(id: ShareInHandoff.shared.arrivals) { await model.takeSharedItems() }
             .onDisappear { Task { await model.disappear() } }
             .onChange(of: model.isRecording) { _, recording in
                 recordingProgress = 0

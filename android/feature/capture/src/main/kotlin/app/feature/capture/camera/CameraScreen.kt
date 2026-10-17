@@ -8,11 +8,12 @@
 package app.feature.capture.camera
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -61,18 +62,18 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import app.data.model.MediaKind
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.capture.data.CaptureDataProvider
 import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.data.SharedCapturePrefs
+import app.feature.capture.data.importPicked
+import app.feature.capture.share.ShareInbox
 import app.feature.capture.ui.ControlRow
 import app.feature.capture.ui.MediaControlCircle
 import app.feature.capture.ui.MediaEmptyState
 import app.feature.capture.ui.RecordingOutline
 import app.feature.capture.ui.Shutter
-import app.media.ImageEncoder
 import app.media.MediaPermission
 import app.media.MediaPermissions
 import app.media.PhotoImport
@@ -139,12 +140,16 @@ fun CameraRoute(
     val microphonePermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         MediaPermissions.markRequested(context, MediaPermission.Microphone)
     }
-    val picker = rememberLauncherForActivityResult(PhotoImport.single()) { uri ->
-        if (uri != null) scope.launch {
-            val picked = withContext(Dispatchers.IO) { copyPicked(context, uri) }
-            if (picked != null) vm.onPicked(picked.first, picked.second)
+    // The library: up to `batch_max_photos` items (several photos in one post; one while unknown), in the order picked,
+    // each with the day it was taken (`media.taken_on`).
+    val onPickedUris: (List<Uri>) -> Unit = { uris ->
+        if (uris.isNotEmpty()) scope.launch {
+            val picked = withContext(Dispatchers.IO) { uris.mapIndexedNotNull { index, uri -> importPicked(context, uri, index) } }
+            vm.onPickedAll(picked)
         }
     }
+    val picker = rememberLauncherForActivityResult(PhotoImport.single()) { uri -> onPickedUris(listOfNotNull(uri)) }
+    val multiPicker = rememberLauncherForActivityResult(PhotoImport.multiple(pickerLimit(state.selectionLimit).coerceAtLeast(2))) { uris -> onPickedUris(uris) }
 
     // First open: the system prompt appears directly over this screen (no pre-prompt).
     LaunchedEffect(Unit) {
@@ -168,6 +173,14 @@ fun CameraRoute(
                     announce(view, context.getString(R.string.camera_overnight_a11y_captured, OvernightFormats.reveal(context, event.reveal)))
                 CameraViewModel.Event.OvernightFailed -> app.ui.components.PlatformToast.show(context, sendFailed)
             }
+        }
+    }
+    // share.in: photos shared from another app arrive as a library selection (trimmer, then send-to) — not on the camera of
+    // a reply or of the weekly question, which stays about that photo.
+    if (replyToPostId == null && question == null) {
+        val shared by ShareInbox.pending.collectAsStateWithLifecycle()
+        LaunchedEffect(shared) {
+            if (shared != null) ShareInbox.take()?.let(vm::onPickedAll)
         }
     }
     DisposableEffect(controller) {
@@ -204,7 +217,7 @@ fun CameraRoute(
         onShutterRelease = vm::stopVideo,
         onFlash = vm::toggleFlash,
         onFlip = vm::flip,
-        onLibrary = { picker.launch(PhotoImport.imagesAndVideos) },
+        onLibrary = { if (pickerLimit(state.selectionLimit) > 1) multiPicker.launch(PhotoImport.imagesAndVideos) else picker.launch(PhotoImport.imagesAndVideos) },
         onCoachClose = vm::dismissCoach,
         onOpenSettings = {
             context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -451,19 +464,13 @@ private fun Viewfinder(
     }
 }
 
-/** Copies a picked item into the capture directory; images lose their location tags. */
-internal fun copyPicked(context: Context, uri: Uri): Pair<File, MediaKind>? {
-    val type = context.contentResolver.getType(uri).orEmpty()
-    val video = type.startsWith("video/")
-    val file = File(CaptureHandoff.dir(context), "pick-${System.currentTimeMillis()}.${if (video) "mp4" else "jpg"}")
-    return try {
-        context.contentResolver.openInputStream(uri)?.use { input -> file.outputStream().use { input.copyTo(it) } } ?: return null
-        if (!video) runCatching { ImageEncoder.stripLocation(file) }
-        file to (if (video) MediaKind.Video else MediaKind.Photo)
-    } catch (_: Exception) {
-        file.delete()
-        null
-    }
+/**
+ * The picker's limit: `batch_max_photos`, within what the system Photo Picker allows (`MediaStore.getPickImagesMaxLimit`,
+ * Android 13+); `PickMultipleVisualMedia` needs at least 2, so 1 means the single-item picker.
+ */
+internal fun pickerLimit(limit: Int): Int {
+    val system = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) MediaStore.getPickImagesMaxLimit() else limit
+    return limit.coerceAtMost(system).coerceAtLeast(1)
 }
 
 internal fun mediaDurationMs(file: File): Long? {

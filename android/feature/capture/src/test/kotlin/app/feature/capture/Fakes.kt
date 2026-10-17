@@ -136,6 +136,10 @@ class FakeCaptureData : CaptureData {
         sends += groupIds
     }
 
+    /** `public_app_config.batch_max_photos` (null: not readable). */
+    var batchMax: Int? = null
+    override suspend fun batchMaxPhotos(): Int? = batchMax
+
     override suspend fun download(url: String, target: File) {
         downloadError?.let { throw DataException(it) }
         downloads += url

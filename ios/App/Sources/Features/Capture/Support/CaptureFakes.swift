@@ -368,6 +368,8 @@ final class InMemoryCaptureCoachStore: CaptureCoachStore {
 final class FakeCapturePosting: CapturePosting {
     /// When set, `publish` fails with it (the draft is kept in `pending`, like the outbox, until discarded).
     var publishError: DataError?
+    /// With `publishError`: only once this many drafts were published (a selection whose later photo fails).
+    var publishErrorAfter = 0
     /// Holds `publish` until cancelled (the sending state in snapshots).
     var suspendsPublish = false
     private(set) var published: [PostDraft] = []
@@ -376,7 +378,7 @@ final class FakeCapturePosting: CapturePosting {
 
     func publish(_ draft: PostDraft) async throws {
         if suspendsPublish { try await Task.sleep(for: .seconds(3600)) }
-        if let publishError {
+        if let publishError, published.count >= publishErrorAfter {
             pending.append(draft)
             throw publishError
         }

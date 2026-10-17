@@ -148,16 +148,19 @@ public struct PublicAppConfig: Codable, Hashable, Sendable {
     public var freeHistoryDays: Int?
     /// Nil = the age gate is not configured (`confirm_age` fails closed).
     public var minAgeYears: Int?
+    /// Most photos one selection (one post of several photos) may hold (`batch_max_photos`, migration 0051); nil = not set.
+    public var batchMaxPhotos: Int?
 
     public init(
         invitationWindowSeconds: Int? = nil, maxGroupMembers: Int? = nil, weekStartISODay: Int? = nil,
-        freeHistoryDays: Int? = nil, minAgeYears: Int? = nil
+        freeHistoryDays: Int? = nil, minAgeYears: Int? = nil, batchMaxPhotos: Int? = nil
     ) {
         self.invitationWindowSeconds = invitationWindowSeconds
         self.maxGroupMembers = maxGroupMembers
         self.weekStartISODay = weekStartISODay
         self.freeHistoryDays = freeHistoryDays
         self.minAgeYears = minAgeYears
+        self.batchMaxPhotos = batchMaxPhotos
     }
 
     struct Row: Decodable {
@@ -175,7 +178,8 @@ public struct PublicAppConfig: Codable, Hashable, Sendable {
             maxGroupMembers: values["max_group_members"],
             weekStartISODay: values["week_start_isodow"],
             freeHistoryDays: values["free_history_days"],
-            minAgeYears: values["min_age_years"]
+            minAgeYears: values["min_age_years"],
+            batchMaxPhotos: values["batch_max_photos"]
         )
     }
 }

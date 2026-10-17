@@ -67,12 +67,18 @@ final class AppRouter {
     private var afterPaywall: DeepLink?
     private(set) var isReady = false
     private(set) var pendingLink: DeepLink?
+    /// share.in: a share arrived before the person was home; the camera takes it once they are (`setReady(true)`).
+    private(set) var pendingShare = false
     private(set) var promptGate = SessionPromptGate()
 
     let parser: DeepLinkParser
+    /// The app's own URL scheme (`AppURLScheme`, its bundle identifier): only the Share Extension opens it, with
+    /// `<scheme>://share` (share.in).
+    let shareScheme: String?
 
-    init(parser: DeepLinkParser) {
+    init(parser: DeepLinkParser, shareScheme: String? = ShareInLink.scheme(in: .main)) {
         self.parser = parser
+        self.shareScheme = shareScheme
     }
 
     /// The invite being followed, if any (pending during onboarding, or presented).
@@ -84,10 +90,26 @@ final class AppRouter {
 
     // MARK: Links
 
-    /// Opens a URL from `onOpenURL` (widgets, custom scheme) or a universal link. Unknown URLs are ignored.
+    /// Opens a URL from `onOpenURL` (widgets, custom scheme, the Share Extension) or a universal link. Unknown URLs are
+    /// ignored.
     func open(_ url: URL) {
+        if ShareInLink.matches(url, scheme: shareScheme) {
+            openShareInbox()
+            return
+        }
         guard let link = parser.parse(url) else { return }
         handle(link)
+    }
+
+    /// share.in: photos shared from another app wait in the App Group inbox; the camera tab takes them as a library
+    /// selection (send-to follows). Before the person is signed in and onboarded it waits, as links do.
+    func openShareInbox() {
+        guard isReady else {
+            pendingShare = true
+            return
+        }
+        ShareInHandoff.shared.arrived()
+        modal = .camera(groupID: nil, invitationID: nil)
     }
 
     func handle(_ link: DeepLink) {
@@ -109,6 +131,10 @@ final class AppRouter {
         if let link = pendingLink {
             pendingLink = nil
             apply(link)
+        }
+        if pendingShare {
+            pendingShare = false
+            openShareInbox()
         }
     }
 

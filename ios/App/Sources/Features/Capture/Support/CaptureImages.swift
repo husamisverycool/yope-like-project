@@ -1,6 +1,7 @@
 // Surfaces: camera.sendto (preview, group covers), daily.capture (preview), daily.dualimage,
 // collage.view (design/surfaces/<id>.md; reference images listed there). Images are decoded off the main actor, downsampled to the frame
 // they are shown in, so lists scroll and previews appear without decoding on the main thread.
+@preconcurrency import AVFoundation
 import Foundation
 import ImageIO
 import UIKit
@@ -24,6 +25,16 @@ enum CaptureImageDecoder {
         await Task.detached(priority: .userInitiated) {
             Self.decode(CGImageSourceCreateWithURL(url as CFURL, nil), maxPixelSize: maxPixelSize)
         }.value
+    }
+
+    /// A video's first frame (its orientation applied), longest side at most `maxPixelSize` — the send-to selection
+    /// strip's video tiles. Runs off the main actor; nil when the file has no readable frame.
+    static func videoFrame(_ url: URL, maxPixelSize: CGFloat) async -> UIImage? {
+        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: maxPixelSize, height: maxPixelSize)
+        guard let frame = try? await generator.image(at: .zero) else { return nil }
+        return UIImage(cgImage: frame.image)
     }
 
     /// The longest side, in pixels, of a frame `points` long on this screen.

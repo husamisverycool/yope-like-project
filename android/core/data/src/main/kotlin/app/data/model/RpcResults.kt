@@ -182,6 +182,8 @@ data class PublicAppConfig(
     val weekStartIsodow: Int?,
     val freeHistoryDays: Int?,
     val minAgeYears: Int?,
+    /** `batch_max_photos` (migration 0051): most photos one selection (one post of several photos) may hold; null = not set. */
+    val batchMaxPhotos: Int? = null,
 ) {
     companion object {
         fun from(rows: List<PublicAppConfigRow>): PublicAppConfig {
@@ -192,6 +194,7 @@ data class PublicAppConfig(
                 weekStartIsodow = byKey["week_start_isodow"],
                 freeHistoryDays = byKey["free_history_days"],
                 minAgeYears = byKey["min_age_years"],
+                batchMaxPhotos = byKey["batch_max_photos"],
             )
         }
     }

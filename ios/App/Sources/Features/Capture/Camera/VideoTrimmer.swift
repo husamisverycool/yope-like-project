@@ -11,6 +11,8 @@ import UIKit
 struct CaptureTrimRequest: Identifiable, Sendable, Equatable {
     let id = UUID()
     let video: CaptureVideo
+    /// The selection item (`CapturedMedia.id`) the trimmed clip replaces, when it came from a selection.
+    var mediaID: UUID? = nil
 }
 
 /// The longest video a post may hold: `camera.capture.duration.videoMax` (the server's `app_config.video_max_ms`).

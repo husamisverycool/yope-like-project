@@ -48,6 +48,13 @@ Full-screen modal on `color.global.backgroundDeep` in both appearances ("postcar
    `icon.global.check` in `color.global.selection` when selected, `icon.global.uncheck` in `color.global.textSecondary`
    when not, ink at the trailing margin. Row padding 16 above and below the avatar (row 69 pt); a C-32 hairline
    (`color.global.separator` dark value #4D4D4D, `size.global.hairline`) between rows, inside the margins.
+   **Several photos** (a library selection or a share, see "Several photos" below): between the photo and the groups
+   label, the **selection strip** — C-17 tiles (`size.global.stripTileWidth` × `.stripTileHeight`, 84 × 112),
+   `size.global.stripGap` apart with the page showing through, only the strip's outer corners rounded
+   (`radius.global.card`), leading inset `size.global.screenMargin`, scrolling sideways; its top `size.global.sectionGap`
+   below the photo, and the groups label keeps its own gap below the strip (as below the photo). Each tile is the photo
+   aspect-fill (a video's first frame with the video marker, `layout.global.videoMarker`), `color.global.controlOnDeep`
+   until decoded; no weekday, no number. The photo frame shows the first photo.
 4. **Send capsule** pinned at the bottom (C-05 on media): `size.global.buttonHeight` (60), margins
    `size.global.buttonMarginH` (20), bottom 44.5 pt above the screen bottom (`camera.sendto.size.sendButtonBottom`),
    `radius.global.button`; fill `color.global.surfaceLight`, label `camera.sendto.send` text role `button`
@@ -79,6 +86,7 @@ in `color.global.textSecondary` (Android `.textSecondary.android`); counter `cam
 | groups label | text role `meta`, `color.global.textSecondary` | `camera.sendto.groupsLabel` | header trait |
 | group row | C-16 · `camera.sendto.layout.recipientRow`, `size.global.avatarPicker`, `size.global.checkCircle`, `icon.global.check` / `.uncheck`, `color.global.selection` | group name (data) | tap toggles (multi-select). Preselected: the group from context (`app://camera?group=`, group screen, chat); without context, all of the member's groups (owner to confirm) |
 | open invitation | under the group name: text role `listSubtitle`, tabular figures, `color.global.textSecondary` (dark value) | `daily.capture.countdown` (MM:SS) | while that group's daily invitation is open (`open_invitations`, migration 0035) the countdown ticks each second to `closes_at`, then goes — no "late", no colour change (tenet 5). Sending while it is open answers it for each chosen group (`p_invitation_ids`), exactly as the notification's daily capture does (BeReal: "You have 2 minutes to open the app and take your BeReal", design/research/bereal.md). Not shown, and nothing answered, for a photo reply or a 9 AM photo |
+| selection strip (several photos) | C-17 tiles · `size.global.stripTileWidth` / `.stripTileHeight`, `size.global.stripGap`, `radius.global.card` (outer corners), `size.global.screenMargin`, `size.global.sectionGap`, `color.global.controlOnDeep`, `layout.global.videoMarker` | a11y `camera.sendto.a11y.selection` ("Selected photos") — one element, no number | shown only with several photos; not interactive (the order is the order picked) |
 | send | C-05 on media · `size.global.buttonHeight`, `size.global.buttonMarginH`, `camera.sendto.size.sendButtonBottom`, `color.global.surfaceLight` / `.onSurfaceLight` | `camera.sendto.send` | disabled with no group selected; tap → busy (C-05 busy: the label is replaced by the platform activity indicator in `color.global.onSurfaceLight`), title "Sending…", upload + `create_post`; success → the modal closes, `haptic.global.send`, Android toast `.toast.postedOne` / `.postedMany` (iOS announcement) |
 
 ## States
@@ -93,6 +101,29 @@ in `color.global.textSecondary` (Android `.textSecondary.android`); counter `cam
 | offline | same alert, message `camera.sendto.error.offline` | `camera.sendto.error.offline` | `retro.voice.error` |
 | microphone denied | voice capsule opens the settings path owned by `system.permissions` | owned there | — |
 | video by a free member | a picked library video → `paywall` once per session, otherwise send stays disabled for that media (`premium_required`) | — | API `create_post` |
+
+## Several photos (one post of several photos — docs/RESEARCH_FEATURES_2026-10-17.md #1)
+
+Mechanics: Retro's composer "Add to Your Week" picks several photos (repo screen 30, VID-COMP); Apple Shared Albums
+"Select all the items you want to add" (support.apple.com/108314); at most `batch_max_photos` (20, Instagram carousels;
+public `app_config`, migration 0051). A selection comes from the library picker (`camera.capture`) or a share
+(`share.in`).
+
+- **One send for the selection.** Each photo is **its own post** (reactions, replies, tags, deleting, walls and memories
+  stay per photo) with the selection's **`batch_id`** (one client-generated UUID, `media.batch_id`, docs/API.md §5.0) —
+  the apps show a batch together (chat, viewer, strip: another surface's spec). They are uploaded and posted **in the
+  order picked**, one after the other through the outbox / upload queue, so the posts keep that order; the server sends
+  one push for the batch.
+- **The message, the voice note, the open invitations, a reply and a weekly question go with the first photo only.**
+  Retro's composer takes one caption for what it adds; repeating it on every photo would show it once per photo when the
+  batch is shown together. The groups chosen apply to every photo.
+- **Library photos carry the day they were taken** (`media.taken_on`, `camera.capture.md`); camera captures none.
+- **Premium:** a selection holding a video needs premium, as one video does (send stays disabled; the paywall once per
+  session).
+- **States.** Sending: as one photo, until the last photo is posted; one `haptic.global.send` and one confirmation for the
+  selection. Error / offline: the alert as for one photo; the photos already posted stay posted, "Try Again" goes on with
+  the rest (same `batch_id`), Cancel keeps them in the composer. Close (✕) discards the photos not yet posted.
+- **Save** saves every photo of the selection.
 
 ## Motion
 
@@ -111,6 +142,8 @@ while the microphone records (HIG).
 
 ## Accessibility
 
+- Several photos: the selection strip is one element labelled `camera.sendto.a11y.selection` ("Selected photos"), never
+  a number of photos (tenet 2); it follows the photo in the focus order.
 - Labels: close `camera.sendto.a11y.close`, save `.a11y.save`, voice `.a11y.voice`; pill = its visible text; send =
   its visible text, disabled trait when nothing is selected; rows: label = group name, selected trait (iOS
   `.isSelected`, Android `Modifier.toggleable`); a row with an open invitation carries the time left as its value
@@ -139,13 +172,14 @@ while the microphone records (HIG).
 
 - Reads: `groups` + own `group_members` rows (names, `cover_path` signed URLs).
 - Writes (docs/API.md recipe 9.4): upload `u/<uid>/<media_id>/original.<ext>` (+ `motion.mov`, `voice.m4a`), insert
-  `media`, `create_post(p_media_id, p_group_ids, p_caption?, p_voice_path?, p_voice_duration_ms?, p_voice_levels?,
+  `media` (with `taken_on` for a library photo, migration 0050, and `batch_id` for each photo of a selection, migration
+  0051 — both client-written at insert), `create_post(p_media_id, p_group_ids, p_caption?, p_voice_path?, p_voice_duration_ms?, p_voice_levels?,
   p_reply_to_post_id?, p_invitation_ids?)` (`p_voice_levels`: the note's 100 levels of 0…31, C-36; `p_invitation_ids`:
   the chosen groups' invitations still open on the device clock — the server decides at `create_post`).
 - Reads also `open_invitations()` once the groups load (each group's open daily invitation, server clock).
   `p_caption` = the message (≤ 250 here; API ≤ 1000). Errors: `premium_required`, `not_group_member`, `already_posted`,
   `invalid_caption`, `invalid_voice`, `no_groups`.
-- In: `camera.capture` (capture or library pick). Out: back to the screen the camera was opened from; `groups.create`
+- In: `camera.capture` (capture or library pick, one or several), `share.in` (through the camera). Out: back to the screen the camera was opened from; `groups.create`
   (empty); `camera.capture` (close).
 
 ## Platform notes

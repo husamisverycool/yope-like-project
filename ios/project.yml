@@ -6,6 +6,7 @@
 #   App                  $(APP_BUNDLE_ID)
 #   Widgets              $(APP_BUNDLE_ID).widgets               (home/lock-screen widgets + Live Activity)
 #   NotificationService  $(APP_BUNDLE_ID).notificationservice
+#   ShareExtension       $(APP_BUNDLE_ID).share                 ("Share to Jolt", share.in)
 #   AppClip              $(APP_BUNDLE_ID).Clip
 # App Group: group.$(APP_BUNDLE_ID). Override per build: `xcodebuild … APP_BUNDLE_ID=com.example.x`.
 name: App
@@ -63,6 +64,8 @@ targets:
     dependencies:
       - target: Widgets
       - target: NotificationService
+      # share.in: the Share Extension (photos and videos from the share sheet → camera.sendto).
+      - target: ShareExtension
       - target: AppClip
       - package: AppCore
         product: AppModels
@@ -107,6 +110,22 @@ targets:
     sources:
       - path: NotificationService/Sources
       - path: NotificationService/PrivacyInfo.xcprivacy
+        buildPhase: resources
+    dependencies:
+      - package: AppCore
+        product: AppModels
+
+  # share.in ("Share to Jolt", design/surfaces/share.in.md): copies shared photos and videos into the App Group inbox
+  # (AppModels ShareInbox) and opens the app's own scheme; the app shows camera.sendto with them.
+  ShareExtension:
+    type: app-extension
+    platform: iOS
+    configFiles:
+      Debug: Config/ShareExtension.xcconfig
+      Release: Config/ShareExtension.xcconfig
+    sources:
+      - path: ShareExtension/Sources
+      - path: ShareExtension/PrivacyInfo.xcprivacy
         buildPhase: resources
     dependencies:
       - package: AppCore
@@ -186,6 +205,7 @@ schemes:
         App: all
         Widgets: all
         NotificationService: all
+        ShareExtension: all
         AppClip: all
     run:
       config: Debug

@@ -63,6 +63,12 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
     /// from the outbox — its post in `questionGroupID` is linked with `answer_question`. Optional so older drafts decode.
     public var questionID: GroupQuestionID?
     public var questionGroupID: GroupID?
+    /// The day a library photo was taken (`media.taken_on`, migration 0050): the date only, in the device's zone; nil for
+    /// camera photos. Optional so older drafts decode.
+    public var takenOn: LocalDate?
+    /// The selection this photo was posted with (`media.batch_id`, migration 0051): every photo of one selection shares it;
+    /// nil for a single photo. Optional so older drafts decode.
+    public var batchID: String?
 
     public var id: MediaID { mediaID }
 
@@ -88,7 +94,9 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         createdAt: Date = Date(),
         overnight: Bool? = nil,
         questionID: GroupQuestionID? = nil,
-        questionGroupID: GroupID? = nil
+        questionGroupID: GroupID? = nil,
+        takenOn: LocalDate? = nil,
+        batchID: String? = nil
     ) {
         self.mediaID = mediaID
         self.kind = kind
@@ -112,6 +120,8 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         self.overnight = overnight
         self.questionID = questionID
         self.questionGroupID = questionGroupID
+        self.takenOn = takenOn
+        self.batchID = batchID
     }
 
     /// Storage objects of this draft, with the paths of docs/API.md §7.
@@ -144,7 +154,9 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
             height: height,
             frontWidth: frontWidth,
             frontHeight: frontHeight,
-            durationMs: durationMs
+            durationMs: durationMs,
+            takenOn: takenOn,
+            batchID: batchID
         )
     }
 }

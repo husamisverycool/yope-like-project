@@ -23,19 +23,23 @@ struct CapturedMedia: Identifiable, Sendable, Equatable {
     var video: CaptureVideo?
     /// When the photo was taken.
     var capturedAt: Date
+    /// A library pick's (or a shared item's) day it was taken, in the device's zone (`media.taken_on`, migration 0050):
+    /// the date only, never a time or a place. Nil for the camera's own captures.
+    var takenOn: LocalDate? = nil
 
-    static func photo(_ still: CaptureStill, capturedAt: Date) -> CapturedMedia {
+    static func photo(_ still: CaptureStill, capturedAt: Date, takenOn: LocalDate? = nil) -> CapturedMedia {
         CapturedMedia(
             id: UUID(),
             kind: still.livePhotoMovieURL == nil ? .photo : .livePhoto,
             still: still,
             video: nil,
-            capturedAt: capturedAt
+            capturedAt: capturedAt,
+            takenOn: takenOn
         )
     }
 
-    static func video(_ video: CaptureVideo, capturedAt: Date) -> CapturedMedia {
-        CapturedMedia(id: UUID(), kind: .video, still: nil, video: video, capturedAt: capturedAt)
+    static func video(_ video: CaptureVideo, capturedAt: Date, takenOn: LocalDate? = nil) -> CapturedMedia {
+        CapturedMedia(id: UUID(), kind: .video, still: nil, video: video, capturedAt: capturedAt, takenOn: takenOn)
     }
 
     /// Video needs premium at `create_post` (`premium_required`).
@@ -79,6 +83,11 @@ struct CaptureSendRequest: Sendable, Identifiable {
     var replyToPostID: String?
     /// Taken in the camera's 9 AM mode: posted with `create_overnight_post` (camera.overnight; photos only).
     var overnight = false
+    /// The selection this photo belongs to (several photos in one post, `media.batch_id`, migration 0051); nil alone.
+    var batchID: String? = nil
+    /// The last post of its send (a single photo, or a selection's last photo): only it plays `haptic.global.send`, so a
+    /// selection is confirmed once.
+    var isFinal = true
 
     /// Removes the camera's and the recorder's temporary files once the outbox holds copies.
     func removeTemporaryFiles() {
@@ -144,7 +153,9 @@ enum CaptureDraftBuilder {
                     invitationID: invitationID,
                     invitationIDs: answering,
                     replyToPostID: replyTo,
-                    overnight: request.overnight ? true : nil
+                    overnight: request.overnight ? true : nil,
+                    takenOn: media.takenOn,
+                    batchID: request.batchID
                 )
             case .video:
                 guard let video = media.video else { throw CaptureDraftError.missingMedia }
@@ -165,7 +176,9 @@ enum CaptureDraftBuilder {
                     caption: caption,
                     invitationID: invitationID,
                     invitationIDs: answering,
-                    replyToPostID: replyTo
+                    replyToPostID: replyTo,
+                    takenOn: media.takenOn,
+                    batchID: request.batchID
                 )
             }
         case let .daily(answer):

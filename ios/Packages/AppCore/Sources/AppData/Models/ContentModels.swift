@@ -25,13 +25,18 @@ public struct Media: Codable, Hashable, Sendable, Identifiable {
     /// Nil until the worker wrote the renditions; show `originalPath` until then.
     public var renditionsReadyAt: Date?
     public var createdAt: Date
+    /// Migration 0050: the day a library photo was taken (the date only, from the library; never a time or a place); nil
+    /// for camera photos.
+    public var takenOn: LocalDate?
+    /// Migration 0051: the photos of one selection share it (several photos in one post); nil for a single photo.
+    public var batchID: String?
 
     public init(
         id: MediaID, ownerID: UserID, kind: MediaKind, originalPath: String, frontOriginalPath: String? = nil,
         motionPath: String? = nil, displayPath: String? = nil, thumbPath: String? = nil, widgetPath: String? = nil,
         frontDisplayPath: String? = nil, frontThumbPath: String? = nil, width: Int? = nil, height: Int? = nil,
         frontWidth: Int? = nil, frontHeight: Int? = nil, durationMs: Int? = nil, renditionsReadyAt: Date? = nil,
-        createdAt: Date
+        createdAt: Date, takenOn: LocalDate? = nil, batchID: String? = nil
     ) {
         self.id = id
         self.ownerID = ownerID
@@ -51,6 +56,8 @@ public struct Media: Codable, Hashable, Sendable, Identifiable {
         self.durationMs = durationMs
         self.renditionsReadyAt = renditionsReadyAt
         self.createdAt = createdAt
+        self.takenOn = takenOn
+        self.batchID = batchID
     }
 
     enum CodingKeys: String, CodingKey {
@@ -71,6 +78,8 @@ public struct Media: Codable, Hashable, Sendable, Identifiable {
         case durationMs = "duration_ms"
         case renditionsReadyAt = "renditions_ready_at"
         case createdAt = "created_at"
+        case takenOn = "taken_on"
+        case batchID = "batch_id"
     }
 
     /// Which rendition a surface shows (docs/API.md §7 "Which image to show").
@@ -129,6 +138,10 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
     /// When an overnight photo developed and joined the group (`revealed_at`, docs/API.md §14.3); nil for a post shared
     /// at once. Photos revealed together share it.
     public var revealedAt: Date?
+    /// Migration 0050: the day the photo was taken, copied from its media (a library photo); it places the post's week.
+    public var takenOn: LocalDate?
+    /// Migration 0051: the batch (several photos posted together) this photo belongs to; nil for a single photo.
+    public var batchID: String?
 
     /// When the group could first see the photo (`posts.visible_at` = `revealed_at ?? created_at`, migration 0027): the
     /// week and the week-strip day a photo belongs to. An overnight photo taken on Sunday night is in Monday's week.
@@ -137,7 +150,8 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
     public init(
         id: PostID, mediaID: MediaID, groupID: GroupID, authorID: UserID, caption: String? = nil,
         voicePath: String? = nil, voiceDurationMs: Int? = nil, voiceLevels: [Int]? = nil, invitationID: InvitationID? = nil,
-        inWindow: Bool = false, replyToPostID: PostID? = nil, createdAt: Date, revealedAt: Date? = nil
+        inWindow: Bool = false, replyToPostID: PostID? = nil, createdAt: Date, revealedAt: Date? = nil,
+        takenOn: LocalDate? = nil, batchID: String? = nil
     ) {
         self.id = id
         self.mediaID = mediaID
@@ -152,6 +166,8 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         self.replyToPostID = replyToPostID
         self.createdAt = createdAt
         self.revealedAt = revealedAt
+        self.takenOn = takenOn
+        self.batchID = batchID
     }
 
     enum CodingKeys: String, CodingKey {
@@ -168,6 +184,8 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
         case replyToPostID = "reply_to_post_id"
         case createdAt = "created_at"
         case revealedAt = "revealed_at"
+        case takenOn = "taken_on"
+        case batchID = "batch_id"
     }
 }
 

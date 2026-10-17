@@ -4,6 +4,9 @@
 // (design/surfaces/camera.sendto.md; MERGE_DECISIONS RC-5 … RC-8).
 // Choose one or more groups, an optional message and voice note, send. No mandatory edit step. The composer waits for
 // the send (busy capsule, "Sending…"); a failure keeps everything and shows the native alert.
+// Several library photos (a selection, docs/RESEARCH_FEATURES_2026-10-17.md #1) are one send: each photo is its own post
+// with the selection's `batch_id`, posted in the order picked; the message, the voice note, the open invitations, a reply
+// and a weekly question go with the first photo only (camera.sendto.md "Several photos").
 import AppData
 import AppModels
 import DesignSystem
@@ -42,13 +45,22 @@ final class SendToModel: Identifiable {
     }
 
     let id = UUID()
+    /// The first photo of the selection (the preview card).
     let media: CapturedMedia
+    /// Every photo of the selection, in the order picked (one item for a camera capture).
+    let items: [CapturedMedia]
+    /// One id for every photo of a selection of several (`media.batch_id`, migration 0051); nil for a single photo.
+    let batchID: String?
     /// The group from context; nil = no context (all groups preselected).
     let contextGroupID: String?
 
     private(set) var listState: ListState = .idle
     /// The capture decoded off the main actor at the preview card's size.
     private(set) var previewImage: UIImage? = nil
+    /// The selection strip's tiles (several photos), by item id, decoded at the tile's size.
+    private(set) var thumbnails: [UUID: UIImage] = [:]
+    /// Photos of the selection already posted: a failed send keeps the rest, and Try Again sends only those.
+    private(set) var postedItemIDs: Set<UUID> = []
     private(set) var groups: [CaptureGroup] = []
     /// Selected group ids in list order.
     private(set) var selection: [String] = []
@@ -86,6 +98,7 @@ final class SendToModel: Identifiable {
 
     init(
         media: CapturedMedia,
+        more: [CapturedMedia] = [],
         contextGroupID: String?,
         groups: CaptureGroupSource,
         premium: CapturePremium,
@@ -99,6 +112,8 @@ final class SendToModel: Identifiable {
         clearReply: @escaping @MainActor () -> Void = { PhotoReplyHandoff.clear() }
     ) {
         self.media = media
+        items = [media] + more
+        batchID = more.isEmpty ? nil : UUID().uuidString.lowercased()
         self.contextGroupID = contextGroupID
         groupSource = groups
         self.premium = premium
@@ -160,8 +175,11 @@ final class SendToModel: Identifiable {
         voicePhase == .paused ? voice.playbackProgress : nil
     }
 
-    /// A video needs premium at `create_post`; a free member's video cannot be sent.
-    var isMediaSendable: Bool { !media.needsPremium || isPremium }
+    /// Several photos: the selection strip shows them (camera.sendto.md "Several photos").
+    var showsSelection: Bool { items.count > 1 }
+
+    /// A video needs premium at `create_post`; a free member's video cannot be sent (nor a selection holding one).
+    var isMediaSendable: Bool { !items.contains(where: \.needsPremium) || isPremium }
 
     /// The send capsule is enabled with at least one group and sendable media (disabled #4D4D4D otherwise, Retro's
     /// disabled Send Postcard).
@@ -198,6 +216,7 @@ final class SendToModel: Identifiable {
 
     func load() async {
         async let decoded = decodePreview()
+        if showsSelection { Task { [weak self] in await self?.decodeThumbnails() } }
         isPremium = await premium.isPremium()
         if let cached = await groupSource.cachedGroups(), !cached.isEmpty {
             apply(cached)
@@ -226,6 +245,23 @@ final class SendToModel: Identifiable {
         guard let data = media.still?.imageData else { return nil }
         let side = CaptureImageDecoder.pixels(Tokens.Layouts.CameraSendtoLayoutPreview.maxHeight)
         return await CaptureImageDecoder.image(data: data, maxPixelSize: side)
+    }
+
+    /// The strip's tiles (`size.global.stripTileWidth` × `.stripTileHeight`): stills decoded at the tile's size, a video's
+    /// first frame.
+    private func decodeThumbnails() async {
+        let side = CaptureImageDecoder.pixels(max(Tokens.Sizes.globalStripTileWidth, Tokens.Sizes.globalStripTileHeight))
+        for item in items where thumbnails[item.id] == nil {
+            let image: UIImage?
+            if let data = item.still?.imageData {
+                image = await CaptureImageDecoder.image(data: data, maxPixelSize: side)
+            } else if let file = item.video?.fileURL {
+                image = await CaptureImageDecoder.videoFrame(file, maxPixelSize: side)
+            } else {
+                image = nil
+            }
+            if let image { thumbnails[item.id] = image }
+        }
     }
 
     private func apply(_ list: [CaptureGroup]) {
@@ -276,24 +312,35 @@ final class SendToModel: Identifiable {
         isSending = true
         let names = groups.filter { selection.contains($0.id) }.map(\.name)
         let answering = answeredInvitations(at: Date())
-        let request = CaptureSendRequest(
-            payload: .media(media),
-            groupIDs: selection,
-            caption: hasMessage ? caption : nil,
-            voice: voiceNote,
-            invitationIDs: answering.isEmpty ? nil : answering,
-            confirmation: names.count == 1 ? Copy.cameraSendtoToastPostedOne(group: names[0]) : Copy.cameraSendtoToastPostedMany,
-            replyToPostID: replyToPostID
-        )
-        let outcome = await sendCenter.send(request)
-        isSending = false
-        switch outcome {
-        case .posted:
-            clearReply()
-            onSent()
-        case let .failed(failure):
-            sendFailure = failure
+        let confirmation = names.count == 1 ? Copy.cameraSendtoToastPostedOne(group: names[0]) : Copy.cameraSendtoToastPostedMany
+        // In the order picked; the first photo of the selection carries the message, the voice note, the answers, the
+        // reply (and the weekly question, QuestionCameraContext); the last one confirms.
+        let remaining = items.filter { !postedItemIDs.contains($0.id) }
+        for item in remaining {
+            let isFirst = item.id == items.first?.id
+            let request = CaptureSendRequest(
+                payload: .media(item),
+                groupIDs: selection,
+                caption: isFirst && hasMessage ? caption : nil,
+                voice: isFirst ? voiceNote : nil,
+                invitationIDs: isFirst && !answering.isEmpty ? answering : nil,
+                confirmation: item.id == remaining.last?.id ? confirmation : nil,
+                replyToPostID: isFirst ? replyToPostID : nil,
+                batchID: batchID,
+                isFinal: item.id == remaining.last?.id
+            )
+            switch await sendCenter.send(request) {
+            case .posted:
+                postedItemIDs.insert(item.id)
+            case let .failed(failure):
+                isSending = false
+                sendFailure = failure
+                return
+            }
         }
+        isSending = false
+        clearReply()
+        onSent()
     }
 
     /// The alert's Try Again.
@@ -321,7 +368,7 @@ final class SendToModel: Identifiable {
     func save() async {
         guard !isSending else { return }
         do {
-            try await library.save(media)
+            for item in items { try await library.save(item) }
             sendCenter.confirm(Copy.cameraSendtoToastSaved)
         } catch {
             // Add-only access refused: the system-settings path belongs to system.permissions.

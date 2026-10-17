@@ -126,10 +126,19 @@ interface CaptureData {
 
     /** Records a send to [groupIds] (the launcher's per-group camera shortcuts, `camera.quickaccess`). */
     fun recordSend(groupIds: List<String>) = Unit
+
+    /**
+     * `public_app_config.batch_max_photos` (migration 0051): the most photos one selection (one post of several photos)
+     * may hold — the library picker's and share.in's limit; null when it could not be read (one photo then).
+     */
+    suspend fun batchMaxPhotos(): Int? = null
 }
 
 /** The app's [CaptureData] over the process-wide [DataGraph]; [context] publishes the launcher's camera shortcuts. */
 class GraphCaptureData(private val graph: DataGraph, private val context: Context? = null) : CaptureData {
+    /** `batch_max_photos` once read (kept for this instance). */
+    @Volatile private var batchLimit: Int? = null
+
     override fun groups(): Flow<DataState<List<Group>>> = graph.groups.observeMyGroups()
 
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = graph.signedUrls.urls(paths)
@@ -156,6 +165,8 @@ class GraphCaptureData(private val graph: DataGraph, private val context: Contex
     override suspend fun myMemories(from: LocalDate, days: Int, zone: ZoneId): List<DayMemory>? = orNull { graph.widgets.memories(from, days, zone) }
 
     override suspend fun premiumOrNull(): Boolean? = if (graph.auth.currentUserId == null) null else orNull { graph.entitlements.isPremium() }
+
+    override suspend fun batchMaxPhotos(): Int? = batchLimit ?: orNull { graph.appConfig.publicConfig().batchMaxPhotos }?.also { batchLimit = it }
 
     override fun progress(draftId: String): Flow<UploadProgress> = graph.uploads.progress(draftId)
 

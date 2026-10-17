@@ -278,5 +278,60 @@ final class CodingTests: XCTestCase {
         XCTAssertEqual(config.maxGroupMembers, 30)
         XCTAssertNil(config.minAgeYears)
         XCTAssertNil(config.freeHistoryDays)
+        XCTAssertNil(config.batchMaxPhotos, "not set: the composer picks one photo")
+
+        let batch = try JSONDecoder().decode([PublicAppConfig.Row].self, from: Data(#"[{"key":"batch_max_photos","value":20}]"#.utf8))
+        XCTAssertEqual(PublicAppConfig(rows: batch).batchMaxPhotos, 20)
+    }
+
+    /// Migrations 0050 / 0051: the media insert carries the day a library photo was taken and the selection's batch id;
+    /// posts and media read them back; drafts saved before them still decode.
+    func testTakenOnAndBatchIDRideTheMediaInsertAndDecode() throws {
+        let day = try XCTUnwrap(LocalDate("2026-09-14"))
+        let draft = PostDraft(
+            mediaID: MediaID("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
+            kind: .photo,
+            original: .init(url: URL(fileURLWithPath: "/tmp/original.jpg"), contentType: ContentType.jpeg),
+            groupIDs: [GroupID("9f1c1d2e-0000-4000-8000-000000000001")],
+            takenOn: day,
+            batchID: "5b0b5e43-2f0e-4c5e-9a55-3f7d0b8f1a20"
+        )
+        let row = draft.mediaRow(owner: UserID("9f1c1d2e-0000-4000-8000-000000000002")).row
+        XCTAssertEqual(row["taken_on"], .string("2026-09-14"))
+        XCTAssertEqual(row["batch_id"], .string("5b0b5e43-2f0e-4c5e-9a55-3f7d0b8f1a20"))
+
+        // A camera photo posted alone: both null (the server places it by created_at; no batch).
+        let camera = PostDraft(kind: .photo, original: draft.original, groupIDs: draft.groupIDs)
+        let cameraRow = camera.mediaRow(owner: UserID("9f1c1d2e-0000-4000-8000-000000000002")).row
+        XCTAssertEqual(cameraRow["taken_on"], .null)
+        XCTAssertEqual(cameraRow["batch_id"], .null)
+
+        // The outbox keeps both across a relaunch; a draft saved before them decodes without them.
+        let saved = try DataCoding.makeDecoder().decode(PostDraft.self, from: DataCoding.makeEncoder().encode(draft))
+        XCTAssertEqual(saved.takenOn, day)
+        XCTAssertEqual(saved.batchID, draft.batchID)
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: DataCoding.makeEncoder().encode(camera)) as? [String: Any])
+        object.removeValue(forKey: "takenOn")
+        object.removeValue(forKey: "batchID")
+        let older = try DataCoding.makeDecoder().decode(PostDraft.self, from: JSONSerialization.data(withJSONObject: object))
+        XCTAssertNil(older.takenOn)
+        XCTAssertNil(older.batchID)
+
+        let post = try DataCoding.makeDecoder().decode(Post.self, from: Data("""
+        {"id":"0f8fad5b-d9cb-469f-a165-70867728950e","media_id":"7c9e6679-7425-40de-944b-e07fc1f90ae7",
+         "group_id":"9f1c1d2e-0000-4000-8000-000000000001","author_id":"9f1c1d2e-0000-4000-8000-000000000002",
+         "caption":null,"voice_path":null,"voice_duration_ms":null,"invitation_id":null,"in_window":false,
+         "reply_to_post_id":null,"created_at":"2026-10-15T13:35:09.329469+00:00","taken_on":"2026-09-14",
+         "batch_id":"5b0b5e43-2f0e-4c5e-9a55-3f7d0b8f1a20"}
+        """.utf8))
+        XCTAssertEqual(post.takenOn, day)
+        XCTAssertEqual(post.batchID, "5b0b5e43-2f0e-4c5e-9a55-3f7d0b8f1a20")
+
+        let media = try DataCoding.makeDecoder().decode(Media.self, from: Data("""
+        {"id":"7c9e6679-7425-40de-944b-e07fc1f90ae7","owner_id":"9f1c1d2e-0000-4000-8000-000000000002","kind":"photo",
+         "original_path":"u/x/y/original.jpg","created_at":"2026-10-15T13:35:09+00:00","taken_on":null,"batch_id":null}
+        """.utf8))
+        XCTAssertNil(media.takenOn)
+        XCTAssertNil(media.batchID)
     }
 }

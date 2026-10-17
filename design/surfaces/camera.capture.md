@@ -62,7 +62,7 @@ Page `color.global.backgroundDeep` in both appearances; status bar light content
 | viewfinder | C-17/C-18 container · `camera.capture.layout.viewfinder`, `radius.global.viewfinder` | — | back camera on open; front after a flip, kept for the session; the captured photo is the 3:4 frame shown |
 | shutter | mechanics (Locket) · `camera.capture.size.shutterOuter/Ring/Gap/Disc`, `color.global.surfaceLight`, `color.global.backgroundDeep` | a11y `camera.capture.a11y.shutter`; custom action `camera.capture.a11y.recordVideo` (video members) | **tap** = photo (Live Photo where supported) → `camera.sendto`. **Hold** = video (premium): records while held, stops on release or at `camera.capture.duration.videoMax` (10 s). Free member: the session's first hold opens `paywall` (at most one prompt per session); later holds do nothing; tap always captures |
 | recording outline | `camera.capture.size.recordingOutline`, `color.global.surfaceLight`, `radius.global.viewfinder` | announcement `camera.capture.a11y.recording` | visible while a video records |
-| library | C-11 64 circle · `size.global.circleButtonLarge`, `color.global.controlOnDeep`, `icon.global.gallery` | a11y `camera.capture.a11y.library` | system photo picker (iOS PhotosPicker, Android Photo Picker — no library permission); the picked photo / Live Photo / video → `camera.sendto`; a video longer than `camera.capture.duration.videoMax` → `camera.trim` first (the server refuses longer videos) |
+| library | C-11 64 circle · `size.global.circleButtonLarge`, `color.global.controlOnDeep`, `icon.global.gallery` | a11y `camera.capture.a11y.library` | system photo picker (iOS PHPickerViewController with ordered selection, Android `PickMultipleVisualMedia` — no library permission); **up to `batch_max_photos`** photos / Live Photos / videos (public `app_config`, 20 — Instagram carousels; **1 while it is unknown**: the single-item picker) → one `camera.sendto` for the whole selection, in the order picked ("Several photos" there; docs/RESEARCH_FEATURES_2026-10-17.md #1; Retro's "Add to Your Week" composer picks several, Apple Shared Albums "Select all the items you want to add"); each video longer than `camera.capture.duration.videoMax` → `camera.trim` first, one after the other (its Cancel leaves that video out; one that cannot be trimmed is left out after "Video too long" and the rest go on). Each library item carries **the day it was taken** (below) |
 | flip | C-11 64 circle · same, `icon.global.flip` | a11y `camera.capture.a11y.flip` | front ↔ back |
 | coach pill | C-09 on media · `color.global.controlOnDeep`, `icon.global.video`, text role `pill`, `size.global.pillHeight` | `camera.capture.coach.holdToRecord` | once per install, only to members who can record video; tapping it or the first recorded video dismisses it for good |
 | tab bar | C-04 media variant · `color.global.textOnMedia` / `.tabInactiveOnMedia` | owned by `groups.list` | — |
@@ -97,6 +97,21 @@ All states keep the header and the tab bar; the C-27 block replaces the viewfind
 
 Shutter: `haptic.global.shutter` (none — camera rule). Flash, flip, library, coach: `haptic.global.tap` (Android
 VIRTUAL_KEY before the action; iOS none). Paywall hand-off: none.
+
+## The day a library photo was taken (`media.taken_on`, migration 0050)
+
+Research #5 (Retro "backfill the weeks… with the photos and videos you want to remember", App Store id6443709020;
+Engadget on Retro reading when photos were taken): a library pick (and a shared item, `share.in`) is posted with the
+calendar day it was taken, so the server places it in that day's week (`posts.visible_at`, docs/API.md §5.8). **The date
+only, in the device's time zone — never a time and never a place.**
+
+| platform | source of the day | never read |
+|---|---|---|
+| iOS | the file's own capture date: EXIF `DateTimeOriginal` (with `OffsetTimeOriginal` when present: that instant on the device's day; without it, the camera's calendar day) for photos and Live Photo stills; the QuickTime / MP4 creation date for videos (`CaptureTakenOn`). The picker needs no library access for this (PLATFORM_CONSTRAINTS §6) | GPS and every location key; the upload is re-encoded without metadata |
+| Android | MediaStore `DATE_TAKEN` of the picked / shared URI (the Photo Picker answers it), else EXIF `DateTimeOriginal` (+ `OffsetTimeOriginal`) or `MediaMetadataRetriever` `METADATA_KEY_DATE` (`TakenOn`) | location columns / tags (the app strips GPS tags and holds no `ACCESS_MEDIA_LOCATION`) |
+
+Days before 1900-01-01 or after today on the device are not sent (the server's check). Camera captures send nothing
+(null). Nothing on screen shows the day here; the week it lands in is the history's.
 
 ## Accessibility
 

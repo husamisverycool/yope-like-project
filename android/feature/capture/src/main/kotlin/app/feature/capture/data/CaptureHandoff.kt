@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
+import java.time.LocalDate
 
 /** A capture (or library pick) waiting to be sent from `camera.sendto`. */
 data class CapturedMedia(
@@ -16,6 +17,11 @@ data class CapturedMedia(
     /** Video length (required for `video`). */
     val durationMs: Int?,
     val fromLibrary: Boolean,
+    /**
+     * A library pick's (or a shared item's) day it was taken, in the device's zone (`media.taken_on`, migration 0050): the
+     * date only, never a time or a place. Null for the camera's own captures.
+     */
+    val takenOn: LocalDate? = null,
 )
 
 /**
@@ -29,20 +35,31 @@ class CaptureHandoff {
      * `SocialHandoff.REPLY_TO_POST_ID`): it goes to exactly the replied post's group.
      * [questionId]: the weekly question being answered (`question.weekly` B, `QuestionHandoff.QUESTION_ID`): the post to
      * [contextGroupId] is linked to it after posting.
+     * [more]: the rest of a library selection (several photos in one post), in the order picked; empty for one capture.
      */
-    data class Pending(val media: CapturedMedia, val contextGroupId: String?, val replyToPostId: String? = null, val questionId: String? = null)
+    data class Pending(
+        val media: CapturedMedia,
+        val contextGroupId: String?,
+        val replyToPostId: String? = null,
+        val questionId: String? = null,
+        val more: List<CapturedMedia> = emptyList(),
+    ) {
+        /** Every photo of the selection, in the order picked. */
+        val items: List<CapturedMedia> get() = listOf(media) + more
+    }
 
     private val state = MutableStateFlow<Pending?>(null)
     val pending: StateFlow<Pending?> = state.asStateFlow()
 
-    fun put(media: CapturedMedia, contextGroupId: String?, replyToPostId: String? = null, questionId: String? = null) {
-        state.value?.media?.file?.takeIf { it != media.file }?.delete()
-        state.value = Pending(media, contextGroupId, replyToPostId, questionId)
+    fun put(media: CapturedMedia, contextGroupId: String?, replyToPostId: String? = null, questionId: String? = null, more: List<CapturedMedia> = emptyList()) {
+        val kept = (listOf(media) + more).map { it.file }.toSet()
+        state.value?.items?.forEach { old -> if (old.file !in kept) old.file.delete() }
+        state.value = Pending(media, contextGroupId, replyToPostId, questionId, more)
     }
 
-    /** Drops the capture and its file (✕ on send-to, or after it was queued). */
+    /** Drops the capture (every photo of a selection) and its files (✕ on send-to, or after it was queued). */
     fun discard() {
-        state.value?.media?.file?.delete()
+        state.value?.items?.forEach { it.file.delete() }
         state.value = null
     }
 

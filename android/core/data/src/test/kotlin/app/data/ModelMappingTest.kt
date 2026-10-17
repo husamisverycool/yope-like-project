@@ -80,10 +80,13 @@ class ModelMappingTest {
             PublicAppConfigRow("invitation_window_seconds", JsonPrimitive(120)),
             PublicAppConfigRow("min_age_years", JsonNull),
             PublicAppConfigRow("free_history_days", null),
+            PublicAppConfigRow("batch_max_photos", JsonPrimitive(20)),
         ))
         assertEquals(120, config.invitationWindowSeconds)
         assertNull(config.minAgeYears)
         assertNull(config.freeHistoryDays)
+        assertEquals(20, config.batchMaxPhotos)
+        assertNull("not set: the composer picks one photo", PublicAppConfig.from(emptyList()).batchMaxPhotos)
     }
 
     @Test fun searchHitsAndHistoryMonthsDecodeAndSearchArgumentsAreOptional() {
@@ -137,8 +140,21 @@ class ModelMappingTest {
 
     @Test fun newMediaSendsOnlyTheColumnsClientsMayInsert() {
         val json = DataJson.encodeToJsonElement(NewMedia.serializer(), NewMedia("m", MediaKind.LivePhoto, "u/u/m/original.jpg", motionPath = "u/u/m/motion.mp4", durationMs = 1500)).jsonObject
-        assertEquals(setOf("id", "kind", "original_path", "front_original_path", "motion_path", "width", "height", "front_width", "front_height", "duration_ms"), json.keys)
+        assertEquals(
+            setOf("id", "kind", "original_path", "front_original_path", "motion_path", "width", "height", "front_width", "front_height", "duration_ms", "taken_on", "batch_id"),
+            json.keys,
+        )
         assertEquals(JsonPrimitive("live_photo"), json["kind"])
+        // A camera photo alone: no day, no batch (migrations 0050 / 0051).
+        assertEquals(JsonNull, json["taken_on"])
+        assertEquals(JsonNull, json["batch_id"])
+        // A library photo of a selection: the date only, and the selection's id.
+        val picked = DataJson.encodeToJsonElement(
+            NewMedia.serializer(),
+            NewMedia("m", MediaKind.Photo, "u/u/m/original.jpg", takenOn = java.time.LocalDate.of(2026, 9, 14), batchId = "b1"),
+        ).jsonObject
+        assertEquals(JsonPrimitive("2026-09-14"), picked["taken_on"])
+        assertEquals(JsonPrimitive("b1"), picked["batch_id"])
     }
 
     @Test fun profileFirstNameAndEntitlementActivity() {

@@ -88,9 +88,10 @@ Placeholders used below:
    - App ID `APP_BUNDLE_ID.widgets` (widget + Live Activity extension) with **App Groups**,
      **Push Notifications**.
    - App ID `APP_BUNDLE_ID.notificationservice` with **App Groups**.
+   - App ID `APP_BUNDLE_ID.share` ("Share to Jolt" share extension, share.in) with **App Groups**.
    - App ID `APP_BUNDLE_ID.Clip` (App Clip) with **App Groups**, **Associated Domains**,
      **Push Notifications** (ephemeral).
-   - App Group `group.APP_BUNDLE_ID` and assign it to all four IDs.
+   - App Group `group.APP_BUNDLE_ID` and assign it to all five IDs.
 3. **APNs key** (iPhone notifications): Keys → + → enable "Apple Push Notifications service (APNs)" → download the
    `.p8` once. GitHub secrets (§10): `APNS_KEY_P8` (open the `.p8` in TextEdit, copy all of it) and `APNS_KEY_ID` (the
    key's ID, shown next to it). "start the background service" (§7) hands them to the worker with the team
