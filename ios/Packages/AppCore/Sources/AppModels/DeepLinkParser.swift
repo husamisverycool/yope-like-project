@@ -10,6 +10,13 @@ import Foundation
 ///
 /// Identifiers are accepted only when they consist of URL-safe characters, so a crafted link
 /// cannot carry path separators or query syntax into the app.
+///
+/// The custom scheme is not registered (no `CFBundleURLTypes`), so no other app or web page can open it: widget and Live
+/// Activity taps reach the app without a registration ("the system activates the containing app and passes the URL to
+/// onOpenURL", Apple, "Linking to specific app scenes from your widget or Live Activity"), and notification taps are
+/// parsed from their payload (`parse(notificationPayload:)`). Android matches: `app://` links are explicit intents
+/// (`android/core/links` `AppLinks`). Register an app-specific scheme only when something outside the app must open
+/// one (e.g. a Control Center control's `OpenURLIntent`).
 public struct DeepLinkParser: Sendable {
     public static let defaultCustomScheme = "app"
     public static let invitePathPrefix = "i"
