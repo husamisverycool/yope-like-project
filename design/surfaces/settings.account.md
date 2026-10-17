@@ -35,7 +35,8 @@ Visual reference: Retro **Account** section and **Edit Profile** page (inventory
 | name row / page | C-14; C-12 + C-05 | `settings.account.name`, `.name.title`, `.name.save`, `.name.tooLong`, `.name.error` | `update profiles set display_name` |
 | phone row | C-14 value | `settings.account.phone` | none (no change-number flow) |
 | birthday row | C-14 value | `settings.account.birthday` | → `birthday.add` (memory group) |
-| Delete Account | C-14 row, C-10 | `settings.account.delete`, `.delete.footer`; alert `.delete.title`, `.delete.message` (+ `.delete.subscriptionNote` when subscribed), `.delete.confirm`, `settings.account.alert.cancel` | `delete_account()` → sign out → `auth.phone` landing; Android Toast `settings.account.deleted.toast` |
+| Delete Account | C-14 row, C-10 | `settings.account.delete`, `.delete.footer`; alert `.delete.title`, `.delete.message` (+ `.delete.subscriptionNote` when subscribed), `.delete.download`, `.delete.confirm`, `settings.account.alert.cancel` | `delete_account()` → sign out → `auth.phone` landing; Android Toast `settings.account.deleted.toast` |
+| Download My Photos (in the delete alert) | alert button (iOS: a default button between Cancel and Yes, delete; Android: the M3 dialog's neutral action before Cancel) | `settings.account.delete.download` | closes the alert and pushes `settings.downloads` (`'mine'`); the account is untouched. Owner decision 29 ("also offered before account deletion"); precedent: Instagram ("Before deleting your profile, you may want to log in and export a copy of your information", help.instagram.com/139886812848894) and Google ("Step 2: Review & download your Google Account info", support.google.com/accounts/answer/32046) |
 | Your Subscription | — | — | `settings.account.layout.manageSubscription` (opened from `settings.root`) |
 
 ## States
@@ -68,7 +69,8 @@ failed → `haptic.global.error`.
 
 - `profiles` (name, avatar), `auth.user.phone`, `profile_private` (birthday, docs/API.md §5.2).
 - `update profiles` (§5.0); avatar upload `avatars/<uid>/<uuid>.jpg` (§7); `delete_account()` then `auth.signOut()` (§6.3).
-- In: `settings.root` (profile card). Out: `birthday.add`, `auth.phone` (after deletion).
+- In: `settings.root` (profile card). Out: `birthday.add`, `settings.downloads` (from the delete alert), `auth.phone`
+  (after deletion).
 
 ## Platform notes
 

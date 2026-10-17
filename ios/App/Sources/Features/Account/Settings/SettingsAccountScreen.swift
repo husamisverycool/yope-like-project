@@ -103,6 +103,9 @@ struct SettingsAccountView: View {
         }
         .alert(Text(Copy.settingsAccountDeleteTitle), isPresented: $confirmDelete) {
             Button(Copy.settingsAccountAlertCancel, role: .cancel) {}
+            // Owner decision 29: "Download My Photos" is offered before deletion (Instagram's and Google's
+            // download-before-delete step); it opens settings.downloads and leaves the account as it is.
+            Button(Copy.settingsAccountDeleteDownload) { pushInSheet(.account(.settingsDownloads)) }
             Button(Copy.settingsAccountDeleteConfirm, role: .destructive) {
                 Task {
                     if await model.deleteAccount() { dependencies.session.accountDeleted() }

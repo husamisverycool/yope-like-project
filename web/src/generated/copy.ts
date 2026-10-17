@@ -951,6 +951,7 @@ const table = {
   "settings.account.birthday": "Birthday", // Retro · settings.account · SOURCED
   "settings.account.delete": "Delete Account", // Retro · settings.account · SOURCED
   "settings.account.delete.confirm": "Yes, delete", // Retro · settings.account · SOURCED
+  "settings.account.delete.download": "Download My Photos", // Instagram + Google · settings.account · SOURCED
   "settings.account.delete.error": "Your account wasn't deleted. Please try again.", // Retro · settings.account · SOURCED
   "settings.account.delete.footer": "Deleting your account removes your photos, voice notes and messages from every group.", // Retro · settings.account · SOURCED
   "settings.account.delete.message": "This cannot be undone. You will not be able to recover your photos, voice notes or messages.", // Retro · settings.account · SOURCED

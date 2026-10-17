@@ -3236,6 +3236,16 @@
       "pattern": "retro.voice.confirm",
       "level": "SOURCED"
     },
+    "settings.account.delete.download": {
+      "text": "Download My Photos",
+      "origin": "adapted",
+      "source_app": "Instagram + Google",
+      "surface": "settings.account",
+      "evidence": "https://help.instagram.com/139886812848894 (accessed 2026-10-17): 'Before deleting your profile, you may want to log in and export a copy of your information (like your photos and posts)'; https://support.google.com/accounts/answer/32046 (accessed 2026-10-17): 'Step 2: Review & download your Google Account info … Learn how to download data that you want to keep.'; label = settings.root.downloads (the row that opens the same page)",
+      "pattern": "retro.voice.title-case",
+      "level": "SOURCED",
+      "notes": "Owner decision 29 ('also offered before account deletion'). A third button in the delete alert, between Cancel and Yes, delete; opens settings.downloads and leaves the account as it is."
+    },
     "settings.account.alert.cancel": {
       "text": "Cancel",
       "origin": "verbatim",

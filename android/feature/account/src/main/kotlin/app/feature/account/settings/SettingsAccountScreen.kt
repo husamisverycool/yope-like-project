@@ -65,6 +65,7 @@ import app.feature.account.common.errorDismissLabel
 import app.feature.account.common.sheetBottomPadding
 import app.media.PhotoImport
 import app.model.AppRoute
+import app.model.DownloadsRoute
 import app.ui.components.Avatar
 import app.ui.components.FormTextField
 import app.ui.components.GroupedRowSpec
@@ -284,6 +285,7 @@ fun SettingsAccountRoute(nav: NavController) {
             onDelete = vm::askDelete,
             onConfirmDelete = vm::delete,
             onCancelDelete = vm::cancelDelete,
+            onDownloadPhotos = { vm.cancelDelete(); nav.navigate(DownloadsRoute()) },
             onDismissError = vm::dismissError,
             onOpenSettings = { PermissionChecks.openSafely(context, PermissionChecks.appSettingsIntent(context)) },
         ),
@@ -304,6 +306,8 @@ data class SettingsAccountActions(
     val onDelete: () -> Unit = {},
     val onConfirmDelete: () -> Unit = {},
     val onCancelDelete: () -> Unit = {},
+    /** The delete alert's "Download My Photos" (owner decision 29): closes the alert and opens settings.downloads. */
+    val onDownloadPhotos: () -> Unit = {},
     val onDismissError: () -> Unit = {},
     val onOpenSettings: () -> Unit = {},
 )
@@ -346,6 +350,9 @@ fun SettingsAccountScreen(state: SettingsAccountUiState, actions: SettingsAccoun
             dismissLabel = stringResource(R.string.settings_account_alert_cancel),
             onDismiss = actions.onCancelDelete,
             destructive = true,
+            // Owner decision 29: offered before deletion (Instagram's and Google's download-before-delete step).
+            neutralLabel = stringResource(R.string.settings_account_delete_download),
+            onNeutral = actions.onDownloadPhotos,
         )
     }
     when {

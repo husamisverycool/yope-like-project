@@ -1901,6 +1901,8 @@ public enum Copy {
     public static var settingsAccountDelete: String { CopyLookup.string("settings.account.delete", default: "Delete Account") }
     /// "Yes, delete" — Retro · settings.account · verbatim · SOURCED
     public static var settingsAccountDeleteConfirm: String { CopyLookup.string("settings.account.delete.confirm", default: "Yes, delete") }
+    /// "Download My Photos" — Instagram + Google · settings.account · adapted · SOURCED
+    public static var settingsAccountDeleteDownload: String { CopyLookup.string("settings.account.delete.download", default: "Download My Photos") }
     /// "Your account wasn't deleted. Please try again." — Retro · settings.account · new · SOURCED
     public static var settingsAccountDeleteError: String { CopyLookup.string("settings.account.delete.error", default: "Your account wasn't deleted. Please try again.") }
     /// "Deleting your account removes your photos, voice notes and messages from every group." — Retro · settings.account · new · SOURCED
