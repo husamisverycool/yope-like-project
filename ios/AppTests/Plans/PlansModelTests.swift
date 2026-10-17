@@ -507,3 +507,38 @@ final class PlansModelTests: XCTestCase {
         XCTAssertTrue(condition(), file: file, line: line)
     }
 }
+
+// MARK: plans.page "Add to Calendar"
+
+extension PlansModelTests {
+    func testAddToCalendarPrefillsTheTitleTimeAndPlace() {
+        let start = PlansFixture.dinnerStart
+        let made = start.addingTimeInterval(-PlansFixture.day)
+        let timed = Plan(
+            id: PlansFixture.planID, groupID: PlansFixture.groupID, createdBy: PlansFixture.ana, title: "Dinner at ours",
+            startsAt: start, allDay: false, localDate: LocalDate(year: 2026, month: 10, day: 17)!, place: "Our kitchen",
+            createdAt: made, updatedAt: made
+        )
+        let fields = PlanCalendarFields(plan: timed)
+        XCTAssertEqual(fields.title, "Dinner at ours")
+        XCTAssertEqual(fields.location, "Our kitchen")
+        XCTAssertFalse(fields.isAllDay)
+        XCTAssertEqual(fields.start, start)
+        XCTAssertEqual(fields.end, start.addingTimeInterval(PlanCalendarFields.defaultDuration), "no end: an hour")
+
+        var withEnd = timed
+        withEnd.endsAt = start.addingTimeInterval(3 * PlansFixture.hour)
+        XCTAssertEqual(PlanCalendarFields(plan: withEnd).end, withEnd.endsAt)
+
+        var allDay = timed
+        allDay.allDay = true
+        allDay.place = nil
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Lisbon")!
+        let day = PlanCalendarFields(plan: allDay, calendar: calendar)
+        XCTAssertTrue(day.isAllDay)
+        XCTAssertNil(day.location)
+        XCTAssertEqual(day.start, calendar.date(from: DateComponents(year: 2026, month: 10, day: 17)))
+        XCTAssertEqual(day.end, day.start, "a one-day all-day event")
+    }
+}

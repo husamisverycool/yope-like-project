@@ -1691,6 +1691,8 @@ public enum Copy {
     public static var plansListSectionUpcoming: String { CopyLookup.string("plans.list.section.upcoming", default: "Upcoming") }
     /// "Plans" — Retro · plans.list · adapted · SOURCED
     public static var plansListTitle: String { CopyLookup.string("plans.list.title", default: "Plans") }
+    /// "Add to Calendar" — Apple Invites · plans.page · verbatim · SOURCED
+    public static var plansPageAddToCalendarAccessibilityLabel: String { CopyLookup.string("plans.page.addToCalendar.accessibilityLabel", default: "Add to Calendar") }
     /// "Photos" — Retro · plans.page · new · SOURCED
     public static var plansPageAlbum: String { CopyLookup.string("plans.page.album", default: "Photos") }
     /// "Can't go" — Partiful · plans.page · adapted · SOURCED

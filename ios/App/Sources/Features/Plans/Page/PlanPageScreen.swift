@@ -30,6 +30,8 @@ struct PlanPageView: View {
     @State private var viewerContext: PhotoViewerContext?
     @State private var reportTarget: ReportTarget?
     @State private var blockTarget: BlockTarget?
+    /// "Add to Calendar": the system's new-event editor for this plan (PlanCalendarEditor.swift).
+    @State private var calendarFields: PlanCalendarFields?
     @Environment(AccountDependencies.self) private var dependencies: AccountDependencies?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -92,6 +94,10 @@ struct PlanPageView: View {
         .sheet(isPresented: $peopleOpen) {
             PlanPeopleSheet(model: model)
                 .modifier(PlanPresentedContent(dependencies: dependencies))
+        }
+        .sheet(item: $calendarFields) { fields in
+            PlanCalendarEditor(fields: fields) { calendarFields = nil }
+                .ignoresSafeArea()
         }
         .socialPhotoViewer($viewerContext)
         .reportFlowIfAvailable(target: $reportTarget, dependencies: dependencies)
@@ -175,41 +181,56 @@ struct PlanPageView: View {
 
     // MARK: Header
 
-    /// C-02 back at `size.global.backInset`; trailing C-01 glyph `icon.global.more` → native menu: the maker's and admins'
-    /// Edit / Cancel (or Restore) while the plan is on; on another member's plan "Report Plan" and "Block {first_name}"
-    /// (C-10 red, safety.report / safety.block, MERGE FV-4).
+    /// C-02 back at `size.global.backInset`; trailing C-01 glyphs: `icon.global.calendar` "Add to Calendar" while the plan
+    /// is on (Apple Invites' calendar button beside "•••", AI-S 04), then `icon.global.more` → native menu: the maker's
+    /// and admins' Edit / Cancel (or Restore) while the plan is on; on another member's plan "Report Plan" and
+    /// "Block {first_name}" (C-10 red, safety.report / safety.block, MERGE FV-4). Glyph centres
+    /// `size.global.headerIconPitch` apart.
     private var headerRow: some View {
         HStack(spacing: 0) {
             FormBackButton(accessibilityLabel: Copy.plansPageBackAccessibilityLabel, identifier: "plans.page.back") {
                 dismiss()
             }
             Spacer(minLength: 0)
-            if model.showsMenu || model.showsReport, let plan = model.plan {
-                HeaderIconMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.plansPageMoreAccessibilityLabel) {
-                    if model.showsMenu {
-                        if plan.isCanceled {
-                            Button(Copy.plansPageMenuRestore) { Task { await model.restore() } }
-                                .disabled(model.isWorking || model.isOffline)
-                        } else {
-                            Button(Copy.plansPageMenuEdit) { editing = plan }
-                                .disabled(model.isWorking || model.isOffline)
-                            Button(Copy.plansPageMenuCancel, role: .destructive) { confirmingCancel = true }
-                                .disabled(model.isWorking || model.isOffline)
-                        }
+            HStack(spacing: Tokens.Sizes.globalHeaderIconPitch - Tokens.Sizes.globalHeaderButton) {
+                if model.showsAnswerRow, let plan = model.plan {
+                    HeaderIconButton(icon: Tokens.Icons.globalCalendar, accessibilityLabel: Copy.plansPageAddToCalendarAccessibilityLabel) {
+                        calendarFields = PlanCalendarFields(plan: plan)
                     }
-                    if let target = model.reportTarget {
-                        Button(Copy.safetyReportMenuItemPlan, role: .destructive) { reportTarget = target }
-                        if let person = target.person {
-                            Button(Copy.safetyBlockMenuItemNamed(firstName: person.firstName), role: .destructive) { blockTarget = person }
-                        }
-                    }
+                    .accessibilityIdentifier("plans.page.addToCalendar")
                 }
-                .padding(.trailing, max(0, Tokens.Sizes.globalHeaderInset - (Tokens.Sizes.globalHeaderButton - Tokens.Sizes.globalIcon) / 2))
-                .accessibilityIdentifier("plans.page.more")
+                moreMenu
             }
+            .padding(.trailing, max(0, Tokens.Sizes.globalHeaderInset - (Tokens.Sizes.globalHeaderButton - Tokens.Sizes.globalIcon) / 2))
         }
         .frame(height: Tokens.Sizes.globalHeaderButton)
         .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private var moreMenu: some View {
+        if model.showsMenu || model.showsReport, let plan = model.plan {
+            HeaderIconMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.plansPageMoreAccessibilityLabel) {
+                if model.showsMenu {
+                    if plan.isCanceled {
+                        Button(Copy.plansPageMenuRestore) { Task { await model.restore() } }
+                            .disabled(model.isWorking || model.isOffline)
+                    } else {
+                        Button(Copy.plansPageMenuEdit) { editing = plan }
+                            .disabled(model.isWorking || model.isOffline)
+                        Button(Copy.plansPageMenuCancel, role: .destructive) { confirmingCancel = true }
+                            .disabled(model.isWorking || model.isOffline)
+                    }
+                }
+                if let target = model.reportTarget {
+                    Button(Copy.safetyReportMenuItemPlan, role: .destructive) { reportTarget = target }
+                    if let person = target.person {
+                        Button(Copy.safetyBlockMenuItemNamed(firstName: person.firstName), role: .destructive) { blockTarget = person }
+                    }
+                }
+            }
+            .accessibilityIdentifier("plans.page.more")
+        }
     }
 
     // MARK: Cover, title, meta

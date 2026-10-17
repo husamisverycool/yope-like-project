@@ -846,6 +846,7 @@ const table = {
   "plans.list.section.past": "Past Plans", // Apple Invites · plans.list · SOURCED
   "plans.list.section.upcoming": "Upcoming", // Apple Invites · plans.list · SOURCED
   "plans.list.title": "Plans", // Retro · plans.list · SOURCED
+  "plans.page.addToCalendar.accessibilityLabel": "Add to Calendar", // Apple Invites · plans.page · SOURCED
   "plans.page.album": "Photos", // Retro · plans.page · SOURCED
   "plans.page.answer.cantGo": "Can't go", // Partiful · plans.page · SOURCED
   "plans.page.answer.clear": "Clear answer", // Retro · plans.page · SOURCED

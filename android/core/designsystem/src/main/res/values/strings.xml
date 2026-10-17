@@ -1689,6 +1689,8 @@
     <string name="plans_list_section_upcoming" formatted="false">Upcoming</string>
     <!-- Retro · plans.list · adapted · SOURCED -->
     <string name="plans_list_title" formatted="false">Plans</string>
+    <!-- Apple Invites · plans.page · verbatim · SOURCED -->
+    <string name="plans_page_addtocalendar_accessibilitylabel" formatted="false">Add to Calendar</string>
     <!-- Retro · plans.page · new · SOURCED -->
     <string name="plans_page_album" formatted="false">Photos</string>
     <!-- Partiful · plans.page · adapted · SOURCED -->

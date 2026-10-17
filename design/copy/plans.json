@@ -501,6 +501,16 @@
       "pattern": "platform.a11yLabel",
       "level": "VERIFIED"
     },
+    "plans.page.addToCalendar.accessibilityLabel": {
+      "text": "Add to Calendar",
+      "origin": "verbatim",
+      "source_app": "Apple Invites",
+      "surface": "plans.page",
+      "evidence": "https://support.apple.com/guide/apple-invites/view-your-events-dev18a008ffb/ios (accessed 2026-10-17): 'Add an event to the Calendar app: Select an event, then select the Add to Calendar button'; references/auto/apple-invites/store/apple-invites-store-04.png (the calendar glyph beside '•••' at the top of the event page, design/research/plans.md §3.1)",
+      "pattern": "platform.a11yLabel",
+      "level": "SOURCED",
+      "notes": "Label of the C-01 glyph icon.global.calendar in the plan page header, before '•••', while the plan is on. Opens the system's new-event editor prefilled (iOS EKEventEditViewController, Android ACTION_INSERT on CalendarContract.Events); no calendar permission."
+    },
     "plans.page.cover.accessibilityLabel": {
       "text": "Cover of {title}",
       "origin": "new",
