@@ -132,4 +132,34 @@ final class RealtimeIntegrationTests: XCTestCase {
         let closed = await eventually { await ana.data.realtime.subscribedGroups().isEmpty && ana.client.supabase.channels.isEmpty }
         XCTAssertTrue(closed, "the channel closes with its last subscriber")
     }
+
+    /// A screen that subscribes right after the group's last subscriber left (group screen → chat → plan page) gets a
+    /// live channel. supabase-swift hands back the registered channel of a topic until `removeChannel` returns, so a
+    /// channel made during the removal was the one being removed: its join never completed or its events never came
+    /// (run 110's "ios e2e": "Maximum retry attempts reached" on a connected socket, the open plan page never updated).
+    func testASubscriberRightAfterTheLastOneLeftGetsALiveChannel() async throws {
+        let ana = try await users.make("Ana")
+        let rui = try await users.make("Rui")
+        let group = try await ana.data.groups.create(name: "Rejoin \(users.runID)", kind: .friends)
+        _ = try await rui.data.groups.join(token: try await ana.data.groups.createInvite(groupID: group.id).token)
+        let topic = "realtime:group-\(group.id.rawValue)"
+
+        for round in 1...3 {
+            let leaving = EventRecorder(rui.data.realtime.events(for: group.id, filter: .changes))
+            let joined = await eventually { leaving.contains { $0 == .subscribed(topic: topic) } }
+            XCTAssertTrue(joined, "round \(round): \(leaving.events)")
+            leaving.stop()
+            let arriving = EventRecorder(rui.data.realtime.events(for: group.id, filter: .changes))
+            let body = "after rejoin \(round)"
+            let live = await eventually(timeout: 30) {
+                _ = try? await ana.data.chat.sendText(groupID: group.id, body: body)
+                try? await Task.sleep(nanoseconds: 700_000_000)
+                return arriving.contains { if case let .messageInserted(message) = $0 { return message.body == body }; return false }
+            }
+            XCTAssertTrue(live, "round \(round): \(arriving.events)")
+            arriving.stop()
+            let closed = await eventually { await rui.data.realtime.subscribedGroups().isEmpty && rui.client.supabase.channels.isEmpty }
+            XCTAssertTrue(closed, "round \(round): the channel closes with its last subscriber")
+        }
+    }
 }

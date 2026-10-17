@@ -88,6 +88,11 @@ public actor RealtimeHub {
     }
 
     private var groups: [GroupID: GroupState] = [:]
+    /// Channel removals in progress, by topic. supabase-swift hands back the channel registered under a topic until
+    /// `removeChannel` returns, so a channel of that topic is made again only once its removal has finished (run 110:
+    /// a subscriber that came right after the last one left got the channel being removed, and its join never
+    /// completed).
+    private var removals: [String: Task<Void, Never>] = [:]
 
     public init(client: DataClient) {
         self.client = client
@@ -125,8 +130,14 @@ public actor RealtimeHub {
     // MARK: Subscribers
 
     private func addSubscriber(_ id: UUID, groupID: GroupID, filter: GroupEventFilter, continuation: AsyncStream<GroupEvent>.Continuation) async {
-        var state = groups[groupID] ?? GroupState()
-        state.subscribers[id] = Subscriber(filter: filter, continuation: continuation)
+        var registered = groups[groupID] ?? GroupState()
+        registered.subscribers[id] = Subscriber(filter: filter, continuation: continuation)
+        groups[groupID] = registered
+        // A channel to make whose topic is still being removed waits for the removal (see `removals`).
+        if filter.contains(.changes), registered.changes == nil { await awaitRemoval(of: Self.changesTopic(groupID)) }
+        if filter.contains(.deletions), registered.deletions == nil { await awaitRemoval(of: Self.deletionsTopic(groupID)) }
+        // Meanwhile the subscriber may have left, or another one made the channels.
+        guard var state = groups[groupID], state.subscribers[id] != nil else { return }
         let needsChanges = filter.contains(.changes) && state.changes == nil
         let needsDeletions = filter.contains(.deletions) && state.deletions == nil
         if needsChanges { state.changes = makeChangesChannel(groupID) }
@@ -157,7 +168,9 @@ public actor RealtimeHub {
             state.deletions = nil
         }
         groups[groupID] = state.subscribers.isEmpty ? nil : state
-        for channel in closing { await close(channel) }
+        // Registered before the first suspension, so a subscriber arriving meanwhile waits for them.
+        let removing = closing.map { beginRemoval($0) }
+        for removal in removing { await removal.value }
     }
 
     private func emit(_ event: GroupEvent, groupID: GroupID, kind: GroupEventFilter) {
@@ -169,6 +182,10 @@ public actor RealtimeHub {
     }
 
     // MARK: Channels
+
+    /// supabase-swift's full topic names of a group's channels (`realtime:` + the name given to `channel(_:)`).
+    private static func changesTopic(_ groupID: GroupID) -> String { "realtime:group-\(groupID.rawValue)" }
+    private static func deletionsTopic(_ groupID: GroupID) -> String { "realtime:group:\(groupID.rawValue)" }
 
     private func makeChangesChannel(_ groupID: GroupID) -> Channel {
         let channel = client.supabase.channel("group-\(groupID.rawValue)")
@@ -262,7 +279,8 @@ public actor RealtimeHub {
             try await channel.subscribeWithError()
         } catch {
             // The server answers a refused join (a non-member on `group:<id>`) with nothing, so a
-            // failure on a connected socket is final; with the socket down (offline) it is retried.
+            // failure of that topic on a connected socket is final; with the socket down (offline) it
+            // is retried. `group-<id>` refuses no one (RLS filters its rows): its failures are retried.
             let socketDown = client.supabase.realtimeV2.status != .connected
             RealtimeTrace.log("join failed \(channel.topic): \(error) (socket \(client.supabase.realtimeV2.status))")
             emit(.subscriptionFailed(topic: channel.topic), groupID: groupID, kind: kind)
@@ -273,7 +291,7 @@ public actor RealtimeHub {
                 groups[groupID] = state
             }
             await close(box)
-            if socketDown { scheduleRetry(groupID: groupID, kind: kind, attempt: attempt + 1) }
+            if socketDown || kind == .changes { scheduleRetry(groupID: groupID, kind: kind, attempt: attempt + 1) }
             return
         }
         emit(.subscribed(topic: channel.topic), groupID: groupID, kind: kind)
@@ -309,6 +327,7 @@ public actor RealtimeHub {
     }
 
     private func retry(groupID: GroupID, kind: GroupEventFilter, attempt: Int) async {
+        await awaitRemoval(of: kind == .changes ? Self.changesTopic(groupID) : Self.deletionsTopic(groupID))
         guard var state = groups[groupID], state.subscribers.values.contains(where: { $0.filter.contains(kind) }) else { return }
         let box: Channel
         if kind == .changes {
@@ -326,7 +345,30 @@ public actor RealtimeHub {
 
     private func close(_ box: Channel?) async {
         guard let box else { return }
+        await beginRemoval(box).value
+    }
+
+    /// Stops forwarding `box`'s events and removes its channel from supabase-swift, recorded in `removals` under its
+    /// topic until done (after any earlier removal of the same topic).
+    private func beginRemoval(_ box: Channel) -> Task<Void, Never> {
         box.tasks.forEach { $0.cancel() }
-        await client.supabase.removeChannel(box.channel)
+        let channel = box.channel
+        let topic = channel.topic
+        let earlier = removals[topic]
+        let supabase = client.supabase
+        let removal = Task {
+            await earlier?.value
+            await supabase.removeChannel(channel)
+        }
+        removals[topic] = removal
+        return removal
+    }
+
+    /// Returns once no channel of `topic` is being removed.
+    private func awaitRemoval(of topic: String) async {
+        while let removal = removals[topic] {
+            await removal.value
+            if removals[topic] == removal { removals[topic] = nil }
+        }
     }
 }
