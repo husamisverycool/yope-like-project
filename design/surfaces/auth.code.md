@@ -52,7 +52,7 @@ Tokens: `auth.code.*`, `auth.phone.layout.inlineError` + `global.*`. Copy: `auth
 | too many tries | HTTP 429 | message-only alert | `auth.code.error.tooMany` + `auth.phone.error.dismiss` |
 | offline | no connection | title block stays; C-27 block replaces the field and capsule (as `auth.phone` offline) | `auth.phone.offline.title`, `auth.phone.offline.detail`, `auth.phone.offline.retry` |
 | success, new account | session created, `profile_private.age_confirmed_at` null | push `auth.agegate` | — |
-| success, returning | age confirmed and `display_name` set | replace the stack with `groups.list` (pending invite → `join_group` first) | — |
+| success, returning | age confirmed and `display_name` set | replace the stack with `groups.list` (pending invite → `join_group` first); on a phone that has not shown its onboarding pages yet, `onboarding.permission.notifications` (while the system has not asked; Android 13+ without the permission) then `onboarding.widget` first, once per phone | — |
 | empty / permission-denied | — | not applicable | — |
 
 ## Motion
@@ -79,7 +79,7 @@ expired / failed → `haptic.global.error` (PLATFORM outcomes, R-12). No key hap
 - `supabase.auth.verifyOTP(phone:, token:, type: .sms)` (docs/API.md §2); resend = `signInWithOTP` (Twilio Verify returns
   the same code within its lifetime).
 - After success: read `profile_private` (own row, docs/API.md §5.2) and `profiles.display_name` to choose the next step.
-- In: `auth.phone`; `invite.appclip`. Out: `auth.agegate` (new) or `groups.list` (returning).
+- In: `auth.phone`; `invite.appclip`. Out: `auth.agegate` (new) or `groups.list` (returning; through this phone's onboarding pages when it has not shown them).
 
 ## Platform notes
 

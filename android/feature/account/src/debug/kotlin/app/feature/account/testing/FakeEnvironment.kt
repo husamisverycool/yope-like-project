@@ -37,6 +37,7 @@ class FakeStores : AccountStores {
     override fun setOnboardingDone(userId: String) {
         onboarded += userId
     }
+    override var devicePagesShown: Boolean = false
 
     override fun ageRefusal(): AgeRefusal? = refusal
     override fun rememberAgeRefusal(refusal: AgeRefusal) {

@@ -38,6 +38,7 @@ struct SettingsNotificationsView: View {
     @State private var liveActivityOn = true
     @Environment(AccountDependencies.self) private var dependencies
     @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
 
     init(model: SettingsNotificationsModel) {
         _model = State(initialValue: model)
@@ -70,6 +71,10 @@ struct SettingsNotificationsView: View {
         }
         .onChange(of: start) { _, _ in saveQuietHours() }
         .onChange(of: end) { _, _ in saveQuietHours() }
+        // Back from the app's notification settings: the off block follows the new answer.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await model.systemSettingsMayHaveChanged() } }
+        }
         .task {
             liveActivityOn = dependencies.liveActivity.isEnabled
             await model.load()
@@ -96,7 +101,11 @@ struct SettingsNotificationsView: View {
             .multilineTextAlignment(.leading)
             .fixedSize(horizontal: false, vertical: true)
             CapsuleButton(Copy.settingsNotificationsOpenSettings, style: .outline) {
-                if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+                Task {
+                    await model.enablePush {
+                        if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+                    }
+                }
             }
             .fixedSize()
             .accessibilityIdentifier("settings.notifications.openSettings")

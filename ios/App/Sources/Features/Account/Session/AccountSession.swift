@@ -2,6 +2,9 @@
 // auth.profile → onboarding.permission.notifications → onboarding.widget) → home (groups.list). Links that arrive
 // meanwhile wait in `AppRouter.pendingLink`; `router.setReady(true)` applies them once the person is home. A launch with
 // a session lands on the camera only when the person is in a group (owner decision 13; Android `RootGate`).
+// Accounts that skip sign-up — a returning account's code (auth.code "success (returning)") or an App Clip joiner's
+// first launch of the app — still get this phone's own onboarding pages once, one at a time and in the same order: the
+// notifications pre-alert while the system has not asked, then the widget guide (`nextDeviceStep`).
 import AppData
 import AppModels
 import DesignSystem
@@ -28,6 +31,9 @@ final class AccountSession {
         case phone
         case ageGate
         case profile
+        /// This phone's onboarding pages for an account that skipped sign-up (launch with a session: App Clip joiners).
+        case notifications
+        case widget
         /// Checking where a signed-in person continues (Loading HUD).
         case resolving
         /// That check failed (offline / error): retry.
@@ -154,7 +160,12 @@ final class AccountSession {
             switch try await nextStep() {
             case .ageGate: root = .ageGate
             case .profile: root = .profile
-            case .done: becomeReady(user)
+            case .done:
+                switch await nextDeviceStep() {
+                case .notifications?: root = .notifications
+                case .widget?: root = .widget
+                default: becomeReady(user)
+                }
             }
         } catch {
             AccountTrace.log("session resolve failed: \(String(describing: DataError.from(error)))")
@@ -193,14 +204,20 @@ final class AccountSession {
         path.append(.code(phone: phone, sentAt: date))
     }
 
-    /// auth.code verified: new accounts continue with the age gate, returning ones go home.
+    /// auth.code verified: new accounts continue with the age gate; returning ones go home, through this phone's
+    /// onboarding pages first when it has not shown them (`nextDeviceStep`).
     func didVerify(_ user: UserID) async {
         signedInUser = user
         do {
             switch try await nextStep() {
             case .ageGate: path.append(.ageGate)
             case .profile: path.append(.profile)
-            case .done: becomeReady(user)
+            case .done:
+                if !onboarding.isComplete(for: user.rawValue), let step = await nextDeviceStep() {
+                    path.append(step)
+                } else {
+                    becomeReady(user)
+                }
             }
         } catch {
             AccountTrace.log("session after the code failed: \(String(describing: DataError.from(error)))")
@@ -223,18 +240,33 @@ final class AccountSession {
         }
     }
 
-    /// onboarding.permission.notifications answered (whatever the answer).
+    /// onboarding.permission.notifications answered (whatever the answer): the widget step (in place of the page when the
+    /// page was the first one shown, so there is nothing to go back to).
     func notificationsAnswered() {
-        path.append(.widget)
+        if path.isEmpty, root == .notifications {
+            root = .widget
+        } else {
+            path.append(.widget)
+        }
     }
 
-    /// onboarding.widget "Continue": home (and the pending invite).
+    /// onboarding.widget "Continue": home (and the pending invite). The phone has now shown its onboarding pages.
     func finishOnboarding() {
         guard let user = signedInUser ?? data.currentUserID else {
             showSignedOut()
             return
         }
+        onboarding.markDevicePagesShown()
         becomeReady(user)
+    }
+
+    /// The first of this phone's onboarding pages an account that skipped sign-up has not seen here, or nil: none once
+    /// the phone has shown them (to anyone; the widget and the system permission belong to the phone); else the
+    /// notifications pre-alert while the system has not asked (onboarding.permission.notifications: one ask, no
+    /// re-ask), then the widget guide (onboarding.widget).
+    private func nextDeviceStep() async -> Step? {
+        guard !onboarding.devicePagesShown else { return nil }
+        return await notifications.authorizationStatus() == .notDetermined ? .notifications : .widget
     }
 
     /// auth.agegate "under age": remember the refusal, delete what was entered (the account), sign out.

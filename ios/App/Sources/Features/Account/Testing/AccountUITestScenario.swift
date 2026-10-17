@@ -94,6 +94,8 @@ enum AccountUITestScenario: String, CaseIterable {
         let onboarding = OnboardingRecord(defaults: defaults)
         // The demo member has finished onboarding: the app opens home (to the camera, as with groups).
         if self == .demo, let me = data.currentUserID { onboarding.markComplete(for: me.rawValue) }
+        // Signed-in scenarios are members onboarded on this phone: its onboarding pages were shown.
+        if self != .signedOut { onboarding.markDevicePagesShown() }
         return AccountDependencies.live(
             data: data,
             router: router,

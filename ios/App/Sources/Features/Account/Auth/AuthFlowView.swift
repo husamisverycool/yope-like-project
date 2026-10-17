@@ -29,6 +29,14 @@ struct AuthFlowView: View {
             AgeGateScreen(model: AgeGateModel(data: dependencies.data))
         case .profile:
             ProfileScreen(model: ProfileModel(data: dependencies.data, prepareImage: UploadImage.jpeg(from:)))
+        case .notifications:
+            NotificationsPermissionScreen(notifications: dependencies.notifications) {
+                session.notificationsAnswered()
+            }
+        case .widget:
+            WidgetGuideRoute(onBack: nil) {
+                session.finishOnboarding()
+            }
         case .resolving:
             SignUpStateView(title: nil, detail: nil)
         case .resolveFailed:

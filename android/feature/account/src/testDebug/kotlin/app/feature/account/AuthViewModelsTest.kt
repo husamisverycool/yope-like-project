@@ -1,5 +1,6 @@
 package app.feature.account
 
+import android.Manifest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.data.error.ApiError
 import app.data.error.AuthFailure
@@ -17,6 +18,7 @@ import app.feature.account.auth.ProfileStep
 import app.feature.account.auth.ProfileUiState
 import app.feature.account.auth.ProfileViewModel
 import app.feature.account.platform.AgeRefusal
+import app.feature.account.shell.AccountFlow
 import app.feature.account.testing.FakeAccountBackend
 import app.feature.account.testing.FakeStores
 import app.feature.account.testing.fakeEnvironment
@@ -172,13 +174,39 @@ class AuthViewModelsTest {
 
     @Test fun returningAccountSkipsOnboardingAndJoinsAPendingInvite() = runTest(main.dispatcher) {
         val backend = FakeAccountBackend().apply { ageConfirmed = true; profile(meId, "Ana Lima") }
-        val stores = FakeStores().apply { pendingInviteToken = "AbCdEfGhIjKlMnOpQrStUvWx" }
+        // This phone has shown its onboarding pages (to anyone): a returning account goes home.
+        val stores = FakeStores().apply { pendingInviteToken = "AbCdEfGhIjKlMnOpQrStUvWx"; devicePagesShown = true }
         val vm = CodeViewModel(codeEnv(backend, stores))
         val events = vm.recordEvents(backgroundScope)
         vm.onCodeChange("123456")
         vm.submit()
         assertEquals(AppRoute.InviteJoin("AbCdEfGhIjKlMnOpQrStUvWx", join = true), events.navigations().single().route)
         assertTrue(stores.isOnboardingDone(backend.meId))
+    }
+
+    @Test fun returningAccountOnANewPhoneGetsItsOnboardingPagesOnce() = runTest(main.dispatcher) {
+        val backend = FakeAccountBackend().apply { ageConfirmed = true; profile(meId, "Ana Lima") }
+        val stores = FakeStores().apply { pendingInviteToken = "AbCdEfGhIjKlMnOpQrStUvWx" }
+        // Android 13+ without the permission: the notifications pre-alert first.
+        val vm = CodeViewModel(codeEnv(backend, stores))
+        val events = vm.recordEvents(backgroundScope)
+        vm.onCodeChange("123456")
+        vm.submit()
+        assertEquals(AppRoute.PermissionNotifications, events.navigations().single().route)
+        assertFalse(stores.isOnboardingDone(backend.meId))
+        // The widget step's "Continue" ends it: the pending invite next, and the phone has shown its pages.
+        val env = fakeEnvironment(backend, stores)
+        assertEquals(AppRoute.InviteJoin("AbCdEfGhIjKlMnOpQrStUvWx", join = true), AccountFlow.finishOnboarding(env))
+        assertTrue(stores.devicePagesShown)
+        assertTrue(stores.isOnboardingDone(backend.meId))
+    }
+
+    @Test fun returningAccountWithNotificationsAllowedGetsTheWidgetStep() = runTest(main.dispatcher) {
+        val backend = FakeAccountBackend().apply { ageConfirmed = true; profile(meId, "Ana Lima") }
+        val env = fakeEnvironment(backend, FakeStores(), granted = setOf(Manifest.permission.POST_NOTIFICATIONS))
+        assertEquals(AppRoute.OnboardingWidget, AccountFlow.nextAfterSignIn(env, backend.meId, justVerified = true))
+        val older = fakeEnvironment(backend, FakeStores(), sdkInt = 32)
+        assertEquals(AppRoute.OnboardingWidget, AccountFlow.nextAfterSignIn(older, backend.meId, justVerified = true))
     }
 
     @Test fun rateLimitedAndResendLock() = runTest(main.dispatcher) {

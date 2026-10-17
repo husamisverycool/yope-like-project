@@ -81,7 +81,9 @@ Presses → `haptic.global.tap` (Android). Widget added → `haptic.global.succe
 ## Data & actions
 
 No API (the preview reads the newest cached post across the person's groups). In: `onboarding.permission.notifications`
-(onboarding) or `settings.root` → Widgets row. Out: pending invite → `join_group(token)` → `groups.screen`; else `groups.list`;
+(onboarding; also for an account that skips sign-up on a phone that has not shown its onboarding pages — after the
+code or the App Clip join, straight here when the system already asked about notifications; once per phone) or
+`settings.root` → Widgets row. Out: pending invite → `join_group(token)` → `groups.screen`; else `groups.list`;
 from Settings: back.
 
 ## Platform notes

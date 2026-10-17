@@ -23,6 +23,9 @@ final class SettingsNotificationsModel {
     private(set) var quietHoursOn = false
     /// System notifications off or never asked (section 1).
     private(set) var systemOff = false
+    /// Never asked (`.notDetermined`): iOS shows no notification switch for the app until it has asked, so "Enable push"
+    /// asks (the system alert) instead of opening Settings.
+    private(set) var neverAsked = false
     /// The push when overnight photos develop (`camera.overnight.settings.row`; `notification_settings.overnight`), on
     /// by default and when no settings row exists.
     private(set) var overnightOn = true
@@ -45,8 +48,7 @@ final class SettingsNotificationsModel {
         if let cached = await data.cachedGroups() {
             groups = cached.map { GroupMute(group: $0, muted: false) }
         }
-        let status = await notifications.authorizationStatus()
-        systemOff = status == .denied || status == .notDetermined
+        await refreshSystemStatus()
         if let fresh = try? await data.myGroups() {
             var rows: [GroupMute] = []
             for group in fresh {
@@ -62,6 +64,28 @@ final class SettingsNotificationsModel {
             overnightOn = settings.overnight
         }
         isLoading = false
+    }
+
+    private func refreshSystemStatus() async {
+        let status = await notifications.authorizationStatus()
+        systemOff = status == .denied || status == .notDetermined
+        neverAsked = status == .notDetermined
+    }
+
+    /// "Enable push": the system alert when the app has never asked (granted → the block goes and the device registers
+    /// with APNs, `LiveNotificationAuthorizer`), else the app's notification settings (`openSettings`).
+    func enablePush(openSettings: () -> Void) async {
+        guard neverAsked else {
+            openSettings()
+            return
+        }
+        _ = await notifications.requestAuthorization()
+        await refreshSystemStatus()
+    }
+
+    /// Back from Settings (scene active): the block follows the system's answer.
+    func systemSettingsMayHaveChanged() async {
+        await refreshSystemStatus()
     }
 
     /// Row toggle: on = not muted. Optimistic; reverts with the footer error.

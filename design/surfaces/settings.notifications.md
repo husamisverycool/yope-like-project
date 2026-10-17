@@ -35,7 +35,7 @@ All groups follow `settings.root.layout.list` (C-14, rows ≥ `settings.root.siz
 
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| off block | C-27 (no glyph) + C-06 | `settings.notifications.off.title`, `.off.footer`, `.openSettings` | `UIApplication.openNotificationSettingsURLString` / `Settings.ACTION_APP_NOTIFICATION_SETTINGS` |
+| off block | C-27 (no glyph) + C-06 | `settings.notifications.off.title`, `.off.footer`, `.openSettings` | `UIApplication.openNotificationSettingsURLString` / `Settings.ACTION_APP_NOTIFICATION_SETTINGS`; iOS when the app has never asked (`.notDetermined`: Settings has no switch for the app yet) — the system alert (`requestAuthorization`) instead; the block follows the answer and the return from Settings |
 | group row | C-14 + C-23 30 pt + native switch (`color.global.selection` / `color.global.system.primary`) | group name (data); section `settings.notifications.groups.header`, footer | `set_group_muted(group, !on)`; optimistic, reverts on error |
 | quiet hours | C-14 rows + switch + native time pickers | `settings.notifications.quietHours`, `.start`, `.end`, `.footer` | `set_quiet_hours(p_start, p_end, p_time_zone)`; off = both null |
 | Live Activity (iOS) | C-14 + switch | `settings.notifications.liveActivity`, `.footer` | local preference read by `daily.liveactivity` |

@@ -30,6 +30,24 @@ final class AccountSettingsTests: XCTestCase {
         XCTAssertTrue(model.systemOff)
     }
 
+    /// Never asked: iOS has no switch to open yet, so "Enable push" shows the system alert; a grant removes the block.
+    func testEnablePushAsksWhenNeverAskedAndOpensSettingsWhenDenied() async {
+        let neverAsked = StaticNotificationAuthorizer(status: .notDetermined, answer: .granted)
+        let model = SettingsNotificationsModel(data: AccountFixture().data, notifications: neverAsked)
+        await model.load()
+        var opened = 0
+        await model.enablePush { opened += 1 }
+        XCTAssertEqual(opened, 0, "the system alert, not Settings")
+        XCTAssertEqual(neverAsked.status, .granted)
+        XCTAssertFalse(model.systemOff)
+
+        let denied = SettingsNotificationsModel(data: AccountFixture().data, notifications: StaticNotificationAuthorizer(status: .denied))
+        await denied.load()
+        await denied.enablePush { opened += 1 }
+        XCTAssertEqual(opened, 1, "denied: the app's notification settings")
+        XCTAssertTrue(denied.systemOff)
+    }
+
     func testGroupToggleIsOptimisticAndRollsBack() async {
         let fixture = AccountFixture()
         let group = fixture.familyGroup()

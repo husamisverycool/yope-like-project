@@ -65,7 +65,11 @@ Presses → `haptic.global.tap` (Android). System alerts: none of ours.
 ## Data & actions
 
 `register_device(p_platform, p_push_token, p_push_to_start_token?, p_widget_push_token?)` after a grant and on every token
-change (docs/API.md §6.3). In: `auth.profile`. Out: `onboarding.widget`.
+change (docs/API.md §6.3). In: `auth.profile`; also, once per phone, an account that skips sign-up on a phone that has
+not shown its onboarding pages — a returning account's code (`auth.code` "success, returning") or the app's first
+launch after an App Clip join — at the same point (after sign-in, before home), as the first page when it opens the
+flow (no back). Out: `onboarding.widget`. The app also registers with APNs at every launch once allowed
+(`PushService.registerIfAuthorized`).
 
 ## Platform notes
 

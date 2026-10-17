@@ -95,6 +95,11 @@ final class AccountSessionTests: XCTestCase {
 
         _ = try? await data.updateProfile(displayName: "Ana", avatarPath: nil)
         await rig.session.resolve(me.id)
+        XCTAssertEqual(rig.session.root, .notifications, "then this phone's onboarding pages (the system has not asked)")
+        rig.session.notificationsAnswered()
+        XCTAssertEqual(rig.session.root, .widget, "in place: nothing to go back to")
+        XCTAssertTrue(rig.session.path.isEmpty)
+        rig.session.finishOnboarding()
         XCTAssertEqual(rig.session.phase, .ready)
     }
 
@@ -149,12 +154,52 @@ final class AccountSessionTests: XCTestCase {
         XCTAssertEqual(rig.session.path.last, .widget)
     }
 
-    func testReturningAccountGoesStraightHome() async {
+    func testSessionOnAPhoneThatShowedItsPagesGoesStraightHome() async {
         let fixture = AccountFixture()
         let rig = AccountSessionRig(data: fixture.data)
+        rig.onboarding.markDevicePagesShown()
         rig.session.start()
         await waitUntil { rig.session.phase == .ready }
         XCTAssertEqual(rig.shell.tab, .groups)
+    }
+
+    /// auth.code "success (returning)" on a phone that has not shown its onboarding pages: the notifications pre-alert
+    /// (the system has not asked), then the widget guide, then home — once per phone.
+    func testReturningAccountGetsThisPhonesPagesOnce() async {
+        let fixture = AccountFixture()
+        let rig = AccountSessionRig(data: fixture.data, notificationStatus: .notDetermined)
+        rig.session.start()
+        await waitUntil { rig.session.root == .notifications }
+        rig.session.notificationsAnswered()
+        rig.session.finishOnboarding()
+        XCTAssertEqual(rig.session.phase, .ready)
+        XCTAssertTrue(rig.onboarding.devicePagesShown)
+
+        // Signed out, then the code again: straight home (also for another account on this phone).
+        await rig.session.signOut()
+        fixture.data.setAuth(.signedIn(fixture.me.id))
+        await rig.session.didVerify(fixture.me.id)
+        XCTAssertEqual(rig.session.phase, .ready)
+        XCTAssertTrue(rig.session.path.isEmpty)
+    }
+
+    func testReturningAccountAfterTheCodeGetsTheWidgetGuideWhenTheSystemAlreadyAsked() async {
+        let fixture = AccountFixture()
+        let rig = AccountSessionRig(data: fixture.data, notificationStatus: .denied)
+        rig.session.codeSent(phone: "+15551234567", at: Date(timeIntervalSince1970: 0))
+        await rig.session.didVerify(fixture.me.id)
+        XCTAssertEqual(rig.session.path.last, .widget, "no pre-alert once the system has asked")
+        XCTAssertNotEqual(rig.session.phase, .ready)
+        rig.session.finishOnboarding()
+        XCTAssertEqual(rig.session.phase, .ready)
+    }
+
+    func testReturningAccountOnboardedOnThisPhoneGoesHomeAfterTheCode() async {
+        let fixture = AccountFixture()
+        let rig = AccountSessionRig(data: fixture.data, notificationStatus: .notDetermined)
+        rig.onboarding.markComplete(for: fixture.me.id.rawValue)
+        await rig.session.didVerify(fixture.me.id)
+        XCTAssertEqual(rig.session.phase, .ready)
     }
 
     func testInviteOpenedBeforeSignUpJoinsRightAfterOnboarding() async throws {

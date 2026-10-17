@@ -83,6 +83,16 @@ final class OnboardingRecord {
         users.append(userID)
         defaults.set(users, forKey: key)
     }
+
+    private let pagesKey = "account.onboarding.devicePagesShown" // provenance-ok: UserDefaults key, not user-facing
+
+    /// The phone has shown its onboarding pages (the notifications pre-alert when the system had not asked, the widget
+    /// guide), whoever was signed in: an account that skips sign-up here (returning, App Clip joiner) goes home directly.
+    var devicePagesShown: Bool { defaults.bool(forKey: pagesKey) }
+
+    func markDevicePagesShown() {
+        defaults.set(true, forKey: pagesKey)
+    }
 }
 
 /// The APNs device token this phone last received (`PushService.onDeviceToken`), kept across launches so the session glue

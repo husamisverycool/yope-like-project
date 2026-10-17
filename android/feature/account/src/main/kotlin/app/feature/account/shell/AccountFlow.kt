@@ -29,16 +29,19 @@ object AccountFlow {
 
     /**
      * After a successful code (auth.code) or at launch with a session: the first incomplete step.
-     * [justVerified] = auth.code success: a returning account (age confirmed, name set) skips the
-     * device-local onboarding steps (auth.code States "success (returning)").
+     * An account with sign-up done (age confirmed, name set) that has not been onboarded on this phone — a returning
+     * account's code (auth.code States "success (returning)"), a launch after an invite install — gets this phone's
+     * onboarding pages once, as a new account does after auth.profile; none when the phone has shown them
+     * ([AccountStores.devicePagesShown]). [justVerified] is kept for the callers' context (auth.code vs launch).
      */
+    @Suppress("UNUSED_PARAMETER")
     suspend fun nextAfterSignIn(env: AccountEnvironment, userId: String, justVerified: Boolean): AppRoute {
         val status = env.backend.accountStatus()
         return when {
             !status.ageConfirmed -> AppRoute.AuthAgeGate
             !status.hasName -> AppRoute.AuthProfile
             env.stores.isOnboardingDone(userId) -> home(env)
-            justVerified -> {
+            env.stores.devicePagesShown -> {
                 env.stores.setOnboardingDone(userId)
                 home(env)
             }
@@ -53,9 +56,10 @@ object AccountFlow {
     fun notificationsPromptNeeded(env: AccountEnvironment): Boolean =
         PermissionChecks.notificationsNeedRuntimeRequest(env.sdkInt) && !env.isGranted(Manifest.permission.POST_NOTIFICATIONS)
 
-    /** End of onboarding (onboarding.widget "Continue"). */
+    /** End of onboarding (onboarding.widget "Continue"): the phone has now shown its onboarding pages. */
     fun finishOnboarding(env: AccountEnvironment): AppRoute {
         env.backend.currentUserId?.let(env.stores::setOnboardingDone)
+        env.stores.devicePagesShown = true
         return home(env)
     }
 

@@ -26,6 +26,12 @@ interface AccountStores {
     fun setOnboardingDone(userId: String)
 
     /**
+     * This phone has shown its onboarding pages (the notifications pre-alert when Android needed the request, the widget
+     * step), whoever was signed in: an account that skips sign-up here (a returning account's code, an invite) goes home.
+     */
+    var devicePagesShown: Boolean
+
+    /**
      * The under-minimum-age refusal (`auth.agegate` "under age"): remembered so the screen cannot be
      * retried by going back. Holds the minimum age shown in the refusal title.
      */
@@ -55,6 +61,10 @@ class DeviceAccountStores(context: Context) : AccountStores {
     override fun isOnboardingDone(userId: String): Boolean = prefs.getBoolean(KEY_ONBOARDED + userId, false)
     override fun setOnboardingDone(userId: String) = prefs.edit().putBoolean(KEY_ONBOARDED + userId, true).apply()
 
+    override var devicePagesShown: Boolean
+        get() = prefs.getBoolean(KEY_DEVICE_PAGES, false)
+        set(value) = prefs.edit().putBoolean(KEY_DEVICE_PAGES, value).apply()
+
     override fun ageRefusal(): AgeRefusal? {
         if (!refusalFile.isFile) return null
         return try {
@@ -82,6 +92,7 @@ class DeviceAccountStores(context: Context) : AccountStores {
         const val KEY_INVITE = "pending_invite"
         const val KEY_REFERRER = "referrer_checked"
         const val KEY_ONBOARDED = "onboarded_"
+        const val KEY_DEVICE_PAGES = "device_onboarding_pages_shown"
         const val REFUSAL_FILE = "age_gate.bin"
         const val REFUSAL_ALIAS = "age_gate_refusal"
         const val REFUSED = "refused:"
