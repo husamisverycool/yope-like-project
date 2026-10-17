@@ -1593,6 +1593,23 @@
       "level": "SOURCED",
       "precision": "exact (rule)",
       "notes": "Owns the e2e finding of 2026-10-16: a reply sent from the photo viewer left the thread where it was. No 'new message' button is added (no reference value for it in this product)."
+    },
+    "chat.thread.layout.systemLine": {
+      "type": "layout",
+      "value": {
+        "content": "chat.thread.system.joined ('{name} joined') when someone joins; chat.thread.system.left ('{name} left the group') when someone leaves (leave_group); {name} = the person's first name now, else the first word of the name stored on the line",
+        "placement": "its own row between messages, centred across the content width inside size.global.screenMargin; no avatar, no name line; size.global.listGap above it and above the message after it (that message starts a new run)",
+        "text": "text role caption, color.global.textSecondary (the run header's time), centred, wraps",
+        "interaction": "none: no context menu, reply, reaction, copy, report or unsend; read by VoiceOver / TalkBack as its text; announced like an incoming message",
+        "notPushed": "the line is never a notification"
+      },
+      "source_app": "Yope + Retro",
+      "surface": "chat.thread",
+      "element": "system line when a member joins or leaves",
+      "evidence": "design/research/yope-a.md §2.12 ('System message pill: \"<name> joined\"' — Business Insider 2025 'Kailyn joined', https://www.aol.com/trying-buzzy-social-media-platform-110601376.html; V-yrrah24 'Belle joined'); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_user_left_message_template '✌️%1$s left the thread', messaging_inbox_summary_you_joined_thread 'You joined the thread'); design/components.md C-16 (time: caption, color.global.textSecondary)",
+      "method": "Yope's centred line between messages (its pill fill and type are the superseded Yope visuals, not drawn) in Retro's caption text, as Retro draws its thread's join / leave lines (text only; visuals not captured)",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (research #18). The leave line exists in Retro's threads (with an emoji, not copied — retro.voice.emoji); an admin's removal writes no line (no reference shows one)."
     }
   }
 }

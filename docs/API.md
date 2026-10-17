@@ -303,7 +303,7 @@ Group chat. Read: members, minus authors with a block with you.
 |---|---|---|
 | `id` | uuid | |
 | `group_id`, `author_id` | uuid | |
-| `kind` | message_kind | `text`: `body` set. `photo`: `post_id` set (created by `create_post`). `voice`: `voice_path` + `voice_duration_ms` set. |
+| `kind` | message_kind | `text`: `body` set. `photo`: `post_id` set (created by `create_post`). `voice`: `voice_path` + `voice_duration_ms` set. `joined` / `left` (migration 0042): the chat's "{name} joined" / "{name} left the group" lines, written by the server when someone joins (not the group's creator) or calls `leave_group` (an admin's removal writes none); `author_id` = the person, `body` = their display name at that moment (show the current first name when their profile is readable, else the first word of `body`); never pushed, no reply / reaction / edit / unsend (`delete_message` → `invalid_kind`). Search and previews should treat only `text` bodies as something said. |
 | `body` | text? | text only, ≤ 4000 chars |
 | `post_id` | uuid? | photo messages; disappears with the post |
 | `voice_path`, `voice_duration_ms` | text?, int? | voice messages |

@@ -57,6 +57,11 @@ appearance (it is not a media surface).
        over `chat.thread.reply.postWeek`), or one grey line for a quoted message ("**name** text…").
      - **status line** under your own last message while it is in flight (`chat.thread.sending`) or after it failed
        (`chat.thread.sendFailed`, `chat.thread.layout.failedMessage`).
+   - **Joined / left line** (`chat.thread.layout.systemLine`, owner decision 34): when someone joins the group,
+     `chat.thread.system.joined` ("{name} joined", Yope); when someone leaves, `chat.thread.system.left` ("{name} left
+     the group", Retro's thread line without its emoji) — one centred line, text role `caption`, `color.global.textSecondary`,
+     `size.global.listGap` from its neighbours; not part of any run (the next message starts a run); no menu; never a
+     notification.
      Items inside a run are `chat.thread.dimension.itemGap` apart; runs are `size.global.listGap` apart. Later messages of
      a run carry no avatar or name. Your own messages use the same row (Retro shows everyone's comments the same way).
 3. **Composer** pinned at the bottom (`chat.composer.md`; C-13 field). When replying, the reply bar sits above the field.
@@ -80,6 +85,7 @@ appearance (it is not a media surface).
 | reaction chip | `chat.reactions.layout.chip`, `chat.reactions.dimension.chipTop` | `chat.reactions.a11y.cluster` | tap → Reactions sheet (`chat.reactions.md`) |
 | voice message | `chat.voice.layout.capsule` | `chat.voice.a11y.*` | `chat.voice.md` |
 | reply quote | C-15; `chat.thread.layout.replyQuote` | `chat.thread.reply.postTitle`, `.reply.postWeek`, `.reply.defaultText`, `.reply.defaultAttachment`, `chat.thread.a11y.replyQuote` | photo quote → `photo.viewer`; message quote → scrolls to it |
+| joined / left line | `chat.thread.layout.systemLine`; text role `caption`, `color.global.textSecondary`, centred | `chat.thread.system.joined`, `.system.left` | none (read as its text; announced like an incoming message) |
 | status line | text role `caption`; `color.global.textSecondary` (sending) / `color.global.destructive` (failed); `chat.thread.layout.failedMessage` | `chat.thread.sending`, `chat.thread.sendFailed` | failed: tap → send again |
 | context menu | C-29 native menu (iOS `contextMenu`, Android `DropdownMenu`) | items below | — |
 | composer | C-13 (`chat.composer.md`) | `chat.composer.*` | — |
@@ -191,7 +197,8 @@ Appears / disappears with `duration.global.fade` + `easing.global.standard` (Ret
 ## Do-not-copy
 
 - Retro thread titles listing names with a count ("%1$s, %2$s and %3$d others"), "%1$d members" subtitles, "Delivered" /
-  "Seen" receipts, "✌️%1$s left the thread" (emoji system line).
+  "Seen" receipts, the emoji of "✌️%1$s left the thread" (the line itself is used without it: `chat.thread.system.left`);
+  Yope's dark pill behind "<name> joined" (superseded visuals; the line is Retro caption text).
 - Yope's streak pill, sticker composer, lime quote block and bubble rims (superseded design).
 - Messages' coloured bubbles and red "!" circle; WhatsApp's reaction count and wallpaper.
 - Any unread count on the chat entry or tabs.

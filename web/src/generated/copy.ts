@@ -222,6 +222,18 @@ const table = {
   "camera.overnight.settings.rowDetail": "A notification when photos taken for {time} are ready.", // Retro · camera.overnight · SOURCED
   "camera.overnight.tile.a11y": "Photos developing, shown to everyone {reveal}", // Dispo · camera.overnight · SOURCED
   "camera.overnight.tile.label": "Developing", // Dispo · camera.overnight · SOURCED
+  "camera.quickaccess.control.actionHint": "Take photo", // Retro · camera.quickaccess · SOURCED
+  "camera.quickaccess.control.description": "Take a photo for your groups", // Apple HIG · camera.quickaccess · PLATFORM
+  "camera.quickaccess.control.title": "Camera", // Apple HIG · camera.quickaccess · PLATFORM
+  "camera.quickaccess.intent.group": "Group", // Retro · camera.quickaccess · SOURCED
+  "camera.quickaccess.intent.title": "Take Photo", // Retro · camera.quickaccess · SOURCED
+  "camera.quickaccess.shortcut.groupLong": "Take photo for {group}", // Retro · camera.quickaccess · SOURCED
+  "camera.quickaccess.shortcut.groupPhrase": "Take a photo for {group} with Jolt", // Retro · camera.quickaccess · SOURCED
+  "camera.quickaccess.shortcut.long": "Take photo", // Retro · camera.quickaccess · SOURCED
+  "camera.quickaccess.shortcut.phrase": "Take a photo with Jolt", // Retro · camera.quickaccess · SOURCED
+  "camera.quickaccess.shortcut.short": "Camera", // Apple HIG · camera.quickaccess · PLATFORM
+  "camera.quickaccess.tile.label": "Jolt", // Material 3 · camera.quickaccess · PLATFORM
+  "camera.quickaccess.tile.subtitle": "Camera", // Material 3 · camera.quickaccess · PLATFORM
   "camera.sendto.a11y.close": "Close", // Retro · camera.sendto · SOURCED
   "camera.sendto.a11y.save": "Save to Camera Roll", // Retro · camera.sendto · SOURCED
   "camera.sendto.a11y.voice": "Add a voice note", // Retro · camera.sendto · SOURCED
@@ -326,6 +338,8 @@ const table = {
   "chat.thread.reply.postWeek": "Week {week_number}", // Retro · chat.thread · SOURCED
   "chat.thread.sendFailed": "Couldn't send. Tap to retry", // Retro · chat.thread · SOURCED
   "chat.thread.sending": "Sending", // Retro · chat.thread · SOURCED
+  "chat.thread.system.joined": "{name} joined", // Yope · chat.thread · SOURCED
+  "chat.thread.system.left": "{name} left the group", // Retro · chat.thread · SOURCED
   "chat.thread.toast.copied": "Copied!", // Retro · chat.thread · SOURCED
   "chat.voice.a11y.discard": "Delete recording", // Retro · chat.voice · SOURCED
   "chat.voice.a11y.lock": "Keep recording", // Retro · chat.voice · SOURCED
@@ -618,7 +632,7 @@ const table = {
   "onboarding.widget.add": "Add Widget", // Retro · onboarding.widget · SOURCED
   "onboarding.widget.added": "Widget added to your home screen", // Retro · onboarding.widget · SOURCED
   "onboarding.widget.continue": "Next", // Retro · onboarding.widget · SOURCED
-  "onboarding.widget.detail": "Never miss a moment from your groups — right on your home screen.", // Retro · onboarding.widget · SOURCED
+  "onboarding.widget.detail": "Never miss a moment from a friend or a group, and relive your memories — all right on your home screen.", // Retro · onboarding.widget · SOURCED
   "onboarding.widget.done": "You're done!", // Locket · onboarding.widget · SOURCED
   "onboarding.widget.pinFailed": "Couldn't add the widget. Please try again.", // Retro · onboarding.widget · SOURCED
   "onboarding.widget.preview.accessibilityLabel": "Widget preview", // Apple HIG · onboarding.widget · VERIFIED
@@ -1080,8 +1094,16 @@ const table = {
   "widget.countdown.empty.noPlans": "No plans yet", // Retro · widget.countdown · SOURCED
   "widget.countdown.gallery.description": "See how many days until your group's next plan.", // Retro · widget.countdown · SOURCED
   "widget.countdown.gallery.name": "Next Plan", // Retro · widget.countdown · SOURCED
+  "widget.friend.configuration.friend": "Friend", // Retro · widget.friend · SOURCED
+  "widget.friend.configuration.title": "See photos from…", // Retro · widget.friend · SOURCED
+  "widget.friend.configure.empty": "Join a group to see your friends here.", // Retro · widget.friend · SOURCED
+  "widget.friend.empty.noPhotos": "No photos yet", // Retro · widget.friend · SOURCED
+  "widget.friend.empty.setUp": "Tap to choose a friend", // Retro · widget.friend · SOURCED
+  "widget.friend.gallery.description": "See live updates from a friend", // Retro · widget.friend · SOURCED
+  "widget.friend.gallery.name": "Friend Updates", // Retro · widget.friend · SOURCED
   "widget.home.small.a11y.collage": "Photos from {group}, {date}", // Retro · widget.home.small · SOURCED
   "widget.home.small.a11y.photo": "{name}'s photo in {group}", // Retro · widget.home.small · SOURCED
+  "widget.home.small.configuration.allGroups": "All Groups", // Retro · widget.home.small · SOURCED
   "widget.home.small.configuration.group": "Group", // Retro · widget.home.small · SOURCED
   "widget.home.small.configuration.groupType": "Group", // Retro · widget.home.small · SOURCED
   "widget.home.small.configuration.title": "See photos from…", // Retro · widget.home.small · SOURCED
@@ -1093,6 +1115,18 @@ const table = {
   "widget.lock.inline.text": "{name} · {group}", // Retro · widget.lock.inline · SOURCED
   "widget.lock.rect.gallery.description": "See who shared the newest photo in your group", // Retro · widget.lock.rect · SOURCED
   "widget.lock.rect.gallery.name": "Group Updates", // Retro · widget.lock.rect · SOURCED
+  "widget.memories.a11y.photo": "Your memory from {date} in {group}", // Apple HIG · widget.memories · SOURCED
+  "widget.memories.empty.none": "No photos found for this day", // Retro · widget.memories · SOURCED
+  "widget.memories.gallery.description": "Revisit your memories from this day over the years", // Retro · widget.memories · SOURCED
+  "widget.memories.gallery.name": "Your Memories", // Retro · widget.memories · SOURCED
+  "widget.styles.configuration.style": "Style", // Retro · widget.styles · SOURCED
+  "widget.styles.configuration.title": "Select Style", // Retro · widget.styles · SOURCED
+  "widget.styles.description.date": "Show the photo with its date", // Retro · widget.styles · SOURCED
+  "widget.styles.description.frame": "Show the photo as a print", // Retro · widget.styles · SOURCED
+  "widget.styles.description.photo": "Show the photo edge to edge", // Retro · widget.styles · SOURCED
+  "widget.styles.name.date": "Date", // Retro · widget.styles · SOURCED
+  "widget.styles.name.frame": "Frame", // Locket · widget.styles · SOURCED
+  "widget.styles.name.photo": "Photo", // Retro · widget.styles · SOURCED
   "year.story.a11y.close": "Close", // Apple HIG / Material 3 · year.story · PLATFORM
   "year.story.a11y.collage": "Collage from {date}", // Apple HIG / Material 3 · year.story · PLATFORM
   "year.story.a11y.next": "Next", // Apple HIG / Material 3 · year.story · PLATFORM

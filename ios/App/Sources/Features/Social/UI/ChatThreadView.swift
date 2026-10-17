@@ -302,6 +302,7 @@ struct ChatThreadView: View {
 
     private func accessibilityLabel(for message: Message) -> String {
         let name = model.profile(message.authorID)?.socialFirstName ?? ""
+        if let line = ChatSystemLine.text(message, model: model) { return line }
         switch message.kind {
         case .voice:
             return Copy.chatVoiceA11yMessage(name: name, duration: SocialFormat.spokenDuration(milliseconds: message.voiceDurationMs ?? 0))
@@ -400,6 +401,14 @@ struct ChatMessageRow: View {
     private var authorName: String { author?.socialFirstName ?? "" }
 
     var body: some View {
+        if let line = ChatSystemLine.text(message, model: model) {
+            ChatSystemLine(text: line)
+        } else {
+            messageRow
+        }
+    }
+
+    private var messageRow: some View {
         HStack(alignment: .top, spacing: Tokens.Sizes.chatThreadDimensionRowAvatarToText) {
             if row.startsRun {
                 Button { actions.openWall(message.authorID) } label: {
@@ -652,6 +661,34 @@ struct ChatMessageRow: View {
                 .dsTextStyle(TextRole.caption)
                 .foregroundStyle(Tokens.Colors.globalTextSecondary)
         }
+    }
+}
+
+/// `chat.thread.layout.systemLine`: "{name} joined" / "{name} left the group" — one centred line in the text role `caption`,
+/// `color.global.textSecondary` (Retro's time text), across the content width inside the margins; no avatar, no menu.
+/// Read by VoiceOver as its text.
+struct ChatSystemLine: View {
+    let text: String
+
+    /// The line's words, or nil for a message that is not a joined / left line.
+    @MainActor
+    static func text(_ message: Message, model: ChatThreadModel) -> String? {
+        switch message.kind {
+        case .joined: return Copy.chatThreadSystemJoined(name: model.systemLineName(message))
+        case .left: return Copy.chatThreadSystemLeft(name: model.systemLineName(message))
+        default: return nil
+        }
+    }
+
+    var body: some View {
+        Text(text)
+            .dsTextStyle(TextRole.caption)
+            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            .accessibilityElement(children: .combine)
     }
 }
 

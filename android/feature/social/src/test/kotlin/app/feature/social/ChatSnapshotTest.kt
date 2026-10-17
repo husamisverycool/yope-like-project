@@ -222,6 +222,23 @@ class ChatSnapshotTest : SnapshotBase() {
         chat(ChatViewModel(data, GROUP).state.value, data = data)
     }
 
+    /** `chat.thread.layout.systemLine`: "Ben joined" before his run, "Dana left the group" (named from the line) between runs. */
+    private fun joinedAndLeftData() = FakeSocialData().apply {
+        seedThread()
+        messages += FakeSocialData.message("s-1", GROUP, BEN, MessageKind.Joined, body = "Ben Ito", at = BASE.plusSeconds(90))
+        messages += FakeSocialData.message("s-2", GROUP, "u-gone", MessageKind.Left, body = "Dana Silva", at = BASE.plusSeconds(250))
+    }
+
+    @Test fun joinedAndLeft() {
+        val data = joinedAndLeftData()
+        chat(ChatViewModel(data, GROUP).state.value, data = data)
+    }
+
+    @Test fun joinedAndLeftDark() {
+        val data = joinedAndLeftData()
+        chat(ChatViewModel(data, GROUP).state.value, data = data, dark = true)
+    }
+
     companion object {
         const val RECORDED_MS = 7_000L
         const val PAUSED_MS = 11_000L

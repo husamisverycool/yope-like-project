@@ -225,6 +225,8 @@ object Tokens {
         val paywallColorPlanTextTertiary: Color = Color(0xFFA5ABAF)
         /** Retro · widget.home.small · glyph and message of the widget's states (empty, not set up, signed out): white 85 % on color.global.backgroundDeep · SOURCED — token `widget.home.small.color.stateTint` */
         val widgetHomeSmallColorStateTint: Color = Color(0xD9FFFFFF)
+        /** Retro · widget.styles · the instant print's paper (Frame style) · SOURCED — token `widget.styles.color.frame` */
+        val widgetStylesColorFrame: Color = Color(0xFFD5D6CD)
     }
     object Counts {
         /** Retro · albums.view · columns of the album photo grid · SOURCED — token `albums.view.count.gridColumns` */
@@ -738,6 +740,14 @@ object Tokens {
             const val localFile: String = "deleted after upload"
             const val failure: String = "after retries: camera.sendto.error.sendFailed (C-26 toast on Android, announcement on iOS)"
         }
+        /** Apple HIG · camera.quickaccess · the system entry points that open the camera · PLATFORM — token `camera.quickaccess.layout.entries` */
+        object CameraQuickaccessLayoutEntries {
+            const val iosControl: String = "ControlWidgetButton (iOS 18+) running OpenCameraIntent, which opens the app to camera.capture; Control Center, Lock Screen and the Action button; symbol icon.global.camera; title camera.quickaccess.control.title. From the Lock Screen the system asks to unlock first: no LockedCameraCapture extension (opening the app is the action)"
+            const val iosShortcuts: String = "AppShortcutsProvider: OpenCameraIntent without a group and with a group parameter (Siri, Spotlight, the Shortcuts app)"
+            const val androidTile: String = "TileService, always STATE_INACTIVE (a button, no on / off), icon drawable ic_tile_camera (Material photo_camera outlined, solid white vector), label camera.quickaccess.tile.label, subtitle camera.quickaccess.tile.subtitle; a tap collapses the panel and opens camera.capture; on a secure lock screen unlockAndRun first"
+            const val androidShortcuts: String = "one static shortcut (camera) and up to 3 dynamic shortcuts for the groups most recently sent to, newest first (4 in all)"
+            const val link: String = "app://camera (camera.fromwidget.layout.target), app://camera?group=<id> for a group"
+        }
         /** Retro · camera.sendto · sheet header on the black composer: centred title + close circle (Retro 'Postcard' modal); shared by daily.capture · SOURCED — token `camera.sendto.layout.header` */
         object CameraSendtoLayoutHeader {
             const val title: String = "centred, text role sheetTitle, colour color.global.textOnMedia; its cap middle on the circles' centre line"
@@ -884,6 +894,14 @@ object Tokens {
             const val breaks: String = "another sender, a day divider, or a reply quote starts a new run"
             const val spacing: String = "items inside a run: chat.thread.dimension.itemGap; run → next run: size.global.listGap; day divider: size.global.sectionGap above, size.global.sectionHeaderToContent below"
             const val order: String = "oldest at the top, newest at the bottom above the composer"
+        }
+        /** Yope + Retro · chat.thread · system line when a member joins or leaves · SOURCED — token `chat.thread.layout.systemLine` */
+        object ChatThreadLayoutSystemLine {
+            const val content: String = "chat.thread.system.joined ('{name} joined') when someone joins; chat.thread.system.left ('{name} left the group') when someone leaves (leave_group); {name} = the person's first name now, else the first word of the name stored on the line"
+            const val placement: String = "its own row between messages, centred across the content width inside size.global.screenMargin; no avatar, no name line; size.global.listGap above it and above the message after it (that message starts a new run)"
+            const val text: String = "text role caption, color.global.textSecondary (the run header's time), centred, wraps"
+            const val interaction: String = "none: no context menu, reply, reaction, copy, report or unsend; read by VoiceOver / TalkBack as its text; announced like an incoming message"
+            const val notPushed: String = "the line is never a notification"
         }
         /** Retro · chat.thread · time on a run's first row and the day dividers of the thread · SOURCED — token `chat.thread.layout.timeFormat` */
         object ChatThreadLayoutTimeFormat {
@@ -1989,6 +2007,14 @@ object Tokens {
             const val range4x3: String = "245-624 x 185-422 dp"
             const val lockScreenHub: String = "about 4x3 cells"
         }
+        /** Locket · widget.friend · what the friend widget shows and where a tap goes · SOURCED — token `widget.friend.layout.content` */
+        object WidgetFriendLayoutContent {
+            const val item: String = "the newest photo of the chosen person the viewer may see: posted by them, or one they tagged themselves in ('I'm in this'); never by face (newest_photos_of)"
+            const val anatomy: String = "widget.home.small (photo, scrim, name stack: the poster's first name over the group), every size"
+            const val tap: String = "camera.capture with the photo's group preselected (camera.fromwidget); no photo yet: camera.capture"
+            const val refresh: String = "the photo's widget push when the person posts (sender_id), the app's own sync for self-tags and on each return to the foreground (docs/WIDGET_REFRESH.md)"
+            const val picker: String = "widget_people: everyone who shares a group with the viewer, minus blocks"
+        }
         /** Apple HIG · widget.home.large · systemLarge size by iPhone screen (pt) · VERIFIED — token `widget.home.large.layout.size` */
         object WidgetHomeLargeLayoutSize {
             const val w430h932: String = "364x382"
@@ -2014,6 +2040,12 @@ object Tokens {
             const val w375h667: String = "321x148"
             const val w360h780: String = "329x155"
             const val w320h568: String = "292x141"
+        }
+        /** Retro · widget.home.small · the All Groups choice of the group widget · SOURCED — token `widget.home.small.layout.allGroups` */
+        object WidgetHomeSmallLayoutAllGroups {
+            const val option: String = "first row of the group picker, before the groups (widget.home.small.configuration.allGroups)"
+            const val item: String = "the newest photo or collage across every group the person is in (the newest of the per-group items)"
+            const val tap: String = "as the item's group (camera, or the day's collage)"
         }
         /** Retro · widget.home.small · white text stack bottom-trailing over the photo (Retro 'Albums' widget: name over album title) · SOURCED — token `widget.home.small.layout.overlay` */
         object WidgetHomeSmallLayoutOverlay {
@@ -2105,6 +2137,45 @@ object Tokens {
             const val w375h812: String = "157x72"
             const val w375h667: String = "153x68"
             const val w360h780: String = "157x72"
+        }
+        /** Retro · widget.memories · what the memories widget shows and where a tap goes · SOURCED — token `widget.memories.layout.content` */
+        object WidgetMemoriesLayoutContent {
+            const val item: String = "per day, the newest photo the person posted or tagged themselves in that was taken on today's month and day in an earlier year (my_memories, device time zone); a day without one shows the empty state, never another photo"
+            const val anatomy: String = "widget.home.small (photo, scrim, name stack: the poster's first name over the group), every size"
+            const val days: String = "the app stores today and the next 6 days, so the widget turns over at midnight without the app; a day beyond them shows the loading state until the app runs"
+            const val tap: String = "the memory in the photo viewer (app://post?group=<id>&post=<id>); empty: the app"
+        }
+        /** Retro · widget.styles · the Date style: Rewind's serif date over the full-bleed photo · SOURCED — token `widget.styles.layout.date` */
+        object WidgetStylesLayoutDate {
+            const val title: String = "the item's date in layout.onthisday.dateFormat ('Jul 22, 2022'): font.global.display, text role displaySmall, color.global.textOnMedia, one line, tail truncation"
+            const val position: String = "top-leading: leading inset size.global.screenMargin, the title's cap top size.global.screenMargin below the top edge"
+            const val stack: String = "the name stack of widget.home.small.layout.overlay, unchanged"
+            const val photo: String = "widget.home.small.layout.photo under layout.global.photoScrim; no top scrim (Rewind shows none)"
+            const val states: String = "as widget.home.small"
+        }
+        /** Retro · widget.styles · the Frame style: the photo as an instant print on its blurred backdrop · SOURCED — token `widget.styles.layout.frame` */
+        object WidgetStylesLayoutFrame {
+            const val backdrop: String = "C-34 blurred backdrop: the same photo aspect-filling the whole widget, Gaussian σ size.global.backdropBlur, under color.global.backdropDim"
+            const val fit: Float = 0.784f
+            const val fitRule: String = "the print is the largest that fits inside fit × the widget's width by fit × its height, centred"
+            const val aspect: Float = 1.18f
+            const val sideBorder: Float = 0.066f
+            const val topBorder: Float = 0.097f
+            const val bottomBorder: Float = 0.214f
+            const val window: String = "square, 1 − 2 × sideBorder (0.868) of the print's width; the photo aspect-fills it"
+            const val fill: String = "widget.styles.color.frame"
+            const val corners: String = "square"
+            const val text: String = "none (Retro's print carries no text)"
+            const val states: String = "as widget.home.small"
+        }
+        /** Locket · widget.styles · which widget styles exist and which are premium · SOURCED — token `widget.styles.layout.styles` */
+        object WidgetStylesLayoutStyles {
+            const val photo: String = "free — Retro's widget: the photo full bleed under the name stack (widget.home.small)"
+            const val date: String = "premium — Retro's Rewind header over the photo (widget.styles.layout.date)"
+            const val frame: String = "premium — Retro's instant-print recap style (widget.styles.layout.frame)"
+            const val default: String = "photo"
+            const val locked: String = "a premium style chosen without premium draws photo (the widget never stops working); the widget's tap then opens the paywall at the widgets perk once per session (paywall.layout.promptRule) and otherwise does what it always does"
+            const val applies: String = "every home-screen photo widget (Group Updates, Friend Updates, Your Memories; iOS small, medium, large, extra large; Android Glance at every size); not the Lock Screen kinds (vibrant rendering) or Next Plan"
         }
     }
     object LineHeights {
@@ -2656,6 +2727,7 @@ object Tokens {
         val paywallColorPlanTextSecondary: Color = Color(0xFF757A7D)
         val paywallColorPlanTextTertiary: Color = Color(0xFFA5ABAF)
         val widgetHomeSmallColorStateTint: Color = Color(0xD9FFFFFF)
+        val widgetStylesColorFrame: Color = Color(0xFFD5D6CD)
     }
     object ColorsDark {
         val birthdayTributePillarbox: Color = Color(0xFF000000)
@@ -2716,5 +2788,6 @@ object Tokens {
         val paywallColorPlanTextSecondary: Color = Color(0xFF757A7D)
         val paywallColorPlanTextTertiary: Color = Color(0xFFA5ABAF)
         val widgetHomeSmallColorStateTint: Color = Color(0xD9FFFFFF)
+        val widgetStylesColorFrame: Color = Color(0xFFD5D6CD)
     }
 }

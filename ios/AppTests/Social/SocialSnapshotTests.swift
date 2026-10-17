@@ -238,6 +238,25 @@ final class SocialSnapshotTests: XCTestCase {
         let quoting = ChatThreadModel(groupID: SocialDemo.groupID, data: replies)
         await quoting.load()
         record(ChatThreadView(model: quoting), "chat.thread", "reply-quotes")
+
+        // `chat.thread.layout.systemLine`: "{name} joined" and "{name} left the group" between messages (the person who
+        // left is named from the line, their profile no longer shared).
+        let lines = use(SocialDemo.makeData())
+        lines.update { state in
+            let at = SocialDemo.monday.addingTimeInterval(3 * SocialDemo.day + 8 * SocialDemo.hour)
+            state.messages.append(Message(
+                id: MessageID("00000000-0000-4000-8000-0000000c0001"), groupID: SocialDemo.groupID, authorID: SocialDemo.cleo,
+                kind: .joined, body: "Cleo Ramos", createdAt: at
+            ))
+            state.messages.append(Message(
+                id: MessageID("00000000-0000-4000-8000-0000000c0002"), groupID: SocialDemo.groupID,
+                authorID: UserID("00000000-0000-4000-8000-00000000a0ff"), kind: .left, body: "Dana Silva", createdAt: at + 120
+            ))
+            state.messages.append(SocialDemo.message(21, by: SocialDemo.cleo, at: at + 300, text: "hi all!"))
+        }
+        let joined = ChatThreadModel(groupID: SocialDemo.groupID, data: lines)
+        await joined.load()
+        record(ChatThreadView(model: joined), "chat.thread", "joined-left", both)
     }
 
     // MARK: chat.composer

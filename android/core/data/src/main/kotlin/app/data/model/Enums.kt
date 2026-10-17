@@ -31,6 +31,16 @@ enum class MessageKind(val wire: String) {
     @SerialName("text") Text("text"),
     @SerialName("photo") Photo("photo"),
     @SerialName("voice") Voice("voice"),
+
+    /** The chat's "{name} joined" line (migration 0042): `author_id` is the person, `body` their display name then. Server-written. */
+    @SerialName("joined") Joined("joined"),
+
+    /** The chat's "{name} left the group" line (`leave_group`, migration 0042); `body` keeps the name. Server-written. */
+    @SerialName("left") Left("left"),
+    ;
+
+    /** A joined / left line rather than something someone said (no menu, never unsent). */
+    val isSystemLine: Boolean get() = this == Joined || this == Left
 }
 
 @Serializable

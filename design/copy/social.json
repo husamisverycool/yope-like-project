@@ -336,6 +336,25 @@
       "level": "SOURCED",
       "notes": "Confirm button restates the action (retro.voice.confirm)."
     },
+    "chat.thread.system.joined": {
+      "text": "{name} joined",
+      "origin": "verbatim",
+      "source_app": "Yope",
+      "surface": "chat.thread",
+      "evidence": "design/research/yope-a.md §2.12 and §4 ('Kailyn joined', Business Insider 2025 — references/auto/yope/web/a-bi-2025-create-group-composite.jpg, https://www.aol.com/trying-buzzy-social-media-platform-110601376.html; 'Belle joined', V-yrrah24)",
+      "level": "SOURCED",
+      "notes": "The chat's line when someone joins the group (chat.thread.layout.systemLine); {name} = first name. No push."
+    },
+    "chat.thread.system.left": {
+      "text": "{name} left the group",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_user_left_message_template '✌️%1$s left the thread')",
+      "pattern": "retro.voice.confirmation ('Kailyn joined' (BI), 'posted in the wall'; a short past-tense statement of what happened)",
+      "level": "SOURCED",
+      "notes": "Noun swap thread → group; the leading emoji dropped (retro.voice.emoji: '✌️%1$s left the thread' is listed as do-not-copy for its emoji). Written only by leave_group."
+    },
     "chat.composer.placeholder": {
       "text": "Send a message…",
       "origin": "verbatim",

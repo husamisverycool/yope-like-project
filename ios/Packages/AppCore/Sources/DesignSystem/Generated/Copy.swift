@@ -443,6 +443,30 @@ public enum Copy {
     public static func cameraOvernightTileA11y(reveal: String) -> String { CopyLookup.format("camera.overnight.tile.a11y", default: "Photos developing, shown to everyone {reveal}", ["reveal": reveal]) }
     /// "Developing" — Dispo · camera.overnight · adapted · SOURCED
     public static var cameraOvernightTileLabel: String { CopyLookup.string("camera.overnight.tile.label", default: "Developing") }
+    /// "Take photo" — Retro · camera.quickaccess · verbatim · SOURCED
+    public static var cameraQuickaccessControlActionHint: String { CopyLookup.string("camera.quickaccess.control.actionHint", default: "Take photo") }
+    /// "Take a photo for your groups" — Apple HIG · camera.quickaccess · new · PLATFORM
+    public static var cameraQuickaccessControlDescription: String { CopyLookup.string("camera.quickaccess.control.description", default: "Take a photo for your groups") }
+    /// "Camera" — Apple HIG · camera.quickaccess · new · PLATFORM
+    public static var cameraQuickaccessControlTitle: String { CopyLookup.string("camera.quickaccess.control.title", default: "Camera") }
+    /// "Group" — Retro · camera.quickaccess · new · SOURCED
+    public static var cameraQuickaccessIntentGroup: String { CopyLookup.string("camera.quickaccess.intent.group", default: "Group") }
+    /// "Take Photo" — Retro · camera.quickaccess · verbatim · SOURCED
+    public static var cameraQuickaccessIntentTitle: String { CopyLookup.string("camera.quickaccess.intent.title", default: "Take Photo") }
+    /// "Take photo for {group}" — Retro · camera.quickaccess · adapted · SOURCED
+    public static func cameraQuickaccessShortcutGroupLong(group: String) -> String { CopyLookup.format("camera.quickaccess.shortcut.groupLong", default: "Take photo for {group}", ["group": group]) }
+    /// "Take a photo for {group} with Jolt" — Retro · camera.quickaccess · adapted · SOURCED
+    public static func cameraQuickaccessShortcutGroupPhrase(group: String) -> String { CopyLookup.format("camera.quickaccess.shortcut.groupPhrase", default: "Take a photo for {group} with Jolt", ["group": group]) }
+    /// "Take photo" — Retro · camera.quickaccess · verbatim · SOURCED
+    public static var cameraQuickaccessShortcutLong: String { CopyLookup.string("camera.quickaccess.shortcut.long", default: "Take photo") }
+    /// "Take a photo with Jolt" — Retro · camera.quickaccess · adapted · SOURCED
+    public static var cameraQuickaccessShortcutPhrase: String { CopyLookup.string("camera.quickaccess.shortcut.phrase", default: "Take a photo with Jolt") }
+    /// "Camera" — Apple HIG · camera.quickaccess · new · PLATFORM
+    public static var cameraQuickaccessShortcutShort: String { CopyLookup.string("camera.quickaccess.shortcut.short", default: "Camera") }
+    /// "Jolt" — Material 3 · camera.quickaccess · new · PLATFORM
+    public static var cameraQuickaccessTileLabel: String { CopyLookup.string("camera.quickaccess.tile.label", default: "Jolt") }
+    /// "Camera" — Material 3 · camera.quickaccess · new · PLATFORM
+    public static var cameraQuickaccessTileSubtitle: String { CopyLookup.string("camera.quickaccess.tile.subtitle", default: "Camera") }
     /// "Close" — Retro · camera.sendto · new · SOURCED
     public static var cameraSendtoA11yClose: String { CopyLookup.string("camera.sendto.a11y.close", default: "Close") }
     /// "Save to Camera Roll" — Retro · camera.sendto · verbatim · SOURCED
@@ -651,6 +675,10 @@ public enum Copy {
     public static var chatThreadSendFailed: String { CopyLookup.string("chat.thread.sendFailed", default: "Couldn't send. Tap to retry") }
     /// "Sending" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadSending: String { CopyLookup.string("chat.thread.sending", default: "Sending") }
+    /// "{name} joined" — Yope · chat.thread · verbatim · SOURCED
+    public static func chatThreadSystemJoined(name: String) -> String { CopyLookup.format("chat.thread.system.joined", default: "{name} joined", ["name": name]) }
+    /// "{name} left the group" — Retro · chat.thread · adapted · SOURCED
+    public static func chatThreadSystemLeft(name: String) -> String { CopyLookup.format("chat.thread.system.left", default: "{name} left the group", ["name": name]) }
     /// "Copied!" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadToastCopied: String { CopyLookup.string("chat.thread.toast.copied", default: "Copied!") }
     /// "Delete recording" — Retro · chat.voice · new · SOURCED
@@ -1235,8 +1263,8 @@ public enum Copy {
     public static var onboardingWidgetAdded: String { CopyLookup.string("onboarding.widget.added", default: "Widget added to your home screen") }
     /// "Next" — Retro · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetContinue: String { CopyLookup.string("onboarding.widget.continue", default: "Next") }
-    /// "Never miss a moment from your groups — right on your home screen." — Retro · onboarding.widget · new · SOURCED
-    public static var onboardingWidgetDetail: String { CopyLookup.string("onboarding.widget.detail", default: "Never miss a moment from your groups — right on your home screen.") }
+    /// "Never miss a moment from a friend or a group, and relive your memories — all right on your home screen." — Retro · onboarding.widget · adapted · SOURCED
+    public static var onboardingWidgetDetail: String { CopyLookup.string("onboarding.widget.detail", default: "Never miss a moment from a friend or a group, and relive your memories — all right on your home screen.") }
     /// "You're done!" — Locket · onboarding.widget · verbatim · SOURCED
     public static var onboardingWidgetDone: String { CopyLookup.string("onboarding.widget.done", default: "You're done!") }
     /// "Couldn't add the widget. Please try again." — Retro · onboarding.widget · verbatim · SOURCED
@@ -2159,10 +2187,26 @@ public enum Copy {
     public static var widgetCountdownGalleryDescription: String { CopyLookup.string("widget.countdown.gallery.description", default: "See how many days until your group's next plan.") }
     /// "Next Plan" — Retro · widget.countdown · new · SOURCED
     public static var widgetCountdownGalleryName: String { CopyLookup.string("widget.countdown.gallery.name", default: "Next Plan") }
+    /// "Friend" — Retro · widget.friend · new · SOURCED
+    public static var widgetFriendConfigurationFriend: String { CopyLookup.string("widget.friend.configuration.friend", default: "Friend") }
+    /// "See photos from…" — Retro · widget.friend · verbatim · SOURCED
+    public static var widgetFriendConfigurationTitle: String { CopyLookup.string("widget.friend.configuration.title", default: "See photos from…") }
+    /// "Join a group to see your friends here." — Retro · widget.friend · new · SOURCED
+    public static var widgetFriendConfigureEmpty: String { CopyLookup.string("widget.friend.configure.empty", default: "Join a group to see your friends here.") }
+    /// "No photos yet" — Retro · widget.friend · adapted · SOURCED
+    public static var widgetFriendEmptyNoPhotos: String { CopyLookup.string("widget.friend.empty.noPhotos", default: "No photos yet") }
+    /// "Tap to choose a friend" — Retro · widget.friend · new · SOURCED
+    public static var widgetFriendEmptySetUp: String { CopyLookup.string("widget.friend.empty.setUp", default: "Tap to choose a friend") }
+    /// "See live updates from a friend" — Retro · widget.friend · adapted · SOURCED
+    public static var widgetFriendGalleryDescription: String { CopyLookup.string("widget.friend.gallery.description", default: "See live updates from a friend") }
+    /// "Friend Updates" — Retro · widget.friend · verbatim · SOURCED
+    public static var widgetFriendGalleryName: String { CopyLookup.string("widget.friend.gallery.name", default: "Friend Updates") }
     /// "Photos from {group}, {date}" — Retro · widget.home.small · new · SOURCED
     public static func widgetHomeSmallA11yCollage(group: String, date: String) -> String { CopyLookup.format("widget.home.small.a11y.collage", default: "Photos from {group}, {date}", ["group": group, "date": date]) }
     /// "{name}'s photo in {group}" — Retro · widget.home.small · new · SOURCED
     public static func widgetHomeSmallA11yPhoto(name: String, group: String) -> String { CopyLookup.format("widget.home.small.a11y.photo", default: "{name}'s photo in {group}", ["name": name, "group": group]) }
+    /// "All Groups" — Retro · widget.home.small · adapted · SOURCED
+    public static var widgetHomeSmallConfigurationAllGroups: String { CopyLookup.string("widget.home.small.configuration.allGroups", default: "All Groups") }
     /// "Group" — Retro · widget.home.small · new · SOURCED
     public static var widgetHomeSmallConfigurationGroup: String { CopyLookup.string("widget.home.small.configuration.group", default: "Group") }
     /// "Group" — Retro · widget.home.small · new · SOURCED
@@ -2185,6 +2229,30 @@ public enum Copy {
     public static var widgetLockRectGalleryDescription: String { CopyLookup.string("widget.lock.rect.gallery.description", default: "See who shared the newest photo in your group") }
     /// "Group Updates" — Retro · widget.lock.rect · adapted · SOURCED
     public static var widgetLockRectGalleryName: String { CopyLookup.string("widget.lock.rect.gallery.name", default: "Group Updates") }
+    /// "Your memory from {date} in {group}" — Apple HIG · widget.memories · new · SOURCED
+    public static func widgetMemoriesA11yPhoto(date: String, group: String) -> String { CopyLookup.format("widget.memories.a11y.photo", default: "Your memory from {date} in {group}", ["date": date, "group": group]) }
+    /// "No photos found for this day" — Retro · widget.memories · adapted · SOURCED
+    public static var widgetMemoriesEmptyNone: String { CopyLookup.string("widget.memories.empty.none", default: "No photos found for this day") }
+    /// "Revisit your memories from this day over the years" — Retro · widget.memories · adapted · SOURCED
+    public static var widgetMemoriesGalleryDescription: String { CopyLookup.string("widget.memories.gallery.description", default: "Revisit your memories from this day over the years") }
+    /// "Your Memories" — Retro · widget.memories · verbatim · SOURCED
+    public static var widgetMemoriesGalleryName: String { CopyLookup.string("widget.memories.gallery.name", default: "Your Memories") }
+    /// "Style" — Retro · widget.styles · adapted · SOURCED
+    public static var widgetStylesConfigurationStyle: String { CopyLookup.string("widget.styles.configuration.style", default: "Style") }
+    /// "Select Style" — Retro · widget.styles · verbatim · SOURCED
+    public static var widgetStylesConfigurationTitle: String { CopyLookup.string("widget.styles.configuration.title", default: "Select Style") }
+    /// "Show the photo with its date" — Retro · widget.styles · new · SOURCED
+    public static var widgetStylesDescriptionDate: String { CopyLookup.string("widget.styles.description.date", default: "Show the photo with its date") }
+    /// "Show the photo as a print" — Retro · widget.styles · new · SOURCED
+    public static var widgetStylesDescriptionFrame: String { CopyLookup.string("widget.styles.description.frame", default: "Show the photo as a print") }
+    /// "Show the photo edge to edge" — Retro · widget.styles · new · SOURCED
+    public static var widgetStylesDescriptionPhoto: String { CopyLookup.string("widget.styles.description.photo", default: "Show the photo edge to edge") }
+    /// "Date" — Retro · widget.styles · new · SOURCED
+    public static var widgetStylesNameDate: String { CopyLookup.string("widget.styles.name.date", default: "Date") }
+    /// "Frame" — Locket · widget.styles · new · SOURCED
+    public static var widgetStylesNameFrame: String { CopyLookup.string("widget.styles.name.frame", default: "Frame") }
+    /// "Photo" — Retro · widget.styles · new · SOURCED
+    public static var widgetStylesNamePhoto: String { CopyLookup.string("widget.styles.name.photo", default: "Photo") }
     /// "Close" — Apple HIG / Material 3 · year.story · new · PLATFORM
     public static var yearStoryA11yClose: String { CopyLookup.string("year.story.a11y.close", default: "Close") }
     /// "Collage from {date}" — Apple HIG / Material 3 · year.story · new · PLATFORM

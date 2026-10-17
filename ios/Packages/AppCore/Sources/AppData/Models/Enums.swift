@@ -44,8 +44,14 @@ public enum MediaKind: String, LenientEnum {
 /// `message_kind`
 public enum MessageKind: String, LenientEnum {
     case text, photo, voice
+    /// The chat's "{name} joined" / "{name} left the group" lines (migration 0042): `author_id` is the person, `body`
+    /// their display name at that moment. Written by the server only; no menu, never unsent.
+    case joined, left
     case unknown
     public static var unknownCase: MessageKind { .unknown }
+
+    /// A joined / left line rather than something someone said.
+    public var isSystemLine: Bool { self == .joined || self == .left }
 }
 
 /// `device_platform`

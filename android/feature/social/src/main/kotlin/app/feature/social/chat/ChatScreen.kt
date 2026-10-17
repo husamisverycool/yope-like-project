@@ -74,6 +74,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -384,10 +385,15 @@ class RowLabels(
     private val caption: (String) -> String,
     /** `chat.thread.a11y.video` ("Video, {duration}"), appended for a video post. */
     private val video: ((String) -> String)? = null,
+    /** `chat.thread.system.joined` / `.left` with the person's name (`chat.thread.layout.systemLine`). */
+    private val joined: (String) -> String = { it },
+    private val left: (String) -> String = { it },
 ) {
     fun of(row: ChatRow): String {
         val name = row.author?.firstName.orEmpty()
         return when (row.kind) {
+            MessageKind.Joined -> joined(systemLineName(row))
+            MessageKind.Left -> left(systemLineName(row))
             MessageKind.Text -> if (row.mine) messageMine(row.message.body.orEmpty()) else message(name, row.message.body.orEmpty())
             MessageKind.Voice -> {
                 val d = Formats.spokenDuration((row.message.voiceDurationMs ?: 0).toLong())
@@ -417,9 +423,18 @@ fun rowLabels(): RowLabels {
             photoMine = { t -> r.getString(R.string.chat_thread_a11y_photomine, t) },
             caption = { c -> r.getString(R.string.chat_thread_a11y_caption, c) },
             video = { d -> r.getString(R.string.chat_thread_a11y_video, d) },
+            joined = { n -> r.getString(R.string.chat_thread_system_joined, n) },
+            left = { n -> r.getString(R.string.chat_thread_system_left, n) },
         )
     }
 }
+
+/**
+ * The name of a joined / left line: the person's first name now, else the first word of the name the line kept (someone
+ * who left may no longer share a group with the reader).
+ */
+fun systemLineName(row: ChatRow): String =
+    row.author?.firstName ?: row.message.body?.trim()?.split(Regex("\\s+"))?.firstOrNull().orEmpty()
 
 /** One element of the thread, oldest first (`chat.thread.layout.runs`). */
 sealed interface ThreadItem {
@@ -433,11 +448,17 @@ sealed interface ThreadItem {
     data class Item(val row: ChatRow, val startsRun: Boolean, val afterDivider: Boolean) : ThreadItem {
         override val key get() = row.key
     }
+
+    /** A joined / left line (`chat.thread.layout.systemLine`): alone between runs. */
+    data class SystemLine(val row: ChatRow, val afterDivider: Boolean) : ThreadItem {
+        override val key get() = row.key
+    }
 }
 
 /**
  * The thread's items: a day divider before the first message of each day, runs of one sender's consecutive
- * messages (`chat.thread.layout.runs`: another sender, a divider or a reply quote starts a new run).
+ * messages (`chat.thread.layout.runs`: another sender, a divider or a reply quote starts a new run). A joined / left
+ * line stands alone and the message after it starts a new run (`chat.thread.layout.systemLine`).
  */
 fun threadItems(rows: List<ChatRow>, zone: ZoneId = ZoneId.systemDefault()): List<ThreadItem> {
     val out = ArrayList<ThreadItem>()
@@ -449,6 +470,11 @@ fun threadItems(rows: List<ChatRow>, zone: ZoneId = ZoneId.systemDefault()): Lis
         if (divider) {
             out += ThreadItem.Divider(d, first = day == null)
             day = d
+        }
+        if (row.kind.isSystemLine) {
+            out += ThreadItem.SystemLine(row, afterDivider = divider)
+            author = null
+            return@forEach
         }
         val starts = divider || row.message.authorId != author || row.quote != null
         out += ThreadItem.Item(row, starts, afterDivider = divider)
@@ -754,6 +780,11 @@ private fun MessageList(
                     if (item.first) Modifier.capTopAt(0.dp, CapTop.height(TextRoles.sectionLabel)) else Modifier,
                     afterContent = !item.first,
                 )
+                is ThreadItem.SystemLine -> SystemLineItem(
+                    item,
+                    labels,
+                    Modifier.animateItem(fadeInSpec = tween(Tokens.Durations.chatThreadDurationEntry, easing = Tokens.Easings.chatThreadEasingEntry), placementSpec = null, fadeOutSpec = DsMotion.fade()),
+                )
                 is ThreadItem.Item -> MessageItem(
                     item,
                     state,
@@ -831,6 +862,24 @@ private fun MessageItem(
             if (row.mine && (row.pending || row.failed)) StatusLine(row, onRetrySend)
         }
     }
+}
+
+/**
+ * `chat.thread.layout.systemLine`: "{name} joined" / "{name} left the group" — one centred line in the text role `caption`,
+ * the secondary text colour (the run header's time), `size.global.listGap` above; no avatar, no menu. TalkBack reads it.
+ */
+@Composable
+private fun SystemLineItem(item: ThreadItem.SystemLine, labels: RowLabels, modifier: Modifier) {
+    Text(
+        labels.of(item.row),
+        style = TextRoles.caption,
+        color = PageRoles.secondaryText(),
+        textAlign = TextAlign.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = if (item.afterDivider) 0.dp else Tokens.Sizes.globalListGap)
+            .padding(horizontal = Tokens.Sizes.globalScreenMargin),
+    )
 }
 
 /** The run's first line: the sender's name (`listTitle`) and, one space after it, the time (`caption`, secondary). */
@@ -978,6 +1027,7 @@ private fun MessageBody(
                 }
             }
             MessageKind.Photo -> PhotoMessage(row, afterName, ui, nav, voice, labels, semantics, tap)
+            MessageKind.Joined, MessageKind.Left -> Unit // drawn by SystemLineItem
         }
         if (row.kind == MessageKind.Photo) {
             val mine = row.reactions.filter { it.userId == state.me }.map { it.emoji }.toSet()
@@ -1020,7 +1070,7 @@ private fun menuItems(row: ChatRow, ui: ChatUiState, nav: ChatNav, onRetrySend: 
         when (row.kind) {
             MessageKind.Text -> add(DsMenuItem(copy, { onCopy(row.message.body.orEmpty()) }))
             MessageKind.Photo -> if (row.mine) add(DsMenuItem(save, { onSave(row) }))
-            MessageKind.Voice -> Unit
+            MessageKind.Voice, MessageKind.Joined, MessageKind.Left -> Unit
         }
         if (row.pending) return@buildList
         when {

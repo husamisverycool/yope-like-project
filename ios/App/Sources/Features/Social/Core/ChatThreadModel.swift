@@ -115,6 +115,13 @@ final class ChatThreadModel {
         return messages.first { $0.id == id } ?? quotedMessages[id]
     }
 
+    /// The name of a joined / left line (`chat.thread.layout.systemLine`): the person's first name now, else the first
+    /// word of the name the line kept (someone who left may no longer share a group with the reader).
+    func systemLineName(_ message: Message) -> String {
+        if let name = profile(message.authorID)?.socialFirstName { return name }
+        return message.body?.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
+    }
+
     func hasQuote(_ message: Message) -> Bool {
         quotedPost(of: message) != nil || quotedMessage(of: message) != nil
     }
@@ -720,7 +727,9 @@ enum ChatEntry: Identifiable, Equatable, Sendable {
 
 enum ChatThreadLayout {
     /// Day dividers before the first message of each day; runs of consecutive messages from one sender, broken by
-    /// another sender, a day divider, or a reply quote (`chat.thread.layout.runs.breaks`).
+    /// another sender, a day divider, or a reply quote (`chat.thread.layout.runs.breaks`). A joined / left line
+    /// (`chat.thread.layout.systemLine`) stands alone: it starts no run, sits `size.global.listGap` from its neighbours,
+    /// and the message after it starts a new run.
     static func entries(
         _ messages: [Message],
         me: UserID?,
@@ -735,8 +744,10 @@ enum ChatThreadLayout {
             if newDay {
                 result.append(.day(day, gap: result.isEmpty ? .none : .divider))
             }
-            let startsRun = newDay || previous?.authorID != message.authorID || hasQuote(message)
-            let gap: ChatGap = newDay ? .afterDivider : (startsRun ? .run : .item)
+            let isSystemLine = message.kind.isSystemLine
+            let afterSystemLine = previous?.kind.isSystemLine ?? false
+            let startsRun = !isSystemLine && (newDay || previous?.authorID != message.authorID || afterSystemLine || hasQuote(message))
+            let gap: ChatGap = newDay ? .afterDivider : (startsRun || isSystemLine ? .run : .item)
             result.append(.message(ChatRow(message: message, startsRun: startsRun, isMine: message.authorID == me, gap: gap)))
             previous = message
         }

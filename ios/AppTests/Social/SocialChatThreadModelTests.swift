@@ -632,6 +632,41 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertEqual(rows.map(\.gap), [.afterDivider, .run, .item])
     }
 
+    /// `chat.thread.layout.systemLine`: a joined / left line starts no run, sits a run gap from both neighbours, and the
+    /// same sender's next message starts a new run.
+    func testAJoinedOrLeftLineStandsAloneBetweenRuns() {
+        let first = SocialDemo.message(80, by: SocialDemo.ben, at: SocialDemo.monday, text: "hi")
+        let joined = Message(
+            id: MessageID("00000000-0000-4000-8000-0000000c0081"), groupID: SocialDemo.groupID, authorID: SocialDemo.cleo,
+            kind: .joined, body: "Cleo Ramos", createdAt: SocialDemo.monday.addingTimeInterval(60)
+        )
+        let left = Message(
+            id: MessageID("00000000-0000-4000-8000-0000000c0082"), groupID: SocialDemo.groupID, authorID: SocialDemo.ben,
+            kind: .left, body: "Ben Ito", createdAt: SocialDemo.monday.addingTimeInterval(90)
+        )
+        let after = SocialDemo.message(83, by: SocialDemo.ben, at: SocialDemo.monday.addingTimeInterval(120), text: "back")
+        let rows = ChatThreadLayout.entries([first, joined, left, after], me: SocialDemo.me, calendar: utc)
+            .compactMap { entry -> ChatRow? in if case let .message(row) = entry { return row } else { return nil } }
+        XCTAssertEqual(rows.map(\.startsRun), [true, false, false, true])
+        XCTAssertEqual(rows.map(\.gap), [.afterDivider, .run, .run, .run])
+        XCTAssertTrue(MessageKind.joined.isSystemLine && MessageKind.left.isSystemLine && !MessageKind.text.isSystemLine)
+    }
+
+    func testALineNamesThePersonByProfileElseByTheNameItKept() async {
+        let model = makeModel()
+        await model.load()
+        let known = Message(
+            id: MessageID("00000000-0000-4000-8000-0000000c0091"), groupID: SocialDemo.groupID, authorID: SocialDemo.ana,
+            kind: .joined, body: "Old Name", createdAt: SocialDemo.monday
+        )
+        XCTAssertEqual(model.systemLineName(known), "Ana")
+        let gone = Message(
+            id: MessageID("00000000-0000-4000-8000-0000000c0092"), groupID: SocialDemo.groupID,
+            authorID: UserID("00000000-0000-4000-8000-00000000a0ff"), kind: .left, body: "Dana Silva", createdAt: SocialDemo.monday
+        )
+        XCTAssertEqual(model.systemLineName(gone), "Dana")
+    }
+
     func testDayLabelsAreTodayYesterdayOrTheDate() {
         let now = SocialDemo.monday.addingTimeInterval(2 * SocialDemo.day)
         XCTAssertEqual(ChatThreadLayout.dayLabel(now, now: now, calendar: utc), .today)

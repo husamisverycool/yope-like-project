@@ -441,6 +441,30 @@
     <string name="camera_overnight_tile_a11y">Photos developing, shown to everyone %1$s</string>
     <!-- Dispo · camera.overnight · adapted · SOURCED -->
     <string name="camera_overnight_tile_label" formatted="false">Developing</string>
+    <!-- Retro · camera.quickaccess · verbatim · SOURCED -->
+    <string name="camera_quickaccess_control_actionhint" formatted="false">Take photo</string>
+    <!-- Apple HIG · camera.quickaccess · new · PLATFORM -->
+    <string name="camera_quickaccess_control_description" formatted="false">Take a photo for your groups</string>
+    <!-- Apple HIG · camera.quickaccess · new · PLATFORM -->
+    <string name="camera_quickaccess_control_title" formatted="false">Camera</string>
+    <!-- Retro · camera.quickaccess · new · SOURCED -->
+    <string name="camera_quickaccess_intent_group" formatted="false">Group</string>
+    <!-- Retro · camera.quickaccess · verbatim · SOURCED -->
+    <string name="camera_quickaccess_intent_title" formatted="false">Take Photo</string>
+    <!-- Retro · camera.quickaccess · adapted · SOURCED · args: group -->
+    <string name="camera_quickaccess_shortcut_grouplong">Take photo for %1$s</string>
+    <!-- Retro · camera.quickaccess · adapted · SOURCED · args: group -->
+    <string name="camera_quickaccess_shortcut_groupphrase">Take a photo for %1$s with Jolt</string>
+    <!-- Retro · camera.quickaccess · verbatim · SOURCED -->
+    <string name="camera_quickaccess_shortcut_long" formatted="false">Take photo</string>
+    <!-- Retro · camera.quickaccess · adapted · SOURCED -->
+    <string name="camera_quickaccess_shortcut_phrase" formatted="false">Take a photo with Jolt</string>
+    <!-- Apple HIG · camera.quickaccess · new · PLATFORM -->
+    <string name="camera_quickaccess_shortcut_short" formatted="false">Camera</string>
+    <!-- Material 3 · camera.quickaccess · new · PLATFORM -->
+    <string name="camera_quickaccess_tile_label" formatted="false">Jolt</string>
+    <!-- Material 3 · camera.quickaccess · new · PLATFORM -->
+    <string name="camera_quickaccess_tile_subtitle" formatted="false">Camera</string>
     <!-- Retro · camera.sendto · new · SOURCED -->
     <string name="camera_sendto_a11y_close" formatted="false">Close</string>
     <!-- Retro · camera.sendto · verbatim · SOURCED -->
@@ -649,6 +673,10 @@
     <string name="chat_thread_sendfailed" formatted="false">Couldn\'t send. Tap to retry</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_sending" formatted="false">Sending</string>
+    <!-- Yope · chat.thread · verbatim · SOURCED · args: name -->
+    <string name="chat_thread_system_joined">%1$s joined</string>
+    <!-- Retro · chat.thread · adapted · SOURCED · args: name -->
+    <string name="chat_thread_system_left">%1$s left the group</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_toast_copied" formatted="false">Copied!</string>
     <!-- Retro · chat.voice · new · SOURCED -->
@@ -1233,8 +1261,8 @@
     <string name="onboarding_widget_added" formatted="false">Widget added to your home screen</string>
     <!-- Retro · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_continue" formatted="false">Next</string>
-    <!-- Retro · onboarding.widget · new · SOURCED -->
-    <string name="onboarding_widget_detail" formatted="false">Never miss a moment from your groups — right on your home screen.</string>
+    <!-- Retro · onboarding.widget · adapted · SOURCED -->
+    <string name="onboarding_widget_detail" formatted="false">Never miss a moment from a friend or a group, and relive your memories — all right on your home screen.</string>
     <!-- Locket · onboarding.widget · verbatim · SOURCED -->
     <string name="onboarding_widget_done" formatted="false">You\'re done!</string>
     <!-- Retro · onboarding.widget · verbatim · SOURCED -->
@@ -2157,10 +2185,26 @@
     <string name="widget_countdown_gallery_description" formatted="false">See how many days until your group\'s next plan.</string>
     <!-- Retro · widget.countdown · new · SOURCED -->
     <string name="widget_countdown_gallery_name" formatted="false">Next Plan</string>
+    <!-- Retro · widget.friend · new · SOURCED -->
+    <string name="widget_friend_configuration_friend" formatted="false">Friend</string>
+    <!-- Retro · widget.friend · verbatim · SOURCED -->
+    <string name="widget_friend_configuration_title" formatted="false">See photos from…</string>
+    <!-- Retro · widget.friend · new · SOURCED -->
+    <string name="widget_friend_configure_empty" formatted="false">Join a group to see your friends here.</string>
+    <!-- Retro · widget.friend · adapted · SOURCED -->
+    <string name="widget_friend_empty_nophotos" formatted="false">No photos yet</string>
+    <!-- Retro · widget.friend · new · SOURCED -->
+    <string name="widget_friend_empty_setup" formatted="false">Tap to choose a friend</string>
+    <!-- Retro · widget.friend · adapted · SOURCED -->
+    <string name="widget_friend_gallery_description" formatted="false">See live updates from a friend</string>
+    <!-- Retro · widget.friend · verbatim · SOURCED -->
+    <string name="widget_friend_gallery_name" formatted="false">Friend Updates</string>
     <!-- Retro · widget.home.small · new · SOURCED · args: group, date -->
     <string name="widget_home_small_a11y_collage">Photos from %1$s, %2$s</string>
     <!-- Retro · widget.home.small · new · SOURCED · args: name, group -->
     <string name="widget_home_small_a11y_photo">%1$s\'s photo in %2$s</string>
+    <!-- Retro · widget.home.small · adapted · SOURCED -->
+    <string name="widget_home_small_configuration_allgroups" formatted="false">All Groups</string>
     <!-- Retro · widget.home.small · new · SOURCED -->
     <string name="widget_home_small_configuration_group" formatted="false">Group</string>
     <!-- Retro · widget.home.small · new · SOURCED -->
@@ -2183,6 +2227,30 @@
     <string name="widget_lock_rect_gallery_description" formatted="false">See who shared the newest photo in your group</string>
     <!-- Retro · widget.lock.rect · adapted · SOURCED -->
     <string name="widget_lock_rect_gallery_name" formatted="false">Group Updates</string>
+    <!-- Apple HIG · widget.memories · new · SOURCED · args: date, group -->
+    <string name="widget_memories_a11y_photo">Your memory from %1$s in %2$s</string>
+    <!-- Retro · widget.memories · adapted · SOURCED -->
+    <string name="widget_memories_empty_none" formatted="false">No photos found for this day</string>
+    <!-- Retro · widget.memories · adapted · SOURCED -->
+    <string name="widget_memories_gallery_description" formatted="false">Revisit your memories from this day over the years</string>
+    <!-- Retro · widget.memories · verbatim · SOURCED -->
+    <string name="widget_memories_gallery_name" formatted="false">Your Memories</string>
+    <!-- Retro · widget.styles · adapted · SOURCED -->
+    <string name="widget_styles_configuration_style" formatted="false">Style</string>
+    <!-- Retro · widget.styles · verbatim · SOURCED -->
+    <string name="widget_styles_configuration_title" formatted="false">Select Style</string>
+    <!-- Retro · widget.styles · new · SOURCED -->
+    <string name="widget_styles_description_date" formatted="false">Show the photo with its date</string>
+    <!-- Retro · widget.styles · new · SOURCED -->
+    <string name="widget_styles_description_frame" formatted="false">Show the photo as a print</string>
+    <!-- Retro · widget.styles · new · SOURCED -->
+    <string name="widget_styles_description_photo" formatted="false">Show the photo edge to edge</string>
+    <!-- Retro · widget.styles · new · SOURCED -->
+    <string name="widget_styles_name_date" formatted="false">Date</string>
+    <!-- Locket · widget.styles · new · SOURCED -->
+    <string name="widget_styles_name_frame" formatted="false">Frame</string>
+    <!-- Retro · widget.styles · new · SOURCED -->
+    <string name="widget_styles_name_photo" formatted="false">Photo</string>
     <!-- Apple HIG / Material 3 · year.story · new · PLATFORM -->
     <string name="year_story_a11y_close" formatted="false">Close</string>
     <!-- Apple HIG / Material 3 · year.story · new · PLATFORM · args: date -->
