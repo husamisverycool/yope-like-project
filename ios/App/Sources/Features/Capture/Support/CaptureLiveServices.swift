@@ -41,6 +41,12 @@ final class LiveCaptureCamera: CaptureCamera {
         observers.add(center.addObserver(forName: AVCaptureSession.wasInterruptedNotification, object: session, queue: .main, using: interrupted))
         observers.add(center.addObserver(forName: AVCaptureSession.runtimeErrorNotification, object: session, queue: .main, using: interrupted))
         observers.add(center.addObserver(forName: AVCaptureSession.interruptionEndedNotification, object: session, queue: .main, using: resumed))
+        // Tap to focus holds until the subject changes (monitoring is on only while a tapped point holds): continuous
+        // autofocus again, as Apple's AVCam does.
+        let subjectChanged: @Sendable (Notification) -> Void = { [weak self] _ in
+            MainActor.assumeIsolated { self?.service.resetFocus() }
+        }
+        observers.add(center.addObserver(forName: AVCaptureDevice.subjectAreaDidChangeNotification, object: nil, queue: .main, using: subjectChanged))
     }
 
     func authorization() -> PermissionStatus { CameraService.authorization(for: .video) }
@@ -122,6 +128,20 @@ final class LiveCaptureCamera: CaptureCamera {
 
     func preview(position: CameraPosition?) -> AnyView {
         AnyView(CameraPreview(camera: service, position: position, videoGravity: .resizeAspectFill))
+    }
+
+    var maxZoomFactor: CGFloat { service.maxZoomFactor }
+
+    func setZoom(_ factor: CGFloat) {
+        service.setZoom(factor)
+    }
+
+    func focus(at point: CGPoint) {
+        service.focus(atPreviewPoint: point)
+    }
+
+    func resetFocus() {
+        service.resetFocus()
     }
 
     private var activePosition: CameraPosition {

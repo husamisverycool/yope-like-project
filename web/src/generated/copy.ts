@@ -199,6 +199,8 @@ const table = {
   "camera.capture.a11y.recording": "Recording", // Retro · camera.capture · SOURCED
   "camera.capture.a11y.recordVideo": "Record video", // Retro · camera.capture · SOURCED
   "camera.capture.a11y.shutter": "Take photo", // Retro · camera.capture · SOURCED
+  "camera.capture.a11y.zoom": "Zoom", // Apple Camera · camera.capture · SOURCED
+  "camera.capture.a11y.zoomValue": "{factor}×", // Apple Camera · camera.capture · SOURCED
   "camera.capture.coach.holdToRecord": "Hold to record a video", // Retro · camera.capture · SOURCED
   "camera.capture.denied.button": "Open Settings", // Retro · camera.capture · SOURCED
   "camera.capture.denied.detail": "Turn on camera access in Settings to take photos for your groups.", // Retro · camera.capture · SOURCED

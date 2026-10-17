@@ -94,8 +94,18 @@ class CameraViewModel(
          * post); 1 until the server's value is known.
          */
         val selectionLimit: Int = 1,
+        /** `camera.capture.layout.zoom`: the back camera's zoom ratio (min after a flip; the front camera does not zoom). */
+        val zoom: Float = CameraZoom.min,
+        /** The bound camera's largest zoom ratio (CameraX `ZoomState.maxZoomRatio`). */
+        val deviceMaxZoom: Float = 1f,
     ) {
         val showControls: Boolean get() = permission == Permission.Granted && session != Session.Unavailable
+
+        /** The largest zoom offered for the active lens (min: no zoom). */
+        val zoomLimit: Float get() = CameraZoom.limit(deviceMaxZoom, lens)
+
+        /** The live viewfinder takes pinches and is an adjustable TalkBack element. */
+        val zoomAvailable: Boolean get() = permission == Permission.Granted && session == Session.Live && zoomLimit > CameraZoom.min
 
         /** The coach shows once per install, only to members who can record video, never in 9 AM mode. */
         val coachVisible: Boolean get() = videoAvailable && !coachDone && showControls && mode == CaptureMode.Now
@@ -259,6 +269,11 @@ class CameraViewModel(
         viewModelScope.launch {
             controller.hasFlash.collect { has -> state.update { it.copy(hasFlash = has) } }
         }
+        viewModelScope.launch {
+            controller.maxZoomRatio.collect { max ->
+                state.update { it.copy(deviceMaxZoom = max, zoom = CameraZoom.clamp(it.zoom, CameraZoom.limit(max, it.lens))) }
+            }
+        }
         startSession()
     }
 
@@ -273,6 +288,8 @@ class CameraViewModel(
         val c = controller ?: return
         try {
             c.bind(state.value.lens, withVideo = state.value.videoAvailable)
+            // The camera binds unzoomed: the screen's zoom is applied again (min after a flip).
+            if (state.value.zoom != CameraZoom.min) c.setZoomRatio(state.value.zoom)
             state.update { it.copy(session = Session.Live) }
         } catch (e: CancellationException) {
             throw e
@@ -290,8 +307,38 @@ class CameraViewModel(
     fun flip() {
         val next = if (state.value.lens == Lens.Back) Lens.Front else Lens.Back
         prefs.frontLensThisSession = next == Lens.Front
-        state.update { it.copy(lens = next, flashOn = false) }
+        // Zoom resets when the camera flips.
+        state.update { it.copy(lens = next, flashOn = false, zoom = CameraZoom.min) }
         viewModelScope.launch { rebind() }
+    }
+
+    /** One pinch event on the viewfinder: [scale] is the change since the previous event. */
+    fun zoomBy(scale: Float) {
+        val s = state.value
+        if (!s.zoomAvailable) return
+        applyZoom(CameraZoom.pinched(s.zoom, scale, s.zoomLimit))
+    }
+
+    /** TalkBack increment / decrement: the next whole zoom step. */
+    fun stepZoom(up: Boolean) {
+        val s = state.value
+        if (!s.zoomAvailable) return
+        applyZoom(CameraZoom.stepped(s.zoom, up, s.zoomLimit))
+    }
+
+    private fun applyZoom(ratio: Float) {
+        if (ratio == state.value.zoom) return
+        state.update { it.copy(zoom = ratio) }
+        controller?.setZoomRatio(ratio)
+    }
+
+    /**
+     * A tap on the viewfinder, mapped to the preview surface: focus and exposure there, continuous autofocus again after
+     * `camera.capture.duration.focusReset` (CameraX auto-cancel).
+     */
+    fun focusAt(x: Float, y: Float) {
+        if (state.value.session != Session.Live) return
+        controller?.focusAt(x, y, app.designsystem.generated.Tokens.Durations.cameraCaptureDurationFocusReset.toLong())
     }
 
     fun dismissCoach() {

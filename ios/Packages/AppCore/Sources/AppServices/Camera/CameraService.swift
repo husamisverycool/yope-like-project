@@ -49,6 +49,8 @@ public final class CameraService {
     private var captureCoordinators: [CameraPosition: AVCaptureDevice.RotationCoordinator] = [:]
     private var previewCoordinators: [ObjectIdentifier: AVCaptureDevice.RotationCoordinator] = [:]
     private var previewObservations: [ObjectIdentifier: NSKeyValueObservation] = [:]
+    /// The preview a tap to focus is measured in (the last one attached).
+    private weak var focusLayer: AVCaptureVideoPreviewLayer?
 
     /// - Parameter supportsDualCapture: create a multi-camera session when the hardware has one
     ///   (daily capture). A regular session otherwise.
@@ -73,6 +75,45 @@ public final class CameraService {
         }
         self.configuration = configuration
         dualMode = result.dualMode
+        if let position = singlePosition {
+            maxZoomFactor = await controller.maxZoomFactor(position)
+        } else {
+            maxZoomFactor = 1
+        }
+    }
+
+    // MARK: Zoom and focus (one camera: photo or video)
+
+    /// The largest zoom factor the configured camera offers (1 for the dual configuration or none).
+    public private(set) var maxZoomFactor: CGFloat = 1
+
+    /// The camera of a `.photo` / `.video` configuration.
+    private var singlePosition: CameraPosition? {
+        switch configuration {
+        case let .photo(position, _)?: return position
+        case let .video(position)?: return position
+        case .dual?, nil: return nil
+        }
+    }
+
+    /// Zooms the configured camera (clamped to what it offers). Device access happens on the session queue.
+    public func setZoom(_ factor: CGFloat) {
+        guard let position = singlePosition else { return }
+        controller.setZoom(factor, position: position)
+    }
+
+    /// Focuses and exposes at `point` in the preview's coordinates (the most recently attached preview layer).
+    public func focus(atPreviewPoint point: CGPoint) {
+        guard let position = singlePosition, let layer = focusLayer else { return }
+        let devicePoint = layer.captureDevicePointConverted(fromLayerPoint: point)
+        guard (0...1).contains(devicePoint.x), (0...1).contains(devicePoint.y) else { return }
+        controller.focus(at: devicePoint, position: position)
+    }
+
+    /// Continuous autofocus and auto exposure again.
+    public func resetFocus() {
+        guard let position = singlePosition else { return }
+        controller.resetFocus(position: position)
     }
 
     public func start() async {
@@ -88,6 +129,7 @@ public final class CameraService {
     /// Shows the camera at `position` in `layer` (nil: the active camera). Called by `CameraPreview`.
     public func attachPreview(_ layer: AVCaptureVideoPreviewLayer, position: CameraPosition?) {
         layer.setSessionWithNoConnection(session)
+        focusLayer = layer
         controller.attachPreview(layer, position: position) { [weak self, weak layer] connected in
             Task { @MainActor in
                 guard let self, let layer, let connected else { return }

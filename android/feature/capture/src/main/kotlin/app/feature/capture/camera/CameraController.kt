@@ -6,10 +6,13 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ConcurrentCamera
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
+import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.UseCaseGroup
+import androidx.camera.core.ZoomState
 import androidx.camera.core.takePicture
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.lifecycle.awaitInstance
@@ -20,6 +23,7 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import app.media.DualCameraSupport
 import app.media.DualCaptureMode
 import app.media.Lens
@@ -33,6 +37,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 /** A running video recording; [stop] finalizes the file (the event callback reports it). */
 fun interface VideoRecording {
@@ -80,8 +85,23 @@ interface CameraController {
 
     suspend fun unbind()
 
+    /** The largest zoom ratio of the camera bound by [bind] (1 before binding and for the dual capture). */
+    val maxZoomRatio: StateFlow<Float> get() = NoZoom
+
+    /** Zooms the camera bound by [bind] (camera.capture pinch; CameraX `CameraControl.setZoomRatio`). */
+    fun setZoomRatio(ratio: Float) {}
+
+    /**
+     * Tap to focus: focus, exposure and white balance at ([x], [y]) in the preview surface's coordinates (the tap mapped
+     * through `CameraXViewfinder`'s coordinate transformer); continuous autofocus again after [autoCancelMillis].
+     */
+    fun focusAt(x: Float, y: Float, autoCancelMillis: Long) {}
+
     data class DualResult(val main: File, val other: File?, val mode: DualCaptureMode)
 }
+
+/** A camera without zoom (fakes, before binding). */
+internal val NoZoom: StateFlow<Float> = MutableStateFlow(1f).asStateFlow()
 
 /** Creates the controller a capture screen drives; tests replace [factory]. */
 object CameraControllers {
@@ -102,6 +122,18 @@ class CameraXController(private val context: Context, private val lifecycleOwner
     private val flashState = MutableStateFlow(false)
     override val hasFlash: StateFlow<Boolean> = flashState.asStateFlow()
 
+    /** The camera of [bind] (null for the dual capture): zoom and tap to focus. */
+    private var single: Camera? = null
+    private val zoomMax = MutableStateFlow(1f)
+    override val maxZoomRatio: StateFlow<Float> = zoomMax.asStateFlow()
+    private val zoomObserver = Observer<ZoomState> { zoomMax.value = it.maxZoomRatio }
+
+    private fun forgetSingle() {
+        single?.cameraInfo?.zoomState?.removeObserver(zoomObserver)
+        single = null
+        zoomMax.value = 1f
+    }
+
     private suspend fun provider(): ProcessCameraProvider =
         provider ?: ProcessCameraProvider.awaitInstance(context).also { provider = it }
 
@@ -111,6 +143,7 @@ class CameraXController(private val context: Context, private val lifecycleOwner
     override suspend fun bind(lens: Lens, withVideo: Boolean) = withContext(Dispatchers.Main) {
         val provider = provider()
         provider.unbindAll()
+        forgetSingle()
         dual = null
         val capture = ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build()
         val group = UseCaseGroup.Builder().addUseCase(previewInto(previewState)).addUseCase(capture)
@@ -120,6 +153,22 @@ class CameraXController(private val context: Context, private val lifecycleOwner
         videoCapture = video
         boundLens = lens
         flashState.value = camera.cameraInfo.hasFlashUnit()
+        single = camera
+        camera.cameraInfo.zoomState.observe(lifecycleOwner, zoomObserver)
+    }
+
+    override fun setZoomRatio(ratio: Float) {
+        single?.cameraControl?.setZoomRatio(ratio)
+    }
+
+    override fun focusAt(x: Float, y: Float, autoCancelMillis: Long) {
+        val camera = single ?: return
+        val request = previewState.value ?: return
+        val factory = SurfaceOrientedMeteringPointFactory(request.resolution.width.toFloat(), request.resolution.height.toFloat())
+        val action = FocusMeteringAction.Builder(factory.createPoint(x, y))
+            .setAutoCancelDuration(autoCancelMillis, TimeUnit.MILLISECONDS)
+            .build()
+        camera.cameraControl.startFocusAndMetering(action)
     }
 
     override suspend fun capturePhoto(output: File, flash: Boolean): File {
@@ -164,6 +213,7 @@ class CameraXController(private val context: Context, private val lifecycleOwner
         val discard = MutableStateFlow<SurfaceRequest?>(null)
         try {
             provider.unbindAll()
+            forgetSingle()
             val concurrent: ConcurrentCamera = provider.bindToLifecycle(
                 listOf(config(mainInfo, previewInto(previewState), mainCapture), config(otherInfo, previewInto(discard), otherCapture)),
             )
@@ -207,6 +257,7 @@ class CameraXController(private val context: Context, private val lifecycleOwner
 
     override suspend fun unbind() = withContext(Dispatchers.Main) {
         provider?.unbindAll()
+        forgetSingle()
         previewState.value = null
         imageCapture = null
         videoCapture = null

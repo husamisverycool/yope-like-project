@@ -148,6 +148,8 @@ struct CameraCaptureView: View {
             case .starting, .live:
                 if model.phase == .live || model.hasBeenLive {
                     model.camera.preview(position: nil)
+                        // Touches go to the viewfinder's own gestures (tap to focus, pinch), not the UIKit layer view.
+                        .allowsHitTesting(false)
                         .accessibilityHidden(true)
                         .dsTransition(.opacity)
                 }
@@ -174,6 +176,13 @@ struct CameraCaptureView: View {
             }
         }
         .dsAnimation(ComponentMotion.fade, value: model.phase)
+        .overlay(alignment: .topLeading) { focusSquare }
+        .overlay { zoomAccessibilityElement }
+        .contentShape(Rectangle())
+        // Live camera only (`.subviews` keeps the C-27 buttons working): double tap flips, one tap focuses there, a pinch
+        // zooms the back camera.
+        .gesture(viewfinderTaps, including: model.phase == .live ? .all : .subviews)
+        .simultaneousGesture(pinch, including: model.isZoomAvailable ? .all : .subviews)
         .clipShape(DSShape.rounded(Tokens.Radii.globalViewfinder))
         .overlay {
             if model.isRecording {
@@ -201,6 +210,65 @@ struct CameraCaptureView: View {
             .onChange(of: model.overnight?.isLater == true) { _, later in
                 if later { QuestionCameraContext.shared.drop() }
             }
+        }
+    }
+
+    /// Double tap flips the camera (Snapchat's double tap to switch cameras); a single tap focuses and exposes at that
+    /// point (iPhone Camera "Tap where you want to move the focus area"). The single tap waits for the double tap to fail.
+    private var viewfinderTaps: some Gesture {
+        SpatialTapGesture(count: 2)
+            .onEnded { _ in Task { await model.flip() } }
+            .exclusively(before: SpatialTapGesture(count: 1).onEnded { value in model.focus(at: value.location) })
+    }
+
+    /// `camera.capture.layout.zoom`: the factor at the pinch start × the pinch scale (back camera).
+    private var pinch: some Gesture {
+        MagnifyGesture()
+            .onChanged { value in model.pinchChanged(value.magnification) }
+            .onEnded { _ in model.pinchEnded() }
+    }
+
+    /// The focus square: `camera.capture.size.focusIndicator` outlined with `camera.capture.size.focusIndicatorStroke` in
+    /// `color.global.textOnMedia`, centred on the tap, fading in and out (`duration.global.fade`) and shown for
+    /// `camera.capture.duration.focusIndicator`.
+    @ViewBuilder
+    private var focusSquare: some View {
+        ZStack(alignment: .topLeading) {
+            if let indicator = model.focusIndicator {
+                let side = Tokens.Sizes.cameraCaptureSizeFocusIndicator
+                Rectangle()
+                    .strokeBorder(Tokens.Colors.globalTextOnMedia, lineWidth: Tokens.Sizes.cameraCaptureSizeFocusIndicatorStroke)
+                    .frame(width: side, height: side)
+                    .offset(x: indicator.point.x - side / 2, y: indicator.point.y - side / 2)
+                    .id(indicator.id)
+                    .dsTransition(.opacity)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .dsAnimation(ComponentMotion.fade, value: model.focusIndicator)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    /// While the back camera can zoom, the viewfinder is one adjustable element: "Zoom", value "2×"; swipe up / down steps
+    /// by a whole factor. Hit testing stays with the viewfinder's gestures.
+    @ViewBuilder
+    private var zoomAccessibilityElement: some View {
+        if model.isZoomAvailable {
+            Color.clear
+                .contentShape(Rectangle())
+                .allowsHitTesting(false)
+                .accessibilityElement()
+                .accessibilityLabel(Text(Copy.cameraCaptureA11yZoom))
+                .accessibilityValue(Text(Copy.cameraCaptureA11yZoomValue(factor: CaptureZoom.spoken(model.zoomFactor))))
+                .accessibilityAdjustableAction { direction in
+                    switch direction {
+                    case .increment: model.stepZoom(up: true)
+                    case .decrement: model.stepZoom(up: false)
+                    @unknown default: break
+                    }
+                }
+                .accessibilityIdentifier("camera.capture.zoom")
         }
     }
 

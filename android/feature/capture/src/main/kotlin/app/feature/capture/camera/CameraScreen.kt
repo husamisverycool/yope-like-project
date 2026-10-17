@@ -18,8 +18,12 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.compose.CameraXViewfinder
+import androidx.camera.viewfinder.compose.MutableCoordinateTransformer
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -30,6 +34,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -41,22 +46,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.invisibleToUser
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -91,11 +106,13 @@ import app.ui.foundation.tapClickable
 import app.ui.text.CapTop
 import app.ui.text.TextRoles
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.LocalDate
 import java.time.temporal.IsoFields
+import kotlin.math.roundToInt
 
 /** The camera destination: permission, CameraX session, picker, and navigation out. */
 @Composable
@@ -208,9 +225,15 @@ fun CameraRoute(
         onRetryGroups = vm::loadGroups,
     )
 
+    // Maps a tap on the viewfinder to the preview surface's coordinates (tap to focus, SurfaceOrientedMeteringPointFactory).
+    val coordinates = remember { MutableCoordinateTransformer() }
     CameraScreen(
         state = state,
-        viewfinder = { preview?.let { CameraXViewfinder(surfaceRequest = it, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) } },
+        viewfinder = {
+            preview?.let {
+                CameraXViewfinder(surfaceRequest = it, modifier = Modifier.fillMaxSize(), coordinateTransformer = coordinates, contentScale = ContentScale.Crop)
+            }
+        },
         title = stringResource(R.string.camera_capture_title, currentWeekNumber().toString()),
         onShutterTap = vm::capturePhoto,
         onShutterLongPress = { vm.startVideo(MediaPermissions.wasRequested(context, MediaPermission.Microphone) || MediaPermissions.isGranted(context, MediaPermission.Microphone)) },
@@ -223,6 +246,9 @@ fun CameraRoute(
             context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         },
         onRetry = vm::startSession,
+        onViewfinderTap = { tap -> with(coordinates) { tap.transform() }.let { surface -> vm.focusAt(surface.x, surface.y) } },
+        onZoom = vm::zoomBy,
+        onZoomStep = vm::stepZoom,
         questionText = question?.let { q -> remember(q.key) { WeeklyQuestions.text(context, q.key) } },
         overnight = overnight,
     )
@@ -282,6 +308,12 @@ fun CameraScreen(
     onOpenSettings: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Tap to focus at a point in the viewfinder's coordinates. */
+    onViewfinderTap: (Offset) -> Unit = {},
+    /** One pinch event's zoom change (`camera.capture.layout.zoom`). */
+    onZoom: (Float) -> Unit = {},
+    /** TalkBack increment (true) / decrement on the viewfinder. */
+    onZoomStep: (Boolean) -> Unit = {},
     questionText: String? = null,
     overnight: OvernightChrome = OvernightChrome(),
 ) {
@@ -313,7 +345,10 @@ fun CameraScreen(
             val vfHeight = minOf(fullWidth / Tokens.Layouts.CameraCaptureLayoutViewfinder.aspect, maxHeight - shutter - margin * 2).coerceAtLeast(0.dp)
             val vfWidth = vfHeight * Tokens.Layouts.CameraCaptureLayoutViewfinder.aspect
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Viewfinder(state, viewfinder, onCoachClose, onOpenSettings, onRetry, Modifier.size(vfWidth, vfHeight), questionText, overnight, vfWidth - margin * 2)
+                Viewfinder(
+                    state, viewfinder, onCoachClose, onOpenSettings, onRetry, Modifier.size(vfWidth, vfHeight), questionText, overnight, vfWidth - margin * 2,
+                    ViewfinderGestures(onTap = onViewfinderTap, onDoubleTap = onFlip, onZoom = onZoom, onZoomStep = onZoomStep),
+                )
                 ControlRow(
                     modifier = Modifier.weight(1f),
                     leading = {
@@ -405,12 +440,38 @@ private fun Viewfinder(
     questionText: String? = null,
     overnight: OvernightChrome = OvernightChrome(),
     pillMaxWidth: Dp = Dp.Infinity,
+    gestures: ViewfinderGestures = ViewfinderGestures(),
 ) {
+    val live = state.permission == CameraViewModel.Permission.Granted && state.session == CameraViewModel.Session.Live
+    // Tap to focus: the focus square at the last tap, hidden after `camera.capture.duration.focusIndicator`.
+    var focusTap by remember { mutableStateOf<Pair<Int, Offset>?>(null) }
+    val current by rememberUpdatedState(gestures)
+    val canFlip by rememberUpdatedState(live && !state.recording)
     Box(
         modifier
             .clip(RoundedCornerShape(Tokens.Radii.globalViewfinder))
             .background(Tokens.Colors.globalBackgroundDeep)
             .semantics { invisibleToUser() }
+            .then(
+                if (live) {
+                    // Double tap flips the camera, one tap focuses there; a pinch zooms the back camera.
+                    Modifier
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onDoubleTap = { if (canFlip) current.onDoubleTap() },
+                                onTap = { tap ->
+                                    focusTap = ((focusTap?.first ?: 0) + 1) to tap
+                                    current.onTap(tap)
+                                },
+                            )
+                        }
+                        .pointerInput(state.zoomAvailable) {
+                            if (state.zoomAvailable) detectTransformGestures { _, _, zoom, _ -> current.onZoom(zoom) }
+                        }
+                } else {
+                    Modifier
+                },
+            )
             .testTag("camera.viewfinder"),
         contentAlignment = Alignment.Center,
     ) {
@@ -420,6 +481,8 @@ private fun Viewfinder(
             Box(Modifier.fillMaxSize()) { viewfinder() }
         }
         RecordingOutline(state.recording)
+        FocusSquare(focusTap, onHidden = { id -> if (focusTap?.first == id) focusTap = null })
+        if (state.zoomAvailable) ZoomAccessibility(state, current.onZoomStep, Modifier.matchParentSize())
         FadeVisibility(visible = denied, modifier = Modifier.semantics { }) {
             MediaEmptyState(
                 title = stringResource(R.string.camera_capture_denied_title),
@@ -462,6 +525,69 @@ private fun Viewfinder(
             DestinationPill(destinationLabel(groups, state.destinations), pillMaxWidth, overnight.onPill)
         }
     }
+}
+
+/** What the live viewfinder does with a touch (camera.capture: tap to focus, double tap to flip, pinch to zoom). */
+internal data class ViewfinderGestures(
+    val onTap: (Offset) -> Unit = {},
+    val onDoubleTap: () -> Unit = {},
+    val onZoom: (Float) -> Unit = {},
+    val onZoomStep: (Boolean) -> Unit = {},
+)
+
+/**
+ * The focus square: `camera.capture.size.focusIndicator` outlined with `camera.capture.size.focusIndicatorStroke` in
+ * `color.global.textOnMedia`, centred on the tap; it fades in and out (`duration.global.fade`) and hides after
+ * `camera.capture.duration.focusIndicator`.
+ */
+@Composable
+private fun FocusSquare(tap: Pair<Int, Offset>?, onHidden: (Int) -> Unit) {
+    // The last tap's point, kept while the square fades out.
+    val last = remember { arrayOf(Offset.Zero) }
+    if (tap != null) {
+        last[0] = tap.second
+        LaunchedEffect(tap.first) {
+            delay(Tokens.Durations.cameraCaptureDurationFocusIndicator.toLong())
+            onHidden(tap.first)
+        }
+    }
+    val shown = tap?.second ?: last[0]
+    val side = Tokens.Sizes.cameraCaptureSizeFocusIndicator
+    Box(Modifier.fillMaxSize()) {
+        FadeVisibility(
+            visible = tap != null,
+            modifier = Modifier.offset {
+                val half = side.toPx() / 2
+                IntOffset((shown.x - half).roundToInt(), (shown.y - half).roundToInt())
+            },
+        ) {
+            Box(Modifier.size(side).border(Tokens.Sizes.cameraCaptureSizeFocusIndicatorStroke, Tokens.Colors.globalTextOnMedia, RectangleShape))
+        }
+    }
+}
+
+/**
+ * While the back camera can zoom, the viewfinder is one adjustable TalkBack element: "Zoom", state "2×"; swipe up / down
+ * (or the volume keys) step by a whole ratio (`camera.capture.layout.zoom`).
+ */
+@Composable
+private fun ZoomAccessibility(state: CameraViewModel.UiState, onStep: (Boolean) -> Unit, modifier: Modifier) {
+    val label = stringResource(R.string.camera_capture_a11y_zoom)
+    val value = stringResource(R.string.camera_capture_a11y_zoomvalue, CameraZoom.spoken(state.zoom))
+    val zoom by rememberUpdatedState(state.zoom)
+    Box(
+        modifier
+            .semantics {
+                contentDescription = label
+                stateDescription = value
+                progressBarRangeInfo = ProgressBarRangeInfo(state.zoom, CameraZoom.min..state.zoomLimit)
+                setProgress { target ->
+                    if (target != zoom) onStep(target > zoom)
+                    true
+                }
+            }
+            .testTag("camera.zoom"),
+    )
 }
 
 /**

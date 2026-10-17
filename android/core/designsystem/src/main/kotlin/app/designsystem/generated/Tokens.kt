@@ -259,6 +259,10 @@ object Tokens {
     object Durations {
         /** Supabase Auth documentation · auth.code · time after a code request before 'Send again' is enabled · VERIFIED — token `auth.code.duration.resendLock` */
         val authCodeDurationResendLock: Int = 60000
+        /** Android Developers CameraX sample · camera.capture · how long the focus square stays after a tap (fades in and out with duration.global.fade) · PLATFORM — token `camera.capture.duration.focusIndicator` */
+        val cameraCaptureDurationFocusIndicator: Int = 1000
+        /** CameraX (platform) · camera.capture · after a tap to focus, how long the tapped focus and exposure point holds before continuous autofocus and auto exposure come back (iOS also returns at once when the subject area changes) · PLATFORM — token `camera.capture.duration.focusReset` */
+        val cameraCaptureDurationFocusReset: Int = 5000
         /** Locket · camera.capture · maximum length of a hold-to-record video (premium); the recording outline fills over this time · SOURCED — token `camera.capture.duration.videoMax` */
         val cameraCaptureDurationVideoMax: Int = 10000
         /** Apple Messages · chat.thread · how long after sending a text message it can be edited (app_config message_edit_window_s = 900; the apps read the server's value) · SOURCED — token `chat.thread.duration.editWindow` */
@@ -679,6 +683,17 @@ object Tokens {
             const val top: String = "size.global.titleToContent below the header title baseline (C-01)"
             const val fill: String = "aspect-fill live preview; what the frame shows is what is captured"
             const val shrink: String = "if the control row would get less than size.global.screenMargin above and below the shutter, the viewfinder height shrinks (3:4 kept, centred horizontally)"
+        }
+        /** Apple Camera (platform) + Snapchat (mechanics) · camera.capture · pinch to zoom on the viewfinder (back camera) · PLATFORM — token `camera.capture.layout.zoom` */
+        object CameraCaptureLayoutZoom {
+            const val min: Float = 1f
+            const val max: Float = 10f
+            const val step: Float = 1f
+            const val gesture: String = "pinch on the live viewfinder: factor = the factor at the pinch start × the pinch scale, clamped to min … min(the camera's largest available zoom, max)"
+            const val camera: String = "back camera only; the front camera stays at min"
+            const val reset: String = "back to min when the camera flips; kept while a video records and when the camera comes back from send-to"
+            const val accessibility: String = "while zoom is available the viewfinder is one adjustable element (camera.capture.a11y.zoom, value camera.capture.a11y.zoomValue): increment / decrement move to the next whole step (VoiceOver adjustable action; TalkBack progress semantics, volume / swipe up-down)"
+            const val label: String = "none on screen (no zoom readout: Do-not-copy, Yope's '1x' zoom label)"
         }
         /** Locket · camera.fromwidget · what a widget tap does · SOURCED — token `camera.fromwidget.layout.target` */
         object CameraFromwidgetLayoutTarget {
@@ -2397,6 +2412,10 @@ object Tokens {
         val authPhoneSizeWordmarkToTagline: Dp = 19.3.dp
         /** Retro · auth.profile · profile-photo circle centred on the 'Add a profile photo' step · SOURCED — token `auth.profile.size.avatar` */
         val authProfileSizeAvatar: Dp = 112.dp
+        /** Android Developers CameraX sample + Apple Camera (platform) · camera.capture · the focus square drawn centred on a tap-to-focus point: a square outline (no fill, no corner radius) in color.global.textOnMedia · PLATFORM — token `camera.capture.size.focusIndicator` */
+        val cameraCaptureSizeFocusIndicator: Dp = 48.dp
+        /** Android Developers CameraX sample · camera.capture · outline width of the focus square (camera.capture.size.focusIndicator) · PLATFORM — token `camera.capture.size.focusIndicatorStroke` */
+        val cameraCaptureSizeFocusIndicatorStroke: Dp = 2.dp
         /** Locket (mechanics) + Material 3 · camera.capture · progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight · PLATFORM — token `camera.capture.size.recordingOutline` */
         val cameraCaptureSizeRecordingOutline: Dp = 4.dp
         /** Locket · camera.capture · shutter disc diameter (color.global.surfaceLight) · SOURCED — token `camera.capture.size.shutterDisc` */

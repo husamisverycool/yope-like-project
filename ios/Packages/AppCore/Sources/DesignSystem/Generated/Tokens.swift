@@ -226,6 +226,12 @@ public enum Tokens {
         /// Supabase Auth documentation · auth.code · time after a code request before 'Send again' is enabled · VERIFIED
         /// token: `auth.code.duration.resendLock`
         public static let authCodeDurationResendLock: TimeInterval = 60
+        /// Android Developers CameraX sample · camera.capture · how long the focus square stays after a tap (fades in and out with duration.global.fade) · PLATFORM
+        /// token: `camera.capture.duration.focusIndicator`
+        public static let cameraCaptureDurationFocusIndicator: TimeInterval = 1
+        /// CameraX (platform) · camera.capture · after a tap to focus, how long the tapped focus and exposure point holds before continuous autofocus and auto exposure come back (iOS also returns at once when the subject area changes) · PLATFORM
+        /// token: `camera.capture.duration.focusReset`
+        public static let cameraCaptureDurationFocusReset: TimeInterval = 5
         /// Locket · camera.capture · maximum length of a hold-to-record video (premium); the recording outline fills over this time · SOURCED
         /// token: `camera.capture.duration.videoMax`
         public static let cameraCaptureDurationVideoMax: TimeInterval = 10
@@ -820,6 +826,18 @@ public enum Tokens {
             public static let top: String = "size.global.titleToContent below the header title baseline (C-01)"
             public static let fill: String = "aspect-fill live preview; what the frame shows is what is captured"
             public static let shrink: String = "if the control row would get less than size.global.screenMargin above and below the shutter, the viewfinder height shrinks (3:4 kept, centred horizontally)"
+        }
+        /// Apple Camera (platform) + Snapchat (mechanics) · camera.capture · pinch to zoom on the viewfinder (back camera) · PLATFORM
+        /// token: `camera.capture.layout.zoom`
+        public enum CameraCaptureLayoutZoom {
+            public static let min: CGFloat = 1
+            public static let max: CGFloat = 10
+            public static let step: CGFloat = 1
+            public static let gesture: String = "pinch on the live viewfinder: factor = the factor at the pinch start × the pinch scale, clamped to min … min(the camera's largest available zoom, max)"
+            public static let camera: String = "back camera only; the front camera stays at min"
+            public static let reset: String = "back to min when the camera flips; kept while a video records and when the camera comes back from send-to"
+            public static let accessibility: String = "while zoom is available the viewfinder is one adjustable element (camera.capture.a11y.zoom, value camera.capture.a11y.zoomValue): increment / decrement move to the next whole step (VoiceOver adjustable action; TalkBack progress semantics, volume / swipe up-down)"
+            public static let label: String = "none on screen (no zoom readout: Do-not-copy, Yope's '1x' zoom label)"
         }
         /// Locket · camera.fromwidget · what a widget tap does · SOURCED
         /// token: `camera.fromwidget.layout.target`
@@ -2775,6 +2793,12 @@ public enum Tokens {
         /// Retro · auth.profile · profile-photo circle centred on the 'Add a profile photo' step · SOURCED
         /// token: `auth.profile.size.avatar`
         public static let authProfileSizeAvatar: CGFloat = 112
+        /// Android Developers CameraX sample + Apple Camera (platform) · camera.capture · the focus square drawn centred on a tap-to-focus point: a square outline (no fill, no corner radius) in color.global.textOnMedia · PLATFORM
+        /// token: `camera.capture.size.focusIndicator`
+        public static let cameraCaptureSizeFocusIndicator: CGFloat = 48
+        /// Android Developers CameraX sample · camera.capture · outline width of the focus square (camera.capture.size.focusIndicator) · PLATFORM
+        /// token: `camera.capture.size.focusIndicatorStroke`
+        public static let cameraCaptureSizeFocusIndicatorStroke: CGFloat = 2
         /// Locket (mechanics) + Material 3 · camera.capture · progress stroke traced around the viewfinder (radius.global.viewfinder) while a video records, colour color.global.surfaceLight · PLATFORM
         /// token: `camera.capture.size.recordingOutline`
         public static let cameraCaptureSizeRecordingOutline: CGFloat = 4

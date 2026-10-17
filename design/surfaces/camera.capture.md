@@ -19,6 +19,9 @@ components … in Locket's order").
 | `references/auto/locket/store/locket-store-07.png` (AS-7), `references/owner/locket-06-capture.webp` | mechanics: viewfinder above a flash / shutter / flip row; shutter geometry (`camera.capture.size.shutter*`) |
 | `references/auto/locket/frames/locket-tt-7069892557970345259-02.800s-camera-2022.jpg` | mechanics: tap captures, the shutter hands over to send-to |
 | Locket help HC 7915017 (design/research/locket.md §5) | mechanics: touch and hold records; an outline around the viewfinder shows progress |
+| Apple iPhone User Guide "Use the camera settings on iPhone" (https://support.apple.com/en-asia/guide/iphone/iphb362b394e/12.0/ios), Apple "iPhone 16 - Tech Specs" (https://support.apple.com/en-us/121029) | platform: pinch to zoom, tap to move the focus area; digital zoom up to 10× (`camera.capture.layout.zoom`) |
+| Android Developers "Tap to focus: Mastering CameraX Transformations in Jetpack Compose" (Google, 2025); CameraX `FocusMeteringAction` reference | platform: tap → `startFocusAndMetering` through the viewfinder's coordinate transformer; 48 / 2 white indicator shown 1 s (`camera.capture.size.focusIndicator*`, `.duration.focusIndicator`); auto-cancel 5 s (`.duration.focusReset`) |
+| Snapchat (9to5Mac 2016-05-10, https://9to5mac.com/?p=430428; Droid Life 2015-06-09, https://www.droid-life.com/2015/06/09/snapchat-brings-ability-to-switch-from-front-and-rear-facing-camera-while-shooting/) | mechanics: pinch to zoom; double tap on the camera flips front ↔ back |
 
 ## Structure (top to bottom, 393 × 852 pt)
 
@@ -59,7 +62,8 @@ Page `color.global.backgroundDeep` in both appearances; status bar light content
 |---|---|---|---|
 | title | C-01 · `headerTitle`, `font.global.display`, `color.global.textOnMedia`, `size.global.titleTop` | `camera.capture.title` ({number} = current week number, as `week.history` numbers weeks) | the week the photo will be added to; static text with the header trait |
 | flash | C-01 trailing glyph · `icon.global.flashOff` / `.flashOn`, `size.global.headerButton` | a11y `camera.capture.a11y.flash`, value `.a11y.flashOn` / `.a11y.flashOff` | toggles off ↔ on (glyph swap, `duration.global.crossfade`); default off; hidden without a flash |
-| viewfinder | C-17/C-18 container · `camera.capture.layout.viewfinder`, `radius.global.viewfinder` | — | back camera on open; front after a flip, kept for the session; the captured photo is the 3:4 frame shown |
+| viewfinder | C-17/C-18 container · `camera.capture.layout.viewfinder`, `radius.global.viewfinder`, `camera.capture.layout.zoom` | a11y `camera.capture.a11y.zoom`, value `.a11y.zoomValue` (while zoom is available) | back camera on open; front after a flip, kept for the session; the captured photo is the 3:4 frame shown. While live: **pinch** zooms the back camera (factor at the pinch start × scale, 1× … min(device max, 10×); the front camera does not zoom; no on-screen readout); **tap** focuses and exposes at that point (AE/AF at the point, continuous autofocus again after `camera.capture.duration.focusReset`, and on iOS as soon as the subject area changes); **double tap** flips the camera (not while recording; the single tap waits for the second). Zoom resets to 1× on a flip; it is kept while a video records and after send-to |
+| focus square | `camera.capture.size.focusIndicator` (48) square outline, `camera.capture.size.focusIndicatorStroke` (2), `color.global.textOnMedia`, no fill, no corner radius | — (hidden from accessibility) | centred on the tap, clipped by the viewfinder; shown for `camera.capture.duration.focusIndicator` (1 s); a new tap replaces it |
 | shutter | mechanics (Locket) · `camera.capture.size.shutterOuter/Ring/Gap/Disc`, `color.global.surfaceLight`, `color.global.backgroundDeep` | a11y `camera.capture.a11y.shutter`; custom action `camera.capture.a11y.recordVideo` (video members) | **tap** = photo (Live Photo where supported) → `camera.sendto`. **Hold** = video (premium): records while held, stops on release or at `camera.capture.duration.videoMax` (10 s). Free member: the session's first hold opens `paywall` (at most one prompt per session); later holds do nothing; tap always captures |
 | recording outline | `camera.capture.size.recordingOutline`, `color.global.surfaceLight`, `radius.global.viewfinder` | announcement `camera.capture.a11y.recording` | visible while a video records |
 | library | C-11 64 circle · `size.global.circleButtonLarge`, `color.global.controlOnDeep`, `icon.global.gallery` | a11y `camera.capture.a11y.library` | system photo picker (iOS PHPickerViewController with ordered selection, Android `PickMultipleVisualMedia` — no library permission); **up to `batch_max_photos`** photos / Live Photos / videos (public `app_config`, 20 — Instagram carousels; **1 while it is unknown**: the single-item picker) → one `camera.sendto` for the whole selection, in the order picked ("Several photos" there; docs/RESEARCH_FEATURES_2026-10-17.md #1; Retro's "Add to Your Week" composer picks several, Apple Shared Albums "Select all the items you want to add"); each video longer than `camera.capture.duration.videoMax` → `camera.trim` first, one after the other (its Cancel leaves that video out; one that cannot be trimmed is left out after "Video too long" and the rest go on). Each library item carries **the day it was taken** (below) |
@@ -92,6 +96,8 @@ All states keep the header and the tab bar; the C-27 block replaces the viewfind
 | recording outline | linear trim 0 → 1 over `camera.capture.duration.videoMax` (tracks recording time, a progress indicator) | unchanged (progress, not decoration) |
 | capture → `camera.sendto` | native full-screen presentation (`easing.global.native.sheet`; custom presentations match `spring.global.sheetPresent`) | cross-fade of `duration.global.sheetPresent` |
 | coach pill in / out | `duration.global.fade` | same |
+| focus square in / out | `duration.global.fade`, shown `camera.capture.duration.focusIndicator` | same (fade only) |
+| zoom | follows the pinch frame by frame (no animation) | same |
 
 ## Haptics
 
@@ -118,10 +124,14 @@ Days before 1900-01-01 or after today on the device are not sent (the server's c
 - Labels: shutter `camera.capture.a11y.shutter` (button; custom action `.a11y.recordVideo` when video is available),
   flash `.a11y.flash` + value `.a11y.flashOn` / `.flashOff` (iOS accessibilityValue; Android stateDescription), library
   `.a11y.library`, flip `.a11y.flip`; coach pill is a button labelled with its text. Recording start posts
-  `.a11y.recording` as an announcement. Viewfinder: not an element.
+  `.a11y.recording` as an announcement. Viewfinder: not an element, except while the back camera can zoom: then one
+  adjustable element `camera.capture.a11y.zoom` with value `.a11y.zoomValue` ("2×"; iOS `accessibilityAdjustableAction`,
+  Android `progressBarRangeInfo` + `setProgress`), each increment / decrement one whole step
+  (`camera.capture.layout.zoom.step`). Tap to focus and double tap to flip have no accessibility path of their own (the
+  flip circle flips; autofocus is continuous).
 - Title: header trait. Dynamic Type: `headerTitle` → largeTitle; coach `pill` → subheadline; C-27 roles per
   `layout.global.textStyleMap` (fixed controls do not grow).
-- Focus order: title → flash → (coach pill when shown) → library → shutter → flip → tab bar.
+- Focus order: title → flash → (coach pill when shown) → (zoom viewfinder when available) → library → shutter → flip → tab bar.
 - Touch targets: 64-pt circles and the 86-pt shutter exceed 44 / 48; the flash glyph's hit area is
   `size.global.headerButton` (44) / 48 dp.
 - Contrast (`node tools/contrast.mjs`; identical in light and dark — media surface):
@@ -150,6 +160,12 @@ Days before 1900-01-01 or after today on the device are not sent (the server's c
 
 - iOS: `AVCaptureSession`, photo preset (4:3 sensor → 3:4 portrait, matching the viewfinder); Live Photo when
   `AVCapturePhotoOutput.isLivePhotoCaptureSupported` (docs/PLATFORM_CONSTRAINTS.md §6); no Live Photo toggle.
+- Zoom / focus: iOS `AVCaptureDevice.videoZoomFactor` and `focusPointOfInterest` / `exposurePointOfInterest` (`.autoFocus` /
+  `.autoExpose`, subject-area monitoring) on the session queue, the tap converted with
+  `AVCaptureVideoPreviewLayer.captureDevicePointConverted(fromLayerPoint:)`; a camera joins the graph at 1× on continuous
+  AF / AE. Android `CameraControl.setZoomRatio` (ceiling from `ZoomState.maxZoomRatio`) and `startFocusAndMetering`
+  with a `SurfaceOrientedMeteringPointFactory` on the preview's resolution (`CameraXViewfinder` coordinate transformer),
+  auto-cancel `camera.capture.duration.focusReset`.
 - Android: CameraX, `AspectRatio.RATIO_4_3`; no Live Photo; page background `color.global.backgroundDeep` (media — not
   `color.global.background.android`).
 - Corners: iOS `RoundedRectangle(cornerRadius:style: .continuous)`, Android `RoundedCornerShape`
@@ -170,5 +186,6 @@ badge, photo-tinted background, yellow ring, 'History' row. Yope: wordmark, hour
 | Retro press state | not recorded → platform default (RC-3) | 60 fps recording of any Retro capsule press (README "Not available yet") |
 | Live Photo on / off control | not built (no reference shows one) | one screenshot of a camera with a Live Photo control in Locket |
 | hold-to-record visuals on the current Locket build | outline known from Locket's help text; its width is Material 3's progress-indicator default (4), replacing the earlier 6, re-sourced under owner decision 22 | one screenshot (or a 10-s recording) of Locket recording a video |
-| zoom, tap to focus | not built (not observed) | — |
+| zoom, tap to focus | built (platform behaviour: Apple Camera / CameraX docs, Snapchat). No Locket or BeReal help page on either was found | one screen recording of Locket pinching and tapping the viewfinder |
+| subject-change refocus on Android | CameraX has no subject-area signal: the tapped point holds until `camera.capture.duration.focusReset` | — |
 | camera as a tab vs a modal | follows `groups.list.layout.tabBar` (account group) | — |
