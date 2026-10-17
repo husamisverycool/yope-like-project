@@ -246,6 +246,21 @@ public struct PostRepository: Sendable {
         return try await client.rpc("download_items", params)
     }
 
+    // MARK: Batches
+
+    /// Migration 0051: a group's photos of one batch (the same author and `batch_id`, several photos posted together),
+    /// oldest first — the order the viewer pages through them (`photo.viewer.layout.batchDots`).
+    public func batch(groupID: GroupID, authorID: UserID, batchID: String) async throws -> [Post] {
+        try await client.rows(Post.self) {
+            client.supabase.from("posts").select()
+                .eq("group_id", value: groupID.rawValue)
+                .eq("author_id", value: authorID.rawValue)
+                .eq("batch_id", value: batchID)
+                .order("created_at", ascending: true)
+                .order("id", ascending: true)
+        }
+    }
+
     // MARK: Deleting
 
     /// `delete_post` (author): removes the photo from one group; the media goes with its last post.

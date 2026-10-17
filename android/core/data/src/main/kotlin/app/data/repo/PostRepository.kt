@@ -92,6 +92,20 @@ class PostRepository(private val api: Api, private val cache: OfflineCache, priv
         order("id", Order.ASCENDING)
     }
 
+    /**
+     * Migration 0051: a group's photos of one batch (the same author and `batch_id`, several photos posted together),
+     * oldest first — the order the viewer pages through them (`photo.viewer.layout.batchDots`); RLS drops hidden ones.
+     */
+    suspend fun batch(groupId: String, authorId: String, batchId: String): List<Post> = api.select(Tables.POSTS, Post.serializer()) {
+        filter {
+            eq("group_id", groupId)
+            eq("author_id", authorId)
+            eq("batch_id", batchId)
+        }
+        order("created_at", Order.ASCENDING)
+        order("id", Order.ASCENDING)
+    }
+
     /** The posts of one media (one per group it was sent to that you can see). */
     suspend fun postsOfMedia(mediaId: String): List<Post> = api.select(Tables.POSTS, Post.serializer()) {
         filter { eq("media_id", mediaId) }

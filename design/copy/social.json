@@ -66,6 +66,16 @@
       "level": "SOURCED",
       "notes": "Appended to a tile's or photo message's label when it is a video (layout.global.videoMarker); {duration} spoken by the platform formatter (\"10 seconds\")."
     },
+    "chat.thread.a11y.batch": {
+      "text": "Photos posted together",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "backend/supabase/migrations/20261017000051_photo_batches.sql (\"the photos posted together are one notification\"); docs/API.md posts.batch_id; design/copy-patterns.md `platform.a11yLabel`; chat.thread.a11y.video (a part appended to a photo's label)",
+      "pattern": "platform.a11yLabel — the content in a word, then its detail",
+      "level": "SOURCED",
+      "notes": "Appended to the label of a batch's chat item and strip tiles (layout.global.batchMarker). Never a number of photos (tenet 2)."
+    },
     "chat.thread.a11y.replyQuote": {
       "text": "Reply to {name}'s post",
       "origin": "new",

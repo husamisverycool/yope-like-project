@@ -64,6 +64,9 @@ protocol SocialDataSource: Sendable {
     /// The photos revealed together with `post` in one overnight reveal (`revealed_at`, camera.overnight C), oldest
     /// first; empty for a photo shared at once.
     func revealedWith(_ post: Post) async throws -> [PostWithMedia]
+    /// The photos posted together with `post` in its group (the same author and `batch_id`, migration 0051), oldest
+    /// first, `post` among them; empty for a photo posted alone (`photo.viewer.layout.batchDots`).
+    func batchWith(_ post: Post) async throws -> [PostWithMedia]
     /// The offline copy of a group's feed (first page).
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia]
     /// Posts among `ids` already on the device (fetched this session, or in the group's offline feed), in the order
@@ -164,6 +167,9 @@ extension SocialDataSource {
     func sendText(groupID: GroupID, body: String, replyToPostID: PostID?) async throws -> Message {
         try await sendText(groupID: groupID, body: body, replyToPostID: replyToPostID, replyToMessageID: nil)
     }
+
+    /// Sources without batches (previews, the unconfigured source) show every photo alone.
+    func batchWith(_ post: Post) async throws -> [PostWithMedia] { [] }
 }
 
 /// Page sizes fixed by the API contract (docs/API.md §5.9, §6.4) and the specs' "Data" sections.

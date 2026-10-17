@@ -60,6 +60,30 @@ struct VideoTileMarker: View {
     }
 }
 
+/// `layout.global.batchMarker`: a photo that leads photos posted together (Instagram's carousel icon in the top right)
+/// carries the video pill's form without digits — capsule `color.global.surfaceLight`, `size.global.videoPillHeight` tall,
+/// `size.global.videoPillPadding` each side, `icon.global.batch` (`size.global.iconSmall`) in `color.global.onSurfaceLight` —
+/// at the top-trailing corner, `size.global.videoPillInset` from both edges; under the video marker
+/// (`size.global.pillGap` below it) when the photo is also a video. Never a number. Place it as an overlay aligned
+/// `.topTrailing`. Accessibility: hidden; the owner's label adds `chat.thread.a11y.batch`.
+struct BatchTileMarker: View {
+    /// The photo also carries the video marker: this one sits under it.
+    var belowVideoMarker: Bool = false
+
+    var body: some View {
+        Glyph(Tokens.Icons.globalBatch, size: Tokens.Sizes.globalIconSmall, relativeTo: TextRole.pillSmall.relativeTo)
+            .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
+            .padding(.horizontal, Tokens.Sizes.globalVideoPillPadding)
+            .frame(height: Tokens.Sizes.globalVideoPillHeight)
+            .background(Tokens.Colors.globalSurfaceLight, in: Capsule())
+            .fixedSize()
+            .padding(.top, belowVideoMarker ? Tokens.Sizes.globalVideoPillHeight + Tokens.Sizes.globalPillGap : 0)
+            .padding(Tokens.Sizes.globalVideoPillInset)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
 /// Premium pill ('FREE') — paywall only, the owner decides whether the premium accent is used: a capsule filled with
 /// `layout.global.premiumGradient` (top → bottom; `color.global.premium` is its flat value), label text role
 /// `pillSmall` (caps from copy) in `color.global.onBadge`. Retro's 51 × 26 pt size and its coloured shadow were not

@@ -91,6 +91,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.data.model.MessageKind
+import app.data.model.PhotoBatches
+import app.data.model.batchKey
+import app.ui.components.BatchTileMarker
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
@@ -410,6 +413,8 @@ class RowLabels(
     /** `chat.thread.system.joined` / `.left` with the person's name (`chat.thread.layout.systemLine`). */
     private val joined: (String) -> String = { it },
     private val left: (String) -> String = { it },
+    /** `chat.thread.a11y.batch` ("Photos posted together"), appended for the first of photos posted together. */
+    private val batch: String? = null,
 ) {
     fun of(row: ChatRow): String {
         val name = row.author?.firstName.orEmpty()
@@ -425,7 +430,8 @@ class RowLabels(
                 val t = Formats.shortTime(row.message.createdAt)
                 val photoLabel = if (row.mine) photoMine(t) else photo(name, t)
                 val videoMs = row.media?.videoDurationMs
-                val base = if (videoMs != null && video != null) "$photoLabel, ${video.invoke(Formats.spokenDuration(videoMs))}" else photoLabel
+                val withVideo = if (videoMs != null && video != null) "$photoLabel, ${video.invoke(Formats.spokenDuration(videoMs))}" else photoLabel
+                val base = if (row.isBatch && batch != null) "$withVideo, $batch" else withVideo
                 row.post?.caption?.takeIf { it.isNotBlank() }?.let { "$base, ${caption(it)}" } ?: base
             }
         }
@@ -447,6 +453,7 @@ fun rowLabels(): RowLabels {
             video = { d -> r.getString(R.string.chat_thread_a11y_video, d) },
             joined = { n -> r.getString(R.string.chat_thread_system_joined, n) },
             left = { n -> r.getString(R.string.chat_thread_system_left, n) },
+            batch = r.getString(R.string.chat_thread_a11y_batch),
         )
     }
 }
@@ -480,13 +487,19 @@ sealed interface ThreadItem {
 /**
  * The thread's items: a day divider before the first message of each day, runs of one sender's consecutive
  * messages (`chat.thread.layout.runs`: another sender, a divider or a reply quote starts a new run). A joined / left
- * line stands alone and the message after it starts a new run (`chat.thread.layout.systemLine`).
+ * line stands alone and the message after it starts a new run (`chat.thread.layout.systemLine`). Photo messages posted
+ * together (`layout.global.photoBatch`) that follow one another on one day without a reply quote between are one item:
+ * the first, holding the others' post ids in [ChatRow.batch] (`chat.thread.layout.batch`).
  */
 fun threadItems(rows: List<ChatRow>, zone: ZoneId = ZoneId.systemDefault()): List<ThreadItem> {
     val out = ArrayList<ThreadItem>()
     var day: LocalDate? = null
     var author: String? = null
-    rows.forEach { row ->
+    val units = PhotoBatches.runs(rows) { r -> if (r.kind == MessageKind.Photo && !r.pending && !r.failed) r.post?.batchKey else null }
+        .flatMap { run -> splitBatchRun(run, zone) }
+    units.forEach { unit ->
+        val first = unit.first()
+        val row = if (unit.size > 1) first.copy(batch = unit.drop(1).mapNotNull { it.message.postId }) else first
         val d = row.message.createdAt.atZone(zone).toLocalDate()
         val divider = d != day
         if (divider) {
@@ -503,6 +516,18 @@ fun threadItems(rows: List<ChatRow>, zone: ZoneId = ZoneId.systemDefault()): Lis
         author = row.message.authorId
     }
     return out
+}
+
+/** A batch run split where a photo would start a new run anyway (a new day, a reply quote): it does not join the photos before it. */
+private fun splitBatchRun(run: List<ChatRow>, zone: ZoneId): List<List<ChatRow>> {
+    if (run.size < 2) return listOf(run)
+    val split = ArrayList<MutableList<ChatRow>>()
+    run.forEach { r ->
+        val last = split.lastOrNull()?.lastOrNull()
+        val sameDay = last != null && last.message.createdAt.atZone(zone).toLocalDate() == r.message.createdAt.atZone(zone).toLocalDate()
+        if (last != null && sameDay && r.quote == null) split.last().add(r) else split.add(mutableListOf(r))
+    }
+    return split
 }
 
 /** The thread without its view model (snapshots render this with fixed states). */
@@ -1308,6 +1333,8 @@ private fun PhotoMessage(row: ChatRow, afterHeader: Boolean, ui: ChatUiState, na
                 RemotePhoto(media?.imagePath(app.data.model.Media.Rendition.Display), null, Modifier.fillMaxSize(), fallbackPath = media?.imagePath(app.data.model.Media.Rendition.Thumb))
             }
             media?.videoDurationMs?.let { VideoTileMarker(it) }
+            // `chat.thread.layout.batch`: the first of photos posted together (`layout.global.batchMarker`)
+            if (row.isBatch) BatchTileMarker(belowVideoMarker = media?.videoDurationMs != null)
         }
         if (row.reactions.isNotEmpty()) {
             Spacer(Modifier.height(Tokens.Sizes.chatReactionsDimensionChipTop))

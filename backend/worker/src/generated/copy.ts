@@ -310,6 +310,7 @@ const table = {
   "chat.reactions.picker.group.travelPlaces": "Travel & Places", // Unicode (UTS #51) · chat.reactions · VERIFIED
   "chat.reactions.picker.search": "Search", // Retro · chat.reactions · SOURCED
   "chat.thread.a11y.back": "Back", // Apple HIG / Material 3 · chat.thread · SOURCED
+  "chat.thread.a11y.batch": "Photos posted together", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.cancelEdit": "Cancel edit", // Apple Messages · chat.thread · SOURCED
   "chat.thread.a11y.cancelReply": "Cancel reply", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.caption": "Caption: {caption}", // Retro · chat.thread · SOURCED

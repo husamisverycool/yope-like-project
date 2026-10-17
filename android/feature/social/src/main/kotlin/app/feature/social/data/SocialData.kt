@@ -156,6 +156,11 @@ interface SocialData {
 
     /** Post ids answering the weekly question [questionId], oldest first (`question_answers`, §14.4); none by default. */
     suspend fun questionAnswers(questionId: String): List<String> = emptyList()
+    /**
+     * Post ids of the photos posted together with [post] in its group (the same author and `batch_id`, migration 0051),
+     * oldest first, [post] among them; none for a photo posted alone (`photo.viewer.layout.batchDots`).
+     */
+    suspend fun batchOf(post: Post): List<String> = emptyList()
     suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>): Album
     suspend fun renameAlbum(albumId: String, name: String): Album
     suspend fun deleteAlbum(albumId: String)
@@ -282,6 +287,8 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     override suspend fun albums(groupId: String) = graph.albums.albums(groupId)
     override suspend fun albumItems(albumId: String) = graph.albums.items(albumId)
     override suspend fun questionAnswers(questionId: String): List<String> = graph.questions.answers(questionId).map { it.id }
+    override suspend fun batchOf(post: Post): List<String> =
+        post.batchId?.let { graph.posts.batch(post.groupId, post.authorId, it).map(Post::id) }.orEmpty()
     override suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>) = graph.albums.saveAlbum(groupId, name, postIds)
     override suspend fun renameAlbum(albumId: String, name: String) = graph.albums.renameAlbum(albumId, name)
     override suspend fun deleteAlbum(albumId: String) = graph.albums.deleteAlbum(albumId)

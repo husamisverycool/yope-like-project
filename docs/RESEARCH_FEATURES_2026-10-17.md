@@ -37,7 +37,7 @@ Server = migrations and worker, tested against a local stack; apps = iOS and And
 
 | # | feature | server | apps |
 |---|---|---|---|
-| 1 | Several photos in one post | 0051 (batch_id, one push per batch) | composer merged; grouped display: building |
+| 1 | Several photos in one post | 0051 (batch_id, one push per batch) | merged (composer; grouped display `layout.global.photoBatch`) |
 | 2 | Downloads | 0052 download_items | merged |
 | 3 | More widgets, premium styles | 0036 | iOS 2082b58; Android merged |
 | 4 | Share to Jolt | — (create_post) | merged |

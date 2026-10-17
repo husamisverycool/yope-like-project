@@ -366,6 +366,12 @@ enum SocialA11y {
         return label + ", " + Copy.chatThreadA11yVideo(duration: SocialFormat.spokenDuration(milliseconds: durationMs)) // provenance-ok: list separator joining two copy strings
     }
 
+    /// `label`, then `chat.thread.a11y.batch` ("Photos posted together") when it leads a batch (`layout.global.batchMarker`).
+    static func withBatch(_ label: String, isBatch: Bool) -> String {
+        guard isBatch else { return label }
+        return label + ", " + Copy.chatThreadA11yBatch // provenance-ok: list separator joining two copy strings
+    }
+
     /// `week.history.a11y.emptyDay` ("Thursday, October 15, no photos").
     static func emptyDay(_ date: Date, timeZone: TimeZone) -> String {
         Copy.weekHistoryA11yEmptyDay(

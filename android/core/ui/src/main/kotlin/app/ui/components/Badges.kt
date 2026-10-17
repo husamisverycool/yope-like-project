@@ -87,6 +87,32 @@ fun BoxScope.VideoTileMarker(durationMs: Long, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * `layout.global.batchMarker`: a photo that leads photos posted together (Instagram's carousel icon in the top right)
+ * carries the video pill's form without digits — capsule `color.global.surfaceLight`, `size.global.videoPillHeight` tall,
+ * `size.global.videoPillPadding` each side, `icon.global.batch` (`size.global.iconSmall`) in `color.global.onSurfaceLight` —
+ * at the top-trailing corner, `size.global.videoPillInset` from both edges; under the video marker ([belowVideoMarker],
+ * `size.global.pillGap` below it) when the photo is also a video. Never a number. Put it in a [Box] over the photo (it
+ * aligns itself). Decorative: the owner's label adds "Photos posted together" (`chat.thread.a11y.batch`).
+ */
+@Composable
+fun BoxScope.BatchTileMarker(belowVideoMarker: Boolean = false, modifier: Modifier = Modifier) {
+    val inset = Tokens.Sizes.globalVideoPillInset
+    val top = if (belowVideoMarker) inset + Tokens.Sizes.globalVideoPillHeight + Tokens.Sizes.globalPillGap else inset
+    Box(
+        modifier
+            .align(Alignment.TopEnd)
+            .padding(top = top, end = inset)
+            .height(Tokens.Sizes.globalVideoPillHeight)
+            .background(Tokens.Colors.globalSurfaceLight, CircleShape)
+            .padding(horizontal = Tokens.Sizes.globalVideoPillPadding)
+            .clearAndSetSemantics { },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(Tokens.Icons.globalBatch, contentDescription = null, tint = Tokens.Colors.globalOnSurfaceLight, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
+    }
+}
+
 /** "0:10" (`chat.voice.layout.durationFormat`), whole seconds. */
 fun videoDurationText(durationMs: Long): String =
     DateTimeFormatter.ofPattern(Tokens.Layouts.ChatVoiceLayoutDurationFormat.pattern).format(LocalTime.ofSecondOfDay((durationMs.coerceAtLeast(0) / MS_PER_SECOND)))

@@ -48,6 +48,14 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
      the leading 20 % of the photo (`photo.viewer.layout.backZone`, Retro's own viewer: `clientX < 0.2 × width` → previous) goes back, the rest goes forward; past the last photo the
      viewer closes. Long press = context menu with the quick-reaction row (`chat.reactions.layout.quickReactions`) and the
      menu items below. A **video** plays in the frame and a **Live Photo** plays while held (sections below).
+   - **Batch dots** (`photo.viewer.layout.batchDots`; owner decision 34, research #1; Instagram: "the first photo … with a
+     row of dots below it", help.instagram.com/269314186824048): while the photo on screen belongs to photos posted
+     together (`layout.global.photoBatch`) with at least two of them in the list, C-31 page dots on media — one per photo
+     of the **batch only**, never the whole list — centred under the photo, their centre `dimension.year.story.dots.offset`
+     below it; the footer then starts twice that offset below the photo. The batch's photos sit side by side in the list
+     in the order they were posted (`PhotoBatches.gather`, where the first of them stood); opened on one photo by a link
+     (a push, `groups.screen`'s strip or cards) the list is that photo's batch (read by group, author and `batch_id`).
+     Tap-to-advance, the position pill and the ring work as before over the whole list. Dots are positions, not a count.
    - **Footer** inside `size.global.screenMargin`: leading text block — first baseline `photo.viewer.dimension.footerFirstBaseline`
      below the photo, lines `photo.viewer.dimension.footerLinePitch` apart:
      1. the caption, if any (text role `listTitle`, `color.global.textOnMedia`, wraps) — Retro's place line;
@@ -176,6 +184,7 @@ rows (adding fails with `week.edit.error.save`).
 | element | component · tokens | copy | behaviour |
 |---|---|---|---|
 | header avatar + lines | C-22, C-23; `size.global.avatarHeader`, `photo.viewer.dimension.headerInset`, `.headerAvatarToText`, `.headerLinePitch`; text roles `listTitle` / `listSubtitle` | name (data), `photo.viewer.header.week` / `.header.groupWeek` | tap → `walls.member` (yours → `walls.mine`) |
+| batch dots | C-31 on media; `photo.viewer.layout.batchDots`, `size.global.pageDot`, `.pageDotPitch`, `dimension.year.story.dots.offset` | value `photo.viewer.position` within the batch ("2 of 3") | adjustable: moves within the batch |
 | position pill | C-22; `size.global.positionPillHeight`, `color.global.controlOnDeep`, text role `badge` | `photo.viewer.position` | — |
 | close | C-11 on media; `photo.viewer.dimension.closeCircle`, `.closeGlyph`, `color.global.controlOnDeep`, `icon.global.close`; hit `size.global.minTouchTarget.*` | `photo.viewer.a11y.close` | closes (Android back too) |
 | photo | `photo.viewer.layout.photo`, `photo.viewer.layout.advance`, `photo.viewer.layout.backZone` (0.2, leading) | `photo.viewer.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`); hints `photo.viewer.a11y.advanceHint`, `.backHint`; actions `.a11y.next`, `.a11y.previous` | tap advances; long press → menu with quick reactions |
@@ -234,7 +243,8 @@ rows (adding fails with `week.edit.error.save`).
   `chat.thread.a11y.video` to the label and `photo.viewer.a11y.play` or `.a11y.unmute` / `.a11y.mute` to the actions; a
   Live Photo adds `photo.viewer.a11y.play`. The header (name + week) is one element; the pill is read as "3 of 4"
   (position only).
-- Focus order: close → header → pill → photo → caption → date → tag run → voice note → reactions → add → comments →
+- Batch dots: one adjustable element whose value is `photo.viewer.position` within the batch (`photo.viewer.layout.batchDots`).
+- Focus order: close → header → pill → photo → batch dots → caption → date → tag run → voice note → reactions → add → comments →
   field → camera → "•••".
 - Dynamic Type: `listTitle` / `listSubtitle` / `body` → subheadline, `badge` → caption2 (`layout.global.textStyleMap`); the
   footer grows; the pill and close keep their size (their labels carry the information).
@@ -258,7 +268,9 @@ rows (adding fails with `week.edit.error.save`).
   `reactions` (§5.10), `post_tags` (§5.11: names for "with …", your row = toggle on), `messages` with
   `reply_to_post_id = post` (§5.9, comments). Week number: ISO week of `created_at` in `groups.time_zone`. The context list
   (advance order) comes from the opener: thread photos, `wall()` items, a week's `post_ids`, recap items, an album's items,
-  your favorites (`my_favorites`, newest favorite first).
+  your favorites (`my_favorites`, newest favorite first). Photos posted together (`posts.batch_id`, migration 0051): the
+  batch of a photo opened alone is `posts` with its group, author and `batch_id`, `created_at` order
+  (`photo.viewer.layout.batchDots`).
 - **RPCs**: `send_message(p_kind: text, p_reply_to_post_id)`; `create_post(…, p_reply_to_post_id)` (exactly this group);
   `react` / `unreact`; `tag_self` / `untag_self`; `delete_media` (owner: removes it from every group, chats, reactions, tags,
   albums, recaps, tribute contributions); `report(post)`, `block_user` via `safety.report` / `safety.block`;

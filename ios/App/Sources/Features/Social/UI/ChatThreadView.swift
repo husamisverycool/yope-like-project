@@ -688,6 +688,10 @@ struct ChatMessageRow: View {
                 .overlay(alignment: .topTrailing) {
                     if let durationMs = post?.media?.videoDurationMs { VideoTileMarker(durationMs: durationMs) }
                 }
+                .overlay(alignment: .topTrailing) {
+                    // `chat.thread.layout.batch`: the first of photos posted together (`layout.global.batchMarker`)
+                    if row.isBatch { BatchTileMarker(belowVideoMarker: post?.media?.videoDurationMs != nil) }
+                }
                 .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
                 .contentShape(DSShape.rounded(Tokens.Radii.globalCard))
         }
@@ -702,7 +706,7 @@ struct ChatMessageRow: View {
     private func photoLabel(_ post: PostWithMedia?) -> String {
         let time = SocialFormat.time(message.createdAt)
         let label = row.isMine ? Copy.chatThreadA11yPhotoMine(time: time) : Copy.chatThreadA11yPhoto(name: authorName, time: time)
-        return SocialA11y.withVideo(label, media: post?.media)
+        return SocialA11y.withBatch(SocialA11y.withVideo(label, media: post?.media), isBatch: row.isBatch)
     }
 
     // MARK: Quotes (`chat.thread.layout.replyQuote`)

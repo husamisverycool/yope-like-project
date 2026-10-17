@@ -114,11 +114,18 @@ final class PhotoViewerModel {
         selection = context.start
         contextGroupID = context.groupID
         expandsReveal = context.opensReveal
+        expandsBatch = context.opensReveal
         showsGroupName = context.showsGroupName
     }
 
     @ObservationIgnored private let contextGroupID: GroupID?
     @ObservationIgnored private var expandsReveal: Bool
+    /// Opened on one photo by a link (a push, `groups.screen`): a photo of a batch opens with its batch
+    /// (`photo.viewer.layout.batchDots`). Once.
+    @ObservationIgnored private var expandsBatch: Bool
+    /// The batches among the context's photos (`layout.global.photoBatch`), each in posted order, two photos or more;
+    /// side by side in `postIDs`.
+    private(set) var batches: [[PostID]] = []
 
     // MARK: Derived
 
@@ -152,6 +159,28 @@ final class PhotoViewerModel {
         guard postIDs.count > 1, let index = postIDs.firstIndex(of: selection) else { return 1 }
         return Double(index + 1) / Double(postIDs.count)
     }
+
+    /// `photo.viewer.layout.batchDots`: the photos of the batch the photo on screen belongs to, in posted order (those
+    /// still in the context and not gone); empty when it was posted alone or is the one photo left of its batch.
+    var currentBatch: [PostID] { batchMembers(of: selection) }
+
+    /// The photos of the batch `id` belongs to, in posted order (still in the context and not gone, `id` always); empty
+    /// when it was posted alone or is the one photo left of its batch.
+    func batchMembers(of id: PostID) -> [PostID] {
+        guard let batch = batches.first(where: { $0.contains(id) }) else { return [] }
+        let present = Set(postIDs.filter { !gone.contains($0) || $0 == id })
+        let members = batch.filter { present.contains($0) }
+        return members.count > 1 ? members : []
+    }
+
+    /// The page dots' position: `id` among the photos of its batch (positions, never a count); nil without a batch.
+    func batchPosition(of id: PostID) -> PhotoBatchPosition? {
+        let members = batchMembers(of: id)
+        return PhotoBatches.position(of: id, in: members, batch: members)
+    }
+
+    /// The photo on screen's place in its batch.
+    var batchPosition: PhotoBatchPosition? { batchPosition(of: selection) }
 
     func taggedPeople(on postID: PostID) -> [UserID] { tagged[postID] ?? [] }
 
@@ -198,6 +227,7 @@ final class PhotoViewerModel {
         }
         for id in postIDs where posts[id] == nil { gone.insert(id) }
         await expandReveal()
+        await arrangeBatches()
         phase = .ready
         await loadDetails()
         await loadSelectedDetails()
@@ -212,6 +242,42 @@ final class PhotoViewerModel {
               together.contains(where: { $0.id == selection }) else { return }
         for photo in together { posts[photo.id] = photo }
         postIDs = together.map(\.id)
+    }
+
+    /// `photo.viewer.layout.batchDots`: opened on one photo by a link, a photo of a batch opens with its batch (once; a
+    /// failure keeps the one photo); then every batch among the photos sits side by side in posted order
+    /// (`PhotoBatches.gather`), the photo on screen kept.
+    private func arrangeBatches() async {
+        if expandsBatch {
+            expandsBatch = false
+            if postIDs.count == 1, let post = posts[selection], post.post.batchKey != nil,
+               let together = try? await data.batchWith(post.post), together.count > 1,
+               together.contains(where: { $0.id == selection }) {
+                for photo in together { posts[photo.id] = photo }
+                postIDs = together.map(\.id)
+            }
+        }
+        var byKey: [PhotoBatchKey: [PostWithMedia]] = [:]
+        var order: [PhotoBatchKey] = []
+        for id in postIDs {
+            guard let post = posts[id], let key = post.post.batchKey else { continue }
+            if byKey[key] == nil { order.append(key) }
+            byKey[key, default: []].append(post)
+        }
+        batches = order.compactMap { key -> [PostID]? in
+            guard let members = byKey[key], members.count > 1 else { return nil }
+            return members
+                .sorted { ($0.post.createdAt, $0.id.rawValue) < ($1.post.createdAt, $1.id.rawValue) }
+                .map(\.id)
+        }
+        for batch in batches { postIDs = PhotoBatches.gather(postIDs, batch: batch) }
+    }
+
+    /// The page dots' adjustable action: the `index`th photo (0-based) of the batch on screen.
+    func selectInBatch(_ index: Int) async {
+        let members = currentBatch
+        guard members.indices.contains(index) else { return }
+        await select(members[index])
     }
 
     /// Error line "Tap to retry".

@@ -20,6 +20,7 @@ import app.data.model.Message
 import app.data.model.PhotoSearchHit
 import app.data.model.MessageKind
 import app.data.model.Post
+import app.data.model.batchKey
 import app.data.model.PostTag
 import app.data.model.Profile
 import app.data.model.PublicAppConfig
@@ -211,6 +212,13 @@ class FakeSocialData(var me: String = ME) : SocialData {
     override suspend fun feed(groupId: String, before: Instant?): List<Post> {
         net("feed")
         return posts.values.filter { it.groupId == groupId && (before == null || it.createdAt.isBefore(before)) }.sortedByDescending { it.createdAt }.take(FEED)
+    }
+
+    /** Migration 0051: the photos of [post]'s batch in its group (same author and `batch_id`), oldest first. */
+    override suspend fun batchOf(post: Post): List<String> {
+        net("batchOf")
+        val key = post.batchKey ?: return emptyList()
+        return posts.values.filter { it.groupId == post.groupId && it.batchKey == key }.sortedWith(compareBy({ it.createdAt }, { it.id })).map { it.id }
     }
 
     override suspend fun posts(ids: Collection<String>): List<Post> { net("posts"); return ids.mapNotNull(posts::get) }

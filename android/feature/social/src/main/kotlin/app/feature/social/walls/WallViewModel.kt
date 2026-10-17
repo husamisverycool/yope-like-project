@@ -38,7 +38,8 @@ sealed interface WallTile {
     val createdAt: Instant
     val groupId: String?
 
-    data class Photo(val postId: String, val mediaId: String, val thumbPath: String?, override val createdAt: Instant, override val groupId: String?, val videoDurationMs: Long? = null) : WallTile {
+    /** [batchId]: the photos of one selection share it (`media.batch_id`, migration 0051); null for a photo posted alone. */
+    data class Photo(val postId: String, val mediaId: String, val thumbPath: String?, override val createdAt: Instant, override val groupId: String?, val videoDurationMs: Long? = null, val batchId: String? = null) : WallTile {
         override val key get() = "p:$postId"
     }
 
@@ -208,7 +209,7 @@ class WallLoader(private val data: SocialData, private val scope: CoroutineScope
                 WallItemKind.Post -> {
                     val postId = item.postId ?: return@mapNotNull null
                     val mediaId = item.mediaId ?: return@mapNotNull null
-                    WallTile.Photo(postId, mediaId, media[mediaId]?.imagePath(Media.Rendition.Thumb), item.createdAt, item.groupIds.firstOrNull(), media[mediaId]?.videoDurationMs)
+                    WallTile.Photo(postId, mediaId, media[mediaId]?.imagePath(Media.Rendition.Thumb), item.createdAt, item.groupIds.firstOrNull(), media[mediaId]?.videoDurationMs, media[mediaId]?.batchId)
                 }
                 WallItemKind.Collage -> {
                     val id = item.collageId ?: return@mapNotNull null

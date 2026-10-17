@@ -107,7 +107,7 @@ struct WallWeekList: View {
         let byID = Dictionary(uniqueKeysWithValues: week.tiles.map { ("photo-" + $0.id, $0) })
         return WeekStrip(
             tiles: WallTiles.tiles(for: week, model: model, canAdd: canAdd),
-            accessibilityLabel: { tile in label(tile, byID[tile.id]) },
+            accessibilityLabel: { tile in SocialA11y.withBatch(label(tile, byID[tile.id]), isBatch: tile.isBatch) },
             onSelect: { tile in select(tile, byID[tile.id]) }
         )
     }
@@ -169,7 +169,11 @@ enum WallTiles {
                 videoDurationMs = post.media?.videoDurationMs
             case let .collage(collage): path = collage.imagePath
             }
-            return WeekStripPhoto(id: tile.id, date: tile.createdAt, source: SocialImages.source(path), videoDurationMs: videoDurationMs)
+            // photos posted together: one tile, the batch's first photo with the batch marker (`layout.global.photoBatch`)
+            return WeekStripPhoto(
+                id: tile.id, date: tile.createdAt, source: SocialImages.source(path), videoDurationMs: videoDurationMs,
+                isBatch: week.isBatch(tile)
+            )
         }
         let days = SocialCalendar.days(of: week.weekStart).map { SocialCalendar.start(of: $0, in: model.timeZone) }
         return currentWeekTiles(
