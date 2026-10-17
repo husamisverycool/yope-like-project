@@ -200,6 +200,14 @@ data class MessageReaction(
     @SerialName("created_at") val createdAt: Instant,
 )
 
+/** §5.10b `chat_typing` (migration 0048): typing while [until] is in the future; never a number of people. */
+@Serializable
+data class ChatTyping(
+    @SerialName("group_id") val groupId: String,
+    @SerialName("user_id") val userId: String,
+    val until: Instant,
+)
+
 /** §5.10 `reactions`: rows `(user, emoji)`, never a number. */
 @Serializable
 data class Reaction(

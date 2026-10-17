@@ -149,3 +149,35 @@ describe('editing a caption', () => {
     expect(await hits('zebra')).not.toContain(post.id);
   });
 });
+
+describe('the typing line (migration 0048)', () => {
+  const typing = async (viewer: TestUser) =>
+    (await select(viewer.client, 'chat_typing', (q) => q.eq('group_id', g.id).gt('until', new Date().toISOString())))
+      .map((r: any) => r.user_id);
+
+  it('typing shows for a few seconds; stopping ends it at once; members only', async () => {
+    await rpc(b.client, 'set_typing', { p_group_id: g.id, p_typing: true });
+    expect(await typing(a)).toEqual([b.id]);
+    const [row] = await sql(`select extract(epoch from until - now()) as left from public.chat_typing where group_id = $1 and user_id = $2`, [g.id, b.id]);
+    expect(Number(row.left)).toBeGreaterThan(4);
+    expect(Number(row.left)).toBeLessThanOrEqual(6);
+    await rpc(b.client, 'set_typing', { p_group_id: g.id, p_typing: false });
+    expect(await typing(a)).toEqual([]);
+    await expectRpcError(rpc(stranger.client, 'set_typing', { p_group_id: g.id, p_typing: true }), 'not_group_member', 403);
+    expect(await select(stranger.client, 'chat_typing', (q) => q.eq('group_id', g.id))).toEqual([]);
+  });
+
+  it('a block hides typing both ways; leaving takes the row', async () => {
+    await rpc(c.client, 'set_typing', { p_group_id: g.id, p_typing: true });
+    await rpc(b.client, 'block_user', { p_user_id: c.id });
+    try {
+      expect(await typing(b)).toEqual([]);
+      await rpc(b.client, 'set_typing', { p_group_id: g.id, p_typing: true });
+      expect(await typing(c)).toEqual([c.id]);
+    } finally {
+      await rpc(b.client, 'unblock_user', { p_user_id: c.id });
+    }
+    await rpc(c.client, 'leave_group', { p_group_id: g.id });
+    expect(await sql(`select 1 from public.chat_typing where group_id = $1 and user_id = $2`, [g.id, c.id])).toEqual([]);
+  });
+});

@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.data.model.Album
 import app.data.model.AlbumItem
 import app.data.model.Block
+import app.data.model.ChatTyping
 import app.data.model.Collage
 import app.data.model.DailyInvitation
 import app.data.model.Device
@@ -78,6 +79,7 @@ class SchemaConformanceIntegrationTest {
         "messages" to Message.serializer().descriptor,
         "reactions" to Reaction.serializer().descriptor,
         "message_reactions" to MessageReaction.serializer().descriptor,
+        "chat_typing" to ChatTyping.serializer().descriptor,
         "selfie_reactions" to SelfieReaction.serializer().descriptor,
         "post_tags" to PostTag.serializer().descriptor,
         "daily_invitations" to DailyInvitation.serializer().descriptor,

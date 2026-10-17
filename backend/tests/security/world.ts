@@ -105,6 +105,7 @@ export async function seedFullGroup(users: TestUser[], name = 'Seeded'): Promise
   await rpc(c.client, 'react', { p_post_id: p1[0].id, p_emoji: '😂' });
   await rpc(c.client, 'tag_self', { p_post_id: p1[0].id });
   await rpc(c.client, 'react_to_message', { p_message_id: t1.id, p_emoji: '❤️' }); // a reaction on a message (0047)
+  await rpc(b.client, 'set_typing', { p_group_id: group.id, p_typing: true }); // the typing line (0048)
 
   // collage (worker-made) + its object
   const collageId = randomUUID();

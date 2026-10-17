@@ -222,6 +222,7 @@ describe('app_config / public_app_config', () => {
       'message_edit_window_s',
       'min_age_years',
       'overnight_reveal_local_time',
+      'typing_ttl_s',
       'video_max_ms',
       'week_start_isodow',
       'weekly_question_keys',

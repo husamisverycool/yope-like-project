@@ -37,6 +37,8 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     UnreactToMessage("unreact_to_message", setOf("p_message_id")),
     EditMessage("edit_message", setOf("p_message_id", "p_body")),
     EditCaption("edit_caption", setOf("p_post_id", "p_caption")),
+    /** Migration 0048: "{name} is typing…" — on while typing (again every few seconds), off when stopped or sent. */
+    SetTyping("set_typing", setOf("p_group_id", "p_typing")),
     React("react", setOf("p_post_id", "p_emoji")),
     Unreact("unreact", setOf("p_post_id", "p_emoji")),
     TagSelf("tag_self", setOf("p_post_id")),
@@ -146,6 +148,7 @@ object Tables {
     const val MESSAGES = "messages"
     const val REACTIONS = "reactions"
     const val MESSAGE_REACTIONS = "message_reactions"
+    const val CHAT_TYPING = "chat_typing"
     const val SELFIE_REACTIONS = "selfie_reactions"
     const val POST_TAGS = "post_tags"
     const val DAILY_INVITATIONS = "daily_invitations"

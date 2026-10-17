@@ -36,6 +36,7 @@ describe('realtime', () => {
     );
     // developing_posts is never published (clients read only group_developing); its changes are a broadcast
     expect(rows.map((r) => r.tablename)).toEqual([
+      'chat_typing',
       'message_reactions',
       'messages',
       'plan_answers',

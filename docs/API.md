@@ -347,6 +347,18 @@ people with a block with you, minus reactions on messages by people with a block
 
 Text and voice messages only: a photo message is reacted to through its post (`react`); joined / left lines take none.
 
+### 5.10b `chat_typing`
+
+The typing line (migration 0048): "{name} is typing…" with names (WhatsApp), never "N typing", no read state. Read:
+members, minus people with a block with you (so a typing line never crosses a block). One row per member and group.
+
+| Column | Type | Notes |
+|---|---|---|
+| `group_id`, `user_id` | uuid, uuid | primary key |
+| `until` | timestamptz | the person is typing while `until > now()`; show nothing once it has passed |
+
+Subscribe to its inserts and updates with the group's other tables; on open, read the rows with `until > now()`.
+
 ### 5.11 `post_tags`
 
 "I'm in this" self-tags. Read: same rule as reactions.
@@ -773,6 +785,14 @@ Sets or replaces your one reaction on a text or voice message (migration 0047), 
 `message_not_found` (not a member, a block either way), `invalid_kind` (photo, joined, left), `invalid_emoji`.
 A removal is broadcast as `message_reactions_changed`.
 
+#### `set_typing`
+```
+set_typing(p_group_id uuid, p_typing boolean) → void
+```
+`true` while the person types (call again at most every `typing_ttl_s / 2` seconds while they keep typing): their
+`chat_typing.until` becomes now + `typing_ttl_s` (6 s). `false` when the field empties or the message is sent: `until`
+= now. Members only (`not_group_member`). Records nothing when `typing_ttl_s` is NULL.
+
 #### `edit_message`
 ```
 edit_message(p_message_id uuid, p_body text) → messages
@@ -1127,7 +1147,7 @@ Rules:
 
 ### 8.1 Postgres changes (inserts and updates)
 
-Published tables: `messages`, `posts`, `reactions`, `message_reactions` (and the plans tables). **Inserts and updates only.** Each
+Published tables: `messages`, `posts`, `reactions`, `message_reactions`, `chat_typing` (and the plans tables). **Inserts and updates only.** Each
 event is checked against the subscriber's RLS, so you only get rows you could select
 (your groups, minus blocks). Subscribe per open group:
 
@@ -1283,6 +1303,7 @@ A NULL value means "not sourced yet", and the dependent feature fails closed (ex
 | `invite_ttl_seconds` | NULL = links never expire (owner decision 27; migration 0026) | no | `create_invite` |
 | `birthday_request_lead_days` | 7 | no | `due_birthday_requests` |
 | `year_story_release_month_day` | "12-01" | no | `due_year_stories` |
+| `typing_ttl_s` | 6 (WhatsApp; migration 0048) | yes | `set_typing`; the apps resend every `typing_ttl_s / 2` while typing |
 | `message_edit_window_s` / `message_edit_max` | 900 / 5 (Apple Messages; migration 0047) | yes | `edit_message` (fails closed if NULL); the apps offer Edit only inside them |
 | `weekly_question_keys` | the nine keys `question.weekly.q01` … `q09` in order (owner decision 30, migration 0024) | yes | `current_group_question` |
 | `job_lock_timeout_seconds` / `job_backoff_base_seconds` / `job_backoff_max_seconds` | 600 / 30 / 3600 | no | job queue |

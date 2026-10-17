@@ -211,6 +211,7 @@ describe('group isolation: RPCs', () => {
     unreact_to_message: { args: () => ({ p_message_id: seeded.messageIds[0] }), expect: 'error' },
     edit_message: { args: () => ({ p_message_id: seeded.messageIds[0], p_body: 'x' }), expect: 'error' },
     edit_caption: { args: () => ({ p_post_id: seeded.postIds[0], p_caption: 'x' }), expect: 'error' },
+    set_typing: { args: () => ({ p_group_id: seeded.group.id, p_typing: true }), expect: 'error' }, // typing line (0048)
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {
