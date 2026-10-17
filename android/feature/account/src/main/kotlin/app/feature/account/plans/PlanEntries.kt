@@ -1,7 +1,7 @@
 package app.feature.account.plans
 
 import android.content.Context
-import android.text.format.DateUtils
+import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +37,7 @@ import app.ui.components.DayTile
 import app.ui.components.HeaderIconButton
 import app.ui.foundation.PageRoles
 import app.ui.foundation.tapClickable
+import app.ui.format.Formats
 import app.ui.text.TextRoles
 import kotlinx.coroutines.CancellationException
 import java.time.Instant
@@ -193,7 +194,7 @@ fun rememberGroupDeveloping(groupId: String, refreshKey: Any?): Developing? {
 /**
  * The developing tile (`camera.overnight.layout.developingTile`): one C-17 placeholder tile per group, whatever the number
  * of photos — fill `color.global.control`, the word `camera.overnight.tile.label` centred (`tileLabel`, secondary text);
- * not a button. TalkBack: `camera.overnight.tile.a11y` with `{reveal}` (the relative day + time, `DateUtils`).
+ * not a button. TalkBack: `camera.overnight.tile.a11y` with `{reveal}` (the relative day + time inside the sentence).
  */
 @Composable
 fun developingTile(developing: Developing?): DayTile? {
@@ -207,9 +208,12 @@ fun developingTile(developing: Developing?): DayTile? {
     )
 }
 
-/** `{reveal}`: "Tomorrow, 9:00 AM" — the platform's relative day and time (`camera.overnight` → Platform notes). */
+/**
+ * `{reveal}`: "tomorrow, 9:00 AM" — the platform's relative day (middle-of-sentence capitalization) and time
+ * (`camera.overnight` → Platform notes; [Formats.dayAndTimeInSentence]).
+ */
 internal fun revealWords(context: Context, at: Instant): String =
-    DateUtils.getRelativeDateTimeString(context, at.toEpochMilli(), DateUtils.DAY_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0).toString()
+    Formats.dayAndTimeInSentence(at, DateFormat.getTimeFormat(context).format(java.util.Date.from(at)))
 
 /** Stable key of the developing tile in the week strip. */
 const val DEVELOPING_KEY = "day-tile-developing" // provenance-ok: list key, not shown

@@ -60,9 +60,12 @@ enum PlanFormats {
         ListFormatter.localizedString(byJoining: names)
     }
 
-    /// `{reveal}` of `camera.overnight.tile.a11y`: the relative day and time ("tomorrow at 9:00 AM").
+    /// `{reveal}` of `camera.overnight.tile.a11y`: the relative day and time inside the sentence ("tomorrow at 9:00 AM",
+    /// `formattingContext .middleOfSentence`).
     static func reveal(_ date: Date) -> String {
-        formatter(timeZone: .current, date: .medium, time: .short, relative: true).string(from: date)
+        let inSentence = formatter(timeZone: .current, date: .medium, time: .short, relative: true)
+        inSentence.formattingContext = .middleOfSentence
+        return inSentence.string(from: date)
     }
 }
 

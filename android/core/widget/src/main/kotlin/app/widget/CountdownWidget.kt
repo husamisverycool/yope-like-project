@@ -149,15 +149,17 @@ class CountdownStore(val root: File) {
  * by us — ICU `RelativeDateTimeFormatter` (style long, `DisplayContext.CAPITALIZATION_FOR_BEGINNING_OF_SENTENCE`):
  * ≥ 2 days `format(n, NEXT, DAYS)` ("In 3 days"), 1 day `format(NEXT, DAY)` ("Tomorrow"), the plan's day
  * `format(THIS, DAY)` (the same-day word, pinned by `CountdownWordsTest`). Never hours, minutes or seconds (T4).
+ * [inSentence]: the same words with middle-of-sentence capitalization (`CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE`), for
+ * `widget.countdown.a11y.plan` ("{title} with {group}, {countdown}").
  */
 object CountdownWords {
-    fun text(days: Long, locale: Locale = Locale.getDefault()): String? {
+    fun text(days: Long, locale: Locale = Locale.getDefault(), inSentence: Boolean = false): String? {
         if (days < 0) return null
         val formatter = RelativeDateTimeFormatter.getInstance(
             ULocale.forLocale(locale),
             null,
             RelativeDateTimeFormatter.Style.LONG,
-            DisplayContext.CAPITALIZATION_FOR_BEGINNING_OF_SENTENCE,
+            if (inSentence) DisplayContext.CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE else DisplayContext.CAPITALIZATION_FOR_BEGINNING_OF_SENTENCE,
         )
         return when (days) {
             0L -> formatter.format(RelativeDateTimeFormatter.Direction.THIS, RelativeDateTimeFormatter.AbsoluteUnit.DAY)
@@ -322,7 +324,8 @@ internal fun CountdownContent(store: CountdownStore, today: LocalDate, preview: 
     var modifier = GlanceModifier.fillMaxSize().appWidgetBackground()
     if (intent != null && !preview) modifier = modifier.clickable(actionStartActivity(intent))
     val label = when {
-        plan != null && countdown != null -> context.getString(R.string.widget_countdown_a11y_plan, plan.title, plan.groupName, countdown)
+        plan != null && countdown != null ->
+            context.getString(R.string.widget_countdown_a11y_plan, plan.title, plan.groupName, CountdownWords.text(plan.daysFrom(today), inSentence = true))
         CountdownEmptyState.of(snapshot, signedOut) == CountdownEmptyState.SignedOut -> context.getString(R.string.widget_home_small_empty_signedout)
         CountdownEmptyState.of(snapshot, signedOut) == CountdownEmptyState.NoPlans -> CountdownBlocked.noPlans?.let(context::getString)
         else -> null

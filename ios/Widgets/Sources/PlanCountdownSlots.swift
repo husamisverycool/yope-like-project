@@ -64,10 +64,13 @@ struct PlanCountdownContent {
         }
     }
 
-    /// `widget.countdown.a11y.plan` ("{title} with {group}, {countdown}"); a state: its visible line.
+    /// `widget.countdown.a11y.plan` ("{title} with {group}, {countdown}", the day words inside the sentence); a state:
+    /// its visible line.
     var accessibilityLabel: String {
         switch state {
-        case .plan: return Copy.widgetCountdownA11yPlan(title: title ?? "", group: groupName ?? "", countdown: countdown ?? "")
+        case .plan:
+            let spoken = days.flatMap { PlanCountdownText.text(days: $0, context: .middleOfSentence) }
+            return Copy.widgetCountdownA11yPlan(title: title ?? "", group: groupName ?? "", countdown: spoken ?? "")
         case .noPlans, .notSetUp, .signedOut: return stateLine ?? ""
         case .loading: return ""
         }
@@ -76,10 +79,13 @@ struct PlanCountdownContent {
 
 /// The countdown line (`widget.countdown` "The countdown line"): the platform's relative formatter at day granularity,
 /// never typed by us and never hours, minutes or seconds — ≥ 2 days `unitsStyle .full` ("In 3 days"), 1 day `.named`
-/// ("Tomorrow"), both `formattingContext .beginningOfSentence`. The same day's word (`.named`, 0 days) is BLOCKED until
-/// a snapshot test pins it (plans.md §12 item 2): DEBUG builds show it, release builds leave the line out.
+/// ("Tomorrow"), both `formattingContext .beginningOfSentence` (`.middleOfSentence` inside the accessibility label). The
+/// same day's word (`.named`, 0 days) is BLOCKED until a snapshot test pins it (plans.md §12 item 2): DEBUG builds show
+/// it, release builds leave the line out.
 enum PlanCountdownText {
-    static func text(days: Int, locale: Locale = .current) -> String? {
+    static func text(
+        days: Int, locale: Locale = .current, context: Formatter.Context = .beginningOfSentence
+    ) -> String? {
         guard days >= 0 else { return nil }
         #if !DEBUG
         if days == 0 { return nil }
@@ -88,7 +94,7 @@ enum PlanCountdownText {
         formatter.locale = locale
         formatter.unitsStyle = .full
         formatter.dateTimeStyle = days <= 1 ? .named : .numeric
-        formatter.formattingContext = .beginningOfSentence
+        formatter.formattingContext = context
         return formatter.localizedString(from: DateComponents(day: days))
     }
 }

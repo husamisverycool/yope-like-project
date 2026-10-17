@@ -16,6 +16,7 @@ import app.feature.capture.camera.CaptureMode
 import app.feature.capture.camera.OvernightChrome
 import app.feature.capture.sendto.SendToViewModel
 import app.testing.SamplePhotos
+import app.ui.format.Formats
 import app.ui.theme.AppTheme
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import org.junit.Before
@@ -24,13 +25,16 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import java.time.Instant
+import java.time.ZoneOffset
+import java.util.Locale
 import java.util.TimeZone
 
 /**
  * camera.overnight part A per state, as ScreenSnapshotTest draws the capture surfaces (393 × 852 dp at 3×, the whole window
  * so the native sheet is in the image): the camera in 9 AM mode with the destination pill (all / one / some groups, a long
  * name truncated), the destination sheet in both appearances, and its no-groups state. `{time}` and `{reveal}` are the
- * en-US platform output for 09:00 and the next morning.
+ * en-US platform output for 09:00 and the next morning (the day inside the sentence: "tomorrow, 9:00 AM").
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -52,7 +56,10 @@ class OvernightSnapshotTest {
     private val photo get() = Images.photo(900, 1200, 0).asImageBitmap()
     private val groups = listOf(group("g1", "Sunday dinners"), group("g2", "Roommates"), group("g3", "Family"))
     private val covers = mapOf("g1" to SamplePhotos.painter("dinner-long-table-3x4", 1, 1), "g2" to SamplePhotos.painter("movie-night-couch-4x3", 1, 1))
-    private val chrome = OvernightChrome(time = "9:00 AM", reveal = "Tomorrow, 9:00 AM", covers = covers)
+    private val reveal = Formats.dayAndTimeInSentence(
+        Instant.parse("2026-10-16T09:00:00Z"), "9:00 AM", ZoneOffset.UTC, Instant.parse("2026-10-15T20:00:00Z"), Locale.US,
+    )
+    private val chrome = OvernightChrome(time = "9:00 AM", reveal = reveal, covers = covers)
 
     private val nineAm = CameraViewModel.UiState(
         permission = CameraViewModel.Permission.Granted,

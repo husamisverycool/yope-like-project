@@ -400,6 +400,7 @@ final class PlansModelTests: XCTestCase {
         XCTAssertEqual(PlanCountdownText.text(days: 3, locale: english), "In 3 days")
         XCTAssertEqual(PlanCountdownText.text(days: 2, locale: english), "In 2 days")
         XCTAssertEqual(PlanCountdownText.text(days: 1, locale: english), "Tomorrow")
+        XCTAssertEqual(PlanCountdownText.text(days: 1, locale: english, context: .middleOfSentence), "tomorrow", "inside the accessibility label")
         XCTAssertEqual(PlanCountdownText.text(days: 0, locale: english), "Today")
         XCTAssertNil(PlanCountdownText.text(days: -1, locale: english), "a past day has no countdown")
     }

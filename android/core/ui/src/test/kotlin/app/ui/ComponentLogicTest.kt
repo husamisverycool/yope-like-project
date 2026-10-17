@@ -108,6 +108,11 @@ class ComponentLogicTest {
         assertEquals("1d", Formats.elapsed(now.minusSeconds(26 * 3600), now, Locale.US))
         assertEquals("May 1, 2019", Formats.date(Instant.parse("2019-05-01T12:00:00Z"), utc, Locale.US))
         assertEquals("January 25, 2024", Formats.longDate(LocalDate.of(2024, 1, 25), Locale.US))
+        // A day inside a sentence keeps the sentence's case ("…for these groups tomorrow at 9:00 AM.").
+        val tomorrow = Formats.dayAndTimeInSentence(Instant.parse("2026-10-16T09:00:00Z"), "9:00 AM", utc, now, Locale.US)
+        assertTrue(tomorrow, tomorrow.startsWith("tomorrow") && tomorrow.endsWith("9:00 AM"))
+        val today = Formats.dayAndTimeInSentence(now.plusSeconds(3600), "1:00 PM", utc, now, Locale.US)
+        assertTrue(today, today.startsWith("today"))
     }
 
     @Test fun glyphInkIsInsideTheViewport() {

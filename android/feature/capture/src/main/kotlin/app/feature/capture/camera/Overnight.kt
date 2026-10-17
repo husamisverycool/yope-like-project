@@ -9,7 +9,6 @@ package app.feature.capture.camera
 
 import android.content.Context
 import android.text.format.DateFormat
-import android.text.format.DateUtils
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -61,6 +60,7 @@ import app.ui.components.SegmentedControl
 import app.ui.foundation.DsMotion
 import app.ui.foundation.PageRoles
 import app.ui.foundation.tapClickable
+import app.ui.format.Formats
 import app.ui.haptics.rememberHaptics
 import app.ui.system.DsBottomSheet
 import app.ui.text.TextRoles
@@ -101,8 +101,8 @@ object OvernightReveal {
 
 /**
  * `{time}` and `{reveal}` in the copy, formatted by the platform (camera.overnight → Platform notes): `{time}` = 09:00 in the
- * locale's short time format (`DateFormat.getTimeFormat`), `{reveal}` = the relative day and time
- * (`DateUtils.getRelativeDateTimeString`).
+ * locale's short time format (`DateFormat.getTimeFormat`), `{reveal}` = the relative day and time inside the sentence
+ * ("tomorrow, 9:00 AM": ICU's middle-of-sentence day word, [Formats.dayAndTimeInSentence]).
  */
 object OvernightFormats {
     fun time(context: Context, zone: ZoneId = ZoneId.systemDefault()): String {
@@ -111,7 +111,7 @@ object OvernightFormats {
     }
 
     fun reveal(context: Context, at: Instant): String =
-        DateUtils.getRelativeDateTimeString(context, at.toEpochMilli(), DateUtils.DAY_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0).toString()
+        Formats.dayAndTimeInSentence(at, DateFormat.getTimeFormat(context).format(Date.from(at)))
 }
 
 /**

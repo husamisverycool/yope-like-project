@@ -1,7 +1,9 @@
 package app.ui.format
 
 import android.icu.text.DateIntervalFormat
+import android.icu.text.DisplayContext
 import android.icu.text.MeasureFormat
+import android.icu.text.RelativeDateTimeFormatter
 import android.icu.util.DateInterval
 import android.icu.util.Measure
 import android.icu.util.MeasureUnit
@@ -13,6 +15,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 /**
@@ -56,6 +59,38 @@ object Formats {
             else -> Measure(d.toMinutes().coerceAtLeast(1), MeasureUnit.MINUTE)
         }
         return MeasureFormat.getInstance(ULocale.forLocale(locale), MeasureFormat.FormatWidth.NARROW).format(measure)
+    }
+
+    /**
+     * A day and a clock time inside a sentence ("…develop for these groups tomorrow, 9:00 AM."): the platform's relative
+     * day with middle-of-sentence capitalization (ICU `RelativeDateTimeFormatter`, style long,
+     * `DisplayContext.CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE`) — today / tomorrow / yesterday, "in N days" / "N days ago"
+     * within a week (the span `DateUtils.getRelativeDateTimeString` words), else the locale's medium date — joined to
+     * [time] (the caller's platform-formatted clock time) by ICU's own `combineDateAndTime`. PLATFORM: nothing typed here.
+     */
+    fun dayAndTimeInSentence(
+        at: Instant,
+        time: String,
+        zone: ZoneId = ZoneId.systemDefault(),
+        now: Instant = Instant.now(),
+        locale: Locale = Locale.getDefault(),
+    ): String {
+        val formatter = RelativeDateTimeFormatter.getInstance(
+            ULocale.forLocale(locale),
+            null,
+            RelativeDateTimeFormatter.Style.LONG,
+            DisplayContext.CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE,
+        )
+        val days = ChronoUnit.DAYS.between(now.atZone(zone).toLocalDate(), at.atZone(zone).toLocalDate())
+        val day = when {
+            days == 0L -> formatter.format(RelativeDateTimeFormatter.Direction.THIS, RelativeDateTimeFormatter.AbsoluteUnit.DAY)
+            days == 1L -> formatter.format(RelativeDateTimeFormatter.Direction.NEXT, RelativeDateTimeFormatter.AbsoluteUnit.DAY)
+            days == -1L -> formatter.format(RelativeDateTimeFormatter.Direction.LAST, RelativeDateTimeFormatter.AbsoluteUnit.DAY)
+            days in 2 until DAYS_PER_WEEK -> formatter.format(days.toDouble(), RelativeDateTimeFormatter.Direction.NEXT, RelativeDateTimeFormatter.RelativeUnit.DAYS)
+            days in -DAYS_PER_WEEK + 1..-2 -> formatter.format((-days).toDouble(), RelativeDateTimeFormatter.Direction.LAST, RelativeDateTimeFormatter.RelativeUnit.DAYS)
+            else -> date(at, zone, locale)
+        }
+        return formatter.combineDateAndTime(day, time)
     }
 
     /** ICU skeleton: abbreviated month + day. */

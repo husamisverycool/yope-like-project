@@ -37,6 +37,9 @@ class CountdownWidgetTest {
         assertNull(CountdownWords.text(-1, Locale.US))
         // Another locale writes its own words (sentence case at the start).
         assertEquals("Mañana", CountdownWords.text(1, Locale.forLanguageTag("es-ES")))
+        // Inside the TalkBack sentence ("{title} with {group}, {countdown}").
+        assertEquals("tomorrow", CountdownWords.text(1, Locale.US, inSentence = true))
+        assertEquals("in 2 days", CountdownWords.text(2, Locale.US, inSentence = true))
     }
 
     @Test fun theStoreKeepsOnlyTheCoversItsSnapshotNames() {
