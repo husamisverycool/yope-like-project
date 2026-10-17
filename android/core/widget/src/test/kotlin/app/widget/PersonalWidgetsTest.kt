@@ -1,5 +1,6 @@
 package app.widget
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.model.WidgetSnapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -9,6 +10,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
 import java.io.IOException
 import kotlin.math.abs
 
@@ -17,6 +19,7 @@ import kotlin.math.abs
  * Groups' empty states (`widget.home.small.layout.allGroups`) and the Frame style's print geometry
  * (`widget.styles.layout.frame`, sizes from design/surfaces/widget.styles.md → Frame).
  */
+@RunWith(AndroidJUnit4::class)
 class PersonalWidgetsTest {
     @get:Rule val tmp = TemporaryFolder()
     private val slots by lazy { WidgetSlotStore(tmp.newFolder("widgets-friends")) }

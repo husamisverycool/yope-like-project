@@ -5,10 +5,9 @@
 PRODUCT_BUNDLE_IDENTIFIER = $(APP_BUNDLE_ID).share
 INFOPLIST_FILE = ShareExtension/Info.plist
 CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements
-// A share extension has no `openURL`: it opens the containing app through the responder chain's UIApplication, whose
-// `open(_:options:completionHandler:)` is not marked extension-safe, so the extension-only API check is off for this
-// target (it links AppModels only, Foundation code).
-APPLICATION_EXTENSION_API_ONLY = NO
+// Extension-only APIs (Xcode requires it of an app extension); the containing app is opened through the responder
+// chain by selector (ShareViewController.openContainingApp).
+APPLICATION_EXTENSION_API_ONLY = YES
 SKIP_INSTALL = YES
 // NSItemProvider's callbacks carry SDK-dependent Sendable annotations; Swift 5 mode with complete checking reports
 // concurrency issues as warnings (as NotificationService).

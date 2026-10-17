@@ -42,10 +42,13 @@ final class ShareViewController: UIViewController {
     /// containing app's own scheme. When it cannot, the items wait in the inbox and the app takes them the next time it
     /// comes to the foreground.
     private func openContainingApp(_ url: URL) {
+        // Reached by selector: `UIApplication.open` is not extension-safe, and the target is built extension-API-only.
+        typealias Open = @convention(c) (AnyObject, Selector, NSURL, NSDictionary, (@convention(block) (Bool) -> Void)?) -> Void
+        let selector = NSSelectorFromString("openURL:options:completionHandler:")
         var responder: UIResponder? = self
         while let current = responder {
-            if let application = current as? UIApplication {
-                application.open(url, options: [:], completionHandler: nil)
+            if current.responds(to: selector), let implementation = current.method(for: selector) {
+                unsafeBitCast(implementation, to: Open.self)(current, selector, url as NSURL, NSDictionary(), nil)
                 return
             }
             responder = current.next
