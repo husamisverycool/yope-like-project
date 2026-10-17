@@ -56,6 +56,8 @@ data class Group(
     @SerialName("updated_at") val updatedAt: Instant,
     /** §14.4 the weekly question is on for the group (`set_group_weekly_question`, admins; default off). Last, so positional calls keep working. */
     @SerialName("weekly_question") val weeklyQuestion: Boolean = false,
+    /** Migration 0039: the photo `set_group_cover_from_post` made the cover (its rendition is `cover_path`); null for an uploaded cover. */
+    @SerialName("cover_post_id") val coverPostId: String? = null,
 )
 
 /** §5.4 `group_members` */
@@ -295,6 +297,9 @@ data class AlbumItem(
     @SerialName("album_id") val albumId: String,
     @SerialName("post_id") val postId: String,
     val position: Int,
+    /** Migration 0039: who added the photo (`add_to_album`; they may remove it); null once their account is gone. */
+    @SerialName("added_by") val addedBy: String? = null,
+    @SerialName("added_at") val addedAt: Instant = Instant.EPOCH,
 )
 
 /** §5.16 `tribute_requests` (never visible to the honoree). */

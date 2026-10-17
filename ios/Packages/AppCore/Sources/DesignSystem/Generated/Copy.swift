@@ -9,10 +9,6 @@ public enum Copy {
     public static var accountDeleteWebKept: String { CopyLookup.string("account.delete.web.kept", default: "Your profile and everything you added go with it, and nothing is kept.") }
     /// "No longer have the app? Write to {email} with your account's phone number and we'll delete your account for you." — Retro · account.delete.web · new · SOURCED
     public static func accountDeleteWebRequest(email: String) -> String { CopyLookup.format("account.delete.web.request", default: "No longer have the app? Write to {email} with your account's phone number and we'll delete your account for you.", ["email": email]) }
-    /// "Already in this album" — Retro · albums.add · new · SOURCED
-    public static var albumsAddA11yInAlbum: String { CopyLookup.string("albums.add.a11y.inAlbum", default: "Already in this album") }
-    /// "Add to Album" — Retro · albums.add · verbatim · SOURCED
-    public static var albumsAddTitle: String { CopyLookup.string("albums.add.title", default: "Add to Album") }
     /// "View recaps" — Retro · albums.list · new · SOURCED
     public static var albumsListEmptyAction: String { CopyLookup.string("albums.list.empty.action", default: "View recaps") }
     /// "Save the photos of a week as an album from its recap." — Retro · albums.list · new · SOURCED
@@ -31,10 +27,6 @@ public enum Copy {
     public static var albumsListSearchEmpty: String { CopyLookup.string("albums.list.search.empty", default: "No matching albums") }
     /// "Albums" — Retro · albums.list · verbatim · SOURCED
     public static var albumsListTitle: String { CopyLookup.string("albums.list.title", default: "Albums") }
-    /// "Selected" — Retro · albums.pick · new · SOURCED
-    public static var albumsPickA11ySelected: String { CopyLookup.string("albums.pick.a11y.selected", default: "Selected") }
-    /// "Add to album" — Retro · albums.view · verbatim · SOURCED
-    public static var albumsViewA11yAdd: String { CopyLookup.string("albums.view.a11y.add", default: "Add to album") }
     /// "Cover of {album_name}" — Retro · albums.view · new · SOURCED
     public static func albumsViewA11yCover(albumName: String) -> String { CopyLookup.format("albums.view.a11y.cover", default: "Cover of {album_name}", ["album_name": albumName]) }
     /// "More Options" — Retro · albums.view · verbatim · SOURCED
@@ -45,28 +37,12 @@ public enum Copy {
     public static var albumsViewDeleteMessage: String { CopyLookup.string("albums.view.delete.message", default: "The photos stay in your group. Only the album goes away.") }
     /// "Delete this album?" — Retro · albums.view · new · SOURCED
     public static var albumsViewDeleteTitle: String { CopyLookup.string("albums.view.delete.title", default: "Delete this album?") }
-    /// "Saved!" — Retro · albums.view · verbatim · SOURCED
-    public static var albumsViewDownloadDone: String { CopyLookup.string("albums.view.download.done", default: "Saved!") }
-    /// "This album has no media" — Retro · albums.view · verbatim · SOURCED
-    public static var albumsViewDownloadEmpty: String { CopyLookup.string("albums.view.download.empty", default: "This album has no media") }
-    /// "Check your connection and try again." — Retro · albums.view · verbatim · SOURCED
-    public static var albumsViewDownloadOffline: String { CopyLookup.string("albums.view.download.offline", default: "Check your connection and try again.") }
-    /// "Try Again" — Retro · albums.view · verbatim · SOURCED
-    public static var albumsViewDownloadPartialRetry: String { CopyLookup.string("albums.view.download.partial.retry", default: "Try Again") }
-    /// "Couldn't save some photos" — Retro · albums.view · adapted · SOURCED
-    public static var albumsViewDownloadPartialTitle: String { CopyLookup.string("albums.view.download.partial.title", default: "Couldn't save some photos") }
-    /// "Downloading…" — Retro · albums.view · verbatim · SOURCED
-    public static var albumsViewDownloadProgress: String { CopyLookup.string("albums.view.download.progress", default: "Downloading…") }
     /// "Photos removed by the people who shared them leave albums too." — Retro · albums.view · new · SOURCED
     public static var albumsViewEmptyDetail: String { CopyLookup.string("albums.view.empty.detail", default: "Photos removed by the people who shared them leave albums too.") }
     /// "Nothing has been added to this album" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewEmptyTitle: String { CopyLookup.string("albums.view.empty.title", default: "Nothing has been added to this album") }
     /// "Delete Album" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewMenuDelete: String { CopyLookup.string("albums.view.menu.delete", default: "Delete Album") }
-    /// "Download all photos" — Retro · albums.view · verbatim · SOURCED
-    public static var albumsViewMenuDownload: String { CopyLookup.string("albums.view.menu.download", default: "Download all photos") }
-    /// "Remove from Album" — Retro · albums.view · verbatim · SOURCED
-    public static var albumsViewMenuRemove: String { CopyLookup.string("albums.view.menu.remove", default: "Remove from Album") }
     /// "Rename" — Retro · albums.view · new · SOURCED
     public static var albumsViewMenuRename: String { CopyLookup.string("albums.view.menu.rename", default: "Rename") }
     /// "Couldn't find album" — Retro · albums.view · verbatim · SOURCED
@@ -77,8 +53,6 @@ public enum Copy {
     public static var albumsViewRenameTitle: String { CopyLookup.string("albums.view.rename.title", default: "Rename Album") }
     /// "Deleted" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewToastDeleted: String { CopyLookup.string("albums.view.toast.deleted", default: "Deleted") }
-    /// "Removed" — Retro · albums.view · new · SOURCED
-    public static var albumsViewToastRemoved: String { CopyLookup.string("albums.view.toast.removed", default: "Removed") }
     /// "Saved!" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewToastRenamed: String { CopyLookup.string("albums.view.toast.renamed", default: "Saved!") }
     /// "Next" — Retro · auth.agegate · verbatim · SOURCED
@@ -629,8 +603,6 @@ public enum Copy {
     public static var chatReactionsPickerSearch: String { CopyLookup.string("chat.reactions.picker.search", default: "Search") }
     /// "Back" — Apple HIG / Material 3 · chat.thread · new · SOURCED
     public static var chatThreadA11yBack: String { CopyLookup.string("chat.thread.a11y.back", default: "Back") }
-    /// "Cancel edit" — Retro · chat.thread · adapted · SOURCED
-    public static var chatThreadA11yCancelEdit: String { CopyLookup.string("chat.thread.a11y.cancelEdit", default: "Cancel edit") }
     /// "Cancel reply" — Retro · chat.thread · new · SOURCED
     public static var chatThreadA11yCancelReply: String { CopyLookup.string("chat.thread.a11y.cancelReply", default: "Cancel reply") }
     /// "Caption: {caption}" — Retro · chat.thread · new · SOURCED
@@ -657,12 +629,6 @@ public enum Copy {
     public static var chatThreadDividerToday: String { CopyLookup.string("chat.thread.divider.today", default: "Today") }
     /// "Yesterday" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadDividerYesterday: String { CopyLookup.string("chat.thread.divider.yesterday", default: "Yesterday") }
-    /// "Edit message" — Retro · chat.thread · verbatim · SOURCED
-    public static var chatThreadEditBar: String { CopyLookup.string("chat.thread.edit.bar", default: "Edit message") }
-    /// "Couldn't edit message" — Retro · chat.thread · new · SOURCED
-    public static var chatThreadEditError: String { CopyLookup.string("chat.thread.edit.error", default: "Couldn't edit message") }
-    /// "Edited" — Apple Messages · chat.thread · verbatim · SOURCED
-    public static var chatThreadEdited: String { CopyLookup.string("chat.thread.edited", default: "Edited") }
     /// "Be the first to say hi." — Retro · chat.thread · new · SOURCED
     public static var chatThreadEmptyDetail: String { CopyLookup.string("chat.thread.empty.detail", default: "Be the first to say hi.") }
     /// "Add members" — Retro · chat.thread · adapted · SOURCED
@@ -681,8 +647,6 @@ public enum Copy {
     public static var chatThreadMenuDelete: String { CopyLookup.string("chat.thread.menu.delete", default: "Unsend") }
     /// "Delete" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadMenuDeletePhoto: String { CopyLookup.string("chat.thread.menu.deletePhoto", default: "Delete") }
-    /// "Edit" — Apple Messages · chat.thread · verbatim · SOURCED
-    public static var chatThreadMenuEdit: String { CopyLookup.string("chat.thread.menu.edit", default: "Edit") }
     /// "Reply" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadMenuReply: String { CopyLookup.string("chat.thread.menu.reply", default: "Reply") }
     /// "Report Message" — Retro · chat.thread · adapted · SOURCED
@@ -791,16 +755,6 @@ public enum Copy {
     public static var dailyCaptureSend: String { CopyLookup.string("daily.capture.send", default: "Send") }
     /// "Back and front photos from {name}" — Retro · daily.dualimage · new · SOURCED
     public static func dailyDualimageA11yLabel(name: String) -> String { CopyLookup.format("daily.dualimage.a11y.label", default: "Back and front photos from {name}", ["name": name]) }
-    /// "Favorite any photo to find it here. These photos are only visible to you." — Retro · favorites.view · adapted · SOURCED
-    public static var favoritesEmptyDetail: String { CopyLookup.string("favorites.empty.detail", default: "Favorite any photo to find it here. These photos are only visible to you.") }
-    /// "Nothing to see here yet" — Retro · favorites.view · verbatim · SOURCED
-    public static var favoritesEmptyTitle: String { CopyLookup.string("favorites.empty.title", default: "Nothing to see here yet") }
-    /// "Error loading your favorites. Tap here to try again." — Retro · favorites.view · adapted · SOURCED
-    public static var favoritesError: String { CopyLookup.string("favorites.error", default: "Error loading your favorites. Tap here to try again.") }
-    /// "Couldn't load your favorites. Check your connection and try again." — Retro · favorites.view · adapted · SOURCED
-    public static var favoritesOffline: String { CopyLookup.string("favorites.offline", default: "Couldn't load your favorites. Check your connection and try again.") }
-    /// "Favorites" — Apple Photos · favorites.view · verbatim · SOURCED
-    public static var favoritesTitle: String { CopyLookup.string("favorites.title", default: "Favorites") }
     /// "Loading…" — Apple HIG · global · new · PLATFORM
     public static var globalA11yLoading: String { CopyLookup.string("global.a11y.loading", default: "Loading…") }
     /// "New" — Retro · global · verbatim · SOURCED
@@ -1221,10 +1175,6 @@ public enum Copy {
     public static var notificationsPushDailyInvitationBody: String { CopyLookup.string("notifications.push.dailyInvitation.body", default: "What are you up to right now?") }
     /// "{group}" — Retro · daily.notification · new · SOURCED
     public static func notificationsPushDailyInvitationTitle(group: String) -> String { CopyLookup.format("notifications.push.dailyInvitation.title", default: "{group}", ["group": group]) }
-    /// "Relive your memories from this day over the years." — Retro · notifications.push · adapted · SOURCED
-    public static var notificationsPushMemoryBody: String { CopyLookup.string("notifications.push.memory.body", default: "Relive your memories from this day over the years.") }
-    /// "{group}" — Retro · notifications.push · new · SOURCED
-    public static func notificationsPushMemoryTitle(group: String) -> String { CopyLookup.format("notifications.push.memory.title", default: "{group}", ["group": group]) }
     /// "{name} just posted." — Retro · notifications.push · adapted · SOURCED
     public static func notificationsPushNewPostBody(name: String) -> String { CopyLookup.format("notifications.push.newPost.body", default: "{name} just posted.", ["name": name]) }
     /// "{group}" — Retro · notifications.push · new · SOURCED
@@ -1391,12 +1341,6 @@ public enum Copy {
     public static var onthisdayLoading: String { CopyLookup.string("onthisday.loading", default: "Loading…") }
     /// "Delete Post" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayMenuDelete: String { CopyLookup.string("onthisday.menu.delete", default: "Delete Post") }
-    /// "Hide this date from all memories" — Google Photos · onthisday · verbatim · SOURCED
-    public static var onthisdayMenuHideDate: String { CopyLookup.string("onthisday.menu.hideDate", default: "Hide this date from all memories") }
-    /// "Hide photo" — Retro · onthisday · verbatim · SOURCED
-    public static var onthisdayMenuHidePhoto: String { CopyLookup.string("onthisday.menu.hidePhoto", default: "Hide photo") }
-    /// "Reply" — Retro · onthisday · verbatim · SOURCED
-    public static var onthisdayMenuReply: String { CopyLookup.string("onthisday.menu.reply", default: "Reply") }
     /// "Report Post" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayMenuReport: String { CopyLookup.string("onthisday.menu.report", default: "Report Post") }
     /// "Save to Camera Roll" — Retro · onthisday · verbatim · SOURCED
@@ -1415,16 +1359,6 @@ public enum Copy {
     public static var onthisdayOfflineDetail: String { CopyLookup.string("onthisday.offline.detail", default: "Check your connection and try again.") }
     /// "No Connection" — Retro · onthisday · new · SOURCED
     public static var onthisdayOfflineTitle: String { CopyLookup.string("onthisday.offline.title", default: "No Connection") }
-    /// "Couldn't send message" — Retro · onthisday · adapted · SOURCED
-    public static var onthisdayReplyFailed: String { CopyLookup.string("onthisday.reply.failed", default: "Couldn't send message") }
-    /// "Remember this?" — Retro · onthisday · new · SOURCED
-    public static var onthisdayReplyPrefill: String { CopyLookup.string("onthisday.reply.prefill", default: "Remember this?") }
-    /// "Send" — Retro · onthisday · verbatim · SOURCED
-    public static var onthisdayReplySend: String { CopyLookup.string("onthisday.reply.send", default: "Send") }
-    /// "Message sent!" — Retro · onthisday · verbatim · SOURCED
-    public static var onthisdayReplySent: String { CopyLookup.string("onthisday.reply.sent", default: "Message sent!") }
-    /// "Reply" — Retro · onthisday · verbatim · SOURCED
-    public static var onthisdayReplyTitle: String { CopyLookup.string("onthisday.reply.title", default: "Reply") }
     /// "Allow Photo Access" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdaySaveDeniedButton: String { CopyLookup.string("onthisday.saveDenied.button", default: "Allow Photo Access") }
     /// "Allow access in Settings to save photos to your camera roll." — Retro · onthisday · new · SOURCED
@@ -1441,8 +1375,6 @@ public enum Copy {
     public static func onthisdaySubtitleShuffle(name: String) -> String { CopyLookup.format("onthisday.subtitle.shuffle", default: "Memories · {name}", ["name": name]) }
     /// "Deleted" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayToastDeleted: String { CopyLookup.string("onthisday.toast.deleted", default: "Deleted") }
-    /// "Hidden" — Retro · onthisday · new · SOURCED
-    public static var onthisdayToastHidden: String { CopyLookup.string("onthisday.toast.hidden", default: "Hidden") }
     /// "Saved!" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayToastSaved: String { CopyLookup.string("onthisday.toast.saved", default: "Saved!") }
     /// "Close" — Apple HIG · paywall · new · VERIFIED
@@ -1557,12 +1489,6 @@ public enum Copy {
     public static var photoViewerA11yPrevious: String { CopyLookup.string("photo.viewer.a11y.previous", default: "Previous photo") }
     /// "Unmute" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerA11yUnmute: String { CopyLookup.string("photo.viewer.a11y.unmute", default: "Unmute") }
-    /// "Couldn't save caption" — Retro · photo.viewer · new · SOURCED
-    public static var photoViewerCaptionError: String { CopyLookup.string("photo.viewer.caption.error", default: "Couldn't save caption") }
-    /// "Add a caption…" — Retro · photo.viewer · verbatim · SOURCED
-    public static var photoViewerCaptionPlaceholder: String { CopyLookup.string("photo.viewer.caption.placeholder", default: "Add a caption…") }
-    /// "Save" — Retro · photo.viewer · verbatim · SOURCED
-    public static var photoViewerCaptionSave: String { CopyLookup.string("photo.viewer.caption.save", default: "Save") }
     /// "Cancel" — Apple HIG · photo.viewer · verbatim · PLATFORM
     public static var photoViewerDeleteCancel: String { CopyLookup.string("photo.viewer.delete.cancel", default: "Cancel") }
     /// "Yes, delete" — Retro · photo.viewer · verbatim · SOURCED
@@ -1585,26 +1511,14 @@ public enum Copy {
     public static func photoViewerHeaderGroupWeek(groupName: String, weekNumber: String) -> String { CopyLookup.format("photo.viewer.header.groupWeek", default: "{group_name} · Week {week_number}", ["group_name": groupName, "week_number": weekNumber]) }
     /// "Week {week_number}" — Retro · photo.viewer · verbatim · SOURCED
     public static func photoViewerHeaderWeek(weekNumber: String) -> String { CopyLookup.format("photo.viewer.header.week", default: "Week {week_number}", ["week_number": weekNumber]) }
-    /// "Add a caption" — Retro · photo.viewer · verbatim · SOURCED
-    public static var photoViewerMenuAddCaption: String { CopyLookup.string("photo.viewer.menu.addCaption", default: "Add a caption") }
-    /// "Add to Album" — Retro · photo.viewer · verbatim · SOURCED
-    public static var photoViewerMenuAddToAlbum: String { CopyLookup.string("photo.viewer.menu.addToAlbum", default: "Add to Album") }
     /// "Block {name}" — Retro · photo.viewer · new · SOURCED
     public static func photoViewerMenuBlock(name: String) -> String { CopyLookup.format("photo.viewer.menu.block", default: "Block {name}", ["name": name]) }
     /// "Delete" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuDelete: String { CopyLookup.string("photo.viewer.menu.delete", default: "Delete") }
-    /// "Edit caption" — Retro · photo.viewer · verbatim · SOURCED
-    public static var photoViewerMenuEditCaption: String { CopyLookup.string("photo.viewer.menu.editCaption", default: "Edit caption") }
-    /// "Favorite" — Apple Photos · photo.viewer · verbatim · SOURCED
-    public static var photoViewerMenuFavorite: String { CopyLookup.string("photo.viewer.menu.favorite", default: "Favorite") }
     /// "Report Post" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuReport: String { CopyLookup.string("photo.viewer.menu.report", default: "Report Post") }
     /// "Save to Camera Roll" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuSave: String { CopyLookup.string("photo.viewer.menu.save", default: "Save to Camera Roll") }
-    /// "Unfavorite" — Apple Photos · photo.viewer · verbatim · SOURCED
-    public static var photoViewerMenuUnfavorite: String { CopyLookup.string("photo.viewer.menu.unfavorite", default: "Unfavorite") }
-    /// "Use as cover" — Google Photos · photo.viewer · adapted · SOURCED
-    public static var photoViewerMenuUseAsCover: String { CopyLookup.string("photo.viewer.menu.useAsCover", default: "Use as cover") }
     /// "Allow Photo Access" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerPermissionButton: String { CopyLookup.string("photo.viewer.permission.button", default: "Allow Photo Access") }
     /// "Saving a photo needs access to your photo library. You can turn it on in Settings." — Retro · photo.viewer · new · SOURCED
@@ -1617,12 +1531,8 @@ public enum Copy {
     public static var photoViewerReplyPlaceholder: String { CopyLookup.string("photo.viewer.reply.placeholder", default: "Add a comment…") }
     /// "Deleted" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerToastDeleted: String { CopyLookup.string("photo.viewer.toast.deleted", default: "Deleted") }
-    /// "Added to Favorites!" — Retro · photo.viewer · adapted · SOURCED
-    public static var photoViewerToastFavorited: String { CopyLookup.string("photo.viewer.toast.favorited", default: "Added to Favorites!") }
     /// "Saved!" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerToastSaved: String { CopyLookup.string("photo.viewer.toast.saved", default: "Saved!") }
-    /// "Removed" — Retro · photo.viewer · new · SOURCED
-    public static var photoViewerToastUnfavorited: String { CopyLookup.string("photo.viewer.toast.unfavorited", default: "Removed") }
     /// "All-day" — Apple Invites · plans.create · verbatim · VERIFIED
     public static var plansCreateAllDay: String { CopyLookup.string("plans.create.allDay", default: "All-day") }
     /// "Close" — Retro · plans.create · new · VERIFIED
@@ -1863,24 +1773,6 @@ public enum Copy {
     public static var safetyReportTitleUser: String { CopyLookup.string("safety.report.title.user", default: "What's wrong with this profile?") }
     /// "Why are you reporting this video?" — Retro · safety.report · adapted · SOURCED
     public static var safetyReportTitleVideo: String { CopyLookup.string("safety.report.title.video", default: "Why are you reporting this video?") }
-    /// "Clear date" — Retro · search.photos · new · SOURCED
-    public static var searchA11yClearDate: String { CopyLookup.string("search.a11y.clearDate", default: "Clear date") }
-    /// "Date" — Retro · search.photos · verbatim · SOURCED
-    public static var searchDate: String { CopyLookup.string("search.date", default: "Date") }
-    /// "Pick a date" — Retro · search.photos · adapted · SOURCED
-    public static var searchDatePickerTitle: String { CopyLookup.string("search.datePicker.title", default: "Pick a date") }
-    /// "No results" — Retro · search.photos · verbatim · SOURCED
-    public static var searchEmpty: String { CopyLookup.string("search.empty", default: "No results") }
-    /// "Error loading results. Tap here to try again." — Retro · search.photos · adapted · SOURCED
-    public static var searchError: String { CopyLookup.string("search.error", default: "Error loading results. Tap here to try again.") }
-    /// "Searching…" — Retro · search.photos · new · SOURCED
-    public static var searchLoading: String { CopyLookup.string("search.loading", default: "Searching…") }
-    /// "Couldn't search. Check your connection and try again." — Retro · search.photos · adapted · SOURCED
-    public static var searchOffline: String { CopyLookup.string("search.offline", default: "Couldn't search. Check your connection and try again.") }
-    /// "Search" — Retro · search.photos · verbatim · SOURCED
-    public static var searchPlaceholder: String { CopyLookup.string("search.placeholder", default: "Search") }
-    /// "Search" — Retro · search.photos · verbatim · SOURCED
-    public static var searchTitle: String { CopyLookup.string("search.title", default: "Search") }
     /// "Cancel" — Apple HIG · settings.account · verbatim · VERIFIED
     public static var settingsAccountAlertCancel: String { CopyLookup.string("settings.account.alert.cancel", default: "Cancel") }
     /// "Birthday" — Retro · settings.account · new · SOURCED
@@ -1889,8 +1781,6 @@ public enum Copy {
     public static var settingsAccountDelete: String { CopyLookup.string("settings.account.delete", default: "Delete Account") }
     /// "Yes, delete" — Retro · settings.account · verbatim · SOURCED
     public static var settingsAccountDeleteConfirm: String { CopyLookup.string("settings.account.delete.confirm", default: "Yes, delete") }
-    /// "Download All Photos" — Retro · settings.account · adapted · SOURCED
-    public static var settingsAccountDeleteDownload: String { CopyLookup.string("settings.account.delete.download", default: "Download All Photos") }
     /// "Your account wasn't deleted. Please try again." — Retro · settings.account · new · SOURCED
     public static var settingsAccountDeleteError: String { CopyLookup.string("settings.account.delete.error", default: "Your account wasn't deleted. Please try again.") }
     /// "Deleting your account removes your photos, voice notes and messages from every group." — Retro · settings.account · new · SOURCED
@@ -1903,8 +1793,6 @@ public enum Copy {
     public static var settingsAccountDeleteTitle: String { CopyLookup.string("settings.account.delete.title", default: "Delete account?") }
     /// "Account deleted" — Retro · settings.account · adapted · SOURCED
     public static var settingsAccountDeletedToast: String { CopyLookup.string("settings.account.deleted.toast", default: "Account deleted") }
-    /// "Download All Photos" — Retro · settings.account · adapted · SOURCED
-    public static var settingsAccountDownload: String { CopyLookup.string("settings.account.download", default: "Download All Photos") }
     /// "Full Name" — Retro · settings.account · verbatim · SOURCED
     public static var settingsAccountName: String { CopyLookup.string("settings.account.name", default: "Full Name") }
     /// "There was a problem saving your changes. Please try again." — Retro · settings.account · verbatim · SOURCED
@@ -1941,46 +1829,6 @@ public enum Copy {
     public static var settingsBlockedUnblock: String { CopyLookup.string("settings.blocked.unblock", default: "Unblock") }
     /// "Someone you blocked" — Retro · settings.blocked · new · SOURCED
     public static var settingsBlockedUnknown: String { CopyLookup.string("settings.blocked.unknown", default: "Someone you blocked") }
-    /// "A copy of every photo and video you shared, at full quality, with its caption and date." — Retro · settings.download · new · SOURCED
-    public static var settingsDownloadDetail: String { CopyLookup.string("settings.download.detail", default: "A copy of every photo and video you shared, at full quality, with its caption and date.") }
-    /// "No photos to download yet" — Retro · settings.download · new · SOURCED
-    public static var settingsDownloadEmpty: String { CopyLookup.string("settings.download.empty", default: "No photos to download yet") }
-    /// "There was a problem. Please try again." — Retro · settings.download · verbatim · SOURCED
-    public static var settingsDownloadErrorDetail: String { CopyLookup.string("settings.download.error.detail", default: "There was a problem. Please try again.") }
-    /// "Try Again" — Retro · settings.download · verbatim · SOURCED
-    public static var settingsDownloadErrorRetry: String { CopyLookup.string("settings.download.error.retry", default: "Try Again") }
-    /// "Something went wrong" — Retro · settings.download · verbatim · SOURCED
-    public static var settingsDownloadErrorTitle: String { CopyLookup.string("settings.download.error.title", default: "Something went wrong") }
-    /// "Check your connection and try again." — Retro · settings.download · verbatim · SOURCED
-    public static var settingsDownloadOffline: String { CopyLookup.string("settings.download.offline", default: "Check your connection and try again.") }
-    /// "Part {number}" — Retro · settings.download · new · SOURCED
-    public static func settingsDownloadPartNumbered(number: String) -> String { CopyLookup.format("settings.download.part.numbered", default: "Part {number}", ["number": number]) }
-    /// "Download package" — Retro · settings.download · verbatim · SOURCED
-    public static var settingsDownloadPartSingle: String { CopyLookup.string("settings.download.part.single", default: "Download package") }
-    /// "Creating your package…" — Retro · settings.download · adapted · SOURCED
-    public static var settingsDownloadPreparing: String { CopyLookup.string("settings.download.preparing", default: "Creating your package…") }
-    /// "This can take a few minutes." — Google Takeout · settings.download · adapted · SOURCED
-    public static var settingsDownloadPreparingDetail: String { CopyLookup.string("settings.download.preparingDetail", default: "This can take a few minutes.") }
-    /// "Download your package" — Retro · settings.download · verbatim · SOURCED
-    public static var settingsDownloadReadyTitle: String { CopyLookup.string("settings.download.ready.title", default: "Download your package") }
-    /// "Download all photos" — Retro · settings.download · verbatim · SOURCED
-    public static var settingsDownloadStart: String { CopyLookup.string("settings.download.start", default: "Download all photos") }
-    /// "Download All Photos" — Retro · settings.download · adapted · SOURCED
-    public static var settingsDownloadTitle: String { CopyLookup.string("settings.download.title", default: "Download All Photos") }
-    /// "Available until {date}" — Retro · settings.download · new · SOURCED
-    public static func settingsDownloadUntil(date: String) -> String { CopyLookup.format("settings.download.until", default: "Available until {date}", ["date": date]) }
-    /// "{date}, hidden date" — Retro · settings.hiddenMemories · new · SOURCED
-    public static func settingsHiddenMemoriesA11yDate(date: String) -> String { CopyLookup.format("settings.hiddenMemories.a11y.date", default: "{date}, hidden date", ["date": date]) }
-    /// "No hidden memories" — Retro · settings.hiddenMemories · adapted · SOURCED
-    public static var settingsHiddenMemoriesEmpty: String { CopyLookup.string("settings.hiddenMemories.empty", default: "No hidden memories") }
-    /// "Error loading your hidden memories. Tap here to try again." — Retro · settings.hiddenMemories · adapted · SOURCED
-    public static var settingsHiddenMemoriesError: String { CopyLookup.string("settings.hiddenMemories.error", default: "Error loading your hidden memories. Tap here to try again.") }
-    /// "Photos and dates you hid from On This Day and your widgets. Only you can see this list." — Retro · settings.hiddenMemories · new · SOURCED
-    public static var settingsHiddenMemoriesFooter: String { CopyLookup.string("settings.hiddenMemories.footer", default: "Photos and dates you hid from On This Day and your widgets. Only you can see this list.") }
-    /// "Hidden Memories" — Retro · settings.hiddenMemories · adapted · SOURCED
-    public static var settingsHiddenMemoriesTitle: String { CopyLookup.string("settings.hiddenMemories.title", default: "Hidden Memories") }
-    /// "Unhide" — Apple Photos · settings.hiddenMemories · verbatim · SOURCED
-    public static var settingsHiddenMemoriesUnhide: String { CopyLookup.string("settings.hiddenMemories.unhide", default: "Unhide") }
     /// "Notification Categories" — Material 3 · settings.notifications · new · VERIFIED
     public static var settingsNotificationsCategories: String { CopyLookup.string("settings.notifications.categories", default: "Notification Categories") }
     /// "There was a problem saving your changes. Please try again." — Retro · settings.notifications · verbatim · SOURCED
@@ -1993,22 +1841,12 @@ public enum Copy {
     public static var settingsNotificationsLiveActivity: String { CopyLookup.string("settings.notifications.liveActivity", default: "Live Activity") }
     /// "Shows the daily invitation on your Lock Screen while it's open." — Retro · settings.notifications · new · SOURCED
     public static var settingsNotificationsLiveActivityFooter: String { CopyLookup.string("settings.notifications.liveActivity.footer", default: "Shows the daily invitation on your Lock Screen while it's open.") }
-    /// "On This Day" — Retro · settings.notifications · adapted · SOURCED
-    public static var settingsNotificationsMemories: String { CopyLookup.string("settings.notifications.memories", default: "On This Day") }
-    /// "Relive your memories from this day over the years." — Retro · settings.notifications · adapted · SOURCED
-    public static var settingsNotificationsMemoriesFooter: String { CopyLookup.string("settings.notifications.memories.footer", default: "Relive your memories from this day over the years.") }
     /// "Enable push notifications to make sure that you always see the latest updates from your groups." — Retro · settings.notifications · adapted · SOURCED
     public static var settingsNotificationsOffFooter: String { CopyLookup.string("settings.notifications.off.footer", default: "Enable push notifications to make sure that you always see the latest updates from your groups.") }
     /// "Keep up to date!" — Retro · settings.notifications · verbatim · SOURCED
     public static var settingsNotificationsOffTitle: String { CopyLookup.string("settings.notifications.off.title", default: "Keep up to date!") }
     /// "Enable push" — Retro · settings.notifications · verbatim · SOURCED
     public static var settingsNotificationsOpenSettings: String { CopyLookup.string("settings.notifications.openSettings", default: "Enable push") }
-    /// "Pause All" — Retro · settings.notifications · verbatim · SOURCED
-    public static var settingsNotificationsPauseAll: String { CopyLookup.string("settings.notifications.pauseAll", default: "Pause All") }
-    /// "Turn off all notifications for the day" — Retro · settings.notifications · verbatim · SOURCED
-    public static var settingsNotificationsPauseAllFooter: String { CopyLookup.string("settings.notifications.pauseAll.footer", default: "Turn off all notifications for the day") }
-    /// "Until {time}" — Material 3 · settings.notifications · verbatim · PLATFORM
-    public static func settingsNotificationsPauseAllUntil(time: String) -> String { CopyLookup.format("settings.notifications.pauseAll.until", default: "Until {time}", ["time": time]) }
     /// "Quiet Hours" — Retro · settings.notifications · new · SOURCED
     public static var settingsNotificationsQuietHours: String { CopyLookup.string("settings.notifications.quietHours", default: "Quiet Hours") }
     /// "End" — Retro · settings.notifications · new · SOURCED
@@ -2033,8 +1871,6 @@ public enum Copy {
     public static var settingsRootCloseAccessibilityLabel: String { CopyLookup.string("settings.root.close.accessibilityLabel", default: "Close") }
     /// "Contact Us" — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootContact: String { CopyLookup.string("settings.root.contact", default: "Contact Us") }
-    /// "Hidden Memories" — Retro · settings.root · adapted · SOURCED
-    public static var settingsRootHiddenMemories: String { CopyLookup.string("settings.root.hiddenMemories", default: "Hidden Memories") }
     /// "Your Subscription" — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootManageSubscription: String { CopyLookup.string("settings.root.manageSubscription", default: "Your Subscription") }
     /// "Notification Settings" — Retro · settings.root · verbatim · SOURCED
@@ -2271,20 +2107,14 @@ public enum Copy {
     public static var weekEditToastSaved: String { CopyLookup.string("week.edit.toast.saved", default: "Saved!") }
     /// "Add photos" — Retro · week.history · new · SOURCED
     public static var weekHistoryA11yAdd: String { CopyLookup.string("week.history.a11y.add", default: "Add photos") }
-    /// "Pick a date…" — Retro · week.history · verbatim · SOURCED
-    public static var weekHistoryA11yCalendar: String { CopyLookup.string("week.history.a11y.calendar", default: "Pick a date…") }
     /// "{weekday}, {date}, no photos" — Retro · week.history · new · SOURCED
     public static func weekHistoryA11yEmptyDay(weekday: String, date: String) -> String { CopyLookup.format("week.history.a11y.emptyDay", default: "{weekday}, {date}, no photos", ["weekday": weekday, "date": date]) }
     /// "Loading" — Apple HIG / Material 3 · week.history · new · SOURCED
     public static var weekHistoryA11yLoading: String { CopyLookup.string("week.history.a11y.loading", default: "Loading") }
-    /// "{month}, no photos" — Retro · week.history · new · SOURCED
-    public static func weekHistoryA11yMonthEmpty(month: String) -> String { CopyLookup.format("week.history.a11y.monthEmpty", default: "{month}, no photos", ["month": month]) }
     /// "More Options" — Retro · week.history · verbatim · SOURCED
     public static var weekHistoryA11yMore: String { CopyLookup.string("week.history.a11y.more", default: "More Options") }
     /// "{weekday}, {date}, {name}'s photo" — Retro · week.history · new · SOURCED
     public static func weekHistoryA11yTile(weekday: String, date: String, name: String) -> String { CopyLookup.format("week.history.a11y.tile", default: "{weekday}, {date}, {name}'s photo", ["weekday": weekday, "date": date, "name": name]) }
-    /// "Pick a date" — Retro · week.history · adapted · SOURCED
-    public static var weekHistoryCalendarTitle: String { CopyLookup.string("week.history.calendar.title", default: "Pick a date") }
     /// "Get this week started" — Retro · week.history · verbatim · SOURCED
     public static var weekHistoryEmptyAction: String { CopyLookup.string("week.history.empty.action", default: "Get this week started") }
     /// "Welcome to Week {week_number}!" — Retro · week.history · verbatim · SOURCED

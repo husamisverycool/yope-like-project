@@ -7,10 +7,6 @@
     <string name="account_delete_web_kept" formatted="false">Your profile and everything you added go with it, and nothing is kept.</string>
     <!-- Retro · account.delete.web · new · SOURCED · args: email -->
     <string name="account_delete_web_request">No longer have the app? Write to %1$s with your account\'s phone number and we\'ll delete your account for you.</string>
-    <!-- Retro · albums.add · new · SOURCED -->
-    <string name="albums_add_a11y_inalbum" formatted="false">Already in this album</string>
-    <!-- Retro · albums.add · verbatim · SOURCED -->
-    <string name="albums_add_title" formatted="false">Add to Album</string>
     <!-- Retro · albums.list · new · SOURCED -->
     <string name="albums_list_empty_action" formatted="false">View recaps</string>
     <!-- Retro · albums.list · new · SOURCED -->
@@ -29,10 +25,6 @@
     <string name="albums_list_search_empty" formatted="false">No matching albums</string>
     <!-- Retro · albums.list · verbatim · SOURCED -->
     <string name="albums_list_title" formatted="false">Albums</string>
-    <!-- Retro · albums.pick · new · SOURCED -->
-    <string name="albums_pick_a11y_selected" formatted="false">Selected</string>
-    <!-- Retro · albums.view · verbatim · SOURCED -->
-    <string name="albums_view_a11y_add" formatted="false">Add to album</string>
     <!-- Retro · albums.view · new · SOURCED · args: album_name -->
     <string name="albums_view_a11y_cover">Cover of %1$s</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
@@ -43,28 +35,12 @@
     <string name="albums_view_delete_message" formatted="false">The photos stay in your group. Only the album goes away.</string>
     <!-- Retro · albums.view · new · SOURCED -->
     <string name="albums_view_delete_title" formatted="false">Delete this album?</string>
-    <!-- Retro · albums.view · verbatim · SOURCED -->
-    <string name="albums_view_download_done" formatted="false">Saved!</string>
-    <!-- Retro · albums.view · verbatim · SOURCED -->
-    <string name="albums_view_download_empty" formatted="false">This album has no media</string>
-    <!-- Retro · albums.view · verbatim · SOURCED -->
-    <string name="albums_view_download_offline" formatted="false">Check your connection and try again.</string>
-    <!-- Retro · albums.view · verbatim · SOURCED -->
-    <string name="albums_view_download_partial_retry" formatted="false">Try Again</string>
-    <!-- Retro · albums.view · adapted · SOURCED -->
-    <string name="albums_view_download_partial_title" formatted="false">Couldn\'t save some photos</string>
-    <!-- Retro · albums.view · verbatim · SOURCED -->
-    <string name="albums_view_download_progress" formatted="false">Downloading…</string>
     <!-- Retro · albums.view · new · SOURCED -->
     <string name="albums_view_empty_detail" formatted="false">Photos removed by the people who shared them leave albums too.</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_empty_title" formatted="false">Nothing has been added to this album</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_menu_delete" formatted="false">Delete Album</string>
-    <!-- Retro · albums.view · verbatim · SOURCED -->
-    <string name="albums_view_menu_download" formatted="false">Download all photos</string>
-    <!-- Retro · albums.view · verbatim · SOURCED -->
-    <string name="albums_view_menu_remove" formatted="false">Remove from Album</string>
     <!-- Retro · albums.view · new · SOURCED -->
     <string name="albums_view_menu_rename" formatted="false">Rename</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
@@ -75,8 +51,6 @@
     <string name="albums_view_rename_title" formatted="false">Rename Album</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_toast_deleted" formatted="false">Deleted</string>
-    <!-- Retro · albums.view · new · SOURCED -->
-    <string name="albums_view_toast_removed" formatted="false">Removed</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_toast_renamed" formatted="false">Saved!</string>
     <!-- Retro · auth.agegate · verbatim · SOURCED -->
@@ -627,8 +601,6 @@
     <string name="chat_reactions_picker_search" formatted="false">Search</string>
     <!-- Apple HIG / Material 3 · chat.thread · new · SOURCED -->
     <string name="chat_thread_a11y_back" formatted="false">Back</string>
-    <!-- Retro · chat.thread · adapted · SOURCED -->
-    <string name="chat_thread_a11y_canceledit" formatted="false">Cancel edit</string>
     <!-- Retro · chat.thread · new · SOURCED -->
     <string name="chat_thread_a11y_cancelreply" formatted="false">Cancel reply</string>
     <!-- Retro · chat.thread · new · SOURCED · args: caption -->
@@ -655,12 +627,6 @@
     <string name="chat_thread_divider_today" formatted="false">Today</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_divider_yesterday" formatted="false">Yesterday</string>
-    <!-- Retro · chat.thread · verbatim · SOURCED -->
-    <string name="chat_thread_edit_bar" formatted="false">Edit message</string>
-    <!-- Retro · chat.thread · new · SOURCED -->
-    <string name="chat_thread_edit_error" formatted="false">Couldn\'t edit message</string>
-    <!-- Apple Messages · chat.thread · verbatim · SOURCED -->
-    <string name="chat_thread_edited" formatted="false">Edited</string>
     <!-- Retro · chat.thread · new · SOURCED -->
     <string name="chat_thread_empty_detail" formatted="false">Be the first to say hi.</string>
     <!-- Retro · chat.thread · adapted · SOURCED -->
@@ -679,8 +645,6 @@
     <string name="chat_thread_menu_delete" formatted="false">Unsend</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_menu_deletephoto" formatted="false">Delete</string>
-    <!-- Apple Messages · chat.thread · verbatim · SOURCED -->
-    <string name="chat_thread_menu_edit" formatted="false">Edit</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_menu_reply" formatted="false">Reply</string>
     <!-- Retro · chat.thread · adapted · SOURCED -->
@@ -789,16 +753,6 @@
     <string name="daily_capture_send" formatted="false">Send</string>
     <!-- Retro · daily.dualimage · new · SOURCED · args: name -->
     <string name="daily_dualimage_a11y_label">Back and front photos from %1$s</string>
-    <!-- Retro · favorites.view · adapted · SOURCED -->
-    <string name="favorites_empty_detail" formatted="false">Favorite any photo to find it here. These photos are only visible to you.</string>
-    <!-- Retro · favorites.view · verbatim · SOURCED -->
-    <string name="favorites_empty_title" formatted="false">Nothing to see here yet</string>
-    <!-- Retro · favorites.view · adapted · SOURCED -->
-    <string name="favorites_error" formatted="false">Error loading your favorites. Tap here to try again.</string>
-    <!-- Retro · favorites.view · adapted · SOURCED -->
-    <string name="favorites_offline" formatted="false">Couldn\'t load your favorites. Check your connection and try again.</string>
-    <!-- Apple Photos · favorites.view · verbatim · SOURCED -->
-    <string name="favorites_title" formatted="false">Favorites</string>
     <!-- Apple HIG · global · new · PLATFORM -->
     <string name="global_a11y_loading" formatted="false">Loading…</string>
     <!-- Retro · global · verbatim · SOURCED -->
@@ -1219,10 +1173,6 @@
     <string name="notifications_push_dailyinvitation_body" formatted="false">What are you up to right now?</string>
     <!-- Retro · daily.notification · new · SOURCED · args: group -->
     <string name="notifications_push_dailyinvitation_title">%1$s</string>
-    <!-- Retro · notifications.push · adapted · SOURCED -->
-    <string name="notifications_push_memory_body" formatted="false">Relive your memories from this day over the years.</string>
-    <!-- Retro · notifications.push · new · SOURCED · args: group -->
-    <string name="notifications_push_memory_title">%1$s</string>
     <!-- Retro · notifications.push · adapted · SOURCED · args: name -->
     <string name="notifications_push_newpost_body">%1$s just posted.</string>
     <!-- Retro · notifications.push · new · SOURCED · args: group -->
@@ -1389,12 +1339,6 @@
     <string name="onthisday_loading" formatted="false">Loading…</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_menu_delete" formatted="false">Delete Post</string>
-    <!-- Google Photos · onthisday · verbatim · SOURCED -->
-    <string name="onthisday_menu_hidedate" formatted="false">Hide this date from all memories</string>
-    <!-- Retro · onthisday · verbatim · SOURCED -->
-    <string name="onthisday_menu_hidephoto" formatted="false">Hide photo</string>
-    <!-- Retro · onthisday · verbatim · SOURCED -->
-    <string name="onthisday_menu_reply" formatted="false">Reply</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_menu_report" formatted="false">Report Post</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
@@ -1413,16 +1357,6 @@
     <string name="onthisday_offline_detail" formatted="false">Check your connection and try again.</string>
     <!-- Retro · onthisday · new · SOURCED -->
     <string name="onthisday_offline_title" formatted="false">No Connection</string>
-    <!-- Retro · onthisday · adapted · SOURCED -->
-    <string name="onthisday_reply_failed" formatted="false">Couldn\'t send message</string>
-    <!-- Retro · onthisday · new · SOURCED -->
-    <string name="onthisday_reply_prefill" formatted="false">Remember this?</string>
-    <!-- Retro · onthisday · verbatim · SOURCED -->
-    <string name="onthisday_reply_send" formatted="false">Send</string>
-    <!-- Retro · onthisday · verbatim · SOURCED -->
-    <string name="onthisday_reply_sent" formatted="false">Message sent!</string>
-    <!-- Retro · onthisday · verbatim · SOURCED -->
-    <string name="onthisday_reply_title" formatted="false">Reply</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_savedenied_button" formatted="false">Allow Photo Access</string>
     <!-- Retro · onthisday · new · SOURCED -->
@@ -1439,8 +1373,6 @@
     <string name="onthisday_subtitle_shuffle">Memories · %1$s</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_toast_deleted" formatted="false">Deleted</string>
-    <!-- Retro · onthisday · new · SOURCED -->
-    <string name="onthisday_toast_hidden" formatted="false">Hidden</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_toast_saved" formatted="false">Saved!</string>
     <!-- Apple HIG · paywall · new · VERIFIED -->
@@ -1555,12 +1487,6 @@
     <string name="photo_viewer_a11y_previous" formatted="false">Previous photo</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_a11y_unmute" formatted="false">Unmute</string>
-    <!-- Retro · photo.viewer · new · SOURCED -->
-    <string name="photo_viewer_caption_error" formatted="false">Couldn\'t save caption</string>
-    <!-- Retro · photo.viewer · verbatim · SOURCED -->
-    <string name="photo_viewer_caption_placeholder" formatted="false">Add a caption…</string>
-    <!-- Retro · photo.viewer · verbatim · SOURCED -->
-    <string name="photo_viewer_caption_save" formatted="false">Save</string>
     <!-- Apple HIG · photo.viewer · verbatim · PLATFORM -->
     <string name="photo_viewer_delete_cancel" formatted="false">Cancel</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
@@ -1583,26 +1509,14 @@
     <string name="photo_viewer_header_groupweek">%1$s · Week %2$s</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED · args: week_number -->
     <string name="photo_viewer_header_week">Week %1$s</string>
-    <!-- Retro · photo.viewer · verbatim · SOURCED -->
-    <string name="photo_viewer_menu_addcaption" formatted="false">Add a caption</string>
-    <!-- Retro · photo.viewer · verbatim · SOURCED -->
-    <string name="photo_viewer_menu_addtoalbum" formatted="false">Add to Album</string>
     <!-- Retro · photo.viewer · new · SOURCED · args: name -->
     <string name="photo_viewer_menu_block">Block %1$s</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_delete" formatted="false">Delete</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
-    <string name="photo_viewer_menu_editcaption" formatted="false">Edit caption</string>
-    <!-- Apple Photos · photo.viewer · verbatim · SOURCED -->
-    <string name="photo_viewer_menu_favorite" formatted="false">Favorite</string>
-    <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_report" formatted="false">Report Post</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_save" formatted="false">Save to Camera Roll</string>
-    <!-- Apple Photos · photo.viewer · verbatim · SOURCED -->
-    <string name="photo_viewer_menu_unfavorite" formatted="false">Unfavorite</string>
-    <!-- Google Photos · photo.viewer · adapted · SOURCED -->
-    <string name="photo_viewer_menu_useascover" formatted="false">Use as cover</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_permission_button" formatted="false">Allow Photo Access</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
@@ -1615,12 +1529,8 @@
     <string name="photo_viewer_reply_placeholder" formatted="false">Add a comment…</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_toast_deleted" formatted="false">Deleted</string>
-    <!-- Retro · photo.viewer · adapted · SOURCED -->
-    <string name="photo_viewer_toast_favorited" formatted="false">Added to Favorites!</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_toast_saved" formatted="false">Saved!</string>
-    <!-- Retro · photo.viewer · new · SOURCED -->
-    <string name="photo_viewer_toast_unfavorited" formatted="false">Removed</string>
     <!-- Apple Invites · plans.create · verbatim · VERIFIED -->
     <string name="plans_create_allday" formatted="false">All-day</string>
     <!-- Retro · plans.create · new · VERIFIED -->
@@ -1861,24 +1771,6 @@
     <string name="safety_report_title_user" formatted="false">What\'s wrong with this profile?</string>
     <!-- Retro · safety.report · adapted · SOURCED -->
     <string name="safety_report_title_video" formatted="false">Why are you reporting this video?</string>
-    <!-- Retro · search.photos · new · SOURCED -->
-    <string name="search_a11y_cleardate" formatted="false">Clear date</string>
-    <!-- Retro · search.photos · verbatim · SOURCED -->
-    <string name="search_date" formatted="false">Date</string>
-    <!-- Retro · search.photos · adapted · SOURCED -->
-    <string name="search_datepicker_title" formatted="false">Pick a date</string>
-    <!-- Retro · search.photos · verbatim · SOURCED -->
-    <string name="search_empty" formatted="false">No results</string>
-    <!-- Retro · search.photos · adapted · SOURCED -->
-    <string name="search_error" formatted="false">Error loading results. Tap here to try again.</string>
-    <!-- Retro · search.photos · new · SOURCED -->
-    <string name="search_loading" formatted="false">Searching…</string>
-    <!-- Retro · search.photos · adapted · SOURCED -->
-    <string name="search_offline" formatted="false">Couldn\'t search. Check your connection and try again.</string>
-    <!-- Retro · search.photos · verbatim · SOURCED -->
-    <string name="search_placeholder" formatted="false">Search</string>
-    <!-- Retro · search.photos · verbatim · SOURCED -->
-    <string name="search_title" formatted="false">Search</string>
     <!-- Apple HIG · settings.account · verbatim · VERIFIED -->
     <string name="settings_account_alert_cancel" formatted="false">Cancel</string>
     <!-- Retro · settings.account · new · SOURCED -->
@@ -1887,8 +1779,6 @@
     <string name="settings_account_delete" formatted="false">Delete Account</string>
     <!-- Retro · settings.account · verbatim · SOURCED -->
     <string name="settings_account_delete_confirm" formatted="false">Yes, delete</string>
-    <!-- Retro · settings.account · adapted · SOURCED -->
-    <string name="settings_account_delete_download" formatted="false">Download All Photos</string>
     <!-- Retro · settings.account · new · SOURCED -->
     <string name="settings_account_delete_error" formatted="false">Your account wasn\'t deleted. Please try again.</string>
     <!-- Retro · settings.account · new · SOURCED -->
@@ -1901,8 +1791,6 @@
     <string name="settings_account_delete_title" formatted="false">Delete account?</string>
     <!-- Retro · settings.account · adapted · SOURCED -->
     <string name="settings_account_deleted_toast" formatted="false">Account deleted</string>
-    <!-- Retro · settings.account · adapted · SOURCED -->
-    <string name="settings_account_download" formatted="false">Download All Photos</string>
     <!-- Retro · settings.account · verbatim · SOURCED -->
     <string name="settings_account_name" formatted="false">Full Name</string>
     <!-- Retro · settings.account · verbatim · SOURCED -->
@@ -1939,46 +1827,6 @@
     <string name="settings_blocked_unblock" formatted="false">Unblock</string>
     <!-- Retro · settings.blocked · new · SOURCED -->
     <string name="settings_blocked_unknown" formatted="false">Someone you blocked</string>
-    <!-- Retro · settings.download · new · SOURCED -->
-    <string name="settings_download_detail" formatted="false">A copy of every photo and video you shared, at full quality, with its caption and date.</string>
-    <!-- Retro · settings.download · new · SOURCED -->
-    <string name="settings_download_empty" formatted="false">No photos to download yet</string>
-    <!-- Retro · settings.download · verbatim · SOURCED -->
-    <string name="settings_download_error_detail" formatted="false">There was a problem. Please try again.</string>
-    <!-- Retro · settings.download · verbatim · SOURCED -->
-    <string name="settings_download_error_retry" formatted="false">Try Again</string>
-    <!-- Retro · settings.download · verbatim · SOURCED -->
-    <string name="settings_download_error_title" formatted="false">Something went wrong</string>
-    <!-- Retro · settings.download · verbatim · SOURCED -->
-    <string name="settings_download_offline" formatted="false">Check your connection and try again.</string>
-    <!-- Retro · settings.download · new · SOURCED · args: number -->
-    <string name="settings_download_part_numbered">Part %1$s</string>
-    <!-- Retro · settings.download · verbatim · SOURCED -->
-    <string name="settings_download_part_single" formatted="false">Download package</string>
-    <!-- Retro · settings.download · adapted · SOURCED -->
-    <string name="settings_download_preparing" formatted="false">Creating your package…</string>
-    <!-- Google Takeout · settings.download · adapted · SOURCED -->
-    <string name="settings_download_preparingdetail" formatted="false">This can take a few minutes.</string>
-    <!-- Retro · settings.download · verbatim · SOURCED -->
-    <string name="settings_download_ready_title" formatted="false">Download your package</string>
-    <!-- Retro · settings.download · verbatim · SOURCED -->
-    <string name="settings_download_start" formatted="false">Download all photos</string>
-    <!-- Retro · settings.download · adapted · SOURCED -->
-    <string name="settings_download_title" formatted="false">Download All Photos</string>
-    <!-- Retro · settings.download · new · SOURCED · args: date -->
-    <string name="settings_download_until">Available until %1$s</string>
-    <!-- Retro · settings.hiddenMemories · new · SOURCED · args: date -->
-    <string name="settings_hiddenmemories_a11y_date">%1$s, hidden date</string>
-    <!-- Retro · settings.hiddenMemories · adapted · SOURCED -->
-    <string name="settings_hiddenmemories_empty" formatted="false">No hidden memories</string>
-    <!-- Retro · settings.hiddenMemories · adapted · SOURCED -->
-    <string name="settings_hiddenmemories_error" formatted="false">Error loading your hidden memories. Tap here to try again.</string>
-    <!-- Retro · settings.hiddenMemories · new · SOURCED -->
-    <string name="settings_hiddenmemories_footer" formatted="false">Photos and dates you hid from On This Day and your widgets. Only you can see this list.</string>
-    <!-- Retro · settings.hiddenMemories · adapted · SOURCED -->
-    <string name="settings_hiddenmemories_title" formatted="false">Hidden Memories</string>
-    <!-- Apple Photos · settings.hiddenMemories · verbatim · SOURCED -->
-    <string name="settings_hiddenmemories_unhide" formatted="false">Unhide</string>
     <!-- Material 3 · settings.notifications · new · VERIFIED -->
     <string name="settings_notifications_categories" formatted="false">Notification Categories</string>
     <!-- Retro · settings.notifications · verbatim · SOURCED -->
@@ -1992,21 +1840,11 @@
     <!-- Retro · settings.notifications · new · SOURCED -->
     <string name="settings_notifications_liveactivity_footer" formatted="false">Shows the daily invitation on your Lock Screen while it\'s open.</string>
     <!-- Retro · settings.notifications · adapted · SOURCED -->
-    <string name="settings_notifications_memories" formatted="false">On This Day</string>
-    <!-- Retro · settings.notifications · adapted · SOURCED -->
-    <string name="settings_notifications_memories_footer" formatted="false">Relive your memories from this day over the years.</string>
-    <!-- Retro · settings.notifications · adapted · SOURCED -->
     <string name="settings_notifications_off_footer" formatted="false">Enable push notifications to make sure that you always see the latest updates from your groups.</string>
     <!-- Retro · settings.notifications · verbatim · SOURCED -->
     <string name="settings_notifications_off_title" formatted="false">Keep up to date!</string>
     <!-- Retro · settings.notifications · verbatim · SOURCED -->
     <string name="settings_notifications_opensettings" formatted="false">Enable push</string>
-    <!-- Retro · settings.notifications · verbatim · SOURCED -->
-    <string name="settings_notifications_pauseall" formatted="false">Pause All</string>
-    <!-- Retro · settings.notifications · verbatim · SOURCED -->
-    <string name="settings_notifications_pauseall_footer" formatted="false">Turn off all notifications for the day</string>
-    <!-- Material 3 · settings.notifications · verbatim · PLATFORM · args: time -->
-    <string name="settings_notifications_pauseall_until">Until %1$s</string>
     <!-- Retro · settings.notifications · new · SOURCED -->
     <string name="settings_notifications_quiethours" formatted="false">Quiet Hours</string>
     <!-- Retro · settings.notifications · new · SOURCED -->
@@ -2031,8 +1869,6 @@
     <string name="settings_root_close_accessibilitylabel" formatted="false">Close</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_contact" formatted="false">Contact Us</string>
-    <!-- Retro · settings.root · adapted · SOURCED -->
-    <string name="settings_root_hiddenmemories" formatted="false">Hidden Memories</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_managesubscription" formatted="false">Your Subscription</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
@@ -2269,20 +2105,14 @@
     <string name="week_edit_toast_saved" formatted="false">Saved!</string>
     <!-- Retro · week.history · new · SOURCED -->
     <string name="week_history_a11y_add" formatted="false">Add photos</string>
-    <!-- Retro · week.history · verbatim · SOURCED -->
-    <string name="week_history_a11y_calendar" formatted="false">Pick a date…</string>
     <!-- Retro · week.history · new · SOURCED · args: weekday, date -->
     <string name="week_history_a11y_emptyday">%1$s, %2$s, no photos</string>
     <!-- Apple HIG / Material 3 · week.history · new · SOURCED -->
     <string name="week_history_a11y_loading" formatted="false">Loading</string>
-    <!-- Retro · week.history · new · SOURCED · args: month -->
-    <string name="week_history_a11y_monthempty">%1$s, no photos</string>
     <!-- Retro · week.history · verbatim · SOURCED -->
     <string name="week_history_a11y_more" formatted="false">More Options</string>
     <!-- Retro · week.history · new · SOURCED · args: weekday, date, name -->
     <string name="week_history_a11y_tile">%1$s, %2$s, %3$s\'s photo</string>
-    <!-- Retro · week.history · adapted · SOURCED -->
-    <string name="week_history_calendar_title" formatted="false">Pick a date</string>
     <!-- Retro · week.history · verbatim · SOURCED -->
     <string name="week_history_empty_action" formatted="false">Get this week started</string>
     <!-- Retro · week.history · verbatim · SOURCED · args: week_number -->

@@ -63,7 +63,6 @@ data class GroupCollage(
     /** The widget image (smaller; day tiles). */
     @SerialName("widget_path") val widgetPath: String? = null,
     @SerialName("share_path") val sharePath: String? = null,
-    @SerialName("page_count") val pageCount: Int? = null,
     @SerialName("composed_at") val composedAt: Instant? = null,
 ) {
     /** The tile image: the widget rendition, else page 1. */

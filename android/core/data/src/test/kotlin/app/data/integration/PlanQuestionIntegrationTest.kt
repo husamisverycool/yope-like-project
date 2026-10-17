@@ -119,8 +119,10 @@ class PlanQuestionIntegrationTest {
         val previous = config("weekly_question_keys")
         try {
             setConfig("weekly_question_keys", JsonArray(listOf(JsonPrimitive("question.weekly.q01"), JsonPrimitive("question.weekly.q02"))))
-            assertNull(theo.questions.current(group.id)) // off by default
-            expectApi(ApiError.NotGroupAdmin) { theo.questions.setWeekly(group.id, true) }
+            assertNotNull(theo.questions.current(group.id)) // on for new groups (decision 30)
+            expectApi(ApiError.NotGroupAdmin) { theo.questions.setWeekly(group.id, false) }
+            maya.questions.setWeekly(group.id, false)
+            assertNull(theo.questions.current(group.id))
             maya.questions.setWeekly(group.id, true)
             val question = theo.questions.current(group.id)!!
             assertEquals("question.weekly.q01", question.questionKey)

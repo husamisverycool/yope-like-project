@@ -20,8 +20,8 @@ struct CameraControl: ControlWidget {
         StaticControlConfiguration(kind: Self.kind) {
             ControlWidgetButton(action: OpenCameraIntent()) {
                 Label(Copy.cameraQuickaccessControlTitle, systemImage: Tokens.Icons.globalCamera)
+                    .controlWidgetActionHint(Text(Copy.cameraQuickaccessControlActionHint))
             }
-            .controlWidgetActionHint(Text(Copy.cameraQuickaccessControlActionHint))
         }
         .displayName(LocalizedStringResource("\(Copy.cameraQuickaccessControlTitle)"))
         .description(LocalizedStringResource("\(Copy.cameraQuickaccessControlDescription)"))

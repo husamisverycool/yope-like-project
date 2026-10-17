@@ -5,8 +5,6 @@ const table = {
   "account.delete.web.inApp": "In Jolt, go to {path}.", // Google Play · account.delete.web · VERIFIED
   "account.delete.web.kept": "Your profile and everything you added go with it, and nothing is kept.", // Google Play · account.delete.web · VERIFIED
   "account.delete.web.request": "No longer have the app? Write to {email} with your account's phone number and we'll delete your account for you.", // Retro · account.delete.web · SOURCED
-  "albums.add.a11y.inAlbum": "Already in this album", // Retro · albums.add · SOURCED
-  "albums.add.title": "Add to Album", // Retro · albums.add · SOURCED
   "albums.list.empty.action": "View recaps", // Retro · albums.list · SOURCED
   "albums.list.empty.detail": "Save the photos of a week as an album from its recap.", // Retro · albums.list · SOURCED
   "albums.list.empty.title": "Nothing to see here yet", // Retro · albums.list · SOURCED
@@ -16,30 +14,19 @@ const table = {
   "albums.list.search": "Search", // Retro · albums.list · SOURCED
   "albums.list.search.empty": "No matching albums", // Retro · albums.list · SOURCED
   "albums.list.title": "Albums", // Retro · albums.list · SOURCED
-  "albums.pick.a11y.selected": "Selected", // Retro · albums.pick · SOURCED
-  "albums.view.a11y.add": "Add to album", // Retro · albums.view · SOURCED
   "albums.view.a11y.cover": "Cover of {album_name}", // Retro · albums.view · SOURCED
   "albums.view.a11y.more": "More Options", // Retro · albums.view · SOURCED
   "albums.view.delete.confirm": "Yes, delete", // Retro · albums.view · SOURCED
   "albums.view.delete.message": "The photos stay in your group. Only the album goes away.", // Retro · albums.view · SOURCED
   "albums.view.delete.title": "Delete this album?", // Retro · albums.view · SOURCED
-  "albums.view.download.done": "Saved!", // Retro · albums.view · SOURCED
-  "albums.view.download.empty": "This album has no media", // Retro · albums.view · SOURCED
-  "albums.view.download.offline": "Check your connection and try again.", // Retro · albums.view · SOURCED
-  "albums.view.download.partial.retry": "Try Again", // Retro · albums.view · SOURCED
-  "albums.view.download.partial.title": "Couldn't save some photos", // Retro · albums.view · SOURCED
-  "albums.view.download.progress": "Downloading…", // Retro · albums.view · SOURCED
   "albums.view.empty.detail": "Photos removed by the people who shared them leave albums too.", // Retro · albums.view · SOURCED
   "albums.view.empty.title": "Nothing has been added to this album", // Retro · albums.view · SOURCED
   "albums.view.menu.delete": "Delete Album", // Retro · albums.view · SOURCED
-  "albums.view.menu.download": "Download all photos", // Retro · albums.view · SOURCED
-  "albums.view.menu.remove": "Remove from Album", // Retro · albums.view · SOURCED
   "albums.view.menu.rename": "Rename", // Retro · albums.view · SOURCED
   "albums.view.notFound": "Couldn't find album", // Retro · albums.view · SOURCED
   "albums.view.rename.save": "Save", // Retro · albums.view · SOURCED
   "albums.view.rename.title": "Rename Album", // Retro · albums.view · SOURCED
   "albums.view.toast.deleted": "Deleted", // Retro · albums.view · SOURCED
-  "albums.view.toast.removed": "Removed", // Retro · albums.view · SOURCED
   "albums.view.toast.renamed": "Saved!", // Retro · albums.view · SOURCED
   "auth.agegate.continue": "Next", // Retro · auth.agegate · SOURCED
   "auth.agegate.error.invalidDate": "Please check the date and try again.", // Retro · auth.agegate · SOURCED
@@ -315,7 +302,6 @@ const table = {
   "chat.reactions.picker.group.travelPlaces": "Travel & Places", // Unicode (UTS #51) · chat.reactions · VERIFIED
   "chat.reactions.picker.search": "Search", // Retro · chat.reactions · SOURCED
   "chat.thread.a11y.back": "Back", // Apple HIG / Material 3 · chat.thread · SOURCED
-  "chat.thread.a11y.cancelEdit": "Cancel edit", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.cancelReply": "Cancel reply", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.caption": "Caption: {caption}", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.message": "{name}, {message}", // Retro · chat.thread · SOURCED
@@ -329,9 +315,6 @@ const table = {
   "chat.thread.deleteMessage.title": "Unsend message?", // Retro · chat.thread · SOURCED
   "chat.thread.divider.today": "Today", // Retro · chat.thread · SOURCED
   "chat.thread.divider.yesterday": "Yesterday", // Retro · chat.thread · SOURCED
-  "chat.thread.edit.bar": "Edit message", // Retro · chat.thread · SOURCED
-  "chat.thread.edit.error": "Couldn't edit message", // Retro · chat.thread · SOURCED
-  "chat.thread.edited": "Edited", // Apple Messages · chat.thread · SOURCED
   "chat.thread.empty.detail": "Be the first to say hi.", // Retro · chat.thread · SOURCED
   "chat.thread.empty.invite": "Add members", // Retro · chat.thread · SOURCED
   "chat.thread.empty.title": "Let's get started", // Retro · chat.thread · SOURCED
@@ -341,7 +324,6 @@ const table = {
   "chat.thread.menu.copy": "Copy", // Retro · chat.thread · SOURCED
   "chat.thread.menu.delete": "Unsend", // Retro · chat.thread · SOURCED
   "chat.thread.menu.deletePhoto": "Delete", // Retro · chat.thread · SOURCED
-  "chat.thread.menu.edit": "Edit", // Apple Messages · chat.thread · SOURCED
   "chat.thread.menu.reply": "Reply", // Retro · chat.thread · SOURCED
   "chat.thread.menu.report": "Report Message", // Retro · chat.thread · SOURCED
   "chat.thread.menu.retry": "Retry", // Retro · chat.thread · SOURCED
@@ -396,11 +378,6 @@ const table = {
   "daily.capture.prompt": "Taking the front photo…", // Retro · daily.capture · SOURCED
   "daily.capture.send": "Send", // Retro · daily.capture · SOURCED
   "daily.dualimage.a11y.label": "Back and front photos from {name}", // Retro · daily.dualimage · SOURCED
-  "favorites.empty.detail": "Favorite any photo to find it here. These photos are only visible to you.", // Retro · favorites.view · SOURCED
-  "favorites.empty.title": "Nothing to see here yet", // Retro · favorites.view · SOURCED
-  "favorites.error": "Error loading your favorites. Tap here to try again.", // Retro · favorites.view · SOURCED
-  "favorites.offline": "Couldn't load your favorites. Check your connection and try again.", // Retro · favorites.view · SOURCED
-  "favorites.title": "Favorites", // Apple Photos · favorites.view · SOURCED
   "global.a11y.loading": "Loading…", // Apple HIG · global · PLATFORM
   "global.a11y.newBadge": "New", // Retro · global · SOURCED
   "global.a11y.pagePosition": "{position} of {count}", // Retro · global · SOURCED
@@ -611,8 +588,6 @@ const table = {
   "notifications.push.channel.yearStory.name": "Year in Photos", // Retro · notifications.push · SOURCED
   "notifications.push.dailyInvitation.body": "What are you up to right now?", // Retro · daily.notification · SOURCED
   "notifications.push.dailyInvitation.title": "{group}", // Retro · daily.notification · SOURCED
-  "notifications.push.memory.body": "Relive your memories from this day over the years.", // Retro · notifications.push · SOURCED
-  "notifications.push.memory.title": "{group}", // Retro · notifications.push · SOURCED
   "notifications.push.newPost.body": "{name} just posted.", // Retro · notifications.push · SOURCED
   "notifications.push.newPost.title": "{group}", // Retro · notifications.push · SOURCED
   "notifications.push.planCanceled.body": "{name} canceled {title}.", // Apple Invites / Partiful · notifications.push · SOURCED
@@ -696,9 +671,6 @@ const table = {
   "onthisday.error.title": "Something went wrong", // Retro · onthisday · SOURCED
   "onthisday.loading": "Loading…", // Retro · onthisday · SOURCED
   "onthisday.menu.delete": "Delete Post", // Retro · onthisday · SOURCED
-  "onthisday.menu.hideDate": "Hide this date from all memories", // Google Photos · onthisday · SOURCED
-  "onthisday.menu.hidePhoto": "Hide photo", // Retro · onthisday · SOURCED
-  "onthisday.menu.reply": "Reply", // Retro · onthisday · SOURCED
   "onthisday.menu.report": "Report Post", // Retro · onthisday · SOURCED
   "onthisday.menu.save": "Save to Camera Roll", // Retro · onthisday · SOURCED
   "onthisday.mode.day": "On this day…", // Retro · onthisday · SOURCED
@@ -708,11 +680,6 @@ const table = {
   "onthisday.nux.title": "Introducing On This Day", // Retro · onthisday · SOURCED
   "onthisday.offline.detail": "Check your connection and try again.", // Retro · onthisday · SOURCED
   "onthisday.offline.title": "No Connection", // Retro · onthisday · SOURCED
-  "onthisday.reply.failed": "Couldn't send message", // Retro · onthisday · SOURCED
-  "onthisday.reply.prefill": "Remember this?", // Retro · onthisday · SOURCED
-  "onthisday.reply.send": "Send", // Retro · onthisday · SOURCED
-  "onthisday.reply.sent": "Message sent!", // Retro · onthisday · SOURCED
-  "onthisday.reply.title": "Reply", // Retro · onthisday · SOURCED
   "onthisday.saveDenied.button": "Allow Photo Access", // Retro · onthisday · SOURCED
   "onthisday.saveDenied.message": "Allow access in Settings to save photos to your camera roll.", // Retro · onthisday · SOURCED
   "onthisday.saveDenied.title": "Camera Roll Access", // Retro · onthisday · SOURCED
@@ -721,7 +688,6 @@ const table = {
   "onthisday.subtitle.day": "On this day · {name}", // Retro · onthisday · SOURCED
   "onthisday.subtitle.shuffle": "Memories · {name}", // Retro · onthisday · SOURCED
   "onthisday.toast.deleted": "Deleted", // Retro · onthisday · SOURCED
-  "onthisday.toast.hidden": "Hidden", // Retro · onthisday · SOURCED
   "onthisday.toast.saved": "Saved!", // Retro · onthisday · SOURCED
   "paywall.close.accessibilityLabel": "Close", // Apple HIG · paywall · VERIFIED
   "paywall.error.products": "Plans aren't available right now. Please try again.", // Retro · paywall · SOURCED
@@ -779,9 +745,6 @@ const table = {
   "photo.viewer.a11y.play": "Play", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.previous": "Previous photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.unmute": "Unmute", // Retro · photo.viewer · SOURCED
-  "photo.viewer.caption.error": "Couldn't save caption", // Retro · photo.viewer · SOURCED
-  "photo.viewer.caption.placeholder": "Add a caption…", // Retro · photo.viewer · SOURCED
-  "photo.viewer.caption.save": "Save", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.cancel": "Cancel", // Apple HIG · photo.viewer · PLATFORM
   "photo.viewer.delete.confirm": "Yes, delete", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.message": "It will be removed from every group you sent it to, and from chats, walls, recaps and albums.", // Retro · photo.viewer · SOURCED
@@ -793,25 +756,17 @@ const table = {
   "photo.viewer.gone.title": "Couldn't find photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.header.groupWeek": "{group_name} · Week {week_number}", // Retro · photo.viewer · SOURCED
   "photo.viewer.header.week": "Week {week_number}", // Retro · photo.viewer · SOURCED
-  "photo.viewer.menu.addCaption": "Add a caption", // Retro · photo.viewer · SOURCED
-  "photo.viewer.menu.addToAlbum": "Add to Album", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.block": "Block {name}", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.delete": "Delete", // Retro · photo.viewer · SOURCED
-  "photo.viewer.menu.editCaption": "Edit caption", // Retro · photo.viewer · SOURCED
-  "photo.viewer.menu.favorite": "Favorite", // Apple Photos · photo.viewer · SOURCED
   "photo.viewer.menu.report": "Report Post", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.save": "Save to Camera Roll", // Retro · photo.viewer · SOURCED
-  "photo.viewer.menu.unfavorite": "Unfavorite", // Apple Photos · photo.viewer · SOURCED
-  "photo.viewer.menu.useAsCover": "Use as cover", // Google Photos · photo.viewer · SOURCED
   "photo.viewer.permission.button": "Allow Photo Access", // Retro · photo.viewer · SOURCED
   "photo.viewer.permission.detail": "Saving a photo needs access to your photo library. You can turn it on in Settings.", // Retro · photo.viewer · SOURCED
   "photo.viewer.permission.title": "Camera Roll Access", // Retro · photo.viewer · SOURCED
   "photo.viewer.position": "{index} of {total}", // Retro · photo.viewer · SOURCED
   "photo.viewer.reply.placeholder": "Add a comment…", // Retro · photo.viewer · SOURCED
   "photo.viewer.toast.deleted": "Deleted", // Retro · photo.viewer · SOURCED
-  "photo.viewer.toast.favorited": "Added to Favorites!", // Retro · photo.viewer · SOURCED
   "photo.viewer.toast.saved": "Saved!", // Retro · photo.viewer · SOURCED
-  "photo.viewer.toast.unfavorited": "Removed", // Retro · photo.viewer · SOURCED
   "plans.create.allDay": "All-day", // Apple Invites · plans.create · VERIFIED
   "plans.create.close.accessibilityLabel": "Close", // Retro · plans.create · VERIFIED
   "plans.create.cover.accessibilityLabel": "Cover image", // Retro · plans.create · VERIFIED
@@ -932,27 +887,16 @@ const table = {
   "safety.report.title.selfie": "Why are you reporting this selfie?", // Retro · safety.report · SOURCED
   "safety.report.title.user": "What's wrong with this profile?", // Retro · safety.report · SOURCED
   "safety.report.title.video": "Why are you reporting this video?", // Retro · safety.report · SOURCED
-  "search.a11y.clearDate": "Clear date", // Retro · search.photos · SOURCED
-  "search.date": "Date", // Retro · search.photos · SOURCED
-  "search.datePicker.title": "Pick a date", // Retro · search.photos · SOURCED
-  "search.empty": "No results", // Retro · search.photos · SOURCED
-  "search.error": "Error loading results. Tap here to try again.", // Retro · search.photos · SOURCED
-  "search.loading": "Searching…", // Retro · search.photos · SOURCED
-  "search.offline": "Couldn't search. Check your connection and try again.", // Retro · search.photos · SOURCED
-  "search.placeholder": "Search", // Retro · search.photos · SOURCED
-  "search.title": "Search", // Retro · search.photos · SOURCED
   "settings.account.alert.cancel": "Cancel", // Apple HIG · settings.account · VERIFIED
   "settings.account.birthday": "Birthday", // Retro · settings.account · SOURCED
   "settings.account.delete": "Delete Account", // Retro · settings.account · SOURCED
   "settings.account.delete.confirm": "Yes, delete", // Retro · settings.account · SOURCED
-  "settings.account.delete.download": "Download All Photos", // Retro · settings.account · SOURCED
   "settings.account.delete.error": "Your account wasn't deleted. Please try again.", // Retro · settings.account · SOURCED
   "settings.account.delete.footer": "Deleting your account removes your photos, voice notes and messages from every group.", // Retro · settings.account · SOURCED
   "settings.account.delete.message": "This cannot be undone. You will not be able to recover your photos, voice notes or messages.", // Retro · settings.account · SOURCED
   "settings.account.delete.subscriptionNote": "Your subscription keeps renewing until you cancel it in your subscription settings.", // Apple HIG · settings.account · VERIFIED
   "settings.account.delete.title": "Delete account?", // Retro · settings.account · SOURCED
   "settings.account.deleted.toast": "Account deleted", // Retro · settings.account · SOURCED
-  "settings.account.download": "Download All Photos", // Retro · settings.account · SOURCED
   "settings.account.name": "Full Name", // Retro · settings.account · SOURCED
   "settings.account.name.error": "There was a problem saving your changes. Please try again.", // Retro · settings.account · SOURCED
   "settings.account.name.save": "Save", // Retro · settings.account · SOURCED
@@ -971,40 +915,15 @@ const table = {
   "settings.blocked.title": "Blocked People", // Retro · settings.blocked · SOURCED
   "settings.blocked.unblock": "Unblock", // Retro · settings.blocked · SOURCED
   "settings.blocked.unknown": "Someone you blocked", // Retro · settings.blocked · SOURCED
-  "settings.download.detail": "A copy of every photo and video you shared, at full quality, with its caption and date.", // Retro · settings.download · SOURCED
-  "settings.download.empty": "No photos to download yet", // Retro · settings.download · SOURCED
-  "settings.download.error.detail": "There was a problem. Please try again.", // Retro · settings.download · SOURCED
-  "settings.download.error.retry": "Try Again", // Retro · settings.download · SOURCED
-  "settings.download.error.title": "Something went wrong", // Retro · settings.download · SOURCED
-  "settings.download.offline": "Check your connection and try again.", // Retro · settings.download · SOURCED
-  "settings.download.part.numbered": "Part {number}", // Retro · settings.download · SOURCED
-  "settings.download.part.single": "Download package", // Retro · settings.download · SOURCED
-  "settings.download.preparing": "Creating your package…", // Retro · settings.download · SOURCED
-  "settings.download.preparingDetail": "This can take a few minutes.", // Google Takeout · settings.download · SOURCED
-  "settings.download.ready.title": "Download your package", // Retro · settings.download · SOURCED
-  "settings.download.start": "Download all photos", // Retro · settings.download · SOURCED
-  "settings.download.title": "Download All Photos", // Retro · settings.download · SOURCED
-  "settings.download.until": "Available until {date}", // Retro · settings.download · SOURCED
-  "settings.hiddenMemories.a11y.date": "{date}, hidden date", // Retro · settings.hiddenMemories · SOURCED
-  "settings.hiddenMemories.empty": "No hidden memories", // Retro · settings.hiddenMemories · SOURCED
-  "settings.hiddenMemories.error": "Error loading your hidden memories. Tap here to try again.", // Retro · settings.hiddenMemories · SOURCED
-  "settings.hiddenMemories.footer": "Photos and dates you hid from On This Day and your widgets. Only you can see this list.", // Retro · settings.hiddenMemories · SOURCED
-  "settings.hiddenMemories.title": "Hidden Memories", // Retro · settings.hiddenMemories · SOURCED
-  "settings.hiddenMemories.unhide": "Unhide", // Apple Photos · settings.hiddenMemories · SOURCED
   "settings.notifications.categories": "Notification Categories", // Material 3 · settings.notifications · VERIFIED
   "settings.notifications.error": "There was a problem saving your changes. Please try again.", // Retro · settings.notifications · SOURCED
   "settings.notifications.groups.footer": "Turn a group off to mute it. Its photos still reach your widgets.", // Retro · settings.notifications · SOURCED
   "settings.notifications.groups.header": "Groups", // Retro · settings.notifications · SOURCED
   "settings.notifications.liveActivity": "Live Activity", // Apple HIG · settings.notifications · VERIFIED
   "settings.notifications.liveActivity.footer": "Shows the daily invitation on your Lock Screen while it's open.", // Retro · settings.notifications · SOURCED
-  "settings.notifications.memories": "On This Day", // Retro · settings.notifications · SOURCED
-  "settings.notifications.memories.footer": "Relive your memories from this day over the years.", // Retro · settings.notifications · SOURCED
   "settings.notifications.off.footer": "Enable push notifications to make sure that you always see the latest updates from your groups.", // Retro · settings.notifications · SOURCED
   "settings.notifications.off.title": "Keep up to date!", // Retro · settings.notifications · SOURCED
   "settings.notifications.openSettings": "Enable push", // Retro · settings.notifications · SOURCED
-  "settings.notifications.pauseAll": "Pause All", // Retro · settings.notifications · SOURCED
-  "settings.notifications.pauseAll.footer": "Turn off all notifications for the day", // Retro · settings.notifications · SOURCED
-  "settings.notifications.pauseAll.until": "Until {time}", // Material 3 · settings.notifications · PLATFORM
   "settings.notifications.quietHours": "Quiet Hours", // Retro · settings.notifications · SOURCED
   "settings.notifications.quietHours.end": "End", // Retro · settings.notifications · SOURCED
   "settings.notifications.quietHours.footer": "Notifications arrive silently between these times.", // Retro · settings.notifications · SOURCED
@@ -1017,7 +936,6 @@ const table = {
   "settings.root.blocked": "Blocked People", // Retro · settings.root · SOURCED
   "settings.root.close.accessibilityLabel": "Close", // Apple HIG · settings.root · VERIFIED
   "settings.root.contact": "Contact Us", // Retro · settings.root · SOURCED
-  "settings.root.hiddenMemories": "Hidden Memories", // Retro · settings.root · SOURCED
   "settings.root.manageSubscription": "Your Subscription", // Retro · settings.root · SOURCED
   "settings.root.notifications": "Notification Settings", // Retro · settings.root · SOURCED
   "settings.root.notifications.header": "Notifications", // Retro · settings.root · SOURCED
@@ -1136,13 +1054,10 @@ const table = {
   "week.edit.toast.albumSaved": "Added to Album!", // Retro · week.edit · SOURCED
   "week.edit.toast.saved": "Saved!", // Retro · week.edit · SOURCED
   "week.history.a11y.add": "Add photos", // Retro · week.history · SOURCED
-  "week.history.a11y.calendar": "Pick a date…", // Retro · week.history · SOURCED
   "week.history.a11y.emptyDay": "{weekday}, {date}, no photos", // Retro · week.history · SOURCED
   "week.history.a11y.loading": "Loading", // Apple HIG / Material 3 · week.history · SOURCED
-  "week.history.a11y.monthEmpty": "{month}, no photos", // Retro · week.history · SOURCED
   "week.history.a11y.more": "More Options", // Retro · week.history · SOURCED
   "week.history.a11y.tile": "{weekday}, {date}, {name}'s photo", // Retro · week.history · SOURCED
-  "week.history.calendar.title": "Pick a date", // Retro · week.history · SOURCED
   "week.history.empty.action": "Get this week started", // Retro · week.history · SOURCED
   "week.history.empty.title": "Welcome to Week {week_number}!", // Retro · week.history · SOURCED
   "week.history.error": "Error loading weeks. Tap here to try again.", // Retro · week.history · SOURCED

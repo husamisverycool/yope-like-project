@@ -203,9 +203,6 @@ public enum Tokens {
         /// Locket · chat.reactions · columns of the emoji grid in the picker · SOURCED
         /// token: `chat.reactions.count.pickerColumns`
         public static let chatReactionsCountPickerColumns: CGFloat = 6
-        /// Apple Messages · chat.thread · how many times a sent text message can be edited · SOURCED
-        /// token: `chat.thread.count.editMax`
-        public static let chatThreadCountEditMax: CGFloat = 5
         /// Apple Messages + WhatsApp · chat.thread · a text message of only 1–3 emoji renders large (fontSize.global.headerTitle, 40 pt glyphs); 4 or more render as normal text · SOURCED
         /// token: `chat.thread.count.emojiOnlyMax`
         public static let chatThreadCountEmojiOnlyMax: CGFloat = 3
@@ -226,9 +223,6 @@ public enum Tokens {
         /// Locket · camera.capture · maximum length of a hold-to-record video (premium); the recording outline fills over this time · SOURCED
         /// token: `camera.capture.duration.videoMax`
         public static let cameraCaptureDurationVideoMax: TimeInterval = 10
-        /// Apple Messages · chat.thread · how long after sending a text message can be edited · SOURCED
-        /// token: `chat.thread.duration.editWindow`
-        public static let chatThreadDurationEditWindow: TimeInterval = 900
         /// Retro · chat.thread · a new message row appearing at the bottom of the thread (fade in) · SOURCED
         /// token: `chat.thread.duration.entry`
         public static let chatThreadDurationEntry: TimeInterval = 0.25
@@ -694,18 +688,6 @@ public enum Tokens {
         /// Retro · global · profile tab — your weeks (= walls) · PLATFORM
         /// token: `icon.global.wall`
         public static let globalWall: String = "person.crop.circle"
-        /// Apple HIG / Material 3 · global · "Use as cover" menu item (photo.viewer) · PLATFORM
-        /// token: `icon.library.cover`
-        public static let libraryCover: String = "photo"
-        /// Apple Photos · global · "Favorite" menu item (photo.viewer) — Apple Photos marks favorites with a heart · PLATFORM
-        /// token: `icon.library.favorite`
-        public static let libraryFavorite: String = "heart"
-        /// Apple Photos · global · "Unfavorite" menu item and the favorite state — the filled heart (icon.global.variantRule: fill only for a state) · PLATFORM
-        /// token: `icon.library.favorited`
-        public static let libraryFavorited: String = "heart.fill"
-        /// Apple HIG / Material 3 · global · "Reply" menu item (onthisday) · PLATFORM
-        /// token: `icon.library.reply`
-        public static let libraryReply: String = "arrowshape.turn.up.left"
         /// Apple HIG / Material Symbols · photo.viewer · Live Photo badge (Android; iOS draws PHLivePhotoView.livePhotoBadgeImage) · PLATFORM
         /// token: `icon.photo.viewer.livePhoto`
         public static let photoViewerLivePhoto: String = "livephoto"
@@ -1039,15 +1021,6 @@ public enum Tokens {
             public static let sheet: String = "tap your own row in the Reactions sheet → unreact(post, emoji)"
             public static let picker: String = "tap an emoji highlighted as yours → unreact"
             public static let menu: String = "a quick reaction you already used shows selected in the palette row; tapping it unreacts"
-        }
-        /// Apple Messages + Retro · chat.thread · editing a sent text message · SOURCED
-        /// token: `chat.thread.layout.edit`
-        public enum ChatThreadLayoutEdit {
-            public static let offer: String = "context-menu item chat.thread.menu.edit on your own sent text message while it is younger than chat.thread.duration.editWindow and edited fewer than chat.thread.count.editMax times (after Reply · Copy, before Unsend); never on photos, voice, joined / left lines or someone else's message"
-            public static let composer: String = "the reply bar's slot shows chat.thread.edit.bar ('Edit message') with the close glyph (label chat.thread.a11y.cancelEdit); the field holds the message's text; the send glyph saves it (edit_message); close puts the draft back as it was"
-            public static let mark: String = "an edited message (edited_at set) shows chat.thread.edited ('Edited') as the status line under it — text role caption, color.global.textSecondary, the 'Sending' slot of chat.thread.layout.failedMessage"
-            public static let update: String = "the new text replaces the old at once for everyone (Realtime UPDATE); no notification; earlier versions are not kept"
-            public static let failure: String = "the text returns to what it was; chat.thread.edit.error (Android Toast / iOS announcement) + haptic.global.error"
         }
         /// Retro + Apple Messages · chat.thread · own message whose send failed / is in flight · SOURCED
         /// token: `chat.thread.layout.failedMessage`
@@ -1958,14 +1931,6 @@ public enum Tokens {
         public enum PhotoViewerLayoutDeleteConfirm {
             public static let ios: String = "confirmationDialog (action sheet): title, message, destructive button, Cancel"
             public static let android: String = "AlertDialog: title, message, confirm (color.global.system.error), dismiss"
-        }
-        /// Retro · photo.viewer · editing or adding a caption after posting · SOURCED
-        /// token: `photo.viewer.layout.editCaption`
-        public enum PhotoViewerLayoutEditCaption {
-            public static let offer: String = "your own photo's menu (photo.viewer.layout.menu): photo.viewer.menu.editCaption when it has a caption, photo.viewer.menu.addCaption when it has none — first item; no time limit"
-            public static let editor: String = "the platform alert (C-29) titled with the menu item's words, one text field (placeholder photo.viewer.caption.placeholder, the caption's 1000-character limit), buttons photo.viewer.caption.save and photo.viewer.delete.cancel; an empty field removes the caption"
-            public static let mark: String = "after an edit (caption_edited_at) the viewer footer's date line reads '{date} · Edited' (Retro's ' · ' separator, chat.thread.edited); the chat thread shows chat.thread.edited as the status line under the caption"
-            public static let failure: String = "the caption stays as it was; photo.viewer.caption.error (Android Toast / iOS announcement) + haptic.global.error"
         }
         /// Apple HIG (Live Photos) · photo.viewer · a Live Photo in the viewer · PLATFORM
         /// token: `photo.viewer.layout.livePhoto`

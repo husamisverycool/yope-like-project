@@ -201,14 +201,13 @@ public struct GroupCollage: Codable, Hashable, Sendable, Identifiable {
     /// The widget image (smaller; for day tiles).
     public var widgetPath: String?
     public var sharePath: String?
-    public var pageCount: Int?
     public var composedAt: Date?
 
     public var id: CollageID { collageID }
 
     public init(
         collageID: CollageID, invitationID: InvitationID, localDate: LocalDate, imagePath: String?, widgetPath: String?,
-        sharePath: String? = nil, pageCount: Int? = nil, composedAt: Date? = nil
+        sharePath: String? = nil, composedAt: Date? = nil
     ) {
         self.collageID = collageID
         self.invitationID = invitationID
@@ -216,7 +215,6 @@ public struct GroupCollage: Codable, Hashable, Sendable, Identifiable {
         self.imagePath = imagePath
         self.widgetPath = widgetPath
         self.sharePath = sharePath
-        self.pageCount = pageCount
         self.composedAt = composedAt
     }
 
@@ -227,7 +225,6 @@ public struct GroupCollage: Codable, Hashable, Sendable, Identifiable {
         case imagePath = "image_path"
         case widgetPath = "widget_path"
         case sharePath = "share_path"
-        case pageCount = "page_count"
         case composedAt = "composed_at"
     }
 

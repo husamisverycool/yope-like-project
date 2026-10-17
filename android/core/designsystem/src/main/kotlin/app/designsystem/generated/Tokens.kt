@@ -21,7 +21,6 @@ import app.designsystem.DSSpring
 import app.designsystem.LocalDsDarkTheme
 import androidx.compose.material.icons.automirrored.outlined.Logout as AutoMirroredOutlinedLogout
 import androidx.compose.material.icons.automirrored.outlined.MenuBook as AutoMirroredOutlinedMenuBook
-import androidx.compose.material.icons.automirrored.outlined.Reply as AutoMirroredOutlinedReply
 import androidx.compose.material.icons.automirrored.outlined.Send as AutoMirroredOutlinedSend
 import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos as AutoMirroredRoundedArrowBackIos
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight as AutoMirroredRoundedKeyboardArrowRight
@@ -33,14 +32,12 @@ import androidx.compose.material.icons.outlined.Casino as OutlinedCasino
 import androidx.compose.material.icons.outlined.ChatBubbleOutline as OutlinedChatBubbleOutline
 import androidx.compose.material.icons.outlined.Delete as OutlinedDelete
 import androidx.compose.material.icons.outlined.Edit as OutlinedEdit
-import androidx.compose.material.icons.outlined.FavoriteBorder as OutlinedFavoriteBorder
 import androidx.compose.material.icons.outlined.Flag as OutlinedFlag
 import androidx.compose.material.icons.outlined.FlashOff as OutlinedFlashOff
 import androidx.compose.material.icons.outlined.FlashOn as OutlinedFlashOn
 import androidx.compose.material.icons.outlined.Group as OutlinedGroup
 import androidx.compose.material.icons.outlined.History as OutlinedHistory
 import androidx.compose.material.icons.outlined.Home as OutlinedHome
-import androidx.compose.material.icons.outlined.Image as OutlinedImage
 import androidx.compose.material.icons.outlined.LibraryAdd as OutlinedLibraryAdd
 import androidx.compose.material.icons.outlined.Mic as OutlinedMic
 import androidx.compose.material.icons.outlined.NearMe as OutlinedNearMe
@@ -58,7 +55,6 @@ import androidx.compose.material.icons.rounded.CheckCircle as RoundedCheckCircle
 import androidx.compose.material.icons.rounded.Close as RoundedClose
 import androidx.compose.material.icons.rounded.Download as RoundedDownload
 import androidx.compose.material.icons.rounded.ExpandMore as RoundedExpandMore
-import androidx.compose.material.icons.rounded.Favorite as RoundedFavorite
 import androidx.compose.material.icons.rounded.IosShare as RoundedIosShare
 import androidx.compose.material.icons.rounded.Link as RoundedLink
 import androidx.compose.material.icons.rounded.Lock as RoundedLock
@@ -241,8 +237,6 @@ object Tokens {
         val chatReactionsCountClusterMaxVisible: Int = 3
         /** Locket · chat.reactions · columns of the emoji grid in the picker · SOURCED — token `chat.reactions.count.pickerColumns` */
         val chatReactionsCountPickerColumns: Int = 6
-        /** Apple Messages · chat.thread · how many times a sent text message can be edited · SOURCED — token `chat.thread.count.editMax` */
-        val chatThreadCountEditMax: Int = 5
         /** Apple Messages + WhatsApp · chat.thread · a text message of only 1–3 emoji renders large (fontSize.global.headerTitle, 40 pt glyphs); 4 or more render as normal text · SOURCED — token `chat.thread.count.emojiOnlyMax` */
         val chatThreadCountEmojiOnlyMax: Int = 3
         /** Retro · onthisday · number of tick slots around the dial (long and short alternate) · SOURCED — token `count.onthisday.dial.ticks` */
@@ -257,8 +251,6 @@ object Tokens {
         val authCodeDurationResendLock: Int = 60000
         /** Locket · camera.capture · maximum length of a hold-to-record video (premium); the recording outline fills over this time · SOURCED — token `camera.capture.duration.videoMax` */
         val cameraCaptureDurationVideoMax: Int = 10000
-        /** Apple Messages · chat.thread · how long after sending a text message can be edited · SOURCED — token `chat.thread.duration.editWindow` */
-        val chatThreadDurationEditWindow: Int = 900000
         /** Retro · chat.thread · a new message row appearing at the bottom of the thread (fade in) · SOURCED — token `chat.thread.duration.entry` */
         val chatThreadDurationEntry: Int = 250
         /** Apple HIG · daily.liveactivity · longest allowed Live Activity animation · VERIFIED — token `daily.liveactivity.duration.animationMax` */
@@ -573,14 +565,6 @@ object Tokens {
         val globalVideo: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideocam
         /** Retro · global · profile tab — your weeks (= walls) · PLATFORM — token `icon.global.wall` */
         val globalWall: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedAccountCircle
-        /** Apple HIG / Material 3 · global · "Use as cover" menu item (photo.viewer) · PLATFORM — token `icon.library.cover` */
-        val libraryCover: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedImage
-        /** Apple Photos · global · "Favorite" menu item (photo.viewer) — Apple Photos marks favorites with a heart · PLATFORM — token `icon.library.favorite` */
-        val libraryFavorite: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedFavoriteBorder
-        /** Apple Photos · global · "Unfavorite" menu item and the favorite state — the filled heart (icon.global.variantRule: fill only for a state) · PLATFORM — token `icon.library.favorited` */
-        val libraryFavorited: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFavorite
-        /** Apple HIG / Material 3 · global · "Reply" menu item (onthisday) · PLATFORM — token `icon.library.reply` */
-        val libraryReply: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.AutoMirroredOutlinedReply
         /** Apple HIG / Material Symbols · photo.viewer · Live Photo badge (Android; iOS draws PHLivePhotoView.livePhotoBadgeImage) · PLATFORM — token `icon.photo.viewer.livePhoto` */
         val photoViewerLivePhoto: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedMotionPhotosOn
         /** Retro · photo.viewer · sound toggle while a video plays muted · PLATFORM — token `icon.photo.viewer.soundOff` */
@@ -875,14 +859,6 @@ object Tokens {
             const val sheet: String = "tap your own row in the Reactions sheet → unreact(post, emoji)"
             const val picker: String = "tap an emoji highlighted as yours → unreact"
             const val menu: String = "a quick reaction you already used shows selected in the palette row; tapping it unreacts"
-        }
-        /** Apple Messages + Retro · chat.thread · editing a sent text message · SOURCED — token `chat.thread.layout.edit` */
-        object ChatThreadLayoutEdit {
-            const val offer: String = "context-menu item chat.thread.menu.edit on your own sent text message while it is younger than chat.thread.duration.editWindow and edited fewer than chat.thread.count.editMax times (after Reply · Copy, before Unsend); never on photos, voice, joined / left lines or someone else's message"
-            const val composer: String = "the reply bar's slot shows chat.thread.edit.bar ('Edit message') with the close glyph (label chat.thread.a11y.cancelEdit); the field holds the message's text; the send glyph saves it (edit_message); close puts the draft back as it was"
-            const val mark: String = "an edited message (edited_at set) shows chat.thread.edited ('Edited') as the status line under it — text role caption, color.global.textSecondary, the 'Sending' slot of chat.thread.layout.failedMessage"
-            const val update: String = "the new text replaces the old at once for everyone (Realtime UPDATE); no notification; earlier versions are not kept"
-            const val failure: String = "the text returns to what it was; chat.thread.edit.error (Android Toast / iOS announcement) + haptic.global.error"
         }
         /** Retro + Apple Messages · chat.thread · own message whose send failed / is in flight · SOURCED — token `chat.thread.layout.failedMessage` */
         object ChatThreadLayoutFailedMessage {
@@ -1694,13 +1670,6 @@ object Tokens {
         object PhotoViewerLayoutDeleteConfirm {
             const val ios: String = "confirmationDialog (action sheet): title, message, destructive button, Cancel"
             const val android: String = "AlertDialog: title, message, confirm (color.global.system.error), dismiss"
-        }
-        /** Retro · photo.viewer · editing or adding a caption after posting · SOURCED — token `photo.viewer.layout.editCaption` */
-        object PhotoViewerLayoutEditCaption {
-            const val offer: String = "your own photo's menu (photo.viewer.layout.menu): photo.viewer.menu.editCaption when it has a caption, photo.viewer.menu.addCaption when it has none — first item; no time limit"
-            const val editor: String = "the platform alert (C-29) titled with the menu item's words, one text field (placeholder photo.viewer.caption.placeholder, the caption's 1000-character limit), buttons photo.viewer.caption.save and photo.viewer.delete.cancel; an empty field removes the caption"
-            const val mark: String = "after an edit (caption_edited_at) the viewer footer's date line reads '{date} · Edited' (Retro's ' · ' separator, chat.thread.edited); the chat thread shows chat.thread.edited as the status line under the caption"
-            const val failure: String = "the caption stays as it was; photo.viewer.caption.error (Android Toast / iOS announcement) + haptic.global.error"
         }
         /** Apple HIG (Live Photos) · photo.viewer · a Live Photo in the viewer · PLATFORM — token `photo.viewer.layout.livePhoto` */
         object PhotoViewerLayoutLivePhoto {

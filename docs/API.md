@@ -897,11 +897,12 @@ and the caller has no premium, older posts are left out. Errors: `not_group_memb
 ```
 group_collages(p_group_id uuid, p_from date = null, p_to date = null)
   → table(collage_id uuid, invitation_id uuid, local_date date, image_path text, widget_path text,
-          share_path text, page_count int, composed_at timestamptz)
+          share_path text, composed_at timestamptz)
 ```
 The group's ready same-moment collages whose invitation day (group-local) is in `[p_from, p_to]` (a null bound is
 open), newest first — the group screen's week ("the group's photo of the day") and any day range. Open one with the
-collage view (`collages` row / `invitation_id`). Errors: `not_group_member`.
+collage view (`collages` row / `invitation_id`), which has its pages. Errors: `not_group_member`. (Migration 0046
+dropped the `page_count` column 0033 returned: no RPC returns a number.)
 
 #### `on_this_day`
 ```

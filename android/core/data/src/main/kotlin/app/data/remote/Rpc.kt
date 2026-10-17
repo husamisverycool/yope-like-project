@@ -58,6 +58,24 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     OnThisDay("on_this_day", setOf("p_group_id", "p_local_date")),
     UpdateRecap("update_recap", setOf("p_recap_id"), setOf("p_items", "p_text", "p_collage_ids")),
     GroupCollages("group_collages", setOf("p_group_id"), setOf("p_from", "p_to")),
+    /** Migration 0045: the history calendar's months and the week each one jumps to. */
+    GroupHistoryMonths("group_history_months", setOf("p_group_id")),
+    /** Migration 0040: captions, chat about a photo, member or self-tag, dates. */
+    SearchPhotos("search_photos", emptySet(), setOf("p_text", "p_group_id", "p_member_id", "p_from", "p_to", "p_before", "p_limit")),
+    /** Migration 0039: anyone in the group adds; you remove what you added (the creator and admins remove any). */
+    AddToAlbum("add_to_album", setOf("p_album_id", "p_post_ids")),
+    RemoveFromAlbum("remove_from_album", setOf("p_album_id", "p_post_ids")),
+    SetGroupCoverFromPost("set_group_cover_from_post", setOf("p_group_id", "p_post_id")),
+    /** Migration 0038: hide a memory (a photo or a whole day) for yourself only; private favorites. */
+    HideMemory("hide_memory", emptySet(), setOf("p_media_id", "p_day")),
+    UnhideMemory("unhide_memory", setOf("p_id")),
+    MyHiddenMemories("my_hidden_memories", emptySet()),
+    SetFavorite("set_favorite", setOf("p_media_id", "p_on")),
+    MyFavorites("my_favorites", emptySet(), setOf("p_before", "p_limit")),
+    /** Migration 0036: the widgets' people, one friend's newest photos, your own memories. */
+    WidgetPeople("widget_people", emptySet()),
+    NewestPhotosOf("newest_photos_of", setOf("p_user_id"), setOf("p_limit")),
+    MyMemories("my_memories", setOf("p_from", "p_days", "p_time_zone")),
     OpenInvitations("open_invitations", emptySet(), setOf("p_group_ids")),
     SaveAlbum("save_album", setOf("p_group_id", "p_name", "p_post_ids")),
     RenameAlbum("rename_album", setOf("p_album_id", "p_name")),

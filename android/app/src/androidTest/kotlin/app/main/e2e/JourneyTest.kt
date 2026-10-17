@@ -223,7 +223,7 @@ class JourneyTest {
             waitFor(mayaPhoto)
         }
 
-        // The weekly question: on in the group's settings (Maya created the group, so she is its admin), then answered.
+        // The weekly question: on in the group's settings from the start (Maya created the group, so she is its admin), then answered.
         soft("weekly-question-switch", recover = { backTo(mayaPhoto) }) { mayaTurnsOnTheWeeklyQuestion(mayaPhoto) }
         soft("weekly-question-answer", recover = { backTo(mayaPhoto) }) { mayaAnswersTheQuestion() }
 
@@ -292,14 +292,13 @@ class JourneyTest {
 
     // ---- The weekly question (question.weekly) ----
 
-    /** Group settings → Admin Settings → "Weekly Question" on (`set_group_weekly_question`). */
+    /** Group settings → Admin Settings → "Weekly Question" is already on: new groups start with it (decision 30). */
     private fun mayaTurnsOnTheWeeklyQuestion(mayaPhoto: SemanticsMatcher) {
         tapAtGroupTop(desc(R.string.groups_screen_settings_accessibilitylabel))
         val row = text(R.string.question_weekly_settings_row)
         waitFor(row, LONG)
         scrollTo(row)
         evidence.step("maya-group-settings")
-        tap(row)
         waitFor(row and isToggleable() and isOn(), LONG)
         evidence.step("maya-weekly-question-on")
         tap(desc(R.string.groups_settings_close_accessibilitylabel))

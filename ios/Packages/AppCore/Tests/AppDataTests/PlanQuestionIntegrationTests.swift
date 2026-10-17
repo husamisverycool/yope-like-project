@@ -183,14 +183,15 @@ final class PlanQuestionIntegrationTests: XCTestCase {
         addTeardownBlock { try? await LocalStack.setConfig("weekly_question_keys", json: previous) }
         try await LocalStack.setConfig("weekly_question_keys", json: #"["question.weekly.q01", "question.weekly.q02"]"#)
 
-        // Off by default: no question, and only an admin turns it on.
+        // On for new groups (decision 30); only an admin switches it. Off: no question.
         let isOnAtFirst = try await theo.data.questions.isOn(groupID: group.id)
-        XCTAssertFalse(isOnAtFirst)
+        XCTAssertTrue(isOnAtFirst)
+        await assertThrows(.api(.notGroupAdmin)) {
+            try await theo.data.questions.setOn(groupID: group.id, on: false)
+        }
+        _ = try await maya.data.questions.setOn(groupID: group.id, on: false)
         let offQuestion = try await theo.data.questions.current(groupID: group.id)
         XCTAssertNil(offQuestion)
-        await assertThrows(.api(.notGroupAdmin)) {
-            try await theo.data.questions.setOn(groupID: group.id, on: true)
-        }
         let switched = try await maya.data.questions.setOn(groupID: group.id, on: true)
         XCTAssertEqual(switched.id, group.id)
         let isOn = try await theo.data.questions.isOn(groupID: group.id)
