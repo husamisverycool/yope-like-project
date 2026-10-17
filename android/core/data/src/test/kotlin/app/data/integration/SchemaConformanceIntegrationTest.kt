@@ -97,6 +97,12 @@ class SchemaConformanceIntegrationTest {
         "public_app_config" to PublicAppConfigRow.serializer().descriptor,
     )
 
+    /** Not null in the database but optional in the model: rows the device makes before the server has set them. */
+    private val nullableOnDevice = setOf(
+        // Set by the posts_set_visible_at trigger (migration 0050); Post.visibleAt falls back to revealed_at / created_at.
+        "posts.visible_at",
+    )
+
     @Test fun everyTableModelMirrorsTheLiveTable() {
         val definitions = openApi["definitions"]!!.jsonObject
         val problems = mutableListOf<String>()
@@ -116,7 +122,7 @@ class SchemaConformanceIntegrationTest {
                 val element = descriptor.getElementDescriptor(i)
                 if (required != null) {
                     val notNull = name in required
-                    if (notNull == element.isNullable) problems += "$table.$name: model nullable=${element.isNullable}, column not null=$notNull"
+                    if (notNull == element.isNullable && "$table.$name" !in nullableOnDevice) problems += "$table.$name: model nullable=${element.isNullable}, column not null=$notNull"
                 }
                 val dbEnum = column["enum"]?.jsonArray?.map { it.jsonPrimitive.content }
                 if (dbEnum != null) {
