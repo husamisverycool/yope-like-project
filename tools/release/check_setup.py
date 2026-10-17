@@ -20,6 +20,7 @@ from release_common import (
     DOMAIN_RE,
     FINGERPRINT_RE,
     FLY_NAME_RE,
+    REVIEW_CODE_RE,
     ROOT,
     TEAM_RE,
     annotate,
@@ -27,6 +28,7 @@ from release_common import (
     fly_app_names,
     json_secret,
     load_config,
+    review_phone_digits,
     set_env,
     set_output,
     supabase_ref,
@@ -66,6 +68,24 @@ def check_server() -> None:
         missing.append("config/app.json supabase.url is not your project's URL (https://<ref>.supabase.co) — OWNER_SETUP.md §5")
     need_secret("SUPABASE_ACCESS_TOKEN", "Supabase → Account → Access Tokens (OWNER_SETUP.md §5)")
     need_secret("SUPABASE_DB_PASSWORD", "the database password chosen when the Supabase project was created (OWNER_SETUP.md §5)")
+    check_review_account()
+
+
+def check_review_account() -> None:
+    """App Review and Play's review sign in with a test phone number and a fixed code (OWNER_SETUP.md §11)."""
+    phone, code = env("REVIEW_PHONE"), env("REVIEW_CODE")
+    if not phone and not code:
+        warnings.append("GitHub secrets REVIEW_PHONE and REVIEW_CODE are not set: App Review and Google Play's review cannot "
+                        "sign in (the app signs in by SMS code only). Set both, then run this again (OWNER_SETUP.md §11)")
+        return
+    if not phone or not code:
+        missing.append("Set both GitHub secrets REVIEW_PHONE and REVIEW_CODE, or neither (OWNER_SETUP.md §11)")
+        return
+    if review_phone_digits(phone) is None:
+        missing.append("GitHub secret REVIEW_PHONE is not a phone number — write it with + and the country code, like "
+                       "+1 201 555 0142 (OWNER_SETUP.md §11)")
+    if not REVIEW_CODE_RE.fullmatch(code):
+        missing.append("GitHub secret REVIEW_CODE must be digits only, like 123456 (OWNER_SETUP.md §11)")
 
 
 def check_app_has_server() -> None:

@@ -254,6 +254,30 @@ class CheckSetupTest(unittest.TestCase):
         code, out = self.check("testflight", self.ready, **secrets)
         self.assertEqual(code, 0, out)
 
+    def test_server_review_account(self):
+        base = {"supabase.url": "https://abcdefghijklmnopqrst.supabase.co"}
+        secrets = dict(SUPABASE_ACCESS_TOKEN="t", SUPABASE_DB_PASSWORD="p")
+        code, out = self.check("server", base, **secrets)
+        self.assertEqual(code, 0, out)
+        self.assertIn("::warning::GitHub secrets REVIEW_PHONE and REVIEW_CODE are not set", out)
+        code, out = self.check("server", base, REVIEW_PHONE="+1 201 555 0142", REVIEW_CODE="123456", **secrets)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("REVIEW_", out)
+        code, out = self.check("server", base, REVIEW_PHONE="2015550142", REVIEW_CODE="12 456", **secrets)
+        self.assertEqual(code, 1)
+        self.assertIn("REVIEW_PHONE is not a phone number", out)
+        self.assertIn("REVIEW_CODE must be digits only", out)
+        code, out = self.check("server", base, REVIEW_CODE="123456", **secrets)
+        self.assertEqual(code, 1)
+        self.assertIn("Set both GitHub secrets REVIEW_PHONE and REVIEW_CODE", out)
+
+    def test_review_phone_digits(self):
+        sys.path.insert(0, str(HERE))
+        from release_common import review_phone_digits
+        self.assertEqual(review_phone_digits("+1 (201) 555-0142"), "12015550142")
+        self.assertIsNone(review_phone_digits("2015550142"))
+        self.assertIsNone(review_phone_digits("+0 123"))
+
     def test_android_key_wants_a_long_password(self):
         code, out = self.check("android-key", ANDROID_KEYSTORE_PASSWORD="short")
         self.assertEqual(code, 1)

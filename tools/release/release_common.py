@@ -64,6 +64,21 @@ def json_secret(name: str) -> dict | None:
     return value
 
 
+def review_phone_digits(raw: str) -> str | None:
+    """The review account's phone as Supabase's test-OTP list wants it (country code and number, digits only), or None
+    when it is not a phone number: "+1 (201) 555-0142" → "12015550142"."""
+    text = raw.strip()
+    if not text.startswith("+"):
+        return None
+    digits = re.sub(r"[\s().-]", "", text[1:])
+    return digits if re.fullmatch(r"[1-9][0-9]{6,14}", digits) else None
+
+
+# Supabase's management API takes the test codes as "<phone digits>=<code digits>" (its sms_test_otp pattern
+# ^([0-9]{1,15}=[0-9]+,?)*$); the apps' code field takes any number of digits.
+REVIEW_CODE_RE = re.compile(r"^[0-9]+$")
+
+
 def supabase_ref(config: dict) -> str | None:
     url = (config.get("supabase") or {}).get("url") or ""
     match = re.match(r"^https://([a-z0-9]{20})\.supabase\.co/?$", url)

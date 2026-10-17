@@ -309,6 +309,7 @@ the researcher to capture the flows listed under "approximated" in the session r
 | `APPLE_TEAM_ID`, `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` | iOS signing via App Store Connect API key and TestFlight upload ("send Jolt to TestFlight"). The key: App Store Connect → Users and Access → Integrations → App Store Connect API → Team Keys → **+**, access **Admin** (automatic signing needs it); `ASC_KEY_P8` is the whole text of the downloaded `.p8` file |
 | `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` | "set up the server": applies the migrations and the sign-in settings to the project named by `config/app.json` `supabase.url` |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID` | "set up the server" also switches on phone sign-in through Twilio Verify (step 6.1) |
+| `REVIEW_PHONE`, `REVIEW_CODE` | The app reviewers' sign-in (§11): "set up the server" lets that number sign in with that code, no text sent, for 365 days. Set both before the first store submission |
 | `ANDROID_KEYSTORE_PASSWORD` | The password that locks the Android signing key (§2.2.2): "create the Android signing key" makes the key with it, "send Jolt to Google Play" unlocks it. At least 20 characters; keep a copy of your own |
 | `ANDROID_UPLOAD_KEYSTORE_B64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Only if you already have an upload keystore of your own instead: base64 of the keystore file, its alias (needed when it holds several keys) and the key's password when it differs from `ANDROID_KEYSTORE_PASSWORD` (the store's). Used only while `android/keystore/upload.p12.enc` does not exist |
 | `PLAY_SERVICE_ACCOUNT_JSON` | "send Jolt to Google Play": the whole text of the Google Cloud service account's `.json` key (§2.2.3) |
@@ -340,7 +341,8 @@ Without these, CI still builds and tests unsigned debug builds on every push.
 
 1. **set up the server** (`.github/workflows/setup-server.yml`): once the Supabase project exists, its URL and anon key
    are in `config/app.json` and the Supabase secrets above are set. Applies every migration and switches on phone
-   sign-in (with the Twilio secrets) with email sign-up off. Safe to run again.
+   sign-in (with the Twilio secrets) with email sign-up off, and the reviewers' sign-in (with `REVIEW_PHONE` and
+   `REVIEW_CODE`, §11). Safe to run again.
 2. **send Jolt to TestFlight** (`.github/workflows/testflight.yml`): once the Apple secrets are set and the app exists
    in App Store Connect (My Apps → + → New App) with bundle ID `com.husamisverycool.jolt` — or another one, given as the
    workflow's input or the repository variable `IOS_BUNDLE_ID`. Builds Release, signs it automatically and uploads it;
@@ -360,3 +362,39 @@ Without these, CI still builds and tests unsigned debug builds on every push.
 
 Each stops at the start, naming each missing step, when something is not set up yet (`tools/release/check_setup.py`);
 optional steps still missing show as yellow warnings on the run's page.
+
+## 11. App review sign-in
+
+Both stores' reviewers must be able to sign in: "If your app includes account-based features, provide either an active
+demo account or fully-featured demo mode" (App Review Guidelines 2.1, https://developer.apple.com/app-store/review/guidelines/);
+"If your entire app or parts of your app are restricted based on login credentials [...] you must provide all required
+details to enable access to your app" (Play Console Help, Prepare your app for review,
+https://support.google.com/googleplay/android-developer/answer/9859455; both read 2026-10-17). Jolt signs in only with a
+texted code, so the review account is a test number: Supabase lets it sign in with a fixed code and sends no text (its
+test codes are checked before Twilio Verify).
+
+1. **Choose the number and the code.** The number must not be anyone's: in North America 555-0100 to 555-0199 are kept
+   for fiction by the numbering plan's administrator, and the Android app accepts such a number with a real area code,
+   for example `+1 201 555 0142` (checked with libphonenumber 9.0.30, the library the Android app checks numbers with;
+   `+1 555 …` numbers are refused). The code: six digits you make up.
+2. **Save them** as the GitHub secrets `REVIEW_PHONE` (with `+` and the country code) and `REVIEW_CODE` (§10), then run
+   **set up the server** again. The code works for 365 days from that run; run it again to renew it (the run's log says
+   it set the code). Every "set up the server" run warns while the two secrets are missing.
+3. **Give the account something to show** (once, before the first submission): on your phone, sign out (Profile →
+   Settings → Sign Out) or use a spare phone, sign in with the review number and code, enter an adult's birthday and
+   a name, **Create Group**, post a photo, and copy the group's invite link (the group → Invite → **Copy Link**). Sign out
+   again.
+4. **App Store Connect** → your app → the version → **App Review Information** → tick **Sign-in required** → User name:
+   the review number; Password: the code. **Notes**: the text below.
+5. **Play Console** → Policy and programs → **App content** → **Sign-in details** → **Start** (or **Manage**) →
+   **+ Add new instructions** → Username: the review number; Password: the code; **Any other instructions**: the text
+   below → **Save**.
+
+Text for the notes (put in your number, code and invite link):
+
+> Jolt signs in with a phone number and a code sent by text message; there are no passwords. This review account needs
+> no text message: on the first screen enter +1 201 555 0142 and tap Next, then enter the code 123456 and tap Next.
+> Enter any birthday of an adult (it is only used to check the age and is not saved) and tap Next. The account is in a
+> group with photos. To try joining a group from an invite (the App Clip on iPhone, the invite page elsewhere), open
+> https://jolt-husamisverycool.fly.dev/i/YOUR-INVITE-TOKEN on the device.
+

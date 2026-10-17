@@ -3,7 +3,8 @@
 # phone sign-in through Twilio Verify, with email sign-up off (docs/OWNER_SETUP.md §5–6). Safe to run again: applied
 # migrations are skipped. Needs config/app.json supabase.url and the secrets SUPABASE_ACCESS_TOKEN and
 # SUPABASE_DB_PASSWORD; with TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_VERIFY_SERVICE_SID it also sets up the
-# sign-in texts.
+# sign-in texts, and with REVIEW_PHONE and REVIEW_CODE the app reviewers' sign-in: that number signs in with that fixed
+# code and no text is sent, for a year from the run (OWNER_SETUP.md §11).
 name: set up the server
 
 on:
@@ -24,6 +25,8 @@ jobs:
       TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
       TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
       TWILIO_VERIFY_SERVICE_SID: ${{ secrets.TWILIO_VERIFY_SERVICE_SID }}
+      REVIEW_PHONE: ${{ secrets.REVIEW_PHONE }}
+      REVIEW_CODE: ${{ secrets.REVIEW_CODE }}
     steps:
       - uses: actions/checkout@v4
       - name: what is set up
@@ -40,7 +43,9 @@ jobs:
       - name: phone sign-in, no email sign-up
         run: |
           python3 - > auth.json <<'PY'
-          import json, os
+          import datetime, json, os, sys
+          sys.path.insert(0, "tools/release")
+          from release_common import review_phone_digits
           body = {"external_phone_enabled": True, "external_email_enabled": False}
           if all(os.environ.get(k) for k in ("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_VERIFY_SERVICE_SID")):
               body.update({
@@ -49,10 +54,20 @@ jobs:
                   "sms_twilio_verify_auth_token": os.environ["TWILIO_AUTH_TOKEN"],
                   "sms_twilio_verify_message_service_sid": os.environ["TWILIO_VERIFY_SERVICE_SID"],
               })
+          if os.environ.get("REVIEW_PHONE") and os.environ.get("REVIEW_CODE"):
+              # Supabase's test codes: "<phone digits>=<code>", honoured until sms_test_otp_valid_until.
+              until = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=365)
+              body.update({
+                  "sms_test_otp": f"{review_phone_digits(os.environ['REVIEW_PHONE'])}={os.environ['REVIEW_CODE']}",
+                  "sms_test_otp_valid_until": until.strftime("%Y-%m-%dT%H:%M:%SZ"),
+              })
           print(json.dumps(body))
           PY
           if [ -z "$TWILIO_ACCOUNT_SID" ]; then
             echo "::warning::No Twilio secrets yet: sign-in texts are not set up (OWNER_SETUP.md §6.1). Add them and run this again."
+          fi
+          if [ -n "$REVIEW_PHONE" ] && [ -n "$REVIEW_CODE" ]; then
+            echo "review sign-in: the REVIEW_PHONE number signs in with REVIEW_CODE for 365 days (OWNER_SETUP.md §11)"
           fi
           status=$(curl -sS -o response.json -w '%{http_code}' -X PATCH \
             "https://api.supabase.com/v1/projects/${{ steps.setup.outputs.ref }}/config/auth" \
