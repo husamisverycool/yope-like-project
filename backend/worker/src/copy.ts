@@ -177,6 +177,16 @@ export const WORKER_COPY_KEYS = {
     surface: "camera.overnight",
     meaning: "Body of the photos-developed notification. No count of photos, no names.",
   },
+  "onthisday.push.title": {
+    params: [],
+    surface: "onthisday",
+    meaning: "Title of the opt-in memory notification (push.memory): sent only on a day with a memory, at most once a day.",
+  },
+  "onthisday.push.body": {
+    params: [],
+    surface: "onthisday",
+    meaning: "Body of the memory notification. Never a number of memories, never a year count banner.",
+  },
   "week.recap.template": {
     params: ["group"],
     surface: "week.recap",

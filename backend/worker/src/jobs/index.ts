@@ -13,6 +13,7 @@ import {
   pushNewMessage,
   pushNewPost,
   pushPhotosDeveloped,
+  pushMemory,
   pushPlanCanceled,
   pushPlanChanged,
   pushPlanCreated,
@@ -44,6 +45,7 @@ export const REALTIME_KINDS: Record<string, Handler> = {
   "push.plan_changed": pushPlanChanged,
   "push.plan_canceled": pushPlanCanceled,
   "push.photos_developed": pushPhotosDeveloped,
+  "push.memory": pushMemory, // enqueued by due_memory_alerts (migration 0049), once per person and local day
   "widget.refresh": widgetRefresh,
 };
 

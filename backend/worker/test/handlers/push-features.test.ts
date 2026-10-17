@@ -165,3 +165,65 @@ describe("overnight photos", () => {
     }
   });
 });
+
+describe("push.memory and the scheduler's memory step (migration 0049)", () => {
+  const today = new Date();
+  const noonUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 12)).toISOString();
+  const lastYear = new Date(Date.UTC(today.getUTCFullYear() - 1, today.getUTCMonth(), today.getUTCDate(), 10)).toISOString();
+
+  async function memoryOf(user: TestUser): Promise<string> {
+    const { post } = await postPhoto(user, [g.id]);
+    await sql(`update public.posts set created_at = $2 where id = $1`, [post.id, lastYear]);
+    return post.id;
+  }
+
+  it("opted in, a memory today: one alert of type memory that opens the photo; none again that day", async () => {
+    const postId = await memoryOf(u[1]!);
+    await rpc(u[1]!.client, "set_memory_alerts", { p_on: true, p_time_zone: "UTC" });
+    try {
+      const rows = await w.scheduler.tick(new Date(noonUtc), { steps: ["memories"] });
+      expect(rows.memories).toBe(1);
+      expect(await jobs("push.memory", { user_id: u[1]!.id })).toHaveLength(1);
+      await w.runner.runUntilIdle({ kinds: ["push.memory"] });
+      const [a] = alertsTo(ios.get(u[1]!.id)!);
+      expect(a!.payload).toMatchObject({ type: "memory", post_id: postId, group_id: g.id });
+      expect(a!.payload.aps.alert.title).toBe("[onthisday.push.title]");
+      expect(alertsTo(ios.get(u[0]!.id)!)).toHaveLength(0); // only the person whose memory it is
+      expect((await w.scheduler.tick(new Date(noonUtc), { steps: ["memories"] })).memories).toBe(0);
+    } finally {
+      await rpc(u[1]!.client, "set_memory_alerts", { p_on: false });
+    }
+  });
+
+  it("off by default; nothing on a day without a memory or when it is hidden; Pause All silences it", async () => {
+    await memoryOf(u[0]!);
+    expect((await w.scheduler.tick(new Date(noonUtc), { steps: ["memories"] })).memories).toBe(0); // off by default
+    await sql(`delete from private.memory_alert_days where user_id = any($1::uuid[])`, [[u[0]!.id, u[3]!.id]]);
+
+    await rpc(u[3]!.client, "set_memory_alerts", { p_on: true, p_time_zone: "UTC" }); // u3 has no memory
+    const hidden = await memoryOf(u[0]!);
+    await rpc(u[0]!.client, "set_memory_alerts", { p_on: true, p_time_zone: "UTC" });
+    const [{ media_id }] = await sql(`select media_id from public.posts where id = $1`, [hidden]);
+    try {
+      // u0 has two memories today; hiding every one of their photos of that day leaves none
+      await sql(
+        `insert into public.memory_hides (user_id, day) values ($1, $2::date)`,
+        [u[0]!.id, lastYear.slice(0, 10)],
+      );
+      expect((await w.scheduler.tick(new Date(noonUtc), { steps: ["memories"] })).memories).toBe(0);
+      expect(media_id).toBeTruthy();
+
+      // a memory found, then Pause All before the push goes: nothing is sent
+      await sql(`delete from private.memory_alert_days where user_id = $1`, [u[0]!.id]);
+      await sql(`delete from public.memory_hides where user_id = $1`, [u[0]!.id]);
+      expect((await w.scheduler.tick(new Date(noonUtc), { steps: ["memories"] })).memories).toBe(1);
+      await rpc(u[0]!.client, "set_notifications_paused", { p_paused: true, p_time_zone: "UTC" });
+      await w.runner.runUntilIdle({ kinds: ["push.memory"] });
+      expect(alertsTo(ios.get(u[0]!.id)!)).toHaveLength(0);
+    } finally {
+      await rpc(u[0]!.client, "set_notifications_paused", { p_paused: false });
+      await rpc(u[0]!.client, "set_memory_alerts", { p_on: false });
+      await rpc(u[3]!.client, "set_memory_alerts", { p_on: false });
+    }
+  });
+});

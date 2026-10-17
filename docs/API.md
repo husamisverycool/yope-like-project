@@ -525,6 +525,12 @@ Read: own row. Written by `set_quiet_hours`. Columns: `user_id`, `quiet_start` t
 Per-group mute is `group_members.muted`. `paused_until` timestamptz? (migration 0037, Pause All, written by
 `set_notifications_paused`): while it is in the future the person gets no notification at all — every group, the daily
 invitation included — exactly as if every group were muted (widgets still update); null or past = not paused.
+`memories` boolean (default **false**) and `memory_time_zone` text? (migration 0049, written by `set_memory_alerts`):
+the opt-in memory notification (Google Photos memories notifications, Timehop): push type `memory` with `post_id`
+(title `onthisday.push.title` "On This Day"), only on a local day the person has a memory — their own or self-tagged
+photo of this month and day in an earlier year that they can still see and have not hidden — at most once a day,
+from `memory_alert_local_time` ("09:48") in `memory_time_zone`. Muting the photo's group, Pause All and quiet
+hours apply as to any alert. The apps open the photo (or On This Day of its group).
 
 ### 5.22 `entitlements`
 
@@ -792,6 +798,14 @@ set_typing(p_group_id uuid, p_typing boolean) → void
 `true` while the person types (call again at most every `typing_ttl_s / 2` seconds while they keep typing): their
 `chat_typing.until` becomes now + `typing_ttl_s` (6 s). `false` when the field empties or the message is sent: `until`
 = now. Members only (`not_group_member`). Records nothing when `typing_ttl_s` is NULL.
+
+#### `set_memory_alerts`
+```
+set_memory_alerts(p_on boolean, p_time_zone text = null) → notification_settings
+```
+The opt-in memory notification on or off (§5.21; migration 0049). Turning it on needs the device's IANA zone
+(`invalid_time_zone`); off keeps the last zone. `due_memory_alerts(p_now)` (service role, the worker's scheduler
+every minute) enqueues `push.memory` once per person and local day when there is a memory.
 
 #### `edit_message`
 ```
@@ -1303,6 +1317,7 @@ A NULL value means "not sourced yet", and the dependent feature fails closed (ex
 | `invite_ttl_seconds` | NULL = links never expire (owner decision 27; migration 0026) | no | `create_invite` |
 | `birthday_request_lead_days` | 7 | no | `due_birthday_requests` |
 | `year_story_release_month_day` | "12-01" | no | `due_year_stories` |
+| `memory_alert_local_time` | "09:48" (the default waking start, BeReal; migration 0049) | no | `due_memory_alerts`; NULL = no memory notification |
 | `typing_ttl_s` | 6 (WhatsApp; migration 0048) | yes | `set_typing`; the apps resend every `typing_ttl_s / 2` while typing |
 | `message_edit_window_s` / `message_edit_max` | 900 / 5 (Apple Messages; migration 0047) | yes | `edit_message` (fails closed if NULL); the apps offer Edit only inside them |
 | `weekly_question_keys` | the nine keys `question.weekly.q01` … `q09` in order (owner decision 30, migration 0024) | yes | `current_group_question` |

@@ -1357,6 +1357,10 @@
     <string name="onthisday_offline_detail" formatted="false">Check your connection and try again.</string>
     <!-- Retro · onthisday · new · SOURCED -->
     <string name="onthisday_offline_title" formatted="false">No Connection</string>
+    <!-- Retro · onthisday · adapted · SOURCED -->
+    <string name="onthisday_push_body" formatted="false">Relive your memories from this day over the years.</string>
+    <!-- Retro · onthisday · adapted · SOURCED -->
+    <string name="onthisday_push_title" formatted="false">On This Day</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_savedenied_button" formatted="false">Allow Photo Access</string>
     <!-- Retro · onthisday · new · SOURCED -->

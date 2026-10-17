@@ -680,6 +680,8 @@ const table = {
   "onthisday.nux.title": "Introducing On This Day", // Retro · onthisday · SOURCED
   "onthisday.offline.detail": "Check your connection and try again.", // Retro · onthisday · SOURCED
   "onthisday.offline.title": "No Connection", // Retro · onthisday · SOURCED
+  "onthisday.push.body": "Relive your memories from this day over the years.", // Retro · onthisday · SOURCED
+  "onthisday.push.title": "On This Day", // Retro · onthisday · SOURCED
   "onthisday.saveDenied.button": "Allow Photo Access", // Retro · onthisday · SOURCED
   "onthisday.saveDenied.message": "Allow access in Settings to save photos to your camera roll.", // Retro · onthisday · SOURCED
   "onthisday.saveDenied.title": "Camera Roll Access", // Retro · onthisday · SOURCED

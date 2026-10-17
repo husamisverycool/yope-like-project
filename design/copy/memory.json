@@ -10,6 +10,26 @@
       "level": "SOURCED",
       "notes": "Noun swap week → day: our memories match the date (docs/API.md on_this_day). Title of the entry card placed by groups.screen."
     },
+    "onthisday.push.title": {
+      "text": "On This Day",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "evidence": "design/copy-patterns.md retro.voice.push ('On This Week', Retro on_this_week_notification_title)",
+      "pattern": "retro.voice.push — title: the context",
+      "level": "SOURCED",
+      "notes": "Noun swap week → day, as onthisday.entry.title. The opt-in memory notification (push.memory, migration 0049): sent only on a day with a memory, at most once a day."
+    },
+    "onthisday.push.body": {
+      "text": "Relive your memories from this day over the years.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "evidence": "design/copy-patterns.md retro.voice.push ('Relive your memories from this week over the years.', Retro on_this_week_notification_body without its count)",
+      "pattern": "retro.voice.push — body: a plain statement with a period",
+      "level": "SOURCED",
+      "notes": "Never a number of memories (tenet: no counts)."
+    },
     "onthisday.entry.subtitle": {
       "text": "Revisit memories from {date} over the years",
       "origin": "adapted",

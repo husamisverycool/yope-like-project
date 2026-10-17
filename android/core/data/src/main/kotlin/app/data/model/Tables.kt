@@ -409,6 +409,9 @@ data class NotificationSettings(
     val overnight: Boolean = true,
     /** Pause All (`set_notifications_paused`, migration 0037): no notification before this instant; null or past = not paused. */
     @SerialName("paused_until") val pausedUntil: Instant? = null,
+    /** The opt-in memory notification (`set_memory_alerts`, migration 0049; default off) and the zone its day is counted in. */
+    val memories: Boolean = false,
+    @SerialName("memory_time_zone") val memoryTimeZone: String? = null,
 )
 
 /** §5.22 `entitlements` */

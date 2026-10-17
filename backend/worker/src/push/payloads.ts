@@ -50,7 +50,8 @@ export type PushType =
   | "birthday_request"
   | "tribute"
   | "year_story"
-  | "plan";
+  | "plan"
+  | "memory";
 
 export type AlertType = Exclude<PushType, "widget" | "daily_invitation_ended">;
 

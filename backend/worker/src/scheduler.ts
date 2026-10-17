@@ -11,8 +11,8 @@ import type { Runner } from "./runner.js";
 import type { Services } from "./services.js";
 import { addDays, utcDate } from "./time.js";
 
-export type TickStep = "invitations" | "arm" | "recaps" | "birthdays" | "tributes" | "years" | "developed" | "uploads";
-export const ALL_STEPS: TickStep[] = ["invitations", "arm", "recaps", "birthdays", "tributes", "years", "developed", "uploads"];
+export type TickStep = "invitations" | "arm" | "recaps" | "birthdays" | "tributes" | "years" | "developed" | "memories" | "uploads";
+export const ALL_STEPS: TickStep[] = ["invitations", "arm", "recaps", "birthdays", "tributes", "years", "developed", "memories", "uploads"];
 
 /** due_unlinked_uploads runs at most this often (its files are a week old; nothing is gained by asking every minute). */
 export const UPLOAD_SWEEP_INTERVAL_MS = 3_600_000;
@@ -33,6 +33,8 @@ export interface TickReport {
   tributes: number;
   yearStories: number;
   developed: number;
+  /** memory notifications enqueued (migration 0049) */
+  memories: number;
   /** unlinked uploads queued for deletion; null when the hourly sweep did not run this tick */
   unlinkedUploads: number | null;
   errors: string[];
@@ -46,6 +48,7 @@ const STEP_OF: Record<string, TickStep> = {
   due_tributes: "tributes",
   due_year_stories: "years",
   due_developed_posts: "developed",
+  due_memory_alerts: "memories",
   due_unlinked_uploads: "uploads",
 };
 
@@ -105,6 +108,7 @@ export class Scheduler {
       tributes: 0,
       yearStories: 0,
       developed: 0,
+      memories: 0,
       unlinkedUploads: null,
       errors: [],
     };
@@ -174,6 +178,9 @@ export class Scheduler {
     await step("due_developed_posts", async () => {
       report.developed = (await rpc<unknown[]>(this.svc.db, "due_developed_posts", { p_now: now.toISOString() })).length;
     });
+    await step("due_memory_alerts", async () => {
+      report.memories = (await rpc<unknown[]>(this.svc.db, "due_memory_alerts", { p_now: now.toISOString() })).length;
+    });
     // hourly, or whenever a caller asks for the step by name
     if (opts.steps?.includes("uploads") || this.lastUploadSweep === null || now.getTime() - this.lastUploadSweep >= UPLOAD_SWEEP_INTERVAL_MS) {
       await step("due_unlinked_uploads", async () => {
@@ -182,7 +189,7 @@ export class Scheduler {
       });
     }
 
-    if (report.invitations.created || report.recaps || report.birthdayRequests || report.tributes || report.yearStories || report.developed) this.runner?.wake();
+    if (report.invitations.created || report.recaps || report.birthdayRequests || report.tributes || report.yearStories || report.developed || report.memories) this.runner?.wake();
     this.lastTick = report;
     this.lastTickAt = Date.now();
     this.svc.log.info("scheduler tick", { ...report, at: undefined });

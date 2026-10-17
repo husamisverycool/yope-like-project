@@ -62,6 +62,8 @@ Each notification has a title and a body (Android requires a title; iOS shows bo
 | `notifications.push.planCanceled.body` | `{name}`, `{group}`, `{title}` | `notifications.push` | Body of the plan-cancelled notification. |
 | `camera.overnight.push.title` | `{group}` | `camera.overnight` | The group's overnight photos have developed (one per group and reveal time; members can turn these off). |
 | `camera.overnight.push.body` | `{group}` | `camera.overnight` | Body of the photos-developed notification. No count, no names. |
+| `onthisday.push.title` | — | `onthisday` | The opt-in memory notification (push.memory): only on a day with a memory, at most once a day. |
+| `onthisday.push.body` | — | `onthisday` | Body of the memory notification. Never a number of memories. |
 
 Not sent: ordinary chat messages that are not replies.
 

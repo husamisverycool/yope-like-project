@@ -212,6 +212,7 @@ describe('group isolation: RPCs', () => {
     edit_message: { args: () => ({ p_message_id: seeded.messageIds[0], p_body: 'x' }), expect: 'error' },
     edit_caption: { args: () => ({ p_post_id: seeded.postIds[0], p_caption: 'x' }), expect: 'error' },
     set_typing: { args: () => ({ p_group_id: seeded.group.id, p_typing: true }), expect: 'error' }, // typing line (0048)
+    set_memory_alerts: { args: () => ({ p_on: false }), expect: 'own-account' }, // memory notification (0049): the caller's own row
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {

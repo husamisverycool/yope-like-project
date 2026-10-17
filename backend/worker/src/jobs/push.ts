@@ -16,6 +16,7 @@
 //   push.plan_canceled   a plan was cancelled: Going and Maybe, except who cancelled it
 //   push.photos_developed overnight photos revealed: once per group and reveal time, to members who can see one
 //                        of them (their own included) and kept overnight alerts on (opens the first photo)
+//   push.memory          the opt-in memory notification: one person, a day with a memory, at most once a day
 // Rules for every alert: no push to the actor, nobody with a block with the actor, nobody who muted
 // the group (mute = no alerts from that group; widgets still update) or paused everything for the day
 // (Pause All, folded into Member.muted by loadAudience), silent in quiet hours.
@@ -409,4 +410,33 @@ export async function pushPhotosDeveloped(ctx: JobContext): Promise<void> {
     collapseKey: `developed:${groupId}:${developsAt}`,
   });
   await ctx.push.dispatch(recipients.flatMap((m) => alertSends(m, spec(m.userId), now)), { label: "photos_developed", group_id: groupId, post_id: posts[0]!.id });
+}
+
+// The opt-in memory notification (migration 0049): one person, on a local day with a memory, at most once a day
+// (due_memory_alerts enqueues it once per person and day). Opens the memory's photo. Not sent when they turned memory
+// alerts off since, can no longer see the photo, muted its group or paused everything (Pause All); silent in quiet hours.
+export async function pushMemory(ctx: JobContext): Promise<void> {
+  const userId = str(ctx.job.payload, "user_id");
+  const localDate = str(ctx.job.payload, "local_date");
+  const post = await loadPost(ctx, str(ctx.job.payload, "post_id"));
+  if (!post) return;
+  const settings = maybe(
+    await ctx.db.from("notification_settings").select("memories").eq("user_id", userId).maybeSingle(),
+    "notification_settings",
+  ) as { memories: boolean } | null;
+  if (!settings?.memories) return;
+  const now = ctx.now();
+  const audience = await loadAudience(ctx.db, post.group_id, now);
+  const member = audience?.members.find((m) => m.userId === userId);
+  if (!member || member.muted) return;
+  if (post.author_id !== userId && (await blockedWith(ctx.db, [post.author_id])).has(userId)) return;
+  const spec: Omit<AlertSpec, "quiet"> = {
+    type: "memory",
+    groupId: post.group_id,
+    ids: { post_id: post.id },
+    title: copyText("onthisday.push.title", {}),
+    body: copyText("onthisday.push.body", {}),
+    collapseKey: `memory:${userId}:${localDate}`,
+  };
+  await ctx.push.dispatch(alertSends(member, spec, now), { label: "memory", group_id: post.group_id, post_id: post.id });
 }

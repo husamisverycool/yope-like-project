@@ -1359,6 +1359,10 @@ public enum Copy {
     public static var onthisdayOfflineDetail: String { CopyLookup.string("onthisday.offline.detail", default: "Check your connection and try again.") }
     /// "No Connection" — Retro · onthisday · new · SOURCED
     public static var onthisdayOfflineTitle: String { CopyLookup.string("onthisday.offline.title", default: "No Connection") }
+    /// "Relive your memories from this day over the years." — Retro · onthisday · adapted · SOURCED
+    public static var onthisdayPushBody: String { CopyLookup.string("onthisday.push.body", default: "Relive your memories from this day over the years.") }
+    /// "On This Day" — Retro · onthisday · adapted · SOURCED
+    public static var onthisdayPushTitle: String { CopyLookup.string("onthisday.push.title", default: "On This Day") }
     /// "Allow Photo Access" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdaySaveDeniedButton: String { CopyLookup.string("onthisday.saveDenied.button", default: "Allow Photo Access") }
     /// "Allow access in Settings to save photos to your camera roll." — Retro · onthisday · new · SOURCED

@@ -56,6 +56,8 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     SetQuietHours("set_quiet_hours", setOf("p_start", "p_end", "p_time_zone")),
     /** Pause All (migration 0037): no notification until the next midnight of `p_time_zone`. */
     SetNotificationsPaused("set_notifications_paused", setOf("p_paused"), setOf("p_time_zone")),
+    /** The opt-in memory notification (migration 0049): on needs the device's zone. */
+    SetMemoryAlerts("set_memory_alerts", setOf("p_on"), setOf("p_time_zone")),
     SetBirthday("set_birthday", setOf("p_birthday", "p_opt_in")),
     ConfirmAge("confirm_age", setOf("p_birthdate")),
 
