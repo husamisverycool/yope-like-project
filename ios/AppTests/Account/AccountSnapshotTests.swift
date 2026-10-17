@@ -479,6 +479,15 @@ final class AccountSnapshotTests: XCTestCase {
         await loaded.setQuietHours(start: LocalTime(hour: 22, minute: 0)!, end: LocalTime(hour: 7, minute: 0)!)
         record(NavigationStack { SettingsNotificationsView(model: loaded) }, "settings.notifications", "quiet-hours")
 
+        // Pause All on: the footer adds the end ("Until 12:00 AM", the next local midnight of the fixture's clock).
+        let paused = SettingsNotificationsModel(
+            data: fixture.data, notifications: StaticNotificationAuthorizer(status: .granted), now: { Date(timeIntervalSince1970: 1_792_000_000) }
+        )
+        await paused.load()
+        await paused.setPaused(true)
+        record(NavigationStack { SettingsNotificationsView(model: paused) }, "settings.notifications", "paused", appearances: AccountSnapshot.both)
+        await paused.setPaused(false)
+
         let off = SettingsNotificationsModel(data: fixture.data, notifications: StaticNotificationAuthorizer(status: .denied))
         await off.load()
         record(NavigationStack { SettingsNotificationsView(model: off) }, "settings.notifications", "permission-off")

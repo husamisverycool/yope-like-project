@@ -17,7 +17,8 @@
 //   push.photos_developed overnight photos revealed: once per group and reveal time, to members who can see one
 //                        of them (their own included) and kept overnight alerts on (opens the first photo)
 // Rules for every alert: no push to the actor, nobody with a block with the actor, nobody who muted
-// the group (mute = no alerts from that group; widgets still update), silent in quiet hours.
+// the group (mute = no alerts from that group; widgets still update) or paused everything for the day
+// (Pause All, folded into Member.muted by loadAudience), silent in quiet hours.
 // Alerts carry a collapse id, so a job that runs twice replaces the notification instead of
 // showing it twice.
 

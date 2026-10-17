@@ -184,6 +184,7 @@ describe('group isolation: RPCs', () => {
     group_developing: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
     my_developing: { args: () => ({}), expect: 'own-account' },
     set_overnight_alerts: { args: () => ({}), expect: 'own-account' },
+    set_notifications_paused: { args: () => ({}), expect: 'own-account' }, // Pause All (0037): the caller's own row
     set_group_weekly_question: { args: () => ({ p_group_id: seeded.group.id, p_on: true }), expect: 'error' },
     current_group_question: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
     hide_question: { args: () => ({ p_question_id: seeded.questionId }), expect: 'error' },

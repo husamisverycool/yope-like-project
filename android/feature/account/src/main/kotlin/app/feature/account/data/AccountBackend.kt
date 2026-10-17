@@ -64,6 +64,9 @@ interface AccountBackend {
     /** The group's ready same-moment collages whose day (group-local) is in [from]…[to] (`group_collages`, migration 0033). */
     suspend fun groupCollages(groupId: String, from: LocalDate, to: LocalDate): List<app.data.model.GroupCollage> = emptyList()
 
+    /** `open_invitations` for one group: its daily invitation while open by the server's clock, else null (migration 0035). */
+    suspend fun openInvitation(groupId: String): app.data.model.DailyInvitation? = null
+
     // Groups (§5.3–§5.5, §6.1) ---------------------------------------------------------------------
     fun observeMyGroups(): Flow<DataState<List<Group>>>
     /** The newest post of [groupId]; the cached feed's first post when offline. */
@@ -97,6 +100,8 @@ interface AccountBackend {
     suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings
     /** §14.3 the reveal push of overnight photos (`set_overnight_alerts`; `notification_settings.overnight`, default on). */
     suspend fun setOvernightAlerts(on: Boolean): NotificationSettings
+    /** Pause All (`set_notifications_paused`): every notification off until the next midnight of [timeZone]. */
+    suspend fun setNotificationsPaused(paused: Boolean, timeZone: String?): NotificationSettings
 
     // Safety (§5.6, §6.3) -------------------------------------------------------------------------
     suspend fun blocked(): List<Block>

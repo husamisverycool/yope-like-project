@@ -71,7 +71,12 @@ data class SettingsNotificationsUiState(
     val error: Boolean = false,
     /** camera.overnight: the reveal push of overnight photos (`notification_settings.overnight`, default on). */
     val overnightOn: Boolean = true,
-)
+    /** Pause All (`notification_settings.paused_until`): the end of today's pause (the next local midnight); null = not paused. */
+    val pausedUntil: java.time.Instant? = null,
+) {
+    /** Pause All is on (`settings.notifications.pauseAll`). */
+    val paused: Boolean get() = pausedUntil != null
+}
 
 class SettingsNotificationsViewModel(private val env: AccountEnvironment) : AccountViewModel() {
     private val mutable = MutableStateFlow(SettingsNotificationsUiState())
@@ -96,6 +101,7 @@ class SettingsNotificationsViewModel(private val env: AccountEnvironment) : Acco
                 it.copy(
                     quietStart = settings?.quietStart, quietEnd = settings?.quietEnd, quietOn = settings?.quietStart != null && settings.quietEnd != null,
                     overnightOn = settings?.overnight ?: true, loaded = true,
+                    pausedUntil = settings?.pausedUntil?.takeIf { until -> until.isAfter(env.clock.instant()) },
                 )
             }
         }
@@ -169,6 +175,28 @@ class SettingsNotificationsViewModel(private val env: AccountEnvironment) : Acco
         }
     }
 
+    /**
+     * Pause All (`set_notifications_paused`): on = no notification until the next local midnight. Optimistic (on shows the
+     * end the server sets: the start of tomorrow in this device's zone); reverts with the error alert.
+     */
+    fun setPaused(on: Boolean) {
+        if (!mutable.value.online) return failed()
+        val before = mutable.value.pausedUntil
+        val zone = env.zone()
+        val guess = if (on) env.clock.instant().atZone(zone).toLocalDate().plusDays(1).atStartOfDay(zone).toInstant() else null
+        mutable.update { it.copy(pausedUntil = guess, error = false) }
+        viewModelScope.launch {
+            try {
+                val saved = env.backend.setNotificationsPaused(on, zone.id)
+                mutable.update { it.copy(pausedUntil = saved.pausedUntil) }
+            } catch (t: Throwable) {
+                t.dataError()
+                mutable.update { it.copy(pausedUntil = before) }
+                failed()
+            }
+        }
+    }
+
     private fun failed() {
         mutable.update { it.copy(error = true) }
         haptic(Tokens.Haptics.globalError)
@@ -207,13 +235,19 @@ fun SettingsNotificationsRoute(nav: NavController) {
         onCategories = openSettings,
         onDismissError = vm::dismissError,
         onOvernight = vm::setOvernight,
+        onPause = vm::setPaused,
     )
 }
+
+/** `{time}` of `settings.notifications.pauseAll.until`: when the pause ends, in the locale's short time format (`DateFormat.getTimeFormat`). */
+internal fun pauseEndTime(context: android.content.Context, until: java.time.Instant): String =
+    android.text.format.DateFormat.getTimeFormat(context).format(java.util.Date.from(until))
 
 /**
  * Pushed inside the Settings sheet (back + centred "Notifications"; `settings.root.layout.list`): 1. while the system
  * permission is off, the C-27 block at the top, left-aligned, no glyph (title, explanation, outline "Enable push" → the
- * app's notification settings; the rows below stay editable); 2. Groups — one row per group (cover in a
+ * app's notification settings; the rows below stay editable); Pause All (switch, footer, and while on "Until {time}");
+ * 2. Groups — one row per group (cover in a
  * `size.global.avatarComment` circle, C-23 fallback `icon.global.group`; name; native switch, on = notifications on) and
  * the footer (hidden with no groups); 3. Quiet Hours — switch; when on, Start / End with their times → the M3 time
  * picker; footer (the rows expand with `AnimatedVisibility`); then the overnight photos' switch (camera.overnight: row
@@ -233,6 +267,7 @@ fun SettingsNotificationsScreen(
     onCategories: () -> Unit,
     onDismissError: () -> Unit = {},
     onOvernight: (Boolean) -> Unit = {},
+    onPause: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     var picking by remember { mutableStateOf<Boolean?>(null) } // true = start, false = end
@@ -251,14 +286,23 @@ fun SettingsNotificationsScreen(
                     )
                 }
             }
+            // Pause All (Retro's Notification Settings: "Pause All — Turn off all notifications for the day"); while on, a
+            // second footer line says when it ends ("Until {time}", the next local midnight).
+            if (state.loaded) {
+                Box(Modifier.padding(top = if (systemOff) Tokens.Sizes.globalSectionGap else Tokens.Sizes.globalSectionHeaderToContent))
+                SettingsGroup(listOf(GroupedRowSpec(stringResource(R.string.settings_notifications_pauseall), trailing = GroupedTrailing.Toggle(state.paused, onPause))))
+                SettingsFooter(stringResource(R.string.settings_notifications_pauseall_footer))
+                state.pausedUntil?.let { until -> SettingsFooter(stringResource(R.string.settings_notifications_pauseall_until, pauseEndTime(context, until))) }
+            }
             val groups = state.groups
             if (groups == null || !state.loaded) {
-                SettingsHeader(stringResource(R.string.settings_notifications_groups_header), first = !systemOff)
+                SettingsHeader(stringResource(R.string.settings_notifications_groups_header), first = !systemOff && !state.loaded)
                 LoadingGroup()
                 return@Column
             }
             if (groups.isNotEmpty()) {
-                SettingsHeader(stringResource(R.string.settings_notifications_groups_header), first = !systemOff)
+                // after Pause All: never the page's first section
+                SettingsHeader(stringResource(R.string.settings_notifications_groups_header), first = false)
                 SettingsGroup(
                     groups.map { g ->
                         GroupedRowSpec(
@@ -271,8 +315,8 @@ fun SettingsNotificationsScreen(
                 SettingsFooter(stringResource(R.string.settings_notifications_groups_footer))
                 SettingsGap()
             } else {
-                // No groups: the Groups section is hidden; Quiet Hours (no header of its own) starts the page.
-                Box(Modifier.padding(top = if (systemOff) Tokens.Sizes.globalSectionGap else Tokens.Sizes.globalSectionHeaderToContent))
+                // No groups: the Groups section is hidden; Quiet Hours (no header of its own) follows Pause All.
+                SettingsGap()
             }
             val rows = buildList {
                 add(GroupedRowSpec(stringResource(R.string.settings_notifications_quiethours), trailing = GroupedTrailing.Toggle(state.quietOn, onQuiet)))

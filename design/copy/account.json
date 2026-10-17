@@ -2977,6 +2977,33 @@
       "level": "SOURCED"
     },
     "settings.notifications.liveActivity": {
+    "settings.notifications.pauseAll": {
+      "text": "Pause All",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.notifications",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (notification_setting_title_pause_all)",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (docs/RESEARCH_FEATURES_2026-10-17.md #17): every notification off until the person's next local midnight (set_notifications_paused)."
+    },
+    "settings.notifications.pauseAll.footer": {
+      "text": "Turn off all notifications for the day",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.notifications",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (notification_setting_description_pause_all)",
+      "level": "SOURCED",
+      "notes": "Retro's own description has no final period; kept verbatim."
+    },
+    "settings.notifications.pauseAll.until": {
+      "text": "Until {time}",
+      "origin": "verbatim",
+      "source_app": "Material 3",
+      "surface": "settings.notifications",
+      "evidence": "Android Open Source Project, frameworks/base/core/res/res/values/strings.xml `zen_mode_until` (\"Until %1$s\", example \"10:00 PM\") — the system's Do Not Disturb end time (https://raw.githubusercontent.com/aosp-mirror/platform_frameworks_base/main/core/res/res/values/strings.xml, accessed 2026-10-17)",
+      "level": "PLATFORM",
+      "notes": "Shown under Pause All while it is on; {time} is the end (the next local midnight) in the locale's short time format."
+    },
       "text": "Live Activity",
       "origin": "new",
       "source_app": "Apple HIG",

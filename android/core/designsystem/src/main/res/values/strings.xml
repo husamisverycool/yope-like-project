@@ -1817,6 +1817,12 @@
     <string name="settings_notifications_off_title" formatted="false">Keep up to date!</string>
     <!-- Retro · settings.notifications · verbatim · SOURCED -->
     <string name="settings_notifications_opensettings" formatted="false">Enable push</string>
+    <!-- Retro · settings.notifications · verbatim · SOURCED -->
+    <string name="settings_notifications_pauseall" formatted="false">Pause All</string>
+    <!-- Retro · settings.notifications · verbatim · SOURCED -->
+    <string name="settings_notifications_pauseall_footer" formatted="false">Turn off all notifications for the day</string>
+    <!-- Material 3 · settings.notifications · verbatim · PLATFORM · args: time -->
+    <string name="settings_notifications_pauseall_until">Until %1$s</string>
     <!-- Retro · settings.notifications · new · SOURCED -->
     <string name="settings_notifications_quiethours" formatted="false">Quiet Hours</string>
     <!-- Retro · settings.notifications · new · SOURCED -->

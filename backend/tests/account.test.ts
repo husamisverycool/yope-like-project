@@ -124,6 +124,39 @@ describe('set_quiet_hours', () => {
   });
 });
 
+describe('set_notifications_paused (Pause All)', () => {
+  it('pauses until the next midnight of the given zone, resumes, keeps quiet hours; own row only', async () => {
+    await rpc(a.client, 'set_quiet_hours', { p_start: '22:00', p_end: '07:00', p_time_zone: 'UTC' });
+    const zone = 'Asia/Tokyo';
+    const r = await rpc(a.client, 'set_notifications_paused', { p_paused: true, p_time_zone: zone });
+    const [expected] = await sql<{ until: string }>(
+      `select ((((now() at time zone $1)::date + 1)::timestamp) at time zone $1) as until`,
+      [zone],
+    );
+    expect(new Date(r.paused_until).getTime()).toBe(new Date(expected.until).getTime());
+    expect(new Date(r.paused_until).getTime()).toBeGreaterThan(Date.now());
+    expect(new Date(r.paused_until).getTime() - Date.now()).toBeLessThanOrEqual(24 * 3600 * 1000);
+    // local midnight: 00:00 in Tokyo
+    const [local] = await sql<{ t: string }>(`select to_char($1::timestamptz at time zone $2, 'HH24:MI') as t`, [r.paused_until, zone]);
+    expect(local.t).toBe('00:00');
+    expect(r).toMatchObject({ quiet_start: '22:00:00', quiet_end: '07:00:00' });
+    const resumed = await rpc(a.client, 'set_notifications_paused', { p_paused: false });
+    expect(resumed.paused_until).toBeNull();
+    expect(resumed.quiet_start).toBe('22:00:00');
+    // a person without a settings row gets one
+    const fresh = await rpc(b.client, 'set_notifications_paused', { p_paused: true, p_time_zone: 'UTC' });
+    expect(fresh.user_id).toBe(b.id);
+    expect((await select(a.client, 'notification_settings')).map((x: any) => x.user_id)).toEqual([a.id]);
+    await rpc(b.client, 'set_notifications_paused', { p_paused: false });
+    await expectRpcError(rpc(a.client, 'set_notifications_paused', { p_paused: true, p_time_zone: 'Nope/Nope' }), 'invalid_time_zone', 400);
+    await expectRpcError(rpc(a.client, 'set_notifications_paused', { p_paused: true }), 'invalid_time_zone', 400);
+    await expectRpcError(rpc(a.client, 'set_notifications_paused', { p_paused: null }), 'invalid_argument', 400);
+    const w = await a.client.from('notification_settings').update({ paused_until: null }).eq('user_id', a.id);
+    expect(w.error?.code).toBe('42501');
+    await rpc(a.client, 'set_quiet_hours', { p_start: null, p_end: null, p_time_zone: null });
+  });
+});
+
 describe('set_birthday', () => {
   it('opt-in needs a date; opting out cancels pending requests', async () => {
     await expectRpcError(rpc(b.client, 'set_birthday', { p_birthday: null, p_opt_in: true }), 'invalid_birthday', 400);

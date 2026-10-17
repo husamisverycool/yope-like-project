@@ -1,4 +1,4 @@
-# `settings.notifications` — per-group mute, quiet hours
+# `settings.notifications` — Pause All, per-group mute, quiet hours
 
 Visual reference: Retro **Notification Settings** (inventory #28 row → page; APK-S `notification_settings_page_title`,
 section headers `notification_settings_section_header_*`, Title-Case rows, the off-permission upsell
@@ -20,6 +20,11 @@ Copy: `settings.notifications.*`.
    no glyph: title `settings.notifications.off.title` (`emptyTitle`), explanation `settings.notifications.off.footer`
    (`emptyDetail`, `color.global.textSecondary`), outline capsule C-06 `settings.notifications.openSettings` → system Settings.
    The rows below stay visible and editable (they apply once notifications are on).
+1a. **Pause All** (Retro's row, owner decision 34): one C-14 row `settings.notifications.pauseAll` with a switch; footer
+   `settings.notifications.pauseAll.footer`; while on, a second footer line `settings.notifications.pauseAll.until`
+   ({time}: the end — the next local midnight — in the locale's short time format, the system's Do Not Disturb "Until
+   %1$s"). Retro lists Pause All on its Notification Settings page; it comes first here (the order of Retro's other rows
+   was not captured).
 2. **Groups** (`settings.notifications.groups.header`): one row per group: group cover in a 30 pt circle
    (`size.global.avatarComment`; no cover → C-23 fallback with `icon.global.group`), group name (`body`), trailing native
    switch (on = notifications on). Footer `settings.notifications.groups.footer`.
@@ -36,6 +41,7 @@ All groups follow `settings.root.layout.list` (C-14, rows ≥ `settings.root.siz
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
 | off block | C-27 (no glyph) + C-06 | `settings.notifications.off.title`, `.off.footer`, `.openSettings` | `UIApplication.openNotificationSettingsURLString` / `Settings.ACTION_APP_NOTIFICATION_SETTINGS`; iOS when the app has never asked (`.notDetermined`: Settings has no switch for the app yet) — the system alert (`requestAuthorization`) instead; the block follows the answer and the return from Settings |
+| Pause All | C-14 + native switch | `settings.notifications.pauseAll`, `.pauseAll.footer`, `.pauseAll.until` | `set_notifications_paused(p_paused, p_time_zone)` (device zone); optimistic, reverts with the error alert; on = no notification of any kind until the next local midnight (the worker treats it like a mute of every group; widgets still update; Android channels unchanged) |
 | group row | C-14 + C-23 30 pt + native switch (`color.global.selection` / `color.global.system.primary`) | group name (data); section `settings.notifications.groups.header`, footer | `set_group_muted(group, !on)`; optimistic, reverts on error |
 | quiet hours | C-14 rows + switch + native time pickers | `settings.notifications.quietHours`, `.start`, `.end`, `.footer` | `set_quiet_hours(p_start, p_end, p_time_zone)`; off = both null |
 | Live Activity (iOS) | C-14 + switch | `settings.notifications.liveActivity`, `.footer` | local preference read by `daily.liveactivity` |
@@ -70,7 +76,7 @@ Switches: `settings.root.layout.toggleHaptic`. Presses → `haptic.global.tap` (
 ## Data & actions
 
 - `group_members.muted` (own rows) per group; `notification_settings` (own row, docs/API.md §5.21).
-- Writes: `set_group_muted`, `set_quiet_hours` (§6.3).
+- Writes: `set_group_muted`, `set_quiet_hours`, `set_notifications_paused` (§6.3).
 - In: `settings.root`; `groups.settings` ("Quiet Hours" row). Out: system notification settings.
 
 ## Platform notes
@@ -80,8 +86,9 @@ Switches: `settings.root.layout.toggleHaptic`. Presses → `haptic.global.tap` (
 
 ## Do-not-copy
 
-- Retro's per-type toggles for likes / comment likes / keys / friend requests (no such notifications here); "Pause All"
-  for the day (no API); reminder cadence rows (the daily invitation is per group, in `groups.settings`).
+- Retro's per-type toggles for likes / comment likes / keys / friend requests (no such notifications here); reminder
+  cadence rows (the daily invitation is per group, in `groups.settings`). ("Pause All" is built since 2026-10-17:
+  `set_notifications_paused`.)
 
 ## Gaps
 

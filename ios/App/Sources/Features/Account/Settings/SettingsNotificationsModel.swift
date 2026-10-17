@@ -29,20 +29,29 @@ final class SettingsNotificationsModel {
     /// The push when overnight photos develop (`camera.overnight.settings.row`; `notification_settings.overnight`), on
     /// by default and when no settings row exists.
     private(set) var overnightOn = true
+    /// Pause All (`settings.notifications.pauseAll`; `notification_settings.paused_until`): the end of today's pause
+    /// (the next local midnight), nil when notifications are not paused.
+    private(set) var pausedUntil: Date?
     /// The failed change of each section (`settings.notifications.error`); the screen shows it as a message-only alert
     /// (trigger `errorCount`).
     private(set) var groupsError: String?
     private(set) var quietError: String?
     private(set) var overnightError: String?
+    private(set) var pauseError: String?
     private(set) var errorCount = 0
 
     private let data: AccountDataSource
     private let notifications: NotificationAuthorizing
+    private let now: () -> Date
 
-    init(data: AccountDataSource, notifications: NotificationAuthorizing) {
+    init(data: AccountDataSource, notifications: NotificationAuthorizing, now: @escaping () -> Date = Date.init) {
         self.data = data
         self.notifications = notifications
+        self.now = now
     }
+
+    /// Pause All is on (its end has not come).
+    var isPaused: Bool { pausedUntil.map { $0 > now() } ?? false }
 
     func load() async {
         if let cached = await data.cachedGroups() {
@@ -62,6 +71,7 @@ final class SettingsNotificationsModel {
             quietEnd = settings.quietEnd
             quietHoursOn = quietStart != nil && quietEnd != nil
             overnightOn = settings.overnight
+            pausedUntil = settings.isPaused(at: now()) ? settings.pausedUntil : nil
         }
         isLoading = false
     }
@@ -153,6 +163,23 @@ final class SettingsNotificationsModel {
         }
     }
 
+    /// Pause All (`set_notifications_paused`): on = no notification until the next local midnight. Optimistic (on shows
+    /// the end the server will set: the start of tomorrow on this device); reverts with the error alert.
+    func setPaused(_ on: Bool) async {
+        guard on != isPaused else { return }
+        let previous = pausedUntil
+        let calendar = Calendar.current
+        pausedUntil = on ? calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now())) : nil
+        pauseError = nil
+        do {
+            pausedUntil = try await data.setNotificationsPaused(on)
+        } catch {
+            pausedUntil = previous
+            pauseError = Copy.settingsNotificationsError
+            errorCount += 1
+        }
+    }
+
     /// The latest failure's message (the alert).
-    var alertMessage: String? { overnightError ?? quietError ?? groupsError }
+    var alertMessage: String? { pauseError ?? overnightError ?? quietError ?? groupsError }
 }

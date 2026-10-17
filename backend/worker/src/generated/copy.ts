@@ -910,6 +910,9 @@ const table = {
   "settings.notifications.off.footer": "Enable push notifications to make sure that you always see the latest updates from your groups.", // Retro · settings.notifications · SOURCED
   "settings.notifications.off.title": "Keep up to date!", // Retro · settings.notifications · SOURCED
   "settings.notifications.openSettings": "Enable push", // Retro · settings.notifications · SOURCED
+  "settings.notifications.pauseAll": "Pause All", // Retro · settings.notifications · SOURCED
+  "settings.notifications.pauseAll.footer": "Turn off all notifications for the day", // Retro · settings.notifications · SOURCED
+  "settings.notifications.pauseAll.until": "Until {time}", // Material 3 · settings.notifications · PLATFORM
   "settings.notifications.quietHours": "Quiet Hours", // Retro · settings.notifications · SOURCED
   "settings.notifications.quietHours.end": "End", // Retro · settings.notifications · SOURCED
   "settings.notifications.quietHours.footer": "Notifications arrive silently between these times.", // Retro · settings.notifications · SOURCED

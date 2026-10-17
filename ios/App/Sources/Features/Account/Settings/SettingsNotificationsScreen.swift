@@ -54,6 +54,7 @@ struct SettingsNotificationsView: View {
                 permissionOff
                     .transition(.opacity)
             }
+            pauseSection
             groupsSection
             quietHoursSection
             overnightSection
@@ -113,6 +114,27 @@ struct SettingsNotificationsView: View {
         }
         .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Pause All (Retro's Notification Settings: "Pause All — Turn off all notifications for the day"): a switch; while on,
+    /// the footer adds when the pause ends ("Until {time}", the next local midnight in the locale's short time).
+    private var pauseSection: some View {
+        var footer = [Copy.settingsNotificationsPauseAllFooter]
+        if model.isPaused, let until = model.pausedUntil {
+            footer.append(Copy.settingsNotificationsPauseAllUntil(time: until.formatted(date: .omitted, time: .shortened)))
+        }
+        return SettingsGroup(footer: footer, rows: [
+            SettingsRow(
+                Copy.settingsNotificationsPauseAll,
+                kind: .toggle(Binding(
+                    get: { model.isPaused },
+                    set: { value in Task { await model.setPaused(value) } }
+                )),
+                isEnabled: !isOffline
+            )
+            .accessibilityIdentifier("settings.notifications.pauseAll") // provenance-ok: accessibility identifier for UI tests
+            .asSettingsRow(),
+        ])
     }
 
     /// One row per group: the cover in a `size.global.avatarComment` circle (C-23; no cover: `icon.global.group`), the

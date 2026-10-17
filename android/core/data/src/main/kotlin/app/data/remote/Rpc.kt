@@ -47,6 +47,8 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     RegisterDevice("register_device", setOf("p_platform", "p_push_token"), setOf("p_push_to_start_token", "p_live_activities_enabled")),
     UnregisterDevice("unregister_device", setOf("p_push_token")),
     SetQuietHours("set_quiet_hours", setOf("p_start", "p_end", "p_time_zone")),
+    /** Pause All (migration 0037): no notification until the next midnight of `p_time_zone`. */
+    SetNotificationsPaused("set_notifications_paused", setOf("p_paused"), setOf("p_time_zone")),
     SetBirthday("set_birthday", setOf("p_birthday", "p_opt_in")),
     ConfirmAge("confirm_age", setOf("p_birthdate")),
 

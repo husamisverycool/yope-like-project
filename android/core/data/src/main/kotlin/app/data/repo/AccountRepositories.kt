@@ -73,6 +73,13 @@ class SettingsRepository(private val api: Api) {
     suspend fun setOvernightAlerts(on: Boolean): NotificationSettings =
         api.rpc(Rpc.SetOvernightAlerts, NotificationSettings.serializer()) { put("p_on", on) }.also(::publish)
 
+    /** Pause All (`set_notifications_paused`): on = no notification until the next midnight of [timeZone] (the device's zone). */
+    suspend fun setNotificationsPaused(paused: Boolean, timeZone: String?): NotificationSettings =
+        api.rpc(Rpc.SetNotificationsPaused, NotificationSettings.serializer()) {
+            put("p_paused", paused)
+            put("p_time_zone", if (paused) timeZone else null)
+        }.also(::publish)
+
     internal fun reset() {
         current.value = null
     }

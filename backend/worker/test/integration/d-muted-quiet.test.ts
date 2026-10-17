@@ -71,3 +71,48 @@ describe("the daily invitation", () => {
     expect(batch.muted).toBe(3);
   });
 });
+
+describe("Pause All (set_notifications_paused, migration 0037)", () => {
+  it("a paused person gets no alert from any group until resumed — the widget still updates — and alerts come back after", async () => {
+    // u[4] (quiet hours) pauses everything for the day: like a mute of every group
+    await rpc(u[4]!.client, "set_quiet_hours", { p_start: null, p_end: null, p_time_zone: null });
+    await rpc(u[4]!.client, "set_notifications_paused", { p_paused: true, p_time_zone: "Pacific/Kiritimati" });
+    const g2 = await createGroup(u[1]!, [u[4]!], { name: "Second group", tz: "UTC" });
+    try {
+      w.apns.reset();
+      w.fcm.reset();
+      const { post } = await postPhoto(u[0]!, [g.id]);
+      const m = await rpc(u[4]!.client, "send_message", { p_group_id: g2.id, p_kind: "text", p_body: "hi" });
+      await rpc(u[1]!.client, "send_message", { p_group_id: g2.id, p_kind: "text", p_body: "a reply", p_reply_to_message_id: m.id });
+      await w.runner.runUntilIdle();
+      const to = apnsDeviceSends(w.apns).filter((s) => s.token === d.quietIos.push_token);
+      // no alert (photo or reply); the photo reaches the widget by the silent background push
+      expect(to.map((s) => s.pushType)).toEqual(["background"]);
+      expect(to[0]!.payload).toMatchObject({ type: "widget", post_id: post.id });
+      // the daily invitation is not sent either
+      const [inv] = await sql(
+        `insert into public.daily_invitations (group_id, local_date, fires_at, closes_at) values ($1, current_date + 4, now(), now() + interval '2 minutes') returning id`,
+        [g.id],
+      );
+      await rpc(w.svc.db, "enqueue_job", { p_kind: "invitation.fire", p_payload: { invitation_id: inv.id, group_id: g.id } });
+      await w.runner.runUntilIdle({ kinds: ["invitation.fire"] });
+      expect(apnsDeviceSends(w.apns).filter((s) => s.token === d.quietIos.push_to_start_token)).toEqual([]);
+    } finally {
+      await rpc(u[4]!.client, "set_notifications_paused", { p_paused: false });
+    }
+    // resumed: the next photo alerts again
+    w.apns.reset();
+    await postPhoto(u[0]!, [g.id]);
+    await w.runner.runUntilIdle({ kinds: ["push.new_post"] });
+    expect(apnsDeviceSends(w.apns).filter((s) => s.token === d.quietIos.push_token).map((s) => s.pushType)).toEqual(["alert"]);
+  });
+
+  it("a pause that ended (paused_until in the past) silences nothing", async () => {
+    await sql(`update public.notification_settings set paused_until = now() - interval '1 minute' where user_id = $1`, [u[4]!.id]);
+    w.apns.reset();
+    await postPhoto(u[0]!, [g.id]);
+    await w.runner.runUntilIdle({ kinds: ["push.new_post"] });
+    expect(apnsDeviceSends(w.apns).filter((s) => s.token === d.quietIos.push_token).map((s) => s.pushType)).toEqual(["alert"]);
+    await sql(`update public.notification_settings set paused_until = null where user_id = $1`, [u[4]!.id]);
+  });
+});

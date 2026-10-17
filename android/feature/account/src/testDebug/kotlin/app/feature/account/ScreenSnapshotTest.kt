@@ -534,6 +534,10 @@ class ScreenSnapshotTest {
     @Test fun notificationsSystemOff() = snap("settings.notifications", "permissionOff", content = notifications(notif.copy(quietOn = false, quietStart = null, quietEnd = null), off = true))
     @Test fun notificationsNoGroups() = snap("settings.notifications", "noGroups", content = notifications(notif.copy(groups = emptyList())))
     @Test fun notificationsError() = snap("settings.notifications", "changeFailed", content = notifications(notif.copy(error = true)))
+    // Pause All on: the second footer line "Until 12:00 AM" (the next local midnight)
+    private val pauseEnd = java.time.LocalDate.of(2026, 10, 16).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()
+    @Test fun notificationsPaused() = snap("settings.notifications", "paused", content = notifications(notif.copy(pausedUntil = pauseEnd)))
+    @Test fun notificationsPausedDark() = snap("settings.notifications", "paused", dark = true, content = notifications(notif.copy(pausedUntil = pauseEnd)))
     /** camera.overnight's switch ("Developed Photos") turned off, scrolled into view. */
     @Test fun notificationsOvernightOff() = snap("settings.notifications", "overnightOff", act = { compose.onNodeWithText(context.getString(R.string.camera_overnight_settings_row)).performScrollTo() }, content = notifications(notif.copy(overnightOn = false)))
 

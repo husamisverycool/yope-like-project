@@ -71,6 +71,8 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
     override suspend fun profiles(ids: Collection<String>): List<Profile> = graph.profiles.profiles(ids)
     override suspend fun groupCollages(groupId: String, from: java.time.LocalDate, to: java.time.LocalDate): List<app.data.model.GroupCollage> =
         graph.browse.groupCollages(groupId, from, to)
+    override suspend fun openInvitation(groupId: String): app.data.model.DailyInvitation? =
+        graph.invitations.openInvitations(listOf(groupId)).firstOrNull()
 
     override fun observeMyGroups(): Flow<DataState<List<Group>>> = graph.groups.observeMyGroups()
 
@@ -116,6 +118,8 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
     override suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings =
         graph.settings.setQuietHours(start, end, timeZone)
     override suspend fun setOvernightAlerts(on: Boolean): NotificationSettings = graph.settings.setOvernightAlerts(on)
+    override suspend fun setNotificationsPaused(paused: Boolean, timeZone: String?): NotificationSettings =
+        graph.settings.setNotificationsPaused(paused, timeZone)
 
     override suspend fun blocked(): List<Block> = graph.safety.blocked()
     override suspend fun block(userId: String) = graph.safety.block(userId)
@@ -182,6 +186,7 @@ class UnconfiguredAccountBackend : AccountBackend {
     override suspend fun notificationSettings(): NotificationSettings? = fail()
     override suspend fun setQuietHours(start: LocalTime?, end: LocalTime?, timeZone: String?): NotificationSettings = fail()
     override suspend fun setOvernightAlerts(on: Boolean): NotificationSettings = fail()
+    override suspend fun setNotificationsPaused(paused: Boolean, timeZone: String?): NotificationSettings = fail()
     override suspend fun blocked(): List<Block> = fail()
     override suspend fun block(userId: String) = fail()
     override suspend fun unblock(userId: String) = fail()

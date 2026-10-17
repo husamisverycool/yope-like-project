@@ -76,6 +76,16 @@ public struct AccountRepository: Sendable {
         try await client.rpc("set_overnight_alerts", ["p_on": .bool(on)])
     }
 
+    /// `set_notifications_paused` (Pause All, migration 0037): on = no notification until the next midnight of
+    /// `timeZone` (the device's zone); off = notifications again.
+    @discardableResult
+    public func setNotificationsPaused(_ paused: Bool, timeZone: String? = TimeZone.current.identifier) async throws -> NotificationSettings {
+        try await client.rpc("set_notifications_paused", [
+            "p_paused": .bool(paused),
+            "p_time_zone": .text(paused ? timeZone : nil),
+        ])
+    }
+
     // MARK: Devices
 
     /// `register_device` (iOS): upsert by APNs token. Send everything every time any of it changes; nil clears the

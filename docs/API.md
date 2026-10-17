@@ -488,7 +488,9 @@ Read / DELETE: own rows. Written by `register_device`.
 
 Read: own row. Written by `set_quiet_hours`. Columns: `user_id`, `quiet_start` time?,
 `quiet_end` time?, `time_zone` text?, `updated_at`. No row means no quiet hours.
-Per-group mute is `group_members.muted`.
+Per-group mute is `group_members.muted`. `paused_until` timestamptz? (migration 0037, Pause All, written by
+`set_notifications_paused`): while it is in the future the person gets no notification at all — every group, the daily
+invitation included — exactly as if every group were muted (widgets still update); null or past = not paused.
 
 ### 5.22 `entitlements`
 
@@ -816,6 +818,15 @@ set_quiet_hours(p_start time, p_end time, p_time_zone text) → notification_set
 Both times `null` = no quiet hours. `p_end <= p_start` wraps past midnight.
 `p_time_zone` is the device's zone and is required when times are set. Errors:
 `invalid_quiet_hours`, `invalid_time_zone`.
+
+#### `set_notifications_paused`
+```
+set_notifications_paused(p_paused boolean, p_time_zone text = null) → notification_settings
+```
+Pause All (Retro's "Pause All — Turn off all notifications for the day"). `true` sets `paused_until` to the next
+midnight in `p_time_zone` (the device's zone, required); `false` clears it. Quiet hours and other columns are kept.
+Show the end time from the returned `paused_until`. Errors: `invalid_argument` (null `p_paused`),
+`invalid_time_zone`.
 
 #### `set_birthday`
 ```

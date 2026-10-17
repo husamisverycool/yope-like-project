@@ -403,7 +403,7 @@ final class InMemoryAccountData: AccountDataSource {
         try await record("setQuietHours")
         settings = NotificationSettings(
             userID: try requireUser(), quietStart: start, quietEnd: end, timeZone: "UTC", updatedAt: now, // provenance-ok: test fixture
-            overnight: settings?.overnight ?? true
+            overnight: settings?.overnight ?? true, pausedUntil: settings?.pausedUntil
         )
     }
 
@@ -411,7 +411,17 @@ final class InMemoryAccountData: AccountDataSource {
         try await record("setOvernightAlerts")
         settings = NotificationSettings(
             userID: try requireUser(), quietStart: settings?.quietStart, quietEnd: settings?.quietEnd,
-            timeZone: settings?.timeZone, updatedAt: now, overnight: on
+            timeZone: settings?.timeZone, updatedAt: now, overnight: on, pausedUntil: settings?.pausedUntil
+        )
+    }
+
+    /// Pause All until the next midnight of the fixture clock's calendar (the server's rule, migration 0037).
+    func setNotificationsPaused(_ paused: Bool) async throws -> Date? {
+        try await record("setNotificationsPaused")
+        let until = paused ? Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: now)) : nil
+        settings = NotificationSettings(
+            userID: try requireUser(), quietStart: settings?.quietStart, quietEnd: settings?.quietEnd,
+            timeZone: settings?.timeZone, updatedAt: now, overnight: settings?.overnight ?? true, pausedUntil: until
         )
     }
 
@@ -421,6 +431,7 @@ final class InMemoryAccountData: AccountDataSource {
     }
 }
 
+        return until
 /// Fixed plans for paywall tests and UI-test scenarios (no store).
 @MainActor
 final class InMemoryPurchases: PurchasesProviding {

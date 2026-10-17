@@ -374,6 +374,8 @@ data class NotificationSettings(
     @SerialName("updated_at") val updatedAt: Instant,
     /** §14.3 the reveal push of overnight photos (`set_overnight_alerts`, default on). Last, so positional calls keep working. */
     val overnight: Boolean = true,
+    /** Pause All (`set_notifications_paused`, migration 0037): no notification before this instant; null or past = not paused. */
+    @SerialName("paused_until") val pausedUntil: Instant? = null,
 )
 
 /** §5.22 `entitlements` */

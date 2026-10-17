@@ -119,6 +119,8 @@ export interface NotificationSettingsRow {
   quiet_start: string | null;
   quiet_end: string | null;
   time_zone: string | null;
+  /** Pause All (migration 0037): no alert at all before this instant; null or past = not paused */
+  paused_until?: string | null;
 }
 
 export interface RecapRow {

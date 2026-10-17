@@ -51,9 +51,13 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
     /// The reveal push of overnight photos (`notification_settings.overnight`, `set_overnight_alerts`; docs/API.md
     /// §14.3): on unless the member turned it off. No row means on.
     public var overnight: Bool
+    /// Pause All (`set_notifications_paused`, migration 0037): no notification at all before this instant (the next
+    /// local midnight when it was turned on); nil or past = not paused.
+    public var pausedUntil: Date?
 
     public init(
-        userID: UserID, quietStart: LocalTime?, quietEnd: LocalTime?, timeZone: String?, updatedAt: Date, overnight: Bool = true
+        userID: UserID, quietStart: LocalTime?, quietEnd: LocalTime?, timeZone: String?, updatedAt: Date, overnight: Bool = true,
+        pausedUntil: Date? = nil
     ) {
         self.userID = userID
         self.quietStart = quietStart
@@ -61,6 +65,13 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
         self.timeZone = timeZone
         self.updatedAt = updatedAt
         self.overnight = overnight
+        self.pausedUntil = pausedUntil
+    }
+
+    /// Pause All is on at `now` (its end has not come).
+    public func isPaused(at now: Date = Date()) -> Bool {
+        guard let pausedUntil else { return false }
+        return pausedUntil > now
     }
 
     enum CodingKeys: String, CodingKey {
@@ -70,6 +81,7 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
         case timeZone = "time_zone"
         case updatedAt = "updated_at"
         case overnight
+        case pausedUntil = "paused_until"
     }
 
     /// Rows read before the `overnight` column existed (offline copies) decode with alerts on, the server default.
@@ -81,6 +93,7 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
         timeZone = try container.decodeIfPresent(String.self, forKey: .timeZone)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
         overnight = try container.decodeIfPresent(Bool.self, forKey: .overnight) ?? true
+        pausedUntil = try container.decodeIfPresent(Date.self, forKey: .pausedUntil)
     }
 
     /// The quiet hours as the shared AppModels rule, when set.
