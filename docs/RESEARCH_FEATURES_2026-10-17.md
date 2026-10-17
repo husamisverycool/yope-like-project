@@ -37,22 +37,22 @@ Server = migrations and worker, tested against a local stack; apps = iOS and And
 
 | # | feature | server | apps |
 |---|---|---|---|
-| 1 | Several photos in one post | 0051 (batch_id, one push per batch) | composer: building; grouped display: next |
-| 2 | Downloads | 0052 download_items | building |
+| 1 | Several photos in one post | 0051 (batch_id, one push per batch) | composer merged; grouped display: building |
+| 2 | Downloads | 0052 download_items | merged |
 | 3 | More widgets, premium styles | 0036 | iOS 2082b58; Android merged |
-| 4 | Share to Jolt | — (create_post) | building |
-| 5 | Library photos on the day taken | 0050 (taken_on, visible_at trigger) | building (with #1) |
+| 4 | Share to Jolt | — (create_post) | merged |
+| 5 | Library photos on the day taken | 0050 (taken_on, visible_at trigger) | merged |
 | 6 | Search | 0040 | merged |
 | 7 | Reactions on chat messages | 0047 | merged |
-| 8 | Edit a message or caption | 0047 | messages merged; captions building |
-| 9 | Reply / react / mute from the notification | — (existing RPCs) | building |
+| 8 | Edit a message or caption | 0047 | merged |
+| 9 | Reply / react / mute from the notification | — (existing RPCs) | merged |
 | 10 | Albums anyone can add to | 0039 | merged |
 | 11 | Quick camera access | — | iOS 2082b58; Android merged |
 | 12 | Hide a memory | 0038 | merged |
-| 13 | Reply to a memory ("then & now") | — (create_post reply) | building |
+| 13 | Reply to a memory ("then & now") | — (create_post reply) | merged |
 | 14 | A photo as the group cover | 0039 | merged |
-| 15 | Opt-in memory notification | 0049 + worker push.memory | building |
-| 16 | Tappable links in chat | — | merged (previews on the sender's device: later) |
+| 15 | Opt-in memory notification | 0049 + worker push.memory | merged |
+| 16 | Tappable links in chat | 0053 (link_preview, built on the sender's device) | links merged; previews building |
 | 17 | Pause all for today | 0037 | done |
 | 18 | "{name} joined" line | 0041–0042 | done |
 | 19 | Private favorites | 0038 | merged |
