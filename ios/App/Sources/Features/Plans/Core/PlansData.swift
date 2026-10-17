@@ -22,6 +22,9 @@ protocol PlansDataSource: Sendable {
 
     /// `next_plans`: upcoming plans of one group (or all the caller's groups), soonest first, with the caller's answer.
     func nextPlans(groupID: GroupID?) async throws -> [UpcomingPlan]
+    /// `group_plans`: every plan of the group for plans.list — upcoming soonest first, then past latest first, then
+    /// cancelled — with the caller's answer.
+    func groupPlans(groupID: GroupID) async throws -> [GroupPlan]
     func plan(id: PlanID) async throws -> Plan?
     /// Answers visible to the caller (RLS: Can't go only for its author and the maker), oldest first.
     func answers(planID: PlanID) async throws -> [PlanAnswer]
@@ -123,6 +126,10 @@ struct LivePlansData: PlansDataSource {
 
     func nextPlans(groupID: GroupID?) async throws -> [UpcomingPlan] {
         try await environment.plans.nextPlans(groupID: groupID)
+    }
+
+    func groupPlans(groupID: GroupID) async throws -> [GroupPlan] {
+        try await environment.plans.groupPlans(groupID: groupID)
     }
 
     func plan(id: PlanID) async throws -> Plan? {
@@ -253,6 +260,7 @@ struct UnconfiguredPlansData: PlansDataSource, QuestionDataSource {
     func myGroups() async throws -> [PhotoGroup] { throw DataError.notConfigured }
     func members(groupID: GroupID) async throws -> [MemberProfile] { throw DataError.notConfigured }
     func nextPlans(groupID: GroupID?) async throws -> [UpcomingPlan] { throw DataError.notConfigured }
+    func groupPlans(groupID: GroupID) async throws -> [GroupPlan] { throw DataError.notConfigured }
     func plan(id: PlanID) async throws -> Plan? { throw DataError.notConfigured }
     func answers(planID: PlanID) async throws -> [PlanAnswer] { throw DataError.notConfigured }
     func photos(planID: PlanID) async throws -> [PostWithMedia] { throw DataError.notConfigured }

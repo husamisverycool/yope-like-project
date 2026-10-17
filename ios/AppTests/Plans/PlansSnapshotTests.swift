@@ -120,6 +120,33 @@ final class PlansSnapshotTests: XCTestCase {
         record(NavigationStack { PlanPageView(model: gonePage) }, "plans.page", "not-found")
     }
 
+    // MARK: plans.list
+
+    /// The group's plans: Upcoming, Past Plans, Canceled; the empty, error and offline states.
+    func testPlansList() async {
+        let full = PlansFixture()
+        full.addListPlans()
+        let loaded = PlansListModel(groupID: PlansFixture.groupID, services: full.services)
+        await loaded.refresh()
+        record(NavigationStack { PlansListView(model: loaded) }, "plans.list", "loaded", appearances: PlansSnapshot.both)
+
+        let none = PlansListModel(groupID: PlansFixture.groupID, services: PlansFixture().services)
+        await none.refresh()
+        record(NavigationStack { PlansListView(model: none) }, "plans.list", "empty", appearances: PlansSnapshot.both)
+
+        let failing = PlansFixture()
+        failing.data.update { $0.failures["groupPlans"] = .http(status: 500) }
+        let failed = PlansListModel(groupID: PlansFixture.groupID, services: failing.services)
+        await failed.refresh()
+        record(NavigationStack { PlansListView(model: failed) }, "plans.list", "error")
+
+        let unreachable = PlansFixture()
+        unreachable.data.update { $0.failures["groupPlans"] = .offline }
+        let offline = PlansListModel(groupID: PlansFixture.groupID, services: unreachable.services)
+        await offline.refresh()
+        record(NavigationStack { PlansListView(model: offline) }, "plans.list", "offline")
+    }
+
     // MARK: groups.screen plan row
 
     /// The plan row as groups.screen places it under the capsules: the next plan, and "Make a Plan" without one.
@@ -134,6 +161,12 @@ final class PlansSnapshotTests: XCTestCase {
         let empty = PlanRowModel(groupID: PlansFixture.groupID, services: none.services)
         await empty.refresh()
         record(rowPage(PlanRowEntry(groupID: PlansFixture.groupID.rawValue, model: empty)), "groups.screen", "plan-row-none")
+
+        let listed = PlansFixture()
+        listed.addListPlans()
+        let withLabel = PlanRowModel(groupID: PlansFixture.groupID, services: listed.services)
+        await withLabel.refresh()
+        record(rowPage(PlanRowEntry(groupID: PlansFixture.groupID.rawValue, model: withLabel)), "groups.screen", "plan-row-label", appearances: PlansSnapshot.both)
     }
 
     private func rowPage<V: View>(_ row: V) -> some View {

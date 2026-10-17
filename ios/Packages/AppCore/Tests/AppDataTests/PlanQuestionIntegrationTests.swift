@@ -104,6 +104,10 @@ final class PlanQuestionIntegrationTests: XCTestCase {
         XCTAssertEqual(canceled.canceledBy, maya.id)
         let afterCancel = try await theo.data.plans.nextPlans(groupID: group.id)
         XCTAssertFalse(afterCancel.contains { $0.id == plan.id })
+        // The plans list keeps it, in its cancelled section (group_plans).
+        let listed = try await theo.data.plans.groupPlans(groupID: group.id)
+        XCTAssertEqual(listed.first { $0.id == plan.id }?.state, .canceled)
+        XCTAssertEqual(listed.first { $0.id == plan.id }?.myAnswer, .maybe)
         let stillThere = try await theo.data.plans.plan(id: plan.id)
         XCTAssertEqual(stillThere?.isCanceled, true)
         await assertThrows(.database(code: "PT409", message: "plan_canceled")) {
@@ -116,10 +120,16 @@ final class PlanQuestionIntegrationTests: XCTestCase {
         let afterRestore = try await theo.data.plans.nextPlans(groupID: group.id)
         XCTAssertEqual(afterRestore.first { $0.id == plan.id }?.myAnswer, .maybe, "answers survive a cancel and restore")
 
+        let relisted = try await theo.data.plans.groupPlans(groupID: group.id)
+        XCTAssertEqual(relisted.first { $0.id == plan.id }?.state, .upcoming)
+
         // Someone outside the group reads nothing.
         let outsider = try await users.make("Out")
         let outsiderRead = try await outsider.data.plans.plan(id: plan.id)
         XCTAssertNil(outsiderRead)
+        await assertThrows(.api(.notGroupMember)) {
+            _ = try await outsider.data.plans.groupPlans(groupID: group.id)
+        }
         let outsiderAnswers = try await outsider.data.plans.answers(planID: plan.id)
         XCTAssertTrue(outsiderAnswers.isEmpty)
     }

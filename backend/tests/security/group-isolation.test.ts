@@ -173,6 +173,7 @@ describe('group isolation: RPCs', () => {
     clear_answer: { args: () => ({ p_plan_id: seeded.planId }), expect: 'error' },
     plan_photos: { args: () => ({ p_plan_id: seeded.planId }), expect: 'error' },
     next_plans: { args: () => ({}), expect: 'empty' },
+    group_plans: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
     create_overnight_post: {
       args: () => ({ p_media_id: seeded.mediaIds[0], p_group_ids: [seeded.group.id] }),
       expect: 'error',

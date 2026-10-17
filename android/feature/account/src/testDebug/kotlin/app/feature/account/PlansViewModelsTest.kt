@@ -19,6 +19,7 @@ import app.feature.account.testing.fakeEnvironment
 import app.model.PlanCreateRoute
 import app.model.PlanRoute
 import app.ui.copy.WeeklyQuestions
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -210,8 +211,80 @@ class PlansViewModelsTest {
         assertEquals("p1", row.planId)
         // 18:30 UTC is 2:30 PM in New York, the group's zone.
         assertTrue(row.whenLine, row.whenLine.contains("Oct 24, 2026") && row.whenLine.contains("2:30"))
-        backend.failures["nextPlans"] = DataError.Network
+        backend.failures["groupPlans"] = DataError.Network
         assertNull("a failed read", loadNextPlan(backend, "g1"))
+    }
+
+    @Test fun thePlansLabelShowsWhileTheGroupHasAnyPlan() = runTest(main.dispatcher) {
+        val backend = world()
+        assertEquals(false, loadNextPlan(backend, "g1")!!.hasPlans)
+        backend.plan("p1", "g1", "2026-10-24", canceled = true)
+        val load = loadNextPlan(backend, "g1")!!
+        assertTrue("a cancelled plan is in the list", load.hasPlans)
+        assertNull(load.row)
+        assertNull("no upcoming plan: no day", load.day)
+        backend.plan("p2", "g1", "2026-10-28")
+        assertEquals(java.time.LocalDate.parse("2026-10-28"), loadNextPlan(backend, "g1")!!.day)
+    }
+
+    /** The birthday rows and the plans block, soonest first; the same day keeps the birthday rows first (MERGE FV-1). */
+    @Test fun groupEntriesStandInDateOrder() {
+        val oct18 = java.time.LocalDate.parse("2026-10-18")
+        val oct20 = java.time.LocalDate.parse("2026-10-20")
+        val birthday = app.feature.account.plans.GroupEntrySlot.Birthday
+        val plans = app.feature.account.plans.GroupEntrySlot.Plans
+        assertEquals(listOf(plans, birthday), app.feature.account.plans.GroupEntryOrder.order(oct20, oct18))
+        assertEquals(listOf(birthday, plans), app.feature.account.plans.GroupEntryOrder.order(oct18, oct20))
+        assertEquals(listOf(birthday, plans), app.feature.account.plans.GroupEntryOrder.order(oct18, oct18))
+        assertEquals(listOf(birthday, plans), app.feature.account.plans.GroupEntryOrder.order(oct20, null))
+        assertEquals(listOf(plans, birthday), app.feature.account.plans.GroupEntryOrder.order(null, oct18))
+        assertEquals(listOf(birthday, plans), app.feature.account.plans.GroupEntryOrder.order(null, null))
+    }
+
+    // plans.list ---------------------------------------------------------------------------------------
+
+    @Test fun thePlansListHasUpcomingThenPastThenCanceled() = runTest(main.dispatcher) {
+        val backend = world()
+        backend.plan("p-up", "g1", "2026-10-24")
+        backend.plan("p-past", "g1", "2026-10-02")
+        backend.plan("p-off", "g1", "2026-10-20", canceled = true)
+        val vm = app.feature.account.plans.PlansListViewModel(backend, "g1")
+        advanceUntilIdle()
+        val state = vm.state.value
+        assertEquals(app.feature.account.plans.PlansListUiState.Phase.Loaded, state.phase)
+        assertEquals(
+            listOf(app.data.model.GroupPlanState.Upcoming, app.data.model.GroupPlanState.Past, app.data.model.GroupPlanState.Canceled),
+            state.sections.map { it.state },
+        )
+        assertEquals(listOf(listOf("p-up"), listOf("p-past"), listOf("p-off")), state.sections.map { s -> s.items.map { it.plan.id } })
+        val empty = app.feature.account.plans.PlansListViewModel(world(), "g1")
+        advanceUntilIdle()
+        assertEquals(app.feature.account.plans.PlansListUiState.Phase.Empty, empty.state.value.phase)
+    }
+
+    @Test fun thePlansListKeepsWhatItShowsWhenAReadFails() = runTest(main.dispatcher) {
+        val backend = world()
+        backend.plan("p-up", "g1", "2026-10-24")
+        backend.failures["groupPlans"] = DataError.Network
+        val vm = app.feature.account.plans.PlansListViewModel(backend, "g1")
+        advanceUntilIdle()
+        assertEquals(app.feature.account.plans.PlansListUiState.Phase.Offline, vm.state.value.phase)
+        backend.failures["groupPlans"] = DataError.Unexpected("boom")
+        vm.retry()
+        advanceUntilIdle()
+        assertEquals(app.feature.account.plans.PlansListUiState.Phase.Error, vm.state.value.phase)
+        backend.failures.remove("groupPlans")
+        vm.retry()
+        advanceUntilIdle()
+        assertEquals(app.feature.account.plans.PlansListUiState.Phase.Loaded, vm.state.value.phase)
+        backend.failures["groupPlans"] = DataError.Network
+        vm.load()
+        advanceUntilIdle()
+        assertEquals("a loaded list stays", app.feature.account.plans.PlansListUiState.Phase.Loaded, vm.state.value.phase)
+        backend.failures["groupPlans"] = DataError.Api(app.data.error.ApiError.NotGroupMember, "not_group_member", 403, null)
+        vm.load()
+        advanceUntilIdle()
+        assertEquals(app.feature.account.plans.PlansListUiState.Phase.Removed, vm.state.value.phase)
     }
 
     /** plans.page meta line 1 on the plan's day: the platform's "today" word + time (MERGE FV-2); other days the date. */

@@ -55,6 +55,7 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 |---|---|---|---|
 | `plans.create` | Make a plan in a group: cover, title, date / all-day / time, place (typed text), note | 12 / 13 (New Album flow as composed for `groups.create`: cover, C-07, C-12, C-05 on a C-29 sheet) | Apple Invites (create order, all-day), Partiful (New Event sheet, place row) |
 | `plans.page` | One plan: details, Going · Maybe · Can't go, who's coming (names, never a count), the plan's photos; edit, cancel, restore | 13 (album detail: cover, serif name, grey meta, C-06 capsules, 3-column grid), 9 (people rows) | Apple Invites (event page, cancel / restore), Partiful (answers, list visibility) |
+| `plans.list` | Every plan of a group: Upcoming, Past Plans, Canceled (reached from the group screen's plans block) | 10 / 11 (Albums list: pushed serif header, C-15 rows with a 3:4 cover) + C-20 section labels | Apple Invites (Upcoming / Past Events categories, "+"), Partiful (Past Events) |
 | `widget.countdown` | Home-screen widget: the next plan, in days (never hours) | 34 (Retro widgets: full-bleed photo, white stack bottom-trailing) as `widget.home.small` | Apple Invites widget ("count down the days"), Widgetsmith; WidgetKit / Glance (PLATFORM) |
 
 ## Posting

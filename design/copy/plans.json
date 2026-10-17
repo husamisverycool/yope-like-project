@@ -511,6 +511,93 @@
       "level": "SOURCED",
       "notes": "Placeholder {plan_title} → {title}."
     },
+    "plans.list.title": {
+      "text": "Plans",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "plans.list",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journals_tab_screen_title` 'Albums' (as albums.list.title)",
+      "pattern": "retro.voice.title-case (screen title)",
+      "level": "SOURCED",
+      "notes": "Noun swap albums → plans. Also the C-20 label of the plans block on groups.screen."
+    },
+    "plans.list.section.upcoming": {
+      "text": "Upcoming",
+      "origin": "verbatim",
+      "source_app": "Apple Invites",
+      "surface": "plans.list",
+      "evidence": "https://support.apple.com/guide/apple-invites/view-your-events-dev18a008ffb/ios ('sorted into the following categories: Upcoming, All Events, Past Events, Drafts, Hosting, and Attending'); references/auto/apple-invites/store/apple-invites-store-03.png (title 'Upcoming')",
+      "pattern": "retro.voice.title-case (section label)",
+      "level": "SOURCED"
+    },
+    "plans.list.section.past": {
+      "text": "Past Plans",
+      "origin": "adapted",
+      "source_app": "Apple Invites",
+      "surface": "plans.list",
+      "evidence": "https://support.apple.com/guide/apple-invites/view-your-events-dev18a008ffb/ios ('Past Events'); help.partiful.com/en/articles/15525513 ('Click the Past Events icon')",
+      "pattern": "retro.voice.title-case (section label)",
+      "level": "SOURCED",
+      "notes": "Noun swap Events → Plans (both Apple Invites and Partiful name the list \"Past Events\")."
+    },
+    "plans.list.section.canceled": {
+      "text": "Canceled",
+      "origin": "adapted",
+      "source_app": "Apple Invites",
+      "surface": "plans.list",
+      "evidence": "https://support.apple.com/guide/apple-invites/cancel-or-delete-an-event ('the event has been canceled'); help.partiful.com 15525451 ('the event was canceled') — as plans.page.canceled",
+      "pattern": "retro.voice.title-case (section label)",
+      "level": "SOURCED",
+      "notes": "US spelling as plans.page.canceled."
+    },
+    "plans.list.empty.title": {
+      "text": "No plans yet",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "plans.list",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_sticker_picker_empty` 'No stickers yet' (as widget.countdown.empty.noPlans)",
+      "pattern": "retro.voice.empty-state",
+      "level": "SOURCED",
+      "notes": "Noun swap stickers → plans; the C-27 block's action is plans.create.entry (\"Make a Plan\")."
+    },
+    "plans.list.error.title": {
+      "text": "Error retrieving your plans. Tap here to try again",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "plans.list",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_tab_loading_error` 'Error retrieving your albums. Tap here to try again' (as albums.list.error.title)",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED",
+      "notes": "Noun swap albums → plans."
+    },
+    "plans.list.offline": {
+      "text": "Could not connect. Check your connection and try again.",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "plans.list",
+      "evidence": "references/auto/retro/web/retro.app-web-copy-excerpts.txt /downloads (as plans.page.offline)",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED"
+    },
+    "plans.list.back.accessibilityLabel": {
+      "text": "Back",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "plans.list",
+      "evidence": "design/copy-patterns.md platform.a11yLabel; C-02 back chevron (as plans.page.back.accessibilityLabel)",
+      "pattern": "platform.a11yLabel",
+      "level": "VERIFIED"
+    },
+    "plans.list.entry.accessibilityHint": {
+      "text": "All Plans",
+      "origin": "adapted",
+      "source_app": "Apple Invites",
+      "surface": "plans.list",
+      "evidence": "https://support.apple.com/guide/apple-invites/view-your-events-dev18a008ffb/ios ('All Events'); as groups.screen.weeks.accessibilityLabel 'Past Weeks' names the list the week header opens",
+      "pattern": "platform.a11yLabel",
+      "level": "SOURCED",
+      "notes": "Noun swap Events → Plans; the hint of the plans block header on groups.screen."
+    },
     "widget.countdown.gallery.name": {
       "text": "Next Plan",
       "origin": "new",

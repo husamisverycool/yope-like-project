@@ -19,6 +19,12 @@ public struct PlanRepository: Sendable {
         try await client.rpc("next_plans", ["p_group_id": .id(groupID)])
     }
 
+    /// `group_plans`: every plan of the group (the plans list) — upcoming soonest first, then past latest first, then
+    /// cancelled — with the caller's own answer.
+    public func groupPlans(groupID: GroupID) async throws -> [GroupPlan] {
+        try await client.rpc("group_plans", ["p_group_id": .id(groupID)])
+    }
+
     public func plan(id: PlanID) async throws -> Plan? {
         try await client.firstRow(Plan.self) {
             client.supabase.from("plans").select().eq("id", value: id.rawValue).limit(1)

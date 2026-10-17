@@ -1193,7 +1193,8 @@ inserts and updates of both tables.
 | `cancel_plan(p_plan_id)` / `restore_plan(p_plan_id)` | maker or admin, until over | cancel tells Going + Maybe (`push.plan_canceled`) and drops the reminder; restore tells nobody and re-queues it | same |
 | `answer_plan(p_plan_id, p_answer)` / `clear_answer(p_plan_id)` | member, until over, not cancelled | one tap; replaces the previous answer | `plan_not_found` 404, `invalid_answer` 400, `plan_canceled`, `plan_past` 409 |
 | `plan_photos(p_plan_id)` | member | the group's posts of the plan's local days (minus blocked authors); none for a cancelled plan | `plan_not_found` 404 |
-| `next_plans(p_group_id = null)` | member | upcoming plans (not cancelled, not over) of your groups, soonest first, with `my_answer` — the group screen row and the countdown widget | `not_group_member` 403 |
+| `next_plans(p_group_id = null)` | member | upcoming plans (not cancelled, not over) of your groups, soonest first, with `my_answer` — the countdown widget | `not_group_member` 403 |
+| `group_plans(p_group_id)` | member | every plan of the group with `my_answer`, `canceled_at` and `state` (`upcoming` · `past` · `canceled`), ordered upcoming soonest first, then past latest first, then cancelled latest first (minus plans by someone with a block) — the plans list (`plans.list`) and the group screen's plans block (migration 0028) | `not_group_member` 403 |
 
 "Over" = after `ends_at`, or after the end of `local_date` when there is no end (Partiful: no RSVP changes after the
 event). Push type `plan` with `plan_id` (apps: `PushType.plan` / `PushTypes.PLAN`); a plan's alerts share the collapse

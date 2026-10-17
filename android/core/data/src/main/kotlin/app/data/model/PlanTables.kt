@@ -76,6 +76,35 @@ data class NextPlan(
     @SerialName("my_answer") val myAnswer: PlanAnswerKind?,
 )
 
+/** Where a plan sits in the group's plans list (`group_plans`): upcoming, past (over) or cancelled. */
+@Serializable
+enum class GroupPlanState {
+    @SerialName("upcoming") Upcoming,
+    @SerialName("past") Past,
+    @SerialName("canceled") Canceled,
+}
+
+/**
+ * One row of `group_plans(p_group_id)` (§14.2): a plan of the group with your own answer and its list section. The server
+ * orders the rows: upcoming soonest first, then past latest first, then cancelled latest first.
+ */
+@Serializable
+data class GroupPlan(
+    val id: String,
+    @SerialName("group_id") val groupId: String,
+    @SerialName("created_by") val createdBy: String?,
+    val title: String,
+    @SerialName("starts_at") val startsAt: Instant,
+    @SerialName("ends_at") val endsAt: Instant?,
+    @SerialName("all_day") val allDay: Boolean,
+    @SerialName("local_date") val localDate: LocalDate,
+    val place: String?,
+    @SerialName("cover_path") val coverPath: String?,
+    @SerialName("canceled_at") val canceledAt: Instant?,
+    @SerialName("my_answer") val myAnswer: PlanAnswerKind?,
+    val state: GroupPlanState,
+)
+
 /** §14.4 `group_questions`: one question per group week; [questionKey] is a copy key (`question.weekly.q01` …). */
 @Serializable
 data class GroupQuestion(

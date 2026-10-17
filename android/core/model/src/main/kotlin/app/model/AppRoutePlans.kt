@@ -17,6 +17,15 @@ data class PlanRoute(val planId: String, val groupId: String? = null) : AppRoute
 }
 
 /**
+ * `plans.list` — every plan of [groupId]: Upcoming, Past Plans, Canceled (design/surfaces/plans.list.md), pushed from the
+ * "Plans" label of the `groups.screen` plans block.
+ */
+@Serializable
+data class PlansListRoute(val groupId: String) : AppRoute {
+    override val surface get() = "plans.list"
+}
+
+/**
  * `plans.create` — make a plan in [groupId] (design/surfaces/plans.create.md); with [editPlanId] the same sheet in edit
  * mode ("Edit Plan" from the plan page's menu).
  */

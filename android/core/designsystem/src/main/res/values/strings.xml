@@ -583,6 +583,8 @@
     <string name="chat_thread_a11y_photomine">Your photo, %1$s</string>
     <!-- Retro · chat.thread · new · SOURCED · args: name -->
     <string name="chat_thread_a11y_replyquote">Reply to %1$s\'s post</string>
+    <!-- Retro · chat.thread · new · SOURCED · args: duration -->
+    <string name="chat_thread_a11y_video">Video, %1$s</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_deletemessage_confirm" formatted="false">Unsend</string>
     <!-- Retro · chat.thread · new · SOURCED -->

@@ -1405,6 +1405,14 @@ object Tokens {
         object GlobalVariableWeightAndroid {
             const val body: Float = 450f
         }
+        /** Retro + Android photo picker · global · how a video is marked among photos · SOURCED — token `layout.global.videoMarker` */
+        object GlobalVideoMarker {
+            const val marker: String = "C-25 video duration pill: capsule color.global.surfaceLight, size.global.videoPillHeight tall, size.global.videoPillPadding each side; icon.global.video (size.global.iconSmall) then size.global.videoPillGap then the duration (chat.voice.layout.durationFormat, text role pillSmall, monospaced digits) in color.global.onSurfaceLight"
+            const val placement: String = "top-trailing corner of the photo or tile, size.global.videoPillInset from both edges"
+            const val narrow: String = "when the pill with its duration does not fit inside the tile less both insets, the pill keeps only the glyph (same height and padding)"
+            const val where: String = "every place a video shows as a tile or thumbnail: week strips (history, walls, the recap editor), the chat thread's photo messages and quoted photos, album grids; the viewer plays the video instead"
+            const val accessibility: String = "hidden itself; the tile's label adds chat.thread.a11y.video (\"Video, {duration}\" spoken)"
+        }
         /** WhatsApp + Telegram + Apple Messages · global · C-36 voice waveform: geometry, colours, states and the level data behind the bars · SOURCED — token `layout.global.waveform` */
         object GlobalWaveform {
             const val component: String = "C-36: a row of capsule-ended bars (corners = bar width / 2), size.global.waveformBarWidth wide, size.global.waveformBarGap apart, centred on the row's middle"
@@ -2494,6 +2502,14 @@ object Tokens {
         val globalTitleToContent: Dp = 30.dp
         /** Retro · global · safe-area top → baseline of the display title on a root screen · SOURCED — token `size.global.titleTop` */
         val globalTitleTop: Dp = 64.dp
+        /** Retro · global · gap between the video glyph and the duration digits in the pill · SOURCED — token `size.global.videoPillGap` */
+        val globalVideoPillGap: Dp = 6.dp
+        /** Retro · global · height of the video duration pill ("1:00", C-25) · SOURCED — token `size.global.videoPillHeight` */
+        val globalVideoPillHeight: Dp = 28.dp
+        /** Retro · global · distance of the video pill from the top and trailing edges of the media it marks · SOURCED — token `size.global.videoPillInset` */
+        val globalVideoPillInset: Dp = 15.dp
+        /** Retro · global · horizontal padding inside the video duration pill (capsule edge → glyph ink; last digit ink → capsule edge) · SOURCED — token `size.global.videoPillPadding` */
+        val globalVideoPillPadding: Dp = 12.dp
         /** Apple Messages · global · C-36 voice waveform: space between two bars · SOURCED — token `size.global.waveformBarGap` */
         val globalWaveformBarGap: Dp = 2.1.dp
         /** WhatsApp · global · C-36 voice waveform: height of a silent bar (a dot: height = bar width) · SOURCED — token `size.global.waveformBarMinHeight` */

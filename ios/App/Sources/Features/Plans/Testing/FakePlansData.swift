@@ -138,6 +138,23 @@ final class FakePlansData: PlansDataSource, QuestionDataSource, @unchecked Senda
             .map { plan in UpcomingPlan(plan, myAnswer: answers.first { $0.planID == plan.id && $0.userID == me }?.answer) }
     }
 
+    /// As `group_plans`: upcoming soonest first, then past latest first, then cancelled latest first.
+    func groupPlans(groupID: GroupID) async throws -> [GroupPlan] {
+        try record("groupPlans")
+        let me = read(\.me)
+        let (plans, answers) = read { ($0.plans.values, $0.answers) }
+        func state(_ plan: Plan) -> GroupPlanState { plan.isCanceled ? .canceled : isOver(plan) ? .past : .upcoming }
+        func rank(_ state: GroupPlanState) -> Int { state == .upcoming ? 0 : state == .past ? 1 : 2 }
+        return plans
+            .filter { $0.groupID == groupID }
+            .map { plan in GroupPlan(plan, myAnswer: answers.first { $0.planID == plan.id && $0.userID == me }?.answer, state: state(plan)) }
+            .sorted { lhs, rhs in
+                if rank(lhs.state) != rank(rhs.state) { return rank(lhs.state) < rank(rhs.state) }
+                if lhs.startsAt != rhs.startsAt { return lhs.state == .upcoming ? lhs.startsAt < rhs.startsAt : lhs.startsAt > rhs.startsAt }
+                return lhs.id < rhs.id
+            }
+    }
+
     func plan(id: PlanID) async throws -> Plan? {
         try record("plan")
         return read { $0.plans[id] }

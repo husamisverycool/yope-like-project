@@ -254,6 +254,42 @@ class PlansSnapshotTest {
         content = groupScreen(feed, planRow = true, questionCard = true),
     )
 
+    @Test fun groupPlansLabel() = snap(
+        "groups.screen", "planRow-label",
+        content = @Composable {
+            GroupFeedScreen(feed, now, utc, GroupScreenActions(), planRows = {
+                app.feature.account.plans.PlanEntriesPreview(NextPlanRow("p1", "Picnic at the lake", PlanFormats.rowLine(plan().startsAt, false, plan().localDate, utc)))
+            })
+        },
+    )
+
+    // plans.list -------------------------------------------------------------------------------------------
+    private fun listItem(id: String, title: String, day: String, state: app.data.model.GroupPlanState, cover: String?) = app.feature.account.plans.PlanListItem(
+        app.data.model.GroupPlan(
+            id, "g1", "u-sam", title, LocalDate.parse(day).atTime(18, 30).atZone(utc).toInstant(), null, false, LocalDate.parse(day), null, cover,
+            if (state == app.data.model.GroupPlanState.Canceled) now else null, null, state,
+        ),
+        PlanFormats.rowLine(LocalDate.parse(day).atTime(18, 30).atZone(utc).toInstant(), false, LocalDate.parse(day), utc),
+        cover?.let { photo(it) },
+    )
+    private val listLoaded = app.feature.account.plans.PlansListUiState(
+        app.feature.account.plans.PlansListUiState.Phase.Loaded,
+        listOf(
+            app.feature.account.plans.PlanListSection(app.data.model.GroupPlanState.Upcoming, listOf(listItem("p1", "Picnic at the lake", "2026-10-24", app.data.model.GroupPlanState.Upcoming, "friends-picnic-blanket-3x4"))),
+            app.feature.account.plans.PlanListSection(app.data.model.GroupPlanState.Past, listOf(listItem("p2", "Dinner at ours", "2026-10-03", app.data.model.GroupPlanState.Past, null))),
+            app.feature.account.plans.PlanListSection(app.data.model.GroupPlanState.Canceled, listOf(listItem("p3", "Movie night", "2026-10-20", app.data.model.GroupPlanState.Canceled, "dinner-long-table-3x4"))),
+        ),
+    )
+    private fun plansList(state: app.feature.account.plans.PlansListUiState) = @Composable {
+        app.feature.account.plans.PlansListScreen(state, onBack = {}, onCreate = {}, onOpen = {}, onRetry = {})
+    }
+    @Test fun plansListLoaded() = snap("plans.list", "loaded", content = plansList(listLoaded))
+    @Test fun plansListLoadedDark() = snap("plans.list", "loaded", dark = true, content = plansList(listLoaded))
+    @Test fun plansListEmpty() = snap("plans.list", "empty", content = plansList(app.feature.account.plans.PlansListUiState(app.feature.account.plans.PlansListUiState.Phase.Empty)))
+    @Test fun plansListError() = snap("plans.list", "error", content = plansList(app.feature.account.plans.PlansListUiState(app.feature.account.plans.PlansListUiState.Phase.Error)))
+    @Test fun plansListOffline() = snap("plans.list", "offline", content = plansList(app.feature.account.plans.PlansListUiState(app.feature.account.plans.PlansListUiState.Phase.Offline)))
+    @Test fun plansListLoading() = snap("plans.list", "loading", content = plansList(app.feature.account.plans.PlansListUiState()))
+
     // widget.countdown -------------------------------------------------------------------------------------
     private val widgetStore get() = CountdownStore.default(context)
     private val widgetMeta get() = WidgetGroupMeta.of(WidgetFileStore.default(context))

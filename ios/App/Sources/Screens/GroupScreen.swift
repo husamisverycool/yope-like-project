@@ -28,8 +28,9 @@ struct GroupFeedView: View {
     @State private var reportTarget: ReportTarget?
     /// The developing tile's state (camera.overnight B), made when the screen first loads.
     @State private var developingTile: DevelopingTileModel?
-    /// Whether the birthday request row is on screen (the plan row's placement, `planRow`).
-    @State private var birthdayRowShown = false
+    /// The birthday request rows' and the plans block's models: their days order the two (`GroupEntryOrder`, MERGE FV-1).
+    @State private var birthdayEntry: BirthdayRequestsEntryModel
+    @State private var planEntry: PlanRowModel
     @Environment(AccountDependencies.self) private var dependencies
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -38,6 +39,8 @@ struct GroupFeedView: View {
 
     init(model: GroupFeedModel) {
         _model = State(initialValue: model)
+        _birthdayEntry = State(initialValue: BirthdayRequestsEntryModel(groupID: model.groupID, dependencies: .current))
+        _planEntry = State(initialValue: PlanRowModel(groupID: model.groupID, services: .shared))
         _titleSize = ScaledMetric(wrappedValue: TextRole.headerTitle.size, relativeTo: TextRole.headerTitle.relativeTo)
         _sectionLabelSize = ScaledMetric(wrappedValue: TextRole.sectionLabel.size, relativeTo: TextRole.sectionLabel.relativeTo)
     }
@@ -134,9 +137,7 @@ struct GroupFeedView: View {
                     .metricGap(Tokens.Sizes.globalSectionGap, from: .bottom, to: .top)
             }
             if showsWeek {
-                birthdayRequests
-                    .metricGap(0, from: .bottom, to: .top)
-                planRow
+                datedEntries
                     .metricGap(0, from: .bottom, to: .top)
                 weekHeader
                     .metricGap(Tokens.Sizes.globalSectionGap, from: .bottom, to: .capTop)
@@ -247,7 +248,7 @@ struct GroupFeedView: View {
     /// `birthday.request.due` (`listSubtitle`, grey), `icon.global.chevron` → birthday.request (the memory group supplies
     /// the copy and the tap).
     private var birthdayRequests: some View {
-        BirthdayRequestsEntry(groupID: groupID) { content in
+        BirthdayRequestsEntry(groupID: groupID, model: birthdayEntry) { content in
             SettingsGroup(rows: [
                 SettingsCustomRow {
                     HStack {
@@ -270,26 +271,33 @@ struct GroupFeedView: View {
             ])
             .padding(.top, Tokens.Sizes.globalSectionGap)
             .accessibilityElement(children: .combine)
-            .onAppear { birthdayRowShown = true }
-            .onDisappear { birthdayRowShown = false }
+        }
+    }
+
+    /// The birthday request rows and the plans block, soonest first by their days; the `ForEach` keeps each one's
+    /// identity when the order changes.
+    private var datedEntries: some View {
+        let days: [GroupEntrySlot: GroupEntryDay] = [
+            .birthday: GroupEntryDay(birthdayEntry.entryDay),
+            .plans: GroupEntryDay(planEntry.entryDay),
+        ]
+        return VStack(spacing: 0) {
+            ForEach(GroupEntryOrder.order(days), id: \.self) { slot in
+                switch slot {
+                case .birthday: birthdayRequests
+                case .plans: planRow
+                }
+            }
         }
     }
 
     // MARK: Plan row (plans group's entry)
 
-    /// The group's next plan, or "Make a Plan" (`PlanRowEntry`: one C-14 row, `size.global.sectionGap` under the
-    /// capsules or the birthday row). Its order next to the birthday request row is BLOCKED (design/research/plans.md §12
-    /// item 6): release builds show the plan row only while no birthday row is on screen, so no order is decided; DEBUG
-    /// builds show both, the birthday row first.
-    @ViewBuilder
+    /// The plans block (`PlanRowEntry`): the "Plans" label → plans.list while the group has plans, then the next plan or
+    /// "Make a Plan" (one C-14 row), `size.global.sectionGap` under the capsules or the birthday rows; beside a birthday
+    /// row in date order (`datedEntries`).
     private var planRow: some View {
-        #if DEBUG
-        PlanRowEntry(groupID: groupID)
-        #else
-        if !birthdayRowShown {
-            PlanRowEntry(groupID: groupID)
-        }
-        #endif
+        PlanRowEntry(groupID: groupID, model: planEntry)
     }
 
     // MARK: This week

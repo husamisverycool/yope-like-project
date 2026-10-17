@@ -223,8 +223,13 @@ final class BirthdayRequestsEntryModel {
     struct Item: Identifiable, Equatable {
         let requestID: TributeRequestID
         let content: MemoryEntryContent
+        /// The birthday being celebrated (the row's day for its place next to the plans block, `GroupEntryOrder`).
+        var birthday: LocalDate?
         var id: TributeRequestID { requestID }
     }
+
+    /// The soonest birthday among the rows: the entry's day next to the plans block.
+    var entryDay: LocalDate? { items.compactMap(\.birthday).min() }
 
     var items: [Item] = []
     let groupID: GroupID
@@ -259,7 +264,8 @@ final class BirthdayRequestsEntryModel {
                         title: Copy.birthdayRequestTitle(name: byID[request.honoreeID]?.firstName ?? ""),
                         subtitle: Copy.birthdayRequestDue(date: MemoryFormat.dueDate(birthday: request.birthdayDate)),
                         avatarPath: byID[request.honoreeID]?.avatarPath
-                    )
+                    ),
+                    birthday: request.birthdayDate
                 )
             }
             items = fresh

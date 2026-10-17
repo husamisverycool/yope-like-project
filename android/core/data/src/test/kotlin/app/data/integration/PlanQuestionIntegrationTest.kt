@@ -100,9 +100,12 @@ class PlanQuestionIntegrationTest {
         assertEquals("Dinner moved $tag", edited.title)
         assertNotNull(maya.plans.cancel(plan.id).canceledAt)
         assertFalse(theo.plans.nextPlans(group.id).any { it.id == plan.id })
+        // the plans list keeps it, in its cancelled section (group_plans)
+        assertEquals(app.data.model.GroupPlanState.Canceled, theo.plans.groupPlans(group.id).single { it.id == plan.id }.state)
         assertEquals("plan_canceled", (expectDataError { lea.plans.answer(plan.id, PlanAnswerKind.Going) } as DataError.Api).raw)
         assertNull(maya.plans.restore(plan.id).canceledAt)
         assertEquals(PlanAnswerKind.Maybe, theo.plans.nextPlans(group.id).single { it.id == plan.id }.myAnswer)
+        assertEquals(app.data.model.GroupPlanState.Upcoming, theo.plans.groupPlans(group.id).single { it.id == plan.id }.state)
     }
 
     @Test fun weeklyQuestionSwitchAnswerAndRemove() = runBlocking {

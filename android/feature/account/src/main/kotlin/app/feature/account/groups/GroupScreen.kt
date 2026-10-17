@@ -38,9 +38,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -87,7 +87,8 @@ import app.feature.memory.birthday.BirthdayRequestEntries
 import app.feature.memory.onthisday.OnThisDayEntry
 import app.feature.memory.openOnThisDay
 import app.feature.memory.yearstory.YearStoryEntry
-import app.feature.account.plans.PlanBlocked
+import app.feature.account.plans.GroupEntryOrder
+import app.feature.account.plans.GroupEntrySlot
 import app.feature.account.plans.PlanEntries
 import app.feature.account.plans.developingTile
 import app.feature.account.plans.rememberGroupDeveloping
@@ -96,6 +97,7 @@ import app.model.AppRoute
 import app.model.PhotoContext
 import app.model.PhotoViewerIn
 import app.model.PlanCreateRoute
+import app.model.PlansListRoute
 import app.model.PlanRoute
 import app.model.QuestionHandoff
 import app.ui.components.Avatar
@@ -332,8 +334,9 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             }
         }
     }
-    /** Whether a birthday request row is on screen (the plan row's placement). */
-    var birthdayRowShown by remember(groupId) { mutableStateOf(false) }
+    /** The soonest birthday of the request rows and the next plan's day: their order (`GroupEntryOrder`, MERGE FV-1). */
+    var birthdayDay by remember(groupId) { mutableStateOf<java.time.LocalDate?>(null) }
+    var planDay by remember(groupId) { mutableStateOf<java.time.LocalDate?>(null) }
     // The developing state refetches on each `developing_changed` broadcast (a 9 AM photo taken in the group, a reveal) and
     // when the newest post changes; the question card's newest answer refetches with the newest post.
     val newestPost = state.photos?.firstOrNull()?.post?.id
@@ -362,24 +365,29 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             onLoadMore = vm::loadMore,
         ),
         // The memory pass's entries: copy and data are theirs; the row / card and its place are this screen's.
+        // The request opens `birthday.request` first (the route's destination), then the contribute sheet — as iOS.
         birthdayRows = {
-            var shown = false
-            BirthdayRequestEntries(groupId, onOpen = { requestId -> nav.navigate(AppRoute.BirthdayContribute(groupId, requestId)) }) { title, subtitle, onClick ->
-                shown = true
-                BirthdayRequestRow(title, subtitle, avatar = null, onClick = onClick)
+            BirthdayRequestEntries(
+                groupId,
+                onOpen = { requestId -> nav.navigate(AppRoute.BirthdayContribute(groupId, requestId)) },
+                onDay = { birthdayDay = it },
+            ) { title, subtitle, avatar, onClick ->
+                BirthdayRequestRow(title, subtitle, avatar = avatar, onClick = onClick)
             }
-            SideEffect { birthdayRowShown = shown }
         },
-        // The plans pass's entry (the next plan with its "+", or "Make a Plan"). Its order next to a birthday request row
-        // is BLOCKED (plans.md §12 item 6): release builds show it only while no birthday row is on screen (iOS as well).
+        // The plans pass's block: the "Plans" label → plans.list while the group has plans, then the next plan with its
+        // "+", or "Make a Plan"; beside the birthday rows in date order (MERGE FV-1).
         planRows = {
-            if (PlanBlocked.besideBirthdayRow || !birthdayRowShown) PlanEntries(
+            PlanEntries(
                 groupId,
                 refreshKey = newestPost,
                 onOpen = { planId -> nav.navigate(PlanRoute(planId, groupId)) },
                 onCreate = { nav.navigate(PlanCreateRoute(groupId)) },
+                onAll = { nav.navigate(PlansListRoute(groupId)) },
+                onDay = { planDay = it },
             )
         },
+        entryOrder = GroupEntryOrder.order(birthdayDay, planDay),
         feedCards = {
             // question.weekly A: the first feed card, after the friend cards, before the memory cards.
             QuestionCardEntry(
@@ -464,6 +472,7 @@ fun GroupFeedScreen(
     feedCards: @Composable () -> Unit = {},
     planRows: @Composable () -> Unit = {},
     developing: DayTile? = null,
+    entryOrder: List<GroupEntrySlot> = GroupEntryOrder.declared,
 ) {
     val zone = GroupWeek.zone(state.group, fallbackZone)
     val today = now.atZone(zone).toLocalDate()
@@ -503,7 +512,7 @@ fun GroupFeedScreen(
                     item(key = "actions") { ActionRow(actions) }
                     item(key = "error") { TapLine(stringResource(R.string.groups_screen_error_title), actions.onRetry, Modifier.padding(top = Tokens.Sizes.globalSectionGap)) }
                 }
-                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards, planRows, developing)
+                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards, planRows, developing, entryOrder)
             }
         }
     }
@@ -519,6 +528,7 @@ private fun LazyListScope.loaded(
     feedCards: @Composable () -> Unit,
     planRows: @Composable () -> Unit,
     developing: DayTile?,
+    entryOrder: List<GroupEntrySlot>,
 ) {
     val weekStart = GroupWeek.start(today)
     // A photo is in the week (and on the day) it became visible: an overnight photo taken on Sunday night is in
@@ -528,8 +538,19 @@ private fun LazyListScope.loaded(
     val earlier = byVisible.filter { it.post.visibleAt.atZone(zone).toLocalDate().isBefore(weekStart) }
     item(key = "members") { Members(state.memberAvatars, actions.onMembers) }
     item(key = "actions") { ActionRow(actions) }
-    item(key = "birthday") { Column { birthdayRows() } }
-    item(key = "plans") { Column { planRows() } }
+    // The birthday rows and the plans block in date order; keyed so a change of order moves them (state kept).
+    item(key = "dated") {
+        Column {
+            for (slot in entryOrder) {
+                key(slot) {
+                    when (slot) {
+                        GroupEntrySlot.Birthday -> birthdayRows()
+                        GroupEntrySlot.Plans -> planRows()
+                    }
+                }
+            }
+        }
+    }
     item(key = "weekHeader") {
         val range = if (thisWeek.isEmpty()) null else Formats.weekRange(weekStart, GroupWeek.end(today), zone)
         WeekHeader(stringResource(R.string.groups_screen_week_title, GroupWeek.number(today).toString()), range, actions.onWeeks)

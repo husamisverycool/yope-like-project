@@ -81,6 +81,30 @@ struct PlansFixture {
         }
     }
 
+    /// plans.list: besides the dinner (upcoming), a past picnic without a cover and a cancelled movie night.
+    static let picnicID = PlanID("00000000-0000-4000-8000-00000000f102")
+    static let movieID = PlanID("00000000-0000-4000-8000-00000000f103")
+
+    func addListPlans() {
+        addDinner()
+        let made = clock.addingTimeInterval(-20 * Self.day)
+        let picnic = Plan(
+            id: Self.picnicID, groupID: Self.groupID, createdBy: Self.ben, title: "Picnic by the lake",
+            startsAt: clock.addingTimeInterval(-9 * Self.day), allDay: true, localDate: LocalDate(year: 2026, month: 10, day: 7)!,
+            place: "The lake", createdAt: made, updatedAt: made
+        )
+        let movie = Plan(
+            id: Self.movieID, groupID: Self.groupID, createdBy: Self.me, title: "Movie night",
+            startsAt: clock.addingTimeInterval(4 * Self.day), allDay: false, localDate: LocalDate(year: 2026, month: 10, day: 20)!,
+            coverPath: "sample/movie-night-couch-4x3.jpg", canceledAt: clock.addingTimeInterval(-Self.hour), canceledBy: Self.me,
+            createdAt: made, updatedAt: made
+        )
+        data.update { state in
+            state.plans[Self.picnicID] = picnic
+            state.plans[Self.movieID] = movie
+        }
+    }
+
     /// Posts of the plan's day (the album after it).
     func addPlanPhotos(_ names: [String]) {
         let posts = names.enumerated().map { index, name in

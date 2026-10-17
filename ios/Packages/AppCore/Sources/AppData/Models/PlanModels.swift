@@ -175,6 +175,80 @@ public struct UpcomingPlan: Codable, Hashable, Sendable, Identifiable {
     }
 }
 
+/// Where a plan sits in the group's plans list (`group_plans`, docs/API.md §14.2): upcoming (not cancelled, not over),
+/// past (over), cancelled (upcoming or not).
+public enum GroupPlanState: String, LenientEnum {
+    case upcoming
+    case past
+    case canceled
+    case unknown
+    public static var unknownCase: GroupPlanState { .unknown }
+}
+
+/// A row of `group_plans` (§14.2): one plan of a group with the caller's own answer and its list section. The server
+/// orders the rows: upcoming soonest first, then past latest first, then cancelled latest first.
+public struct GroupPlan: Codable, Hashable, Sendable, Identifiable {
+    public var id: PlanID
+    public var groupID: GroupID
+    public var createdBy: UserID?
+    public var title: String
+    public var startsAt: Date
+    public var endsAt: Date?
+    public var allDay: Bool
+    public var localDate: LocalDate
+    public var place: String?
+    public var coverPath: String?
+    public var canceledAt: Date?
+    /// Nil: no answer.
+    public var myAnswer: PlanAnswerKind?
+    public var state: GroupPlanState
+
+    public init(
+        id: PlanID, groupID: GroupID, createdBy: UserID?, title: String, startsAt: Date, endsAt: Date? = nil, allDay: Bool,
+        localDate: LocalDate, place: String? = nil, coverPath: String? = nil, canceledAt: Date? = nil,
+        myAnswer: PlanAnswerKind? = nil, state: GroupPlanState
+    ) {
+        self.id = id
+        self.groupID = groupID
+        self.createdBy = createdBy
+        self.title = title
+        self.startsAt = startsAt
+        self.endsAt = endsAt
+        self.allDay = allDay
+        self.localDate = localDate
+        self.place = place
+        self.coverPath = coverPath
+        self.canceledAt = canceledAt
+        self.myAnswer = myAnswer
+        self.state = state
+    }
+
+    /// The list row of a plan (local fakes; the server builds the real one).
+    public init(_ plan: Plan, myAnswer: PlanAnswerKind?, state: GroupPlanState) {
+        self.init(
+            id: plan.id, groupID: plan.groupID, createdBy: plan.createdBy, title: plan.title, startsAt: plan.startsAt,
+            endsAt: plan.endsAt, allDay: plan.allDay, localDate: plan.localDate, place: plan.place, coverPath: plan.coverPath,
+            canceledAt: plan.canceledAt, myAnswer: myAnswer, state: state
+        )
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case groupID = "group_id"
+        case createdBy = "created_by"
+        case title
+        case startsAt = "starts_at"
+        case endsAt = "ends_at"
+        case allDay = "all_day"
+        case localDate = "local_date"
+        case place
+        case coverPath = "cover_path"
+        case canceledAt = "canceled_at"
+        case myAnswer = "my_answer"
+        case state
+    }
+}
+
 /// What `create_plan` / `update_plan` take (§14.2). No end time: the design has no end row (MERGE "Problems found").
 public struct PlanFields: Hashable, Sendable {
     public var title: String

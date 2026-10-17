@@ -2,6 +2,7 @@
 // Owned by the plans pass: add cases here and their screens below; RootView and AppRouter delegate to this file.
 // Entry points other groups use:
 //   plans.page    .plans(.page(planID:groupID:))       (groups.screen plan row, `DeepLink.plan`, pushes `notifications.push.plan*`)
+//   plans.list    .plans(.list(groupID:))              (groups.screen plans block header)
 //   plans.create  AppModal.plans(.create(groupID:))    (the plan row's "+", a page sheet — C-29)
 import SwiftUI
 
@@ -9,6 +10,8 @@ import SwiftUI
 enum PlanRoute: Hashable {
     /// `plans.page`
     case page(planID: String, groupID: String?)
+    /// `plans.list`: every plan of the group.
+    case list(groupID: String)
 }
 
 /// Screens of the plans group presented over the navigation stack.
@@ -27,6 +30,8 @@ struct PlansDestination: View {
         switch route {
         case let .page(planID, groupID):
             PlanPageScreen(planID: planID, groupID: groupID)
+        case let .list(groupID):
+            PlansListScreen(groupID: groupID)
         }
     }
 }

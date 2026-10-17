@@ -77,6 +77,13 @@ class PlansDataTest {
         assertNull(DataJson.decodeFromString(NextPlan.serializer(), """{"id":"p1","group_id":"g1","created_by":null,"title":"t","starts_at":"2026-10-24T00:00:00Z",
             "ends_at":null,"all_day":true,"local_date":"2026-10-24","place":null,"cover_path":null,"my_answer":null}""").myAnswer)
 
+        val listed = DataJson.decodeFromString(ListSerializer(app.data.model.GroupPlan.serializer()), """[{"id":"p2","group_id":"g1","created_by":"u1","title":"Dinner",
+            "starts_at":"2026-10-20T18:30:00+00:00","ends_at":null,"all_day":false,"local_date":"2026-10-20","place":"Ours","cover_path":null,
+            "canceled_at":"2026-10-18T09:00:00+00:00","my_answer":null,"state":"canceled"}]""")
+        assertEquals(app.data.model.GroupPlanState.Canceled, listed.single().state)
+        assertEquals(Instant.parse("2026-10-18T09:00:00Z"), listed.single().canceledAt)
+        assertEquals(setOf("p_group_id"), rpcArgs(Rpc.GroupPlans) { put("p_group_id", "g1") }.keys)
+
         val question = DataJson.decodeFromString(CurrentQuestion.serializer(), """{"id":"q1","question_key":"question.weekly.q01","week_start":"2026-10-12","hidden_by_me":false}""")
         assertEquals("question.weekly.q01", question.questionKey)
 

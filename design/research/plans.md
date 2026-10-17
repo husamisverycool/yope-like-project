@@ -369,7 +369,7 @@ bottom-trailing text stack) is the base for the countdown widget, so it reads as
 1. **Plan-day boundary for the album** — midnight in the group time zone vs. a cut-off after midnight for late plans.
    No reference collects automatically. Smallest evidence: the owner's decision, or an app that auto-collects by event
    (e.g. Google Photos event albums) captured on a device.
-2. **The "today" word on the widget** — the platform formatter's output for 0 days is not printed in Apple's or
+2. *(Resolved 2026-10-17, MERGE FV-2: Apple's and ICU's references print "today".)* **The "today" word on the widget** — the platform formatter's output for 0 days is not printed in Apple's or
    Android's docs; pin it with a snapshot test of `RelativeDateTimeFormatter(.named)` / ICU `AbsoluteUnit.DAY,
    Direction.THIS` in en-US (expected but unverified: "today").
 3. **Answer-change lock time** — Partiful locks after the event; whether Jolt locks at the end of the day or at the start
@@ -378,7 +378,8 @@ bottom-trailing text stack) is the base for the countdown widget, so it reads as
 5. **Retro press / selected motion of a capsule toggle** — C-06 "Gap for a captured toggle" (no Retro capture of a
    toggling capsule); the crossfade `duration.global.crossfade` is the component default.
 6. **Plan row placement on `groups.screen`** relative to the birthday row (both are C-14 rows; order not evidenced).
-7. **Widget empty-state line** — Retro's widget voice has "No media. Tap to reload"; no reference widget shows "no
+   *Resolved 2026-10-17 (MERGE FV-1): both show, soonest first — Apple Invites' "Upcoming" leads with the next event.*
+7. *(Resolved 2026-10-17, MERGE FV-2: "No plans yet", the closest sourced Retro pattern.)* **Widget empty-state line** — Retro's widget voice has "No media. Tap to reload"; no reference widget shows "no
    upcoming events" (Apple's empty widget not captured). Smallest capture: an Apple Invites widget with no upcoming event.
 8. **Notification for the maker when nobody has answered** — none proposed; no evidence either way.
 9. **Countdown for plans more than ~1 year away** — the formatter keeps days ("In 400 days"); Apple shows "In 9 Days"

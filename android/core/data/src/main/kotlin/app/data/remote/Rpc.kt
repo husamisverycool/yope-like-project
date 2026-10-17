@@ -85,6 +85,7 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     ClearAnswer("clear_answer", setOf("p_plan_id")),
     PlanPhotos("plan_photos", setOf("p_plan_id")),
     NextPlans("next_plans", emptySet(), setOf("p_group_id")),
+    GroupPlans("group_plans", setOf("p_group_id")),
 
     // §14.4 Weekly question
     SetGroupWeeklyQuestion("set_group_weekly_question", setOf("p_group_id", "p_on")),

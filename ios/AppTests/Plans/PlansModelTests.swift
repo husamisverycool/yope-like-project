@@ -237,6 +237,71 @@ final class PlansModelTests: XCTestCase {
         XCTAssertNil(skipped.next, "a canceled plan is not upcoming")
     }
 
+    // MARK: plans.list
+
+    func testPlansListHasUpcomingThenPastThenCanceled() async {
+        let fixture = PlansFixture()
+        fixture.addListPlans()
+        let model = PlansListModel(groupID: PlansFixture.groupID, services: fixture.services)
+        await model.refresh()
+        XCTAssertEqual(model.phase, .loaded)
+        XCTAssertEqual(model.sections.map(\.state), [.upcoming, .past, .canceled])
+        XCTAssertEqual(model.sections.map { $0.plans.map(\.title) }, [["Dinner at ours"], ["Picnic by the lake"], ["Movie night"]])
+        XCTAssertEqual(PlansListView.title(of: .past), Copy.plansListSectionPast)
+
+        let none = PlansListModel(groupID: PlansFixture.groupID, services: PlansFixture().services)
+        await none.refresh()
+        XCTAssertEqual(none.phase, .empty)
+    }
+
+    func testPlansListFailuresKeepWhatIsShown() async {
+        let fixture = PlansFixture()
+        fixture.addListPlans()
+        fixture.data.update { $0.failures["groupPlans"] = .offline }
+        let offline = PlansListModel(groupID: PlansFixture.groupID, services: fixture.services)
+        await offline.refresh()
+        XCTAssertEqual(offline.phase, .offline)
+        fixture.data.update { $0.failures["groupPlans"] = .http(status: 500) }
+        let failed = PlansListModel(groupID: PlansFixture.groupID, services: fixture.services)
+        await failed.refresh()
+        XCTAssertEqual(failed.phase, .error)
+        fixture.data.update { $0.failures["groupPlans"] = nil }
+        await failed.retry()
+        XCTAssertEqual(failed.phase, .loaded)
+        fixture.data.update { $0.failures["groupPlans"] = .offline }
+        await failed.refresh()
+        XCTAssertEqual(failed.phase, .loaded, "a loaded list stays when the connection drops")
+        fixture.data.update { $0.failures["groupPlans"] = .api(.notGroupMember, details: nil) }
+        await failed.refresh()
+        XCTAssertEqual(failed.phase, .removed)
+    }
+
+    func testPlanRowShowsTheListLabelWhileTheGroupHasPlans() async {
+        let none = PlanRowModel(groupID: PlansFixture.groupID, services: PlansFixture().services)
+        await none.refresh()
+        XCTAssertFalse(none.hasPlans)
+        let canceled = PlansFixture()
+        canceled.addDinner(canceled: true)
+        let row = PlanRowModel(groupID: PlansFixture.groupID, services: canceled.services)
+        await row.refresh()
+        XCTAssertTrue(row.hasPlans, "a cancelled plan is in the list")
+        XCTAssertNil(row.next)
+        XCTAssertNil(row.entryDay)
+    }
+
+    /// The birthday rows and the plans block, soonest first; the same day keeps the birthday rows first; a block without
+    /// a day goes last (MERGE FV-1).
+    func testGroupEntriesStandInDateOrder() {
+        let oct18 = LocalDate(year: 2026, month: 10, day: 18)!
+        let oct20 = LocalDate(year: 2026, month: 10, day: 20)!
+        XCTAssertEqual(GroupEntryOrder.order([.birthday: GroupEntryDay(oct20), .plans: GroupEntryDay(oct18)]), [.plans, .birthday])
+        XCTAssertEqual(GroupEntryOrder.order([.birthday: GroupEntryDay(oct18), .plans: GroupEntryDay(oct20)]), [.birthday, .plans])
+        XCTAssertEqual(GroupEntryOrder.order([.birthday: GroupEntryDay(oct18), .plans: GroupEntryDay(oct18)]), [.birthday, .plans])
+        XCTAssertEqual(GroupEntryOrder.order([.birthday: GroupEntryDay(oct20), .plans: GroupEntryDay(nil)]), [.birthday, .plans])
+        XCTAssertEqual(GroupEntryOrder.order([.birthday: GroupEntryDay(nil), .plans: GroupEntryDay(oct18)]), [.plans, .birthday])
+        XCTAssertEqual(GroupEntryOrder.order([:]), GroupEntryOrder.declared)
+    }
+
     func testAnotherMembersAnswerShowsWhileThePageIsOpen() async {
         let fixture = PlansFixture()
         fixture.addDinner()

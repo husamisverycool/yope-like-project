@@ -11,6 +11,7 @@ import app.data.error.DataException
 import app.data.model.CurrentQuestion
 import app.data.model.Developing
 import app.data.model.Group
+import app.data.model.GroupPlan
 import app.data.model.Media
 import app.data.model.NextPlan
 import app.data.model.Plan
@@ -51,6 +52,8 @@ interface PlansBackend {
     fun observePlan(planId: String): Flow<DataState<PlanDetail?>>
     suspend fun plan(planId: String): Plan?
     suspend fun nextPlans(groupId: String): List<NextPlan>
+    /** Every plan of the group (`group_plans`): upcoming soonest first, then past latest first, then cancelled. */
+    suspend fun groupPlans(groupId: String): List<GroupPlan>
     suspend fun planPhotos(planId: String): List<Post>
     suspend fun uploadCover(jpeg: File): String
     suspend fun createPlan(groupId: String, title: String, startsAt: Instant, allDay: Boolean, place: String?, note: String?, coverPath: String?): Plan
@@ -94,6 +97,7 @@ class GraphPlansBackend(private val graph: DataGraph) : PlansBackend {
     override fun observePlan(planId: String): Flow<DataState<PlanDetail?>> = graph.plans.observeDetail(planId)
     override suspend fun plan(planId: String): Plan? = graph.plans.plan(planId)
     override suspend fun nextPlans(groupId: String): List<NextPlan> = graph.plans.nextPlans(groupId)
+    override suspend fun groupPlans(groupId: String): List<GroupPlan> = graph.plans.groupPlans(groupId)
     override suspend fun planPhotos(planId: String): List<Post> = graph.plans.photos(planId)
     override suspend fun uploadCover(jpeg: File): String = graph.plans.uploadCover(jpeg)
 
@@ -133,6 +137,7 @@ object UnconfiguredPlansBackend : PlansBackend {
         flow { emit(DataState(null, DataState.Source.None, null, refreshing = false, error = DataError.NotConfigured)) }
     override suspend fun plan(planId: String): Plan? = fail()
     override suspend fun nextPlans(groupId: String): List<NextPlan> = fail()
+    override suspend fun groupPlans(groupId: String): List<GroupPlan> = fail()
     override suspend fun planPhotos(planId: String): List<Post> = fail()
     override suspend fun uploadCover(jpeg: File): String = fail()
     override suspend fun createPlan(groupId: String, title: String, startsAt: Instant, allDay: Boolean, place: String?, note: String?, coverPath: String?): Plan = fail()

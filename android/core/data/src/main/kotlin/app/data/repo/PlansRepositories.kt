@@ -7,6 +7,7 @@ import app.data.media.StoragePaths
 import app.data.model.CurrentQuestion
 import app.data.model.Developing
 import app.data.model.Group
+import app.data.model.GroupPlan
 import app.data.model.NextPlan
 import app.data.model.Plan
 import app.data.model.PlanAnswer
@@ -90,6 +91,11 @@ class PlanRepository(
     /** Upcoming plans (not cancelled, not over) of one group, or of all your groups when [groupId] is null, soonest first. */
     suspend fun nextPlans(groupId: String? = null): List<NextPlan> = api.rpcList(Rpc.NextPlans, NextPlan.serializer()) {
         opt("p_group_id", groupId)
+    }
+
+    /** Every plan of the group (the plans list): upcoming soonest first, then past latest first, then cancelled. */
+    suspend fun groupPlans(groupId: String): List<GroupPlan> = api.rpcList(Rpc.GroupPlans, GroupPlan.serializer()) {
+        put("p_group_id", groupId)
     }
 
     /** The group's posts of the plan's local days, oldest first (minus blocked authors); none for a cancelled plan. */

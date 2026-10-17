@@ -293,6 +293,7 @@ const table = {
   "chat.thread.a11y.photo": "{name}'s photo, {time}", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.photoMine": "Your photo, {time}", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.replyQuote": "Reply to {name}'s post", // Retro · chat.thread · SOURCED
+  "chat.thread.a11y.video": "Video, {duration}", // Retro · chat.thread · SOURCED
   "chat.thread.deleteMessage.confirm": "Unsend", // Retro · chat.thread · SOURCED
   "chat.thread.deleteMessage.message": "It will be removed for everyone in the group.", // Retro · chat.thread · SOURCED
   "chat.thread.deleteMessage.title": "Unsend message?", // Retro · chat.thread · SOURCED

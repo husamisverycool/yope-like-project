@@ -1634,6 +1634,15 @@ public enum Tokens {
         public enum GlobalVariableWeightAndroid {
             public static let body: CGFloat = 450
         }
+        /// Retro + Android photo picker · global · how a video is marked among photos · SOURCED
+        /// token: `layout.global.videoMarker`
+        public enum GlobalVideoMarker {
+            public static let marker: String = "C-25 video duration pill: capsule color.global.surfaceLight, size.global.videoPillHeight tall, size.global.videoPillPadding each side; icon.global.video (size.global.iconSmall) then size.global.videoPillGap then the duration (chat.voice.layout.durationFormat, text role pillSmall, monospaced digits) in color.global.onSurfaceLight"
+            public static let placement: String = "top-trailing corner of the photo or tile, size.global.videoPillInset from both edges"
+            public static let narrow: String = "when the pill with its duration does not fit inside the tile less both insets, the pill keeps only the glyph (same height and padding)"
+            public static let `where`: String = "every place a video shows as a tile or thumbnail: week strips (history, walls, the recap editor), the chat thread's photo messages and quoted photos, album grids; the viewer plays the video instead"
+            public static let accessibility: String = "hidden itself; the tile's label adds chat.thread.a11y.video (\"Video, {duration}\" spoken)"
+        }
         /// WhatsApp + Telegram + Apple Messages · global · C-36 voice waveform: geometry, colours, states and the level data behind the bars · SOURCED
         /// token: `layout.global.waveform`
         public enum GlobalWaveform {
@@ -3014,6 +3023,18 @@ public enum Tokens {
         /// Retro · global · safe-area top → baseline of the display title on a root screen · SOURCED
         /// token: `size.global.titleTop`
         public static let globalTitleTop: CGFloat = 64
+        /// Retro · global · gap between the video glyph and the duration digits in the pill · SOURCED
+        /// token: `size.global.videoPillGap`
+        public static let globalVideoPillGap: CGFloat = 6
+        /// Retro · global · height of the video duration pill ("1:00", C-25) · SOURCED
+        /// token: `size.global.videoPillHeight`
+        public static let globalVideoPillHeight: CGFloat = 28
+        /// Retro · global · distance of the video pill from the top and trailing edges of the media it marks · SOURCED
+        /// token: `size.global.videoPillInset`
+        public static let globalVideoPillInset: CGFloat = 15
+        /// Retro · global · horizontal padding inside the video duration pill (capsule edge → glyph ink; last digit ink → capsule edge) · SOURCED
+        /// token: `size.global.videoPillPadding`
+        public static let globalVideoPillPadding: CGFloat = 12
         /// Apple Messages · global · C-36 voice waveform: space between two bars · SOURCED
         /// token: `size.global.waveformBarGap`
         public static let globalWaveformBarGap: CGFloat = 2.1

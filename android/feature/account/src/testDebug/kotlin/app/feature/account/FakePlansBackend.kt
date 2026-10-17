@@ -102,6 +102,28 @@ class FakePlansBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"))
             NextPlan(it.id, it.groupId, it.createdBy, it.title, it.startsAt, it.endsAt, it.allDay, it.localDate, it.place, it.coverPath, null)
         }
     }
+    /** As `group_plans`: upcoming soonest first, then past latest first, then cancelled latest first. */
+    override suspend fun groupPlans(groupId: String): List<app.data.model.GroupPlan> {
+        call("groupPlans")
+        val zone = ZoneId.of(groups[groupId]?.timeZone ?: "UTC")
+        fun state(plan: Plan) = when {
+            plan.canceled -> app.data.model.GroupPlanState.Canceled
+            plan.isOver(now, zone) -> app.data.model.GroupPlanState.Past
+            else -> app.data.model.GroupPlanState.Upcoming
+        }
+        return plans.values.filter { it.groupId == groupId }
+            .map { plan ->
+                app.data.model.GroupPlan(
+                    plan.id, plan.groupId, plan.createdBy, plan.title, plan.startsAt, plan.endsAt, plan.allDay, plan.localDate, plan.place,
+                    plan.coverPath, plan.canceledAt, answers[plan.id]?.firstOrNull { it.userId == me }?.answer, state(plan),
+                )
+            }
+            .sortedWith(
+                compareBy<app.data.model.GroupPlan> { it.state.ordinal }
+                    .thenBy { if (it.state == app.data.model.GroupPlanState.Upcoming) it.startsAt.toEpochMilli() else -it.startsAt.toEpochMilli() }
+                    .thenBy { it.id },
+            )
+    }
     override suspend fun planPhotos(planId: String): List<Post> = photos[planId].orEmpty().also { call("planPhotos") }
     override suspend fun uploadCover(jpeg: File): String = "u/u-me/covers/new.jpg".also { call("uploadCover") }
 

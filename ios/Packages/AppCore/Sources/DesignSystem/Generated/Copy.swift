@@ -585,6 +585,8 @@ public enum Copy {
     public static func chatThreadA11yPhotoMine(time: String) -> String { CopyLookup.format("chat.thread.a11y.photoMine", default: "Your photo, {time}", ["time": time]) }
     /// "Reply to {name}'s post" — Retro · chat.thread · new · SOURCED
     public static func chatThreadA11yReplyQuote(name: String) -> String { CopyLookup.format("chat.thread.a11y.replyQuote", default: "Reply to {name}'s post", ["name": name]) }
+    /// "Video, {duration}" — Retro · chat.thread · new · SOURCED
+    public static func chatThreadA11yVideo(duration: String) -> String { CopyLookup.format("chat.thread.a11y.video", default: "Video, {duration}", ["duration": duration]) }
     /// "Unsend" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadDeleteMessageConfirm: String { CopyLookup.string("chat.thread.deleteMessage.confirm", default: "Unsend") }
     /// "It will be removed for everyone in the group." — Retro · chat.thread · new · SOURCED
