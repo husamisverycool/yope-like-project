@@ -169,7 +169,10 @@ Placeholders used below:
      (`android/core/billing`). `premium_monthly` gets no offer.
    - Create a **service account** with Play Console access for RevenueCat (RevenueCat's guide:
      https://www.revenuecat.com/docs/service-credentials/creating-play-service-credentials).
-4. **Data safety form**: fill from `docs/PRIVACY_LABELS.md`.
+4. **Data safety form**: fill from `docs/PRIVACY_LABELS.md`. Its **Delete account URL** is
+   `https://jolt-husamisverycool.fly.dev/delete-account` (your domain once you have one, §4): the invite page serves the
+   steps in the app and, once you set your support address (§8.3), how to ask by email — Google requires a way to request
+   deletion without the app.
 5. **Internal testing** testers: Play Console → Test and release → Testing → Internal testing → **Testers** → create an
    email list with their Google accounts → **Copy link** and send it to them; each run of "send Jolt to Google Play"
    reaches them.
@@ -280,6 +283,18 @@ Any other container host works too (Render, Railway, Cloud Run): the images are 
    a processor), deletion. Put the URLs in `config/app.json` → `legal`.
 2. Age requirement decision: see `docs/PLATFORM_CONSTRAINTS.md` §9 and set
    `app_config.min_age_years` (the age gate fails closed until it is set).
+3. **Support address** (an email inbox you read): put it in `config/app.json` → `support` → `email`. It turns on
+   Settings → **Contact Us** on both apps, "Contact Us" in the web pages' footer, and the deletion request on
+   `/delete-account` (Google requires a way to ask without the app). The release runs warn while it is empty.
+   **A deletion request by email**: Supabase → Authentication → Users → search the phone number → copy the user's UID;
+   then SQL Editor → run (with that UID) the same deletion the app's Delete Account runs — everything goes, then the
+   background service deletes the files and the sign-in account:
+   ```sql
+   begin;
+   select set_config('request.jwt.claims', json_build_object('sub', 'THE-USER-UID', 'role', 'authenticated')::text, true);
+   select public.delete_account();
+   commit;
+   ```
 
 ## 9. Optional: design-reference site logins
 

@@ -229,6 +229,15 @@ class CheckSetupTest(unittest.TestCase):
         self.assertIn("jolt-some-owner.fly.dev", out)
         self.assertIn("::warning::GitHub secret ANDROID_GOOGLE_SERVICES_JSON", out)
 
+    def test_support_address_is_a_warning_until_set(self):
+        code, out = self.check("services", {"supabase.url": "https://abcdefghijklmnopqrst.supabase.co"},
+                               FLY_API_TOKEN="t", SUPABASE_SERVICE_ROLE_KEY="k")
+        self.assertEqual(code, 0, out)
+        self.assertIn("::warning::config/app.json support.email is not set", out)
+        code, out = self.check("services", {"supabase.url": "https://abcdefghijklmnopqrst.supabase.co", "support.email": "help@example.com"},
+                               FLY_API_TOKEN="t", SUPABASE_SERVICE_ROLE_KEY="k")
+        self.assertNotIn("support.email", out)
+
     def test_play_checks_the_firebase_file_names_the_app(self):
         firebase = {"client": [{"client_info": {"android_client_info": {"package_name": "com.other.app"}}}]}
         code, out = self.check("play", self.ready, ANDROID_GOOGLE_SERVICES_JSON=json.dumps(firebase),

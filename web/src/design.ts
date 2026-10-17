@@ -44,6 +44,17 @@ export const REQUIRED_COPY = [
   "invite.web.error.body",
   "invite.web.error.retry",
   "invite.web.rateLimited.body",
+  // account.delete.web (GET /delete-account) and the footer's Contact Us
+  "settings.account.delete",
+  "settings.account.delete.footer",
+  "settings.account.delete.subscriptionNote",
+  "account.delete.web.inApp",
+  "account.delete.web.kept",
+  "account.delete.web.request",
+  "groups.list.tab.me.accessibilityLabel",
+  "settings.root.title",
+  "settings.root.account",
+  "settings.root.contact",
 ] as const;
 export type RequiredCopyKey = (typeof REQUIRED_COPY)[number];
 

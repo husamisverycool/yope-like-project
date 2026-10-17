@@ -46,7 +46,8 @@ final class AppConfigurationTests: XCTestCase {
           "supabase": { "url": "https://abc.supabase.co", "anonKey": "" },
           "revenuecat": { "iosApiKey": null, "entitlement": "premium" },
           "premium": { "productIds": { "monthly": "m", "yearly": "y" } },
-          "legal": { "privacyUrl": null }
+          "legal": { "privacyUrl": null },
+          "support": { "email": "help@example.test", "level": "OWNER" }
         }
         """.utf8)
         let configuration = try AppConfiguration.load(from: json)
@@ -59,6 +60,9 @@ final class AppConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.premiumEntitlement, "premium")
         XCTAssertEqual(configuration.monthlyProductID, "m")
         XCTAssertNil(configuration.termsURL)
+        XCTAssertEqual(configuration.supportEmail, "help@example.test")
+        XCTAssertEqual(configuration.supportMailURL?.absoluteString, "mailto:help@example.test")
+        XCTAssertNil(AppConfiguration().supportMailURL, "no address: no Contact Us mail")
         XCTAssertEqual(DeepLinkParser(configuration: configuration).parse(URL(string: "https://example.test/i/t")!), .invite(token: "t"))
     }
 

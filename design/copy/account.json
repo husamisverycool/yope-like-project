@@ -4261,6 +4261,34 @@
       "pattern": "retro.voice.progress",
       "level": "PLATFORM",
       "notes": "Announcement / label of C-28 loading forms and busy capsules (C-05). Retro has no 'Loading' string."
+    },
+    "account.delete.web.inApp": {
+      "text": "In {app_name}, go to {path}.",
+      "origin": "new",
+      "source_app": "Google Play",
+      "surface": "account.delete.web",
+      "evidence": "https://support.google.com/googleplay/android-developer/answer/13327111 (the web resource must \"prominently reference the app or developer name\" and \"prominently feature the steps users should take\"); the path is the in-app rows' own copy (groups.list.tab.me.accessibilityLabel, settings.root.title, settings.root.account, settings.account.delete) joined by \" > \" as Apple and Google support pages write paths (\"Settings > General\", support.apple.com)",
+      "pattern": "retro.voice.explanation",
+      "level": "VERIFIED",
+      "notes": "{path}: the four row names joined by \" > \" (design/surfaces/account.delete.web.md)"
+    },
+    "account.delete.web.kept": {
+      "text": "Your profile and everything you added go with it, and nothing is kept.",
+      "origin": "new",
+      "source_app": "Google Play",
+      "surface": "account.delete.web",
+      "evidence": "https://support.google.com/googleplay/android-developer/answer/13327111 (\"specify the types of data that are deleted or kept, and any additional retention period\"); docs/API.md delete_account and docs/PRIVACY_LABELS.md (everything is deleted)",
+      "pattern": "retro.voice.explanation",
+      "level": "VERIFIED"
+    },
+    "account.delete.web.request": {
+      "text": "No longer have the app? Write to {email} with your account's phone number and we'll delete your account for you.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "account.delete.web",
+      "evidence": "design/copy-patterns.md retro.voice.second-person (\"we\" when the app must speak) and retro.voice.error's web line \"Need help or a new link? Contact the person who sent you this package.\" (retro.app /downloads, references/auto/retro/web/retro.app-web-copy-excerpts.txt): a question, then what to do; Google Play's requirement of a way to request deletion without the app (support.google.com/googleplay/android-developer/answer/13327111)",
+      "pattern": "retro.voice.second-person",
+      "level": "SOURCED"
     }
   }
 }

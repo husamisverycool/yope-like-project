@@ -19,6 +19,8 @@ public struct AppConfiguration: Hashable, Sendable {
     public var yearlyProductID: String?
     public var privacyURL: URL?
     public var termsURL: URL?
+    /// `support.email`: Settings → Contact Us (a mail to this address); nil until the owner sets it.
+    public var supportEmail: String?
 
     public init(
         displayName: String? = nil,
@@ -32,7 +34,8 @@ public struct AppConfiguration: Hashable, Sendable {
         monthlyProductID: String? = nil,
         yearlyProductID: String? = nil,
         privacyURL: URL? = nil,
-        termsURL: URL? = nil
+        termsURL: URL? = nil,
+        supportEmail: String? = nil
     ) {
         self.displayName = displayName
         self.domain = domain
@@ -46,6 +49,13 @@ public struct AppConfiguration: Hashable, Sendable {
         self.yearlyProductID = yearlyProductID
         self.privacyURL = privacyURL
         self.termsURL = termsURL
+        self.supportEmail = supportEmail
+    }
+
+    /// `mailto:` for Contact Us; nil without a support address (or one that does not form a URL).
+    public var supportMailURL: URL? {
+        guard let supportEmail, supportEmail.contains("@"), !supportEmail.contains(where: \.isWhitespace) else { return nil }
+        return URL(string: "mailto:\(supportEmail)")
     }
 
     public static func load(from data: Data) throws -> AppConfiguration {
@@ -62,7 +72,8 @@ public struct AppConfiguration: Hashable, Sendable {
             monthlyProductID: file.premium?.productIds?.monthly.nonEmpty,
             yearlyProductID: file.premium?.productIds?.yearly.nonEmpty,
             privacyURL: file.legal?.privacyUrl.nonEmpty.flatMap(URL.init(string:)),
-            termsURL: file.legal?.termsUrl.nonEmpty.flatMap(URL.init(string:))
+            termsURL: file.legal?.termsUrl.nonEmpty.flatMap(URL.init(string:)),
+            supportEmail: file.support?.email.nonEmpty
         )
     }
 
@@ -85,6 +96,7 @@ public struct AppConfiguration: Hashable, Sendable {
             var productIds: ProductIDs?
         }
         struct Legal: Decodable { var privacyUrl: String?; var termsUrl: String? }
+        struct Support: Decodable { var email: String? }
 
         var displayName: Leveled?
         var domain: Leveled?
@@ -93,6 +105,7 @@ public struct AppConfiguration: Hashable, Sendable {
         var revenuecat: RevenueCat?
         var premium: Premium?
         var legal: Legal?
+        var support: Support?
     }
 }
 

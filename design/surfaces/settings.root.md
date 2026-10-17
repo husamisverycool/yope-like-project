@@ -45,7 +45,8 @@ Header: centred `settings.root.title` (`sheetTitle`) + trailing close circle (C-
 6. **System Permissions** (`settings.root.permissions.header`): rows `settings.root.permissions.camera`, `.photos` (iOS),
    `.microphone`, `.contacts`, `.notifications`; trailing value `settings.root.permissions.denied` (`listSubtitle`,
    `color.global.textSecondary`) when denied, else none; chevron; each row → the app's page in system Settings.
-7. **About** (`settings.root.about.header`): rows `settings.root.contact` (mailto: owner support address),
+7. **About** (`settings.root.about.header`): rows `settings.root.contact` (mailto: `config/app.json` `support.email`; iOS
+   disabled, Android left out, until the owner sets it),
    `settings.root.privacy`, `settings.root.terms` (in-app browser), `settings.root.version` (trailing value = version,
    no chevron, not tappable).
 8. Last group (no header): row `settings.root.signOut` (text `color.global.textPrimary`).
@@ -121,4 +122,4 @@ Row presses → `haptic.global.tap` (Android). The True Black switch (Android) �
 |---|---|---|
 | Settings at full resolution | video frames only | raw screenshots of Retro's Settings (top + scrolled), light and dark (RV §6) |
 | Widgets carousel | one widget kind here → one row with a preview | — |
-| support e-mail, legal URLs | owner (`config/app.json`) | — |
+| support e-mail (`support.email`), legal URLs | owner (`config/app.json`; docs/OWNER_SETUP.md §8) | — |

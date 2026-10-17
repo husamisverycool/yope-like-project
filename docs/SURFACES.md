@@ -136,6 +136,7 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 | `settings.root` | Settings | 28 (settings sheet: profile card, grouped Fill rows, section headers, chevrons) | Apple HIG / Material 3 (switches, pickers) |
 | `settings.notifications` | Per-group mute, quiet hours | 28 (Notification Settings rows; "Pause All") | Apple HIG / Material 3 |
 | `settings.account` | Account, delete account | 28 (Account section; "Delete Account" red row) | Apple HIG / Material 3 |
+| `account.delete.web` | Web page for deleting an account without the app (`GET /delete-account`, Google Play requirement) | 35 — the invite page's state card / column | Google Play account deletion requirements |
 | `settings.blocked` | Blocked people | 28 + 9 (people rows) | Apple HIG / Material 3 |
 | `paywall` | Premium screen and perks; at most one prompt per session | 27 (Retro Premium paywall, RAW: glass close, serif headline, plan card on blurred backdrop, 60 pt capsule, "Cancel anytime") | StoreKit / Play Billing (purchase sheet, PLATFORM) |
 | `safety.report` | Report flow | 24 (native menu, red destructive) + Retro report sheet copy ("Why are you reporting this post?") | Apple HIG / Material 3 |

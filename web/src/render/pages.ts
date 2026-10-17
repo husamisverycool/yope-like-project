@@ -38,6 +38,8 @@ export interface PageContext {
   smartBanner: string | null;
   termsUrl: string | null;
   privacyUrl: string | null;
+  /** config/app.json support.email: "Contact Us" in the footer and the deletion request; null until set. */
+  supportEmail: string | null;
 }
 
 /** How many avatars of `diameter` overlapping by `overlap` fit in `width` (C-23: never a "+N"). */
@@ -83,8 +85,13 @@ function footer(ctx: PageContext, withDownload = false): string {
   const download = withDownload && ctx.mobileAppStoreUrl
     ? `<span class="mobile-only">${link(ctx.mobileAppStoreUrl, `class="hit"`, esc(text("invite.web.getApp")), "ios.appStoreId")}&nbsp;·&nbsp;</span>`
     : "";
-  return `<footer class="footer">${download}${terms}&nbsp;&amp;&nbsp;${privacy}</footer>`;
+  // "Contact Us" (Retro's settings row, settings.root.contact) after Privacy with the same separator, once the owner
+  // has set the support address.
+  const contact = ctx.supportEmail ? `&nbsp;·&nbsp;<a class="hit" href="${esc(mailto(ctx.supportEmail))}">${esc(text("settings.root.contact"))}</a>` : "";
+  return `<footer class="footer">${download}${terms}&nbsp;&amp;&nbsp;${privacy}${contact}</footer>`;
 }
+
+const mailto = (address: string): string => `mailto:${address}`;
 
 const BUSY_SCRIPT = `for(const a of document.querySelectorAll("a.pill[href][data-opens]"))a.addEventListener("click",()=>a.setAttribute("aria-busy","true"));addEventListener("pageshow",()=>{for(const a of document.querySelectorAll("a.pill[aria-busy]"))a.removeAttribute("aria-busy")});`;
 
@@ -158,6 +165,51 @@ ${footer(ctx, true)}
 </main>
 </div>
 <script nonce="${ctx.nonce}">${BUSY_SCRIPT}</script>
+</body>
+</html>
+`;
+}
+
+/**
+ * account.delete.web (`GET /delete-account`, design/surfaces/account.delete.web.md): the web page Google Play requires
+ * for deleting an account without the app. The state page's card / column: the headline, how to delete in the app (the
+ * rows' own names), what goes, the subscription note, and — once the owner set support.email — how to ask by email,
+ * with "Contact Us" as the pill (mobile) and link (desktop).
+ */
+export function deleteAccountPage(ctx: PageContext): string {
+  const heading = text("settings.account.delete");
+  const path = [
+    text("groups.list.tab.me.accessibilityLabel"),
+    text("settings.root.title"),
+    text("settings.root.account"),
+    text("settings.account.delete"),
+  ].join(" > ");
+  const lines = [
+    text("account.delete.web.inApp", { path, ...(ctx.appName ? { app_name: ctx.appName } : {}) }),
+    `${text("settings.account.delete.footer")} ${text("account.delete.web.kept")}`,
+    text("settings.account.delete.subscriptionNote"),
+  ].map((line) => `<p class="line">${esc(line)}</p>\n`);
+  let request = "";
+  let action = "";
+  if (ctx.supportEmail) {
+    const [before, after] = text("account.delete.web.request").split("{email}");
+    const address = `<a href="${esc(mailto(ctx.supportEmail))}">${esc(ctx.supportEmail)}</a>`;
+    request = `<p class="line">${esc(before ?? "")}${address}${esc(after ?? "")}</p>\n`;
+    action = `<a class="pill mobile-only" href="${esc(mailto(ctx.supportEmail))}">${esc(text("settings.root.contact"))}</a>
+<a class="link hit desktop-only" href="${esc(mailto(ctx.supportEmail))}">${esc(text("settings.root.contact"))}</a>
+`;
+  }
+  return `${head(ctx, title(ctx, heading))}
+<body>
+<div class="page">
+<main class="card">
+<div class="hero"></div>
+<div class="text">
+<h1 class="headline">${esc(heading)}</h1>
+${lines.join("")}${request}</div>
+${action}${footer(ctx)}
+</main>
+</div>
 </body>
 </html>
 `;

@@ -108,6 +108,14 @@ def check_android_key() -> None:
     check_key_password()
 
 
+def support_warning() -> str | None:
+    email = ((config.get("support") or {}).get("email") or "").strip()
+    if email:
+        return None
+    return ("config/app.json support.email is not set: Google Play requires a way to ask for account deletion without the "
+            "app — the page /delete-account shows the address, and Settings → Contact Us uses it (OWNER_SETUP.md §8.3)")
+
+
 def check_play() -> None:
     # Store identity (app_identity.py has put the run's package name into config/app.json).
     package = (config.get("android") or {}).get("applicationId") or ""
@@ -162,6 +170,9 @@ def check_play() -> None:
 
     if not (config.get("displayName") or {}).get("value"):
         missing.append("config/app.json displayName is not set — the name under the app's icon (OWNER_SETUP.md §0.1)")
+    support = support_warning()
+    if support:
+        warnings.append(support)
     problem = domain_problem()
     if problem:
         missing.append(problem)
@@ -250,6 +261,9 @@ def check_services() -> None:
     web = web_problems()
     for line in web:
         warnings.append(f"The invite page waits: {line}")
+    support = support_warning()
+    if support:
+        warnings.append(support)
     # For the workflow's later steps: outputs for `if:` conditions, environment variables for scripts.
     for name, value in (("worker_app", worker_app), ("web_app", web_app), ("web", "wait" if web else "ready")):
         set_output(name, value)

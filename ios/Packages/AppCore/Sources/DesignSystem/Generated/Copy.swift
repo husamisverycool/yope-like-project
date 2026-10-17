@@ -3,6 +3,12 @@
 import Foundation
 
 public enum Copy {
+    /// "In Jolt, go to {path}." — Google Play · account.delete.web · new · VERIFIED
+    public static func accountDeleteWebInApp(path: String) -> String { CopyLookup.format("account.delete.web.inApp", default: "In Jolt, go to {path}.", ["path": path]) }
+    /// "Your profile and everything you added go with it, and nothing is kept." — Google Play · account.delete.web · new · VERIFIED
+    public static var accountDeleteWebKept: String { CopyLookup.string("account.delete.web.kept", default: "Your profile and everything you added go with it, and nothing is kept.") }
+    /// "No longer have the app? Write to {email} with your account's phone number and we'll delete your account for you." — Retro · account.delete.web · new · SOURCED
+    public static func accountDeleteWebRequest(email: String) -> String { CopyLookup.format("account.delete.web.request", default: "No longer have the app? Write to {email} with your account's phone number and we'll delete your account for you.", ["email": email]) }
     /// "View recaps" — Retro · albums.list · new · SOURCED
     public static var albumsListEmptyAction: String { CopyLookup.string("albums.list.empty.action", default: "View recaps") }
     /// "Save the photos of a week as an album from its recap." — Retro · albums.list · new · SOURCED

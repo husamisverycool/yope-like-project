@@ -41,6 +41,8 @@ export interface AppIdentity {
     sha256CertFingerprints: string[];
   };
   legal: { privacyUrl: string | null; termsUrl: string | null };
+  /** The address people write to (Contact Us, account deletion requests); null until the owner sets it. */
+  support: { email: string | null };
 }
 
 export interface Config {
@@ -75,6 +77,8 @@ const TEAM_RE = /^[A-Z0-9]{10}$/;
 const BUNDLE_RE = /^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
 const FINGERPRINT_RE = /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/;
 const APP_STORE_ID_RE = /^[0-9]{6,12}$/;
+/** A plain mailbox address: no spaces, one "@", a dotted domain (it becomes a mailto: link). */
+const EMAIL_RE = /^[^\s@<>"]+@([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i;
 
 /** Parses config/app.json. Malformed values are errors in every mode; missing ones are BLOCKED. */
 export function parseAppIdentity(json: any): AppIdentity {
@@ -105,12 +109,15 @@ export function parseAppIdentity(json: any): AppIdentity {
     if (u.protocol !== "https:") throw new Error(`config/app.json ${name} must be https`);
     return u.toString();
   };
+  const supportEmail = str(json?.support?.email);
+  if (supportEmail && !EMAIL_RE.test(supportEmail)) throw new Error(`config/app.json support.email ${JSON.stringify(supportEmail)} is not an email address`);
   return {
     displayName,
     domain: domain ? domain.toLowerCase() : null,
     ios: { bundleId, teamId, appStoreId },
     android: { applicationId, sha256CertFingerprints: (fingerprints as string[]).map((f) => f.toUpperCase()) },
     legal: { privacyUrl: url(json?.legal?.privacyUrl, "legal.privacyUrl"), termsUrl: url(json?.legal?.termsUrl, "legal.termsUrl") },
+    support: { email: supportEmail },
   };
 }
 

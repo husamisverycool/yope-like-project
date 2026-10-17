@@ -190,11 +190,12 @@ struct SettingsRootScreen: View {
 
     // MARK: About
 
-    /// Contact Us (mail to the owner's support address, not configured yet: disabled), Privacy Policy and Terms of Use (the
-    /// in-app browser; disabled while config/app.json has no URL), Version (static value).
+    /// Contact Us (a mail to config/app.json support.email; disabled until the owner sets it), Privacy Policy and Terms of
+    /// Use (the in-app browser; disabled while config/app.json has no URL), Version (static value).
     private var aboutSection: some View {
-        SettingsGroup(header: Copy.settingsRootAboutHeader, rows: [
-            SettingsRow(Copy.settingsRootContact, kind: .button {}, isEnabled: false).asSettingsRow(),
+        let mail = dependencies.configuration.supportMailURL
+        return SettingsGroup(header: Copy.settingsRootAboutHeader, rows: [
+            SettingsRow(Copy.settingsRootContact, kind: .button { if let mail { openURL(mail) } }, isEnabled: mail != nil).asSettingsRow(),
             legalRow(Copy.settingsRootPrivacy, url: dependencies.configuration.privacyURL),
             legalRow(Copy.settingsRootTerms, url: dependencies.configuration.termsURL),
             SettingsRow(Copy.settingsRootVersion, value: Self.appVersion, kind: .value).asSettingsRow(),

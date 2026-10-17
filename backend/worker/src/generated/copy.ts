@@ -2,6 +2,9 @@
 // Every string below is traced in design/COPY.md.
 
 const table = {
+  "account.delete.web.inApp": "In Jolt, go to {path}.", // Google Play · account.delete.web · VERIFIED
+  "account.delete.web.kept": "Your profile and everything you added go with it, and nothing is kept.", // Google Play · account.delete.web · VERIFIED
+  "account.delete.web.request": "No longer have the app? Write to {email} with your account's phone number and we'll delete your account for you.", // Retro · account.delete.web · SOURCED
   "albums.list.empty.action": "View recaps", // Retro · albums.list · SOURCED
   "albums.list.empty.detail": "Save the photos of a week as an album from its recap.", // Retro · albums.list · SOURCED
   "albums.list.empty.title": "Nothing to see here yet", // Retro · albums.list · SOURCED

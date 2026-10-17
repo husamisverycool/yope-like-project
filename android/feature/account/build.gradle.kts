@@ -25,7 +25,7 @@ android {
     defaultConfig {
         buildConfigField("String", "LEGAL_TERMS_URL", quoted(configString("legal", "termsUrl")))
         buildConfigField("String", "LEGAL_PRIVACY_URL", quoted(configString("legal", "privacyUrl")))
-        // Support address for "Contact Us" (settings.root Gaps: not in config/app.json yet).
+        // Support address for "Contact Us": config/app.json support.email (null until the owner sets it: the row is left out).
         buildConfigField("String", "SUPPORT_EMAIL", quoted(configString("support", "email")))
         buildConfigField("String", "APPLICATION_ID", quoted(configString("android", "applicationId")))
         // Store product ids (settings.root "Your Subscription" subtitle: Annual / Monthly).

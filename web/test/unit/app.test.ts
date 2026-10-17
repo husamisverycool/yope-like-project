@@ -420,6 +420,44 @@ describe("preview.json (App Clip and apps before joining)", () => {
   });
 });
 
+describe("GET /delete-account (account.delete.web, Google Play's deletion page)", () => {
+  const SUPPORT = { ...FULL_APP_JSON, displayName: { value: "Jolt" }, support: { email: "help@example.com" } };
+  const path = [c["groups.list.tab.me.accessibilityLabel"], c["settings.root.title"], c["settings.root.account"], c["settings.account.delete"]].join(" > ");
+
+  it("names the app, the steps in the app, what goes and how to ask without the app", async () => {
+    const res = await get(testApp(null, {}, SUPPORT).app, "/delete-account");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("text/html; charset=utf-8");
+    const html = await res.text();
+    expect(html).toContain(`<h1 class="headline">${c["settings.account.delete"]}</h1>`);
+    const text = visibleText(html);
+    expect(text).toContain(c["account.delete.web.inApp"]!.replace("{path}", path));
+    expect(text).toContain(`${c["settings.account.delete.footer"]} ${c["account.delete.web.kept"]}`);
+    expect(text).toContain(c["settings.account.delete.subscriptionNote"]);
+    expect(text).toContain(c["account.delete.web.request"]!.replace("{email}", "help@example.com"));
+    expect(html).toContain(`<a class="pill mobile-only" href="mailto:help@example.com">${c["settings.root.contact"]}</a>`);
+    expect(html).toContain(`<a class="link hit desktop-only" href="mailto:help@example.com">${c["settings.root.contact"]}</a>`);
+    expect(text).not.toMatch(/\[BLOCKED/);
+  });
+
+  it("without a support address: the steps in the app only, no request line or button", async () => {
+    const html = await (await get(testApp(null).app, "/delete-account")).text();
+    expect(html).not.toContain("mailto:");
+    expect(html).toContain(`<h1 class="headline">${c["settings.account.delete"]}</h1>`);
+  });
+
+  it("footer: Contact Us after Terms & Privacy once support.email is set (every page)", async () => {
+    const contact = `&nbsp;·&nbsp;<a class="hit" href="mailto:help@example.com">${c["settings.root.contact"]}</a></footer>`;
+    expect(await page(preview(), ANDROID, SUPPORT)).toContain(contact);
+    expect(await (await get(testApp(fake(preview()), {}, SUPPORT).app, "/i/unknownTokenAAAAAAAAAAAAA", DESKTOP)).text()).toContain(contact);
+    expect(await page(preview(), ANDROID)).not.toContain("mailto:");
+  });
+
+  it("refuses a malformed support address", () => {
+    expect(() => testApp(null, {}, { ...FULL_APP_JSON, support: { email: "not an address" } })).toThrow(/support.email/);
+  });
+});
+
 describe("security headers", () => {
   it("sets a nonce-based CSP and the standard headers on pages", async () => {
     const res = await get(testApp(fake()).app, `/i/${TOKEN}`);
