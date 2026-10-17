@@ -95,6 +95,11 @@ final class PhotoViewerModel {
     private(set) var isSendingReply = false
     private(set) var signals = SocialSignals()
     var replyDraft = ""
+    /// photo.viewer.layout.video: videos play with sound once the person turns it on, for every video until the viewer
+    /// closes (muted until then).
+    var videoSoundOn = false
+    /// Each "Play" (the circle, or the photo's VoiceOver action) on a video without autoplay.
+    var videoPlayRequests = 0
 
     init(context: PhotoViewerContext, data: any SocialDataSource) {
         self.data = data

@@ -612,7 +612,7 @@
         "height": "the photo's own aspect ratio, never cropped",
         "tall": "a photo taller than the space between the header and the footer is scaled down to fit and centred (letterboxed on color.global.backgroundDeep)",
         "corners": "radius.global.photo (square)",
-        "live": "a Live Photo plays while pressed (platform Live Photo view); a dual capture shows as daily.dualimage"
+        "live": "a Live Photo plays while pressed (photo.viewer.layout.livePhoto); a video plays in the frame (photo.viewer.layout.video); a dual capture shows as daily.dualimage"
       },
       "source_app": "Retro",
       "surface": "photo.viewer",
@@ -620,6 +620,77 @@
       "evidence": "references/auto/retro/press/tc-2023-07-retro-2b.jpg (phone 2: photo full width, x 1320–2188, 3:4); references/auto/retro/web/retro.app-42b38811bebcd07d.css (.immersiveViewer_mediaContainer mobile: width 100vw, border-radius 0; img object-fit: contain)",
       "method": "read from the capture and the web CSS",
       "level": "SOURCED"
+    },
+    "photo.viewer.layout.video": {
+      "type": "layout",
+      "value": {
+        "frame": "the photo frame of photo.viewer.layout.photo at the video's own aspect (aspect fit, letterboxed on color.global.backgroundDeep); the poster (display rendition) shows until the first frame is drawn",
+        "autoplay": "starts muted when its page shows and loops (Retro's viewer: autoPlay \"muted\", loop)",
+        "taps": "unchanged: photo.viewer.layout.advance / .backZone go forward and back over a video too (Retro on a phone); long press opens the menu",
+        "sound": "C-11 glass circle (size.global.circleButtonPhoto, color.global.glass) at the visible video's bottom-trailing corner, size.global.screenMargin in on both axes (the selfie stack's mirror): icon.photo.viewer.soundOff while muted, icon.photo.viewer.soundOn with sound; a tap toggles; the choice holds for every video until the viewer closes",
+        "audio": "muted: no audio focus, mixes with other apps (iOS AVAudioSession .ambient); with sound — started by the person — plays even in silent mode (iOS .playback) and takes the media audio focus (Android USAGE_MEDIA / CONTENT_TYPE_MOVIE); pauses when headphones are disconnected",
+        "pause": "when its page changes, the viewer closes, the app goes to the background, or the selfie capture layer opens",
+        "reduceMotion": "Reduce Motion (layout.global.reduceMotion) or iOS Auto-Play Video Previews off (UIAccessibility.isVideoAutoplayEnabled): no autoplay; a C-11 glass circle with icon.global.play centred on the video starts it once, with sound (no loop); at its end the circle returns",
+        "error": "the video cannot be played: photo.viewer.error.load over the poster (tap retries)"
+      },
+      "source_app": "Retro (web viewer) + Apple HIG / Android audio focus",
+      "surface": "photo.viewer",
+      "element": "a video post in the viewer",
+      "evidence": "references/auto/retro/web/retro.app-viewer-and-hero-js-excerpts.txt §1 and https://retro.app/_next/static/chunks/pages/j/%5BjournalSlug%5D-dafa8851fc588797.js (album page immersive viewer, read as View Source shows it, 2026-10-17): the video is a Mux player with loop:!0, autoPlay:\"muted\", shown once onCanPlay fires (the photo img until then); the media container's onClick on a phone (u) always goes back (clientX < 0.2 × width) or forward, even on the player; references/auto/retro/web/retro.app-42b38811bebcd07d.css .immersiveViewer_muxPlayer{--seek-backward-button:none;--seek-forward-button:none;--live-button:none;--captions-button:none;--playback-rate-button:none;--rendition-selectmenu:none;--fullscreen-button:none;--media-object-fit:cover} {--volume-range:none}: of the player's controls only play / time / mute remain; https://developer.apple.com/design/human-interface-guidelines/playing-audio (\"When a device is in silent mode, it plays only the audio that people explicitly initiate, like media playback\"; \"when disconnecting headphones, they expect playback to pause immediately\"; ambient: \"doesn't silence other audio\"; playback: \"Doesn't respond to the silence switch\"); https://developer.android.com/media/optimize/audio-focus (request focus with AudioAttributes USAGE_MEDIA; \"Don't be noisy\": pause on ACTION_AUDIO_BECOMING_NOISY); https://developer.apple.com/documentation/uikit/uiaccessibility/isvideoautoplayenabled; https://www.adweek.com/digital/audio-instagram-auto-play-videos-tweak/ (2017: once sound is turned on it stays on for later videos in the session)",
+      "method": "Retro's viewer mechanics (read from its public page script) on the platforms' audio rules",
+      "level": "SOURCED",
+      "notes": "Retro's web player keeps its own control bar (play, time, mute); the apps draw only the mute toggle (tap belongs to the viewer) and, without autoplay, the play circle a system player shows when paused."
+    },
+    "photo.viewer.layout.livePhoto": {
+      "type": "layout",
+      "value": {
+        "play": "touch and hold the photo plays its motion with its sound (iOS PHLivePhotoView .full; Android the motion movie over the still), release stops; under Reduce Motion too (the person starts it)",
+        "menu": "on a Live Photo the long press plays it, so the menu and quick reactions are the field's \"•••\" and the add-reaction glyph (both already on the page); VoiceOver / TalkBack get photo.viewer.a11y.play as a custom action",
+        "badge": "the system Live Photo badge over the content (iOS PHLivePhotoView.livePhotoBadgeImage(options: .overContent); Android icon.photo.viewer.livePhoto in color.global.textOnMedia, size.global.icon) at the visible photo's top-leading corner, size.global.videoPillInset in — iOS once the still and its motion are loaded into the Live Photo view; Android with the still (the motion streams when held)"
+      },
+      "source_app": "Apple HIG (Live Photos)",
+      "surface": "photo.viewer",
+      "element": "a Live Photo in the viewer",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-photos (\"People press a Live Photo to see it spring to life\"; \"In cases where movement isn't possible, show a system-provided badge above the photo\"; \"Typically, a badge looks best in a corner of a photo\"; \"Never include a playback button that a viewer can interpret as a video playback button\"); support.apple.com/guide/iphone (Photos: \"touch and hold the photo to play it\")",
+      "method": "platform rules",
+      "level": "PLATFORM",
+      "notes": "Android has no Live Photo view: the still with the paired movie played on hold (docs/PLATFORM_CONSTRAINTS.md \"still + short video\"). Capture of motion photos on Android is not built (CameraX has no motion-photo capture)."
+    },
+    "icon.photo.viewer.soundOff": {
+      "level": "PLATFORM",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "type": "icon",
+      "value": {
+        "ios": "speaker.slash.fill",
+        "android": "AutoMirrored.Rounded.VolumeOff"
+      },
+      "element": "sound toggle while a video plays muted",
+      "evidence": "references/auto/retro/web/retro.app-42b38811bebcd07d.css .immersiveViewer_muxPlayer{--seek-backward-button:none;--seek-forward-button:none;--live-button:none;--captions-button:none;--playback-rate-button:none;--rendition-selectmenu:none;--fullscreen-button:none;--media-object-fit:cover} {--volume-range:none}: of the player's controls only play / time / mute remain (the Mux player's mute button: a speaker glyph); SF Symbols / Material Symbols names checked in material-icons-extended 1.7.8 (Gradle cache, this pass)"
+    },
+    "icon.photo.viewer.soundOn": {
+      "level": "PLATFORM",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "type": "icon",
+      "value": {
+        "ios": "speaker.wave.2.fill",
+        "android": "AutoMirrored.Rounded.VolumeUp"
+      },
+      "element": "sound toggle while a video plays with sound",
+      "evidence": "references/auto/retro/web/retro.app-42b38811bebcd07d.css .immersiveViewer_muxPlayer{--seek-backward-button:none;--seek-forward-button:none;--live-button:none;--captions-button:none;--playback-rate-button:none;--rendition-selectmenu:none;--fullscreen-button:none;--media-object-fit:cover} {--volume-range:none}: of the player's controls only play / time / mute remain; material-icons-extended 1.7.8 (Gradle cache, this pass)"
+    },
+    "icon.photo.viewer.livePhoto": {
+      "level": "PLATFORM",
+      "source_app": "Apple HIG / Material Symbols",
+      "surface": "photo.viewer",
+      "type": "icon",
+      "value": {
+        "ios": "livephoto",
+        "android": "Rounded.MotionPhotosOn"
+      },
+      "element": "Live Photo badge (Android; iOS draws PHLivePhotoView.livePhotoBadgeImage)",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/live-photos (\"People press a Live Photo to see it spring to life\"; \"In cases where movement isn't possible, show a system-provided badge above the photo\"; \"Typically, a badge looks best in a corner of a photo\"; \"Never include a playback button that a viewer can interpret as a video playback button\"); Material Symbols \"motion_photos_on\" (Google Photos' motion photo glyph); material-icons-extended 1.7.8 (Gradle cache, this pass)"
     },
     "photo.viewer.layout.advance": {
       "type": "layout",

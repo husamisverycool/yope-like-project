@@ -47,6 +47,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -103,6 +104,9 @@ import app.feature.memory.tagging.TagRun
 import app.feature.memory.tagging.TaggedPerson
 import app.feature.social.common.PhotoSaveUi
 import app.feature.social.common.RemotePhoto
+import app.ui.foundation.reduceMotion
+import app.feature.social.common.videoDurationMs
+import app.feature.social.common.withVideoLabel
 import app.ui.media.DualImage
 import app.feature.social.common.SystemAppearance
 import app.feature.social.common.announce
@@ -176,6 +180,12 @@ class ViewerUiState(
 
     /** The person whose selfie the remove confirmation is about (your own photo). */
     var confirmRemoveSelfie by mutableStateOf(confirmRemoveSelfie)
+
+    /** Videos play with sound: off until the person turns it on, then on for every video until the viewer closes. */
+    var videoSound by mutableStateOf(false)
+
+    /** Each "Play" (the circle or the photo's TalkBack action) on a video without autoplay. */
+    var videoPlayRequests by mutableStateOf(0)
 }
 
 @Composable
@@ -242,27 +252,30 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         }
     }
 
-    PhotoViewerContent(
-        state = state,
-        ui = ui,
-        nav = nav,
-        voice = VoiceUi(playback, loadingKey, failedKeys, computedLevels, onPlay),
-        onNext = { haptics.tap(); vm.next() },
-        onPrevious = { haptics.tap(); vm.previous() },
-        onRetry = vm::retryLoad,
-        onDraft = vm::setDraft,
-        onSend = vm::sendReply,
-        onReact = vm::react,
-        onUnreact = vm::unreact,
-        onPhotoGone = vm::markGone,
-        // A photo leaves the app only when it is your own (owner decision 12).
-        onSave = { if (state.mine) state.current?.media?.originalPath?.let(save) },
-        onDelete = { haptics.perform(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
-        onUnsendComment = { id -> haptics.perform(Tokens.Haptics.globalWarning); vm.unsendComment(id) },
-        onSendSelfie = vm::sendSelfie,
-        onSelfieFailed = { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.selfieFailed) },
-        onRemoveSelfie = vm::removeSelfie,
-    )
+    val viewerPlayback = rememberViewerPlayback()
+    CompositionLocalProvider(LocalViewerPlayback provides viewerPlayback) {
+        PhotoViewerContent(
+            state = state,
+            ui = ui,
+            nav = nav,
+            voice = VoiceUi(playback, loadingKey, failedKeys, computedLevels, onPlay),
+            onNext = { haptics.tap(); vm.next() },
+            onPrevious = { haptics.tap(); vm.previous() },
+            onRetry = vm::retryLoad,
+            onDraft = vm::setDraft,
+            onSend = vm::sendReply,
+            onReact = vm::react,
+            onUnreact = vm::unreact,
+            onPhotoGone = vm::markGone,
+            // A photo leaves the app only when it is your own (owner decision 12).
+            onSave = { if (state.mine) state.current?.media?.originalPath?.let(save) },
+            onDelete = { haptics.perform(Tokens.Haptics.globalWarning); vm.deleteEverywhere() },
+            onUnsendComment = { id -> haptics.perform(Tokens.Haptics.globalWarning); vm.unsendComment(id) },
+            onSendSelfie = vm::sendSelfie,
+            onSelfieFailed = { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.selfieFailed) },
+            onRemoveSelfie = vm::removeSelfie,
+        )
+    }
 }
 
 private class ViewerTexts(
@@ -502,7 +515,19 @@ private fun PhotoArea(
     val backZone = Tokens.Layouts.PhotoViewerLayoutBackZone.fraction
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val date = photo.post?.let { Formats.viewerDate(it.createdAt, photo.zone ?: java.time.ZoneId.systemDefault()) }.orEmpty()
-    val label = if (state.mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, photo.author?.firstName.orEmpty(), date)
+    val photoLabel = if (state.mine) stringRes(R.string.photo_viewer_a11y_photomine, date) else stringRes(R.string.photo_viewer_a11y_photo, photo.author?.firstName.orEmpty(), date)
+    val label = withVideoLabel(LocalContext.current, photoLabel, media?.videoDurationMs)
+    // photo.viewer.layout.livePhoto: touch and hold plays the motion (the menu stays on the field's "•••").
+    val live = media?.isLivePhoto == true && front == null
+    var holding by remember(photo.postId) { mutableStateOf(false) }
+    var playOnce by remember(photo.postId) { mutableStateOf(false) }
+    val viewerPlayback = LocalViewerPlayback.current
+    LaunchedEffect(viewerPlayback?.ended, playOnce) { if (playOnce && viewerPlayback?.ended == true) playOnce = false }
+    val playLabel = stringRes(R.string.photo_viewer_a11y_play)
+    val autoplay = !reduceMotion()
+    val video = media?.isVideo == true
+    val waitsForPlay = video && videoWaitsForPlay(autoplay)
+    val soundLabel = stringRes(if (ui.videoSound) R.string.photo_viewer_a11y_mute else R.string.photo_viewer_a11y_unmute)
     val caption = photo.post?.caption?.takeIf { it.isNotBlank() }?.let { stringRes(R.string.chat_thread_a11y_caption, it) }
     val nextLabel = stringRes(R.string.photo_viewer_a11y_next)
     val previousLabel = stringRes(R.string.photo_viewer_a11y_previous)
@@ -518,15 +543,20 @@ private fun PhotoArea(
         val height = min(natural, area)
         // A letterboxed photo: the stack sits on the visible image's edges (`viewer.selfiereaction.layout.stack` anchor).
         val visibleWidth = if (aspect != null) min(maxWidth, height * aspect) else maxWidth
+        val letterbox = (maxWidth - visibleWidth) / 2
         Box(
             Modifier
                 .fillMaxWidth()
                 .height(height)
                 .testTag("viewer.photo")
-                .pointerInput(backZone, rtl) {
+                .pointerInput(backZone, rtl, live) {
                     detectTapGestures(
                         onTap = { offset -> if (ViewerTaps.isPrevious(offset.x, size.width.toFloat(), backZone, rtl)) previous() else next() },
-                        onLongPress = { ui.photoMenu = true },
+                        onLongPress = { if (live) holding = true else ui.photoMenu = true },
+                        onPress = {
+                            tryAwaitRelease()
+                            holding = false
+                        },
                     )
                 }
                 .clearAndSetSemantics {
@@ -534,7 +564,12 @@ private fun PhotoArea(
                     customActions = listOf(
                         CustomAccessibilityAction(nextLabel) { next(); true },
                         CustomAccessibilityAction(previousLabel) { previous(); true },
-                    ) + listOfNotNull(selfieItem?.let { CustomAccessibilityAction(selfieAction) { it.onClick(); true } }) +
+                    ) + listOfNotNull(if (live) CustomAccessibilityAction(playLabel) { playOnce = true; true } else null) +
+                        listOfNotNull(
+                            if (waitsForPlay) CustomAccessibilityAction(playLabel) { ui.videoSound = true; ui.videoPlayRequests++; true } else null,
+                            if (video && !waitsForPlay) CustomAccessibilityAction(soundLabel) { ui.videoSound = !ui.videoSound; true } else null,
+                        ) +
+                        listOfNotNull(selfieItem?.let { CustomAccessibilityAction(selfieAction) { it.onClick(); true } }) +
                         menuItems.map { m -> CustomAccessibilityAction(m.text) { m.onClick(); true } }
                 },
             contentAlignment = Alignment.Center,
@@ -565,6 +600,14 @@ private fun PhotoArea(
                     fallbackPath = media?.imagePath(Media.Rendition.Thumb),
                     placeholder = Tokens.Colors.globalBackgroundDeep,
                 )
+                if (media?.isVideo == true) {
+                    ViewerVideo(
+                        media, active = ui.selfieLayer == null, autoplay = autoplay, sound = ui.videoSound, onSound = { ui.videoSound = it },
+                        playRequest = ui.videoPlayRequests, onPlay = { ui.videoPlayRequests++ }, letterbox = letterbox,
+                    )
+                } else if (live) {
+                    ViewerLiveMotion(media!!, holding = holding || playOnce, letterbox = letterbox)
+                }
             }
             val mine = photo.reactions.filter { it.userId == state.me }.map { it.emoji }.toSet()
             PhotoContextMenu(

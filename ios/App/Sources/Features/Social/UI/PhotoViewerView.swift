@@ -241,6 +241,7 @@ struct PhotoViewerView: View {
                     post: post,
                     model: model,
                     area: area,
+                    mediaActive: selfieLayer == nil,
                     menu: AnyView(menuItems),
                     openPicker: { pickerOpen = true },
                     openReactions: { reactionsOpen = true },
@@ -554,6 +555,8 @@ struct ViewerPostPage: View {
     let post: PostWithMedia
     let model: PhotoViewerModel
     let area: CGSize
+    /// False while a layer (the selfie capture) covers the photo: a video pauses.
+    var mediaActive = true
     let menu: AnyView
     let openPicker: () -> Void
     let openReactions: () -> Void
@@ -565,7 +568,19 @@ struct ViewerPostPage: View {
     let reportComment: (Message) -> Void
 
     @State private var trailingWidth: CGFloat = 0
+    /// photo.viewer.layout.livePhoto: the Live Photo's view, played while the photo is held.
+    @State private var livePlayback = LivePhotoPlayback()
+    /// photo.viewer.layout.video: this page's player.
+    @State private var videoPlayback = ViewerVideoPlayback()
     @Environment(\.displayScale) private var displayScale
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var isLivePhoto: Bool { post.media?.kind == .livePhoto && post.media?.motionPath != nil && post.media?.frontOriginalPath == nil }
+    private var isVideo: Bool { post.media?.kind == .video }
+    /// photo.viewer.layout.video → reduceMotion: Reduce Motion or Auto-Play Video Previews off — no autoplay.
+    private var videoAutoplays: Bool { !reduceMotion && UIAccessibility.isVideoAutoplayEnabled }
+    /// The play circle shows: no autoplay and not playing, or the system paused it (headphones out, an interruption).
+    private var videoWaitsForPlay: Bool { (!videoAutoplays && !videoPlayback.isPlaying) || videoPlayback.interrupted }
 
     private var aspectRatio: CGFloat {
         if let media = post.media, let width = media.width, let height = media.height, width > 0, height > 0 {
@@ -580,6 +595,7 @@ struct ViewerPostPage: View {
         MetricStack {
             photo
                 .frame(width: area.width, height: photoHeight)
+                .overlay { mediaControls(frame: CGSize(width: area.width, height: photoHeight)) }
                 .overlay(alignment: .bottomLeading) {
                     selfieStack(frame: CGSize(width: area.width, height: photoHeight))
                 }
@@ -606,35 +622,107 @@ struct ViewerPostPage: View {
     /// Tap advances (`photo.viewer.layout.advance`), the leading 20 % goes back (`photo.viewer.layout.backZone`, Retro's
     /// viewer); long press: the menu with the quick-reaction row.
     private var photo: some View {
-        ViewerMedia(post: post, accessibilityLabel: photoLabel)
-            .viewerTapNavigation(
-                previousFraction: Tokens.Layouts.PhotoViewerLayoutBackZone.fraction,
-                previousLabel: Copy.photoViewerA11yPrevious,
-                nextLabel: Copy.photoViewerA11yNext,
-                onPrevious: { withDSAnimation(ComponentMotion.crossfade) { model.goBack() } },
-                onNext: { withDSAnimation(ComponentMotion.crossfade) { model.advance() } }
+        ViewerMedia(
+            post: post,
+            accessibilityLabel: photoLabel,
+            livePlayback: livePlayback,
+            videoPlayback: videoPlayback,
+            video: ViewerVideoState(
+                active: mediaActive,
+                autoplay: videoAutoplays,
+                soundOn: Binding(get: { model.videoSoundOn }, set: { model.videoSoundOn = $0 }),
+                playRequests: model.videoPlayRequests
             )
-            .contextMenu {
-                QuickReactionsPalette(
-                    mine: model.myEmojiOnCurrent,
-                    onEmoji: { emoji in Task { await model.toggleReaction(emoji) } },
-                    onAdd: openPicker
-                )
-                // viewer.selfiereaction: under the quick-reaction row, the layer in tap mode.
-                if let selfieEntry {
-                    Button(action: selfieEntry.openTapMode) {
-                        Label(Copy.viewerSelfiereactionMenuReact, systemImage: Tokens.Icons.globalCamera)
+        )
+        .viewerTapNavigation(
+            previousFraction: Tokens.Layouts.PhotoViewerLayoutBackZone.fraction,
+            previousLabel: Copy.photoViewerA11yPrevious,
+            nextLabel: Copy.photoViewerA11yNext,
+            onPrevious: { withDSAnimation(ComponentMotion.crossfade) { model.goBack() } },
+            onNext: { withDSAnimation(ComponentMotion.crossfade) { model.advance() } },
+            // photo.viewer.layout.livePhoto: holding a Live Photo plays it; its menu is the field's "•••".
+            onHold: isLivePhoto ? { holding in holding ? livePlayback.start() : livePlayback.stop() } : nil
+        )
+        .viewerPhotoMenu(enabled: !isLivePhoto) {
+            QuickReactionsPalette(
+                mine: model.myEmojiOnCurrent,
+                onEmoji: { emoji in Task { await model.toggleReaction(emoji) } },
+                onAdd: openPicker
+            )
+            // viewer.selfiereaction: under the quick-reaction row, the layer in tap mode.
+            if let selfieEntry {
+                Button(action: selfieEntry.openTapMode) {
+                    Label(Copy.viewerSelfiereactionMenuReact, systemImage: Tokens.Icons.globalCamera)
+                }
+            }
+            menu
+        }
+        .accessibilityHint(Text(Copy.photoViewerA11yAdvanceHint))
+        .accessibilityActions {
+            if isLivePhoto {
+                Button(Copy.photoViewerA11yPlay) { livePlayback.playOnce() }
+            }
+            if isVideo {
+                if videoWaitsForPlay {
+                    Button(Copy.photoViewerA11yPlay) {
+                        model.videoSoundOn = true
+                        model.videoPlayRequests += 1
                     }
+                } else {
+                    Button(model.videoSoundOn ? Copy.photoViewerA11yMute : Copy.photoViewerA11yUnmute) { model.videoSoundOn.toggle() }
                 }
-                menu
             }
-            .accessibilityHint(Text(Copy.photoViewerA11yAdvanceHint))
-            .accessibilityActions {
-                if let selfieEntry {
-                    Button(Copy.viewerSelfiereactionA11yAction, action: selfieEntry.openTapMode)
+            if let selfieEntry {
+                Button(Copy.viewerSelfiereactionA11yAction, action: selfieEntry.openTapMode)
+            }
+            menu
+        }
+    }
+
+    /// Over the photo, above its tap zones: a video's glass circles (`photo.viewer.layout.video`: sound at the visible video's
+    /// bottom-trailing corner `size.global.screenMargin` in; the play circle centred when it waits for a tap; the error line
+    /// when it cannot play) and a Live Photo's system badge at the top-leading corner, `size.global.videoPillInset` in.
+    /// VoiceOver reaches these through the photo's actions.
+    @ViewBuilder
+    private func mediaControls(frame: CGSize) -> some View {
+        let imageWidth = min(frame.width, frame.height * aspectRatio)
+        let letterbox = max(0, frame.width - imageWidth) / 2
+        if isVideo {
+            if videoPlayback.failed {
+                Button { videoPlayback.retry() } label: {
+                    Text(Copy.photoViewerErrorLoad)
+                        .dsTextStyle(TextRole.body)
+                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
                 }
-                menu
+                .buttonStyle(.plain)
+            } else if videoWaitsForPlay {
+                CircleButton(icon: Tokens.Icons.globalPlay, accessibilityLabel: Copy.photoViewerA11yPlay, style: .glass) {
+                    model.videoSoundOn = true
+                    model.videoPlayRequests += 1
+                }
+                .accessibilityHidden(true)
+            } else {
+                CircleButton(
+                    icon: model.videoSoundOn ? Tokens.Icons.photoViewerSoundOn : Tokens.Icons.photoViewerSoundOff,
+                    accessibilityLabel: model.videoSoundOn ? Copy.photoViewerA11yMute : Copy.photoViewerA11yUnmute,
+                    style: .glass
+                ) {
+                    model.videoSoundOn.toggle()
+                }
+                .accessibilityHidden(true)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .padding(.trailing, letterbox + Tokens.Sizes.globalScreenMargin)
+                .padding(.bottom, Tokens.Sizes.globalScreenMargin)
             }
+        } else if isLivePhoto, livePlayback.isPlayable {
+            LivePhotoBadge()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.leading, letterbox + Tokens.Sizes.globalVideoPillInset)
+                .padding(.top, Tokens.Sizes.globalVideoPillInset)
+                .allowsHitTesting(false)
+        }
     }
 
     /// viewer.selfiereaction §3: the faces over the visible image's bottom-leading corner (a letterboxed photo: the
@@ -655,7 +743,7 @@ struct ViewerPostPage: View {
     }
 
     private var photoLabel: String {
-        var text = SocialA11y.photo(post, author: model.author(of: post), me: model.me)
+        var text = SocialA11y.withVideo(SocialA11y.photo(post, author: model.author(of: post), me: model.me), media: post.media)
         if let caption = post.post.caption, !caption.isEmpty { text += ", " + Copy.chatThreadA11yCaption(caption: caption) } // provenance-ok: joins copy strings
         return text
     }
@@ -887,20 +975,24 @@ struct ViewerCommentRow: View {
 struct ViewerMedia: View {
     let post: PostWithMedia
     let accessibilityLabel: String
+    /// photo.viewer.layout.livePhoto: the page's Live Photo playback (held / VoiceOver).
+    var livePlayback: LivePhotoPlayback?
+    /// photo.viewer.layout.video: the page's player and how it plays.
+    var videoPlayback: ViewerVideoPlayback?
+    var video = ViewerVideoState()
 
     var body: some View {
         Group {
             if let media = post.media {
-                switch media.kind {
-                case .video:
-                    ViewerVideo(path: media.originalPath)
-                default:
-                    if media.frontOriginalPath != nil {
-                        ViewerDualImage(media: media, accessibilityLabel: accessibilityLabel)
-                    } else {
-                        ZStack {
-                            ViewerDisplayImage(thumbPath: media.gridPath, displayPath: media.displayImagePath)
-                            if media.kind == .livePhoto { ViewerLivePhoto(media: media) }
+                if media.frontOriginalPath != nil {
+                    ViewerDualImage(media: media, accessibilityLabel: accessibilityLabel)
+                } else {
+                    ZStack {
+                        // A video's poster (its display rendition) shows until the first frame.
+                        ViewerDisplayImage(thumbPath: media.gridPath, displayPath: media.displayImagePath)
+                        if media.kind == .livePhoto { ViewerLivePhoto(media: media, playback: livePlayback) }
+                        if media.kind == .video, let videoPlayback {
+                            ViewerVideo(media: media, playback: videoPlayback, state: video)
                         }
                     }
                 }
@@ -992,15 +1084,17 @@ struct ViewerDualImage: View {
 }
 
 /// A Live Photo: the still and its motion (the pair that constitutes it, PLATFORM_CONSTRAINTS §6) are downloaded when
-/// the page shows; the platform view plays it while pressed.
+/// the page shows; the platform view plays it while the photo is held (`photo.viewer.layout.livePhoto`: the page's hold
+/// drives `playback`; the view's own press gesture is off because the photo's taps go forward and back).
 struct ViewerLivePhoto: View {
     let media: Media
+    var playback: LivePhotoPlayback?
     @State private var livePhoto: PHLivePhoto?
 
     var body: some View {
         Group {
             if let livePhoto {
-                LivePhotoRepresentable(livePhoto: livePhoto)
+                LivePhotoRepresentable(livePhoto: livePhoto, playback: playback)
             }
         }
         .task(id: media.id) {
@@ -1014,6 +1108,7 @@ struct ViewerLivePhoto: View {
                   let motionFile = try? SocialVoiceFiles.writeMedia(motion, name: media.id.rawValue + "-motion", fileExtension: "mov")
             else { return }
             livePhoto = await LivePhotoLoader.load(still: stillFile, motion: motionFile)
+            playback?.loaded(livePhoto != nil)
         }
     }
 }
@@ -1057,31 +1152,18 @@ enum LivePhotoLoader {
 
 struct LivePhotoRepresentable: UIViewRepresentable {
     let livePhoto: PHLivePhoto
+    var playback: LivePhotoPlayback?
 
     func makeUIView(context: Context) -> PHLivePhotoView {
         let view = PHLivePhotoView()
         view.contentMode = .scaleAspectFit
         view.clipsToBounds = true
+        playback?.attach(view)
         return view
     }
 
     func updateUIView(_ view: PHLivePhotoView, context: Context) {
         view.livePhoto = livePhoto
-    }
-}
-
-/// Video posts (premium): the platform player.
-struct ViewerVideo: View {
-    let path: String
-    @State private var player: AVPlayer?
-
-    var body: some View {
-        VideoPlayer(player: player)
-            .task(id: path) {
-                guard player == nil, let url = try? await SocialServices.shared.data.fileURL(path: path) else { return }
-                player = AVPlayer(url: url)
-            }
-            .onDisappear { player?.pause() }
     }
 }
 
@@ -1109,5 +1191,18 @@ struct ViewerAvatarRing: View {
         .frame(width: outer, height: outer)
         .dsAnimation(ComponentMotion.crossfade, value: fraction)
         .accessibilityHidden(true)
+    }
+}
+
+extension View {
+    /// The photo's long-press menu (C-29 with the quick-reaction row), left off where the long press does something else
+    /// (a Live Photo plays while held, `photo.viewer.layout.livePhoto`).
+    @ViewBuilder
+    func viewerPhotoMenu<MenuItems: View>(enabled: Bool, @ViewBuilder menuItems: () -> MenuItems) -> some View {
+        if enabled {
+            contextMenu(menuItems: menuItems)
+        } else {
+            self
+        }
     }
 }

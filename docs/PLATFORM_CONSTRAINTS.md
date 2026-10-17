@@ -37,7 +37,7 @@ Short names used below:
 | Account deletion that keeps a deleted member's shared photos (tenet "Nothing gets lost") | **Conflicts with Apple 5.1.1(v) FAQ.** Deletion must include "user-generated content that's shared with others, such as photos" (§9). | Owner decision. Deleting the account deletes the member's photos. A pre-deletion export or save prompt is allowed. |
 | Instagram Stories size "1080×1920 (from Meta docs)" | **The doc does not say 1080×1920.** It says "Minimum dimensions 720x1280. Recommended image ratios 9:16 or 9:18" (§share in research). | 1080×1920 is a valid 9:16 canvas above the minimum. It is labeled "computed" in tokens. |
 | App Clip "15 MB / 50 MB / 100 MB" | **50 MB no longer appears in Apple's table** (§3). | 15 MB (iOS 16), or 100 MB on iOS 17+ under conditions (digital-only invocations, no iOS 16 support). |
-| Android Live-Photo-style playback of iOS Live Photos | **Not researched / no platform API found.** | Treat as still + short video on Android (owner decision). |
+| Android Live-Photo-style playback of iOS Live Photos | **No Live Photo view on Android; no motion-photo capture in CameraX.** CameraX's use cases are Preview, Image analysis, Image capture and Video capture (https://developer.android.com/media/camera/camerax, read 2026-10-17); its release notes (https://developer.android.com/jetpack/androidx/releases/camera) name no motion-photo capture. Android's Motion Photo format (https://developer.android.com/media/platform/motion-photo-format) is a file format, not a capture API. | Still + short video on Android (owner decision): the viewer shows the still and plays the paired movie (`motion_path`) with Media3 ExoPlayer over it while the photo is held (`photo.viewer.layout.livePhoto`, §6). Android captures stills and videos only; no motion photos. |
 
 ---
 
@@ -486,6 +486,10 @@ Server, on each new post, for each recipient device:
 - **Display a received Live Photo:** `PHLivePhoto.request(withResourceFileURLs:placeholderImage:targetSize:contentMode:resultHandler:)`.
   The URLs must be "only the still URL and the video URL that constitute a Live Photo"
   (https://developer.apple.com/documentation/photos/phlivephoto/request(withresourcefileurls:placeholderimage:targetsize:contentmode:resulthandler:)).
+- **Display on Android:** no Live Photo view exists. The viewer draws the still (`display_path`) and, while the photo is
+  held, plays the movie (`motion_path`) over it with Media3 ExoPlayer, with its sound; release stops it
+  (`photo.viewer.layout.livePhoto`). Android does not capture motion photos (CameraX use cases: Preview, Image
+  analysis, Image capture, Video capture — https://developer.android.com/media/camera/camerax).
 - **Limited library:** `PHAuthorizationStatus.limited` (iOS 14+).
   - Add `PHPhotoLibraryPreventAutomaticLimitedAccessAlert = YES` and call `presentLimitedLibraryPicker`
     yourself.

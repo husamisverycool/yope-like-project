@@ -71,3 +71,12 @@ Side by side: [`photo.viewer.android.png`](photo.viewer.android.png) — ours le
 | status | token | expected (token) | ours (measured) | reference evidence | note |
 |---|---|---|---|---|---|
 | match (token) | loading / error / gone / my photo / menus / delete / save denied | spec States | renders `loading`, `errorLoad`, `gone`, `myPhoto`, `menuMine`, `menuOthers`, `deleteConfirmation`, `permissionDeniedSave` |  |  |
+
+## Video, Live Photo, offline (2026-10-17)
+
+| status | token / copy | expected | ours | evidence | note |
+|---|---|---|---|---|---|
+| match (token) | `photo.viewer.layout.video` sound circle: C-11 glass, `size.global.circleButtonPhoto`, bottom-trailing of the visible video, `size.global.screenMargin` in; `icon.photo.viewer.soundOff` / `.soundOn`; `photo.viewer.a11y.unmute` / `.mute` | spec | `ViewerSnapshotTest.video` (muted: VolumeOff circle at the corner over the poster) | design/surfaces/photo.viewer.md → Video | ExoPlayer draws in a TextureView over the poster; no decoder runs in snapshots (`LocalViewerPlayback` null) |
+| match (token) | `photo.viewer.layout.video` → reduceMotion: glass play circle centred, `icon.global.play`, `photo.viewer.a11y.play` | spec | `ViewerSnapshotTest.videoReduceMotion` | design/surfaces/photo.viewer.md → Video | label adds `chat.thread.a11y.video` ("Video, 0:08") |
+| match (token) | `photo.viewer.layout.livePhoto` badge: `icon.photo.viewer.livePhoto`, `color.global.textOnMedia`, `size.global.icon`, top-leading, `size.global.videoPillInset` in | spec | `ViewerSnapshotTest.livePhoto` | HIG Live Photos (badge in a corner) | hold plays the motion; TalkBack action `photo.viewer.a11y.play` |
+| match (behaviour) | offline: this device's copy (`viewer/<postId>`, else the thread's `chat/<groupId>` cache); nothing cached → `photo.viewer.error.load`; back online → reloaded | spec States → offline | `ViewerSnapshotTest.offlineCached`; `SocialViewModelTest.viewerShowsThisDevicesCopyOfflineAndReloadsOnline`, `.viewerOfflineWithNothingCachedShowsTheErrorThenLoadsOnline` | design/surfaces/photo.viewer.md → States | — |

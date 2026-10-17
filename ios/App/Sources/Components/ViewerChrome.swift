@@ -210,16 +210,19 @@ extension View {
     /// The viewer's tap navigation: a tap in the leading `previousFraction` of the width goes back, anywhere else
     /// advances ("Tap left to go back", "Tap anywhere to advance"; mirrored right-to-left). The split is a mechanics value
     /// the viewer spec supplies (not measured on Retro — Gap). VoiceOver gets the same as named actions labelled from copy.
+    /// `onHold` (a Live Photo, `photo.viewer.layout.livePhoto`): a touch held past the system's long-press duration
+    /// reports `true`, its release `false`; a shorter touch is still a tap.
     func viewerTapNavigation(
         previousFraction: CGFloat,
         previousLabel: String,
         nextLabel: String,
         onPrevious: @escaping () -> Void,
-        onNext: @escaping () -> Void
+        onNext: @escaping () -> Void,
+        onHold: ((Bool) -> Void)? = nil
     ) -> some View {
         modifier(ViewerTapNavigation(
             previousFraction: previousFraction, previousLabel: previousLabel, nextLabel: nextLabel,
-            onPrevious: onPrevious, onNext: onNext
+            onPrevious: onPrevious, onNext: onNext, onHold: onHold
         ))
     }
 }
@@ -230,6 +233,7 @@ private struct ViewerTapNavigation: ViewModifier {
     let nextLabel: String
     let onPrevious: () -> Void
     let onNext: () -> Void
+    let onHold: ((Bool) -> Void)?
 
     @Environment(\.layoutDirection) private var layoutDirection
 
@@ -237,7 +241,7 @@ private struct ViewerTapNavigation: ViewModifier {
         content
             .overlay {
                 GeometryReader { proxy in
-                    Color.clear
+                    let taps = Color.clear
                         .contentShape(Rectangle())
                         .onTapGesture { location in
                             let fromLeading = layoutDirection == .rightToLeft ? proxy.size.width - location.x : location.x
@@ -247,6 +251,13 @@ private struct ViewerTapNavigation: ViewModifier {
                                 onNext()
                             }
                         }
+                    if let onHold {
+                        taps.onLongPressGesture(perform: { onHold(true) }, onPressingChanged: { pressing in
+                            if !pressing { onHold(false) }
+                        })
+                    } else {
+                        taps
+                    }
                 }
             }
             .accessibilityAction(named: Text(nextLabel), onNext)

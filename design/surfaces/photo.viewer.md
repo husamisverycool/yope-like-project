@@ -19,6 +19,8 @@ brief with WhatsApp / Messages reaction mechanics (`chat.reactions.md`). Tokens:
 | APK-S | `references/auto/retro/apk/retro-android-2026.10.1150-strings.txt` | "%1$d of %2$d", "Tap to advance", "Tap left to go back", "Add a comment…", "Save to Camera Roll", "Report Post", " · with ", "Camera Roll Access", "Allow Photo Access", "Yes, delete" |
 | APK-X | `references/auto/retro/apk/retro-android-2026.10.1150-excerpts.txt` | "comment media viewer transition" 250 ms FastOutSlowIn (open) |
 | TC-RWP | `references/auto/retro/press/tc-2025-12-rewind-panels.png` | native menu with red destructive items |
+| WEB-JS | `references/auto/retro/web/retro.app-viewer-and-hero-js-excerpts.txt` §1 (+ the album page script `retro.app/_next/static/chunks/pages/j/[journalSlug]-dafa8851fc588797.js`, read 2026-10-17) | a video page: Mux player, `loop`, `autoPlay: "muted"`, shown on `onCanPlay` over the photo; phone taps go back / forward over the player too |
+| HIG-A / HIG-L | https://developer.apple.com/design/human-interface-guidelines/playing-audio, …/live-photos | sound rules (silent mode, headphones), Live Photo press-to-play and badge |
 
 ## Structure (top → bottom)
 
@@ -45,7 +47,7 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
      corners, letterboxed when taller than the area (`photo.viewer.layout.photo`). Tap = advance (`photo.viewer.layout.advance`):
      the leading 20 % of the photo (`photo.viewer.layout.backZone`, Retro's own viewer: `clientX < 0.2 × width` → previous) goes back, the rest goes forward; past the last photo the
      viewer closes. Long press = context menu with the quick-reaction row (`chat.reactions.layout.quickReactions`) and the
-     menu items below.
+     menu items below. A **video** plays in the frame and a **Live Photo** plays while held (sections below).
    - **Footer** inside `size.global.screenMargin`: leading text block — first baseline `photo.viewer.dimension.footerFirstBaseline`
      below the photo, lines `photo.viewer.dimension.footerLinePitch` apart:
      1. the caption, if any (text role `listTitle`, `color.global.textOnMedia`, wraps) — Retro's place line;
@@ -90,6 +92,42 @@ has no way to save or share another person's post). Someone else's photo shows R
 `photo.viewer.delete.confirm` ("Yes, delete"), cancel `photo.viewer.delete.cancel`. Confirmed → `haptic.global.warning`,
 `delete_media`, the viewer moves to the next photo (or closes), Android Toast `photo.viewer.toast.deleted`.
 
+### Video (`photo.viewer.layout.video`; WEB-JS, HIG-A)
+
+- The frame of a video is the photo frame at the video's own aspect (aspect fit, letterboxed on
+  `color.global.backgroundDeep`). The poster (the display rendition) shows until the first frame is drawn.
+- When its page shows, the video starts **muted and loops** (Retro's viewer: `autoPlay: "muted"`, `loop`). Taps still go
+  forward and back (`photo.viewer.layout.advance` / `.backZone`); long press opens the menu.
+- **Sound**: a C-11 glass circle (`size.global.circleButtonPhoto`, `color.global.glass`) at the visible video's
+  bottom-trailing corner, `size.global.screenMargin` in on both axes (the selfie stack's mirror):
+  `icon.photo.viewer.soundOff` while muted, `icon.photo.viewer.soundOn` with sound; a tap toggles. The choice holds for
+  every video until the viewer closes. Muted it takes no audio focus and mixes with other apps (iOS `.ambient`); with
+  sound — started by the person — it plays in silent mode (iOS `.playback`) and takes the media audio focus (Android
+  `USAGE_MEDIA`); it pauses when headphones are disconnected.
+- It **pauses** when its page changes, the viewer closes, the app goes to the background, or the selfie capture layer
+  opens.
+- **Reduce Motion** (and iOS Auto-Play Video Previews off): no autoplay. A C-11 glass circle with `icon.global.play`
+  centred on the video plays it once, with sound; at its end the circle returns. The same circle shows after a system
+  pause (headphones out, audio focus lost).
+- **Error**: `photo.viewer.error.load` centred over the poster; a tap retries.
+- Accessibility: the photo's label adds `chat.thread.a11y.video` ("Video, 0:08"); its custom actions add
+  `photo.viewer.a11y.play` while the play circle shows, else `photo.viewer.a11y.unmute` / `.a11y.mute`. The circles
+  themselves are hidden from VoiceOver / TalkBack (the photo's actions reach them; the photo keeps its tap zones).
+
+### Live Photo (`photo.viewer.layout.livePhoto`; HIG-L)
+
+- **Touch and hold** the photo plays its motion with its sound; release stops it (iOS `PHLivePhotoView` `.full`, its
+  own press gesture off so taps still go forward and back; Android the paired movie played with ExoPlayer over the
+  still). It plays under Reduce Motion too (the person starts it).
+- On a Live Photo the long press plays it, so the menu and quick reactions are the field's "•••" and the add-reaction
+  glyph (both already on the page). VoiceOver / TalkBack: custom action `photo.viewer.a11y.play` (the whole motion once).
+- **Badge**: the system Live Photo badge at the visible photo's top-leading corner, `size.global.videoPillInset` in (iOS
+  `PHLivePhotoView.livePhotoBadgeImage(options: .overContent)` once the Live Photo is loaded; Android
+  `icon.photo.viewer.livePhoto` in `color.global.textOnMedia`, `size.global.icon`). Decorative. HIG-L: no
+  video-style play button on a Live Photo.
+- Android does not capture motion photos (CameraX has no such use case; docs/PLATFORM_CONSTRAINTS.md §6). It plays the
+  ones iOS members post.
+
 ## Elements
 
 | element | component · tokens | copy | behaviour |
@@ -98,6 +136,8 @@ has no way to save or share another person's post). Someone else's photo shows R
 | position pill | C-22; `size.global.positionPillHeight`, `color.global.controlOnDeep`, text role `badge` | `photo.viewer.position` | — |
 | close | C-11 on media; `photo.viewer.dimension.closeCircle`, `.closeGlyph`, `color.global.controlOnDeep`, `icon.global.close`; hit `size.global.minTouchTarget.*` | `photo.viewer.a11y.close` | closes (Android back too) |
 | photo | `photo.viewer.layout.photo`, `photo.viewer.layout.advance`, `photo.viewer.layout.backZone` (0.2, leading) | `photo.viewer.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`); hints `photo.viewer.a11y.advanceHint`, `.backHint`; actions `.a11y.next`, `.a11y.previous` | tap advances; long press → menu with quick reactions |
+| video sound / play circle | C-11 glass; `photo.viewer.layout.video`, `size.global.circleButtonPhoto`, `size.global.screenMargin`, `icon.photo.viewer.soundOff` / `.soundOn`, `icon.global.play` | `photo.viewer.a11y.unmute` / `.mute` / `.play` | toggles sound for the open viewer / plays once with sound |
+| Live Photo badge | `photo.viewer.layout.livePhoto`, `size.global.videoPillInset`; Android `icon.photo.viewer.livePhoto` | — (decorative) | — |
 | caption / date lines | text roles `listTitle` / `listSubtitle`; `photo.viewer.dimension.footerFirstBaseline`, `.footerLinePitch`; `photo.viewer.layout.dateFormat` | caption, date (data) | — |
 | voice note | `photo.viewer.layout.voiceNote` (`chat.voice.layout.capsule` with C-36 on media) | `chat.voice.a11y.*` | plays the post's voice note; the played bars follow it |
 | tag run ("I'm in this" / "with {names}") | footer line 2 after " · " (`tagging.md`: text role `listSubtitle`) | `tagging.toggle`, `tagging.with` | untagged: `tag_self`; tagged: opens the "In this photo" sheet (`tagging.md`) |
@@ -113,7 +153,9 @@ has no way to save or share another person's post). Someone else's photo shows R
 | loading | the opener's thumbnail (`thumb_path`) scaled into the photo frame, swapped for `display_path` with `duration.global.fade`; header, footer and field live | C-28 | docs/API.md §7 |
 | error (image) | one tappable line centred on the photo frame, text role `body`, `color.global.textSecondary` | `photo.viewer.error.load` (tap retries) | `retro.voice.error` (list / widget one-liner) |
 | gone (`post_not_found`, or `post_deleted` while open) | C-27 block centred in the scroll area, no glyph: title + detail; close stays | `photo.viewer.gone.title`, `.gone.detail`; text roles `emptyTitle` / `emptyDetail` | C-27 |
-| offline | cached image; save / delete / react / reply fail with their strings | `photo.viewer.error.save`, `.error.delete`, `chat.reactions.error`, `chat.thread.sendFailed`; `haptic.global.error` | — |
+| loading (video) | the poster (display rendition, the thumbnail before it) until the first frame; the controls show over it | `photo.viewer.layout.video` | WEB-JS (`onCanPlay`) |
+| error (video) | `photo.viewer.error.load` over the poster (tap retries) | `photo.viewer.layout.video` → error | — |
+| offline | this device's copy of the photo: iOS the group's cached feed; Android the viewer's own copy of the photo from an earlier visit (post, media, people, reactions, comments, tags), else the post in its thread's cache. Nothing cached → the error line. Back online, a photo that failed or came from the copy loads again. Save / delete / react / reply fail with their strings | `photo.viewer.error.load`, `.error.save`, `.error.delete`, `chat.reactions.error`, `chat.thread.sendFailed`; `haptic.global.error` | — |
 | permission-denied (save) | C-29 native alert (presented in the system appearance): title / detail / "Allow Photo Access" (opens Settings) / Cancel | `photo.viewer.permission.title`, `.permission.detail`, `.permission.button`, `photo.viewer.delete.cancel`; purpose string `system.permissions.photosAdd.purpose` | `retro.voice.permission` |
 | tag error / gone / offline | per `tagging.md` | `tagging.error`, `tagging.removeError`, `tagging.notFound`, `tagging.offline` | memory group |
 | empty | not applicable (the viewer opens on a photo) | — | — |
@@ -126,6 +168,8 @@ has no way to save or share another person's post). Someone else's photo shows R
 | advance / go back | cross-fade `duration.global.crossfade` between the two photos (Retro's advance motion not captured) | same |
 | close | native dismissal of the full-screen presentation (`easing.global.native`) | system |
 | image loaded (thumbnail → display) | `duration.global.fade` | same |
+| video page shows | plays muted, looping (`photo.viewer.layout.video`) | no autoplay: the play circle (`layout.global.reduceMotion`; iOS also Auto-Play Video Previews off) |
+| Live Photo held | its motion plays (`photo.viewer.layout.livePhoto`) | same (started by the person) |
 | menu, alerts, keyboard | native | system |
 
 ## Haptics
@@ -143,8 +187,10 @@ has no way to save or share another person's post). Someone else's photo shows R
 
 - Labels: close `photo.viewer.a11y.close`; "•••" `photo.viewer.a11y.more`; photo `photo.viewer.a11y.photo` / `.photoMine`
   (+ caption) with hints `photo.viewer.a11y.advanceHint` / `.backHint` and custom actions `photo.viewer.a11y.next` /
-  `.previous` (tap zones are not required); the menu items are also custom actions on the photo. The header (name + week)
-  is one element; the pill is read as "3 of 4" (position only).
+  `.previous` (tap zones are not required); the menu items are also custom actions on the photo. A video adds
+  `chat.thread.a11y.video` to the label and `photo.viewer.a11y.play` or `.a11y.unmute` / `.a11y.mute` to the actions; a
+  Live Photo adds `photo.viewer.a11y.play`. The header (name + week) is one element; the pill is read as "3 of 4"
+  (position only).
 - Focus order: close → header → pill → photo → caption → date → tag run → voice note → reactions → add → comments →
   field → camera → "•••".
 - Dynamic Type: `listTitle` / `listSubtitle` / `body` → subheadline, `badge` → caption2 (`layout.global.textStyleMap`); the
@@ -173,6 +219,9 @@ has no way to save or share another person's post). Someone else's photo shows R
   `react` / `unreact`; `tag_self` / `untag_self`; `delete_media` (owner: removes it from every group, chats, reactions, tags,
   albums, recaps, tribute contributions); `report(post)`, `block_user` via `safety.report` / `safety.block`.
 - **Save** (your own photo only): signed URL of `original_path` (+ `motion_path`) → photo library.
+- **Play**: a video streams the signed URL of `original_path` (the worker's H.264 / AAC MP4, at most `video_max_ms`;
+  `media.duration_ms` for the label); a Live Photo's motion is `motion_path` (iOS downloads still + motion into the
+  `PHLivePhoto`; Android streams the motion when held).
 - **Realtime**: `post_deleted` → gone state / move on; `reactions_changed` → refetch; `messages` INSERT with this
   `reply_to_post_id` → new comment row.
 - **Navigation in**: `chat.thread`, `walls.*`, `week.recap`, `week.history`, `albums.view`; `DeepLink.post(groupID:postID:)`
@@ -184,10 +233,17 @@ has no way to save or share another person's post). Someone else's photo shows R
 - iOS: `.fullScreenCover`, root `.environment(\.colorScheme, .dark)`; tap zones via `onTapGesture` with location; native
   `Menu` on "•••" and `contextMenu` (palette `ControlGroup` for quick reactions) on the photo; `confirmationDialog` for
   delete; `PHLivePhotoView`; save with `PHPhotoLibrary` add-only authorization (`NSPhotoLibraryAddUsageDescription` =
-  `system.permissions.photosAdd.purpose`).
+  `system.permissions.photosAdd.purpose`). Video: `AVQueuePlayer` + `AVPlayerLooper` in an `AVPlayerLayer` (one per
+  page), `AVAudioSession` `.ambient` muted / `.playback` with sound; `UIAccessibility.isVideoAutoplayEnabled`. Live
+  Photo: `PHLivePhotoView.startPlayback(with: .full)` from the page's long press (`viewerTapNavigation(onHold:)`); the
+  photo's `contextMenu` is off on a Live Photo.
 - Android: full-screen route wrapped in `DsTheme(dark = true)`; `pointerInput` tap with x position; `DropdownMenu`
   (destructive items `color.global.system.error`); `AlertDialog`; save via `MediaStore` (no permission on API 29+;
-  `WRITE_EXTERNAL_STORAGE` on 26–28); an iOS Live Photo saves as its still.
+  `WRITE_EXTERNAL_STORAGE` on 26–28); an iOS Live Photo saves as its still. Video and Live Photo motion: one Media3
+  `ExoPlayer` for the open viewer (`rememberViewerPlayback`, paused on `ON_PAUSE`, released on close) drawn in a
+  `TextureView`; muted volume 0 without audio focus, with sound `AudioAttributes(USAGE_MEDIA, CONTENT_TYPE_MOVIE)` with
+  focus handling and `setHandleAudioBecomingNoisy`; Reduce Motion from `reduceMotion()` (animator duration
+  scale 0 / animators disabled). Offline copy in the data cache under `viewer/<postId>`.
 
 ## Do-not-copy
 
@@ -205,4 +261,5 @@ has no way to save or share another person's post). Someone else's photo shows R
 | header position under the safe area; advance / close motion | not measurable from TC-2B (render) | 60 fps recording: open a friend's photo, tap through 3, close |
 | year form of the date for older photos | platform long date with the year (not captured in Retro) | one Retro viewer screenshot of a photo from a past year |
 | viewer metrics are 2023 render values (±0.5 pt); the foundations' C-22 / C-13 sizes used a 2.298 px/pt scale — at the verified 2.209 the avatar is 40.7, the pill 26.3, the field 51.2 pt (RS-25) | reported | one raw iPhone screenshot of the current viewer with a comment |
+| Retro's in-app video viewer | the web viewer's mechanics stand in (WEB-JS: muted autoplay, loop, taps navigate); the in-app sound control's place is not captured — the apps put it at the bottom-trailing corner | a recording of a video post opened in Retro's app |
 | where Retro shows a caption | unknown (its web title uses "caption or location · date"); the caption takes the place line (RS-11) | one raw screenshot of a captioned Retro photo |

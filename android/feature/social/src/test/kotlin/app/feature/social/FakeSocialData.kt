@@ -331,6 +331,12 @@ class FakeSocialData(var me: String = ME) : SocialData {
         media[m.id] = m.copy(kind = MediaKind.Video, originalPath = "u/${m.ownerId}/${m.id}/r/video.mp4", durationMs = durationMs)
     }
 
+    /** Makes [postId]'s media a Live Photo (a still with its motion movie). */
+    fun makeLive(postId: String) {
+        val m = media.getValue(posts.getValue(postId).mediaId)
+        media[m.id] = m.copy(kind = MediaKind.LivePhoto, motionPath = "u/${m.ownerId}/${m.id}/motion.mov", durationMs = 2_800)
+    }
+
     /** A thread with text, a reply to a photo, a photo with caption and reactions, and voice messages. */
     fun seedChat() {
         seedGroup()

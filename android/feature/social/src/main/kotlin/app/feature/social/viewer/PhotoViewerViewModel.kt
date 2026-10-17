@@ -53,6 +53,8 @@ data class ViewerPhoto(
     val loadFailed: Boolean = false,
     /** Selfie reactions (`viewer.selfiereaction`), oldest first, one per person; yours while sending has no id yet. */
     val selfies: List<SelfieEntry> = emptyList(),
+    /** Shown from this device's copy while offline (`photo.viewer` → States → offline); reloaded when back online. */
+    val fromCache: Boolean = false,
 ) {
     /** ISO week of the photo in its group's time zone: the week it became visible in (`visibleAt`, docs/API.md §5.8). */
     val weekNumber: Int? get() = post?.let { Formats.isoWeek(it.visibleAt.atZone(zone ?: ZoneId.systemDefault()).toLocalDate()) }
@@ -79,6 +81,19 @@ data class ViewerState(
     val canReactWithSelfie: Boolean get() = me != null && current?.post != null && current?.gone != true && !mine
     val taggedByMe: Boolean get() = me != null && current?.tagged?.contains(me) == true
 }
+
+/** What the viewer keeps of a photo for offline (`photo.viewer` → States → offline). */
+@kotlinx.serialization.Serializable
+internal data class ViewerCopy(
+    val post: Post,
+    val media: Media?,
+    val people: List<Profile>,
+    val groupName: String?,
+    val timeZone: String?,
+    val reactions: List<app.feature.social.chat.CachedReaction>,
+    val comments: List<Message>,
+    val tagged: List<String>,
+)
 
 sealed interface ViewerEffect {
     data object Sent : ViewerEffect
@@ -121,7 +136,22 @@ class PhotoViewerViewModel(
 
     init {
         viewModelScope.launch { load() }
-        viewModelScope.launch { data.online.collect { online -> _state.update { it.copy(online = online) } } }
+        viewModelScope.launch {
+            data.online.collect { online ->
+                val wasOffline = !_state.value.online
+                _state.update { it.copy(online = online) }
+                // photo.viewer → offline: back online, what failed or came from this device's copy loads again.
+                if (online && wasOffline) reloadStale()
+            }
+        }
+    }
+
+    /** The photos on and around the screen that failed or show this device's copy, loaded again. */
+    private fun reloadStale() {
+        val s = _state.value
+        listOf(s.index, s.index + 1, s.index - 1).mapNotNull { s.photos.getOrNull(it) }.filter { it.loadFailed || it.fromCache }.forEach { photo ->
+            if (loading.add(photo.postId)) viewModelScope.launch { loadPhoto(photo.postId) }
+        }
     }
 
     /**
@@ -231,15 +261,24 @@ class PhotoViewerViewModel(
                 it.copy(
                     post = post, media = media, author = people[post.authorId], groupName = group?.name, zone = zone, reactions = reactions,
                     comments = comments, tagged = tags, people = people, loaded = true, loadFailed = false,
-                    selfies = withPending(id, selfies),
+                    selfies = withPending(id, selfies), fromCache = false,
                 )
+            }
+            runCatching {
+                data.cachePut(cacheKey(id), ViewerCopy.serializer(), ViewerCopy(post, media, people.values.toList(), group?.name, group?.timeZone,
+                    reactions.map { app.feature.social.chat.CachedReaction(it.userId, it.emoji) }, comments, tags))
             }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
             val error = e.dataError()
             if (error is DataError.Api && error.code == ApiError.PostNotFound) update(id) { it.copy(gone = true, loaded = true) }
-            else update(id) { it.copy(loadFailed = true) }
+            else {
+                // photo.viewer → offline: this device's copy of the photo (from an earlier visit, else the thread's page
+                // cache); nothing cached → the error line (tap retries; loaded again when back online).
+                val copy = cachedCopy(id)
+                if (copy != null) update(id) { copy(it) } else update(id) { it.copy(loadFailed = true) }
+            }
         } finally {
             loading.remove(id)
         }
@@ -486,6 +525,33 @@ class PhotoViewerViewModel(
         val id = _state.value.current?.postId ?: return
         update(id) { it.copy(loadFailed = false) }
         if (loading.add(id)) viewModelScope.launch { loadPhoto(id) }
+    }
+
+    private fun cacheKey(postId: String) = "viewer/$postId"
+
+    /** The photo as this device last saw it: the viewer's own copy, else the post in its group's thread cache. */
+    private suspend fun cachedCopy(id: String): ((ViewerPhoto) -> ViewerPhoto)? {
+        runCatching { data.cacheGet(cacheKey(id), ViewerCopy.serializer()) }.getOrNull()?.let { c ->
+            val people = c.people.associateBy { it.id }
+            val zone = c.timeZone?.let { runCatching { ZoneId.of(it) }.getOrNull() }
+            return { p ->
+                p.copy(
+                    post = c.post, media = c.media, author = people[c.post.authorId], groupName = c.groupName, zone = zone,
+                    reactions = c.reactions.map { ReactionEntry(it.userId, it.emoji) }, comments = c.comments, tagged = c.tagged, people = people,
+                    loaded = true, loadFailed = false, fromCache = true,
+                )
+            }
+        }
+        val thread = runCatching { data.cacheGet("chat/$groupId", app.feature.social.chat.ChatHydration.serializer()) }.getOrNull() ?: return null
+        val post = thread.posts.firstOrNull { it.id == id } ?: return null
+        val people = thread.profiles.associateBy { it.id }
+        return { p ->
+            p.copy(
+                post = post, media = thread.media.firstOrNull { it.id == post.mediaId }, author = people[post.authorId], people = people,
+                reactions = thread.reactions[id].orEmpty().map { ReactionEntry(it.userId, it.emoji) },
+                loaded = true, loadFailed = false, fromCache = true,
+            )
+        }
     }
 
     private fun update(id: String, transform: (ViewerPhoto) -> ViewerPhoto) {

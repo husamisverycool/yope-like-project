@@ -943,6 +943,33 @@
       "level": "SOURCED",
       "notes": "Accessibility custom action."
     },
+    "photo.viewer.a11y.mute": {
+      "text": "Mute",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_card_mute); the Mux player's mute button in Retro's web viewer (photo.viewer.layout.video)",
+      "level": "SOURCED",
+      "notes": "Label of the sound circle while a video plays with sound."
+    },
+    "photo.viewer.a11y.unmute": {
+      "text": "Unmute",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (home_card_unmute)",
+      "level": "SOURCED",
+      "notes": "Label of the sound circle while a video plays muted."
+    },
+    "photo.viewer.a11y.play": {
+      "text": "Play",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_play); onthisday.a11y.play / year.story.a11y.play (the platform player's label)",
+      "level": "SOURCED",
+      "notes": "The play circle on a video without autoplay; the custom action that plays a Live Photo."
+    },
     "viewer.selfiereaction.menu.react": {
       "text": "React with a selfie",
       "origin": "adapted",

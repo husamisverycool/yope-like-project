@@ -296,6 +296,40 @@ class SocialViewModelTest {
         assertTrue(vm.state.value.photos[4].loaded)
     }
 
+    /** photo.viewer → offline: this device's copy of a photo shows offline; back online it loads again. */
+    @Test fun viewerShowsThisDevicesCopyOfflineAndReloadsOnline() {
+        val data = FakeSocialData().apply { seedWeek() }
+        PhotoViewerViewModel(data, GROUP, "w-3", PhotoContext.Single, "w-3", null) // a visit keeps a copy
+        data.offline = true
+        data.onlineState.value = false
+        val vm = PhotoViewerViewModel(data, GROUP, "w-3", PhotoContext.Single, "w-3", null)
+        val cached = vm.state.value.current!!
+        assertTrue(cached.loaded)
+        assertTrue(cached.fromCache)
+        assertFalse(cached.loadFailed)
+        assertEquals("md-w-3", cached.media?.id)
+        assertEquals("Sunday dinners", cached.groupName)
+        assertFalse(vm.state.value.online)
+        data.offline = false
+        data.onlineState.value = true
+        assertFalse(vm.state.value.current!!.fromCache)
+        assertTrue(vm.state.value.online)
+    }
+
+    /** photo.viewer → offline with nothing on this device: the error line; back online the photo loads. */
+    @Test fun viewerOfflineWithNothingCachedShowsTheErrorThenLoadsOnline() {
+        val data = FakeSocialData().apply { seedWeek() }
+        data.offline = true
+        data.onlineState.value = false
+        val vm = PhotoViewerViewModel(data, GROUP, "w-4", PhotoContext.Single, "w-4", null)
+        assertTrue(vm.state.value.current!!.loadFailed)
+        data.offline = false
+        data.onlineState.value = true
+        val loaded = vm.state.value.current!!
+        assertTrue(loaded.loaded)
+        assertFalse(loaded.loadFailed)
+    }
+
     @Test fun viewerChatContextIsChronological() {
         val data = FakeSocialData().apply { seedWeek() }
         val vm = PhotoViewerViewModel(data, GROUP, "w-5", PhotoContext.Chat, GROUP, null)

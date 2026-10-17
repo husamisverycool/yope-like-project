@@ -50,6 +50,41 @@ class ViewerSnapshotTest : SnapshotBase() {
         viewer(state("v-3", d), data = d)
     }
 
+    /**
+     * A video (`photo.viewer.layout.video`): the poster until the first frame; muted autoplay with the glass sound circle
+     * at the bottom-trailing corner (no decoder runs in tests: the player is absent).
+     */
+    @Test fun video() {
+        val d = viewerData().apply { makeVideo("v-1", 9_400) }
+        viewer(state("v-1", d), data = d)
+    }
+
+    /** Reduce Motion: no autoplay — the glass play circle centred on the poster. */
+    @Test fun videoReduceMotion() {
+        val d = viewerData().apply { makeVideo("v-1", 9_400) }
+        val st = state("v-1", d)
+        snap(d) {
+            androidx.compose.runtime.CompositionLocalProvider(app.designsystem.LocalReduceMotionOverride provides true) {
+                PhotoViewerContent(st, ViewerUiState(), nav, VoiceUi.Idle, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            }
+        }
+    }
+
+    /** A Live Photo (`photo.viewer.layout.livePhoto`): the still with the platform badge at its top-leading corner. */
+    @Test fun livePhoto() {
+        val d = viewerData().apply { makeLive("v-3") }
+        viewer(state("v-3", d), data = d)
+    }
+
+    /** Offline, shown from this device's copy (`photo.viewer` → States → offline): the photo as last seen. */
+    @Test fun offlineCached() {
+        val d = viewerData()
+        state("v-1", d) // a visit keeps a copy
+        d.offline = true
+        d.onlineState.value = false
+        viewer(state("v-1", d), data = d)
+    }
+
     /** Nobody tagged: the run reads "I'm in this" in white. */
     @Test fun untagged() {
         val d = viewerData().apply { tagRows.clear() }

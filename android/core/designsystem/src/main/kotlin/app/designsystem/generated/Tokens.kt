@@ -660,6 +660,7 @@ object Tokens {
             const val ios: String = "widgetURL on the whole widget"
             const val android: String = "PendingIntent ACTION_VIEW on the widget root"
             const val opens: String = "camera.capture, group preselected in camera.sendto"
+            const val collage: String = "a widget showing the group's same-moment collage links app://collage?group=<group_id>&collage=<collage_id> instead and opens collage.view of that collage"
         }
         /** Retro · camera.overnight · destination pill on the viewfinder in 9 AM mode (which groups the next photos develop for) · SOURCED — token `camera.overnight.layout.destinationPill` */
         object CameraOvernightLayoutDestinationPill {
@@ -1656,7 +1657,7 @@ object Tokens {
         object PhotoViewerLayoutLivePhoto {
             const val play: String = "touch and hold the photo plays its motion with its sound (iOS PHLivePhotoView .full; Android the motion movie over the still), release stops; under Reduce Motion too (the person starts it)"
             const val menu: String = "on a Live Photo the long press plays it, so the menu and quick reactions are the field's \"•••\" and the add-reaction glyph (both already on the page); VoiceOver / TalkBack get photo.viewer.a11y.play as a custom action"
-            const val badge: String = "the system Live Photo badge over the content (iOS PHLivePhotoView.livePhotoBadgeImage(options: .overContent); Android icon.photo.viewer.livePhoto in color.global.textOnMedia, size.global.icon) at the visible photo's top-leading corner, size.global.videoPillInset in, while the motion is downloaded and playable"
+            const val badge: String = "the system Live Photo badge over the content (iOS PHLivePhotoView.livePhotoBadgeImage(options: .overContent); Android icon.photo.viewer.livePhoto in color.global.textOnMedia, size.global.icon) at the visible photo's top-leading corner, size.global.videoPillInset in — iOS once the still and its motion are loaded into the Live Photo view; Android with the still (the motion streams when held)"
         }
         /** Retro + Apple HIG / Material 3 · photo.viewer · the viewer's actions menu · SOURCED — token `photo.viewer.layout.menu` */
         object PhotoViewerLayoutMenu {
