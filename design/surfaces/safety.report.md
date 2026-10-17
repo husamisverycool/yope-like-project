@@ -1,4 +1,4 @@
-# `safety.report` — report a post, message, person or group
+# `safety.report` — report a post, message, selfie reaction, person or group
 
 Visual reference: Retro's report flow (APK-S `media_viewer_report_*`, `profile_report_*`: "Why are you reporting this
 post?" / "What's wrong with this profile?", reason lists, "Next Steps" for "I don't like it", "Submitted!") shown in
@@ -18,7 +18,8 @@ Copy: `safety.report.*`.
 
 1. **Entry**: a menu item (C-29) on the content: `safety.report.menuItem.post` (photo long-press menu, viewer menu),
    `.message` (chat message menu), `.user` (member "More Options" in `groups.settings`, walls), `.group`
-   (`groups.settings` "Report Group" row uses `groups.settings.report`).
+   (`groups.settings` "Report Group" row uses `groups.settings.report`); a selfie reaction's row in the Reactions sheet
+   uses `viewer.selfiereaction.menu.report` (viewer.selfiereaction §4).
 2. **Reasons** (`safety.report.layout.flow`): native action sheet titled `safety.report.title.<kind>`; one button per
    reason from `safety.report.layout.reasons` (`safety.report.reason.*`), then `safety.report.cancel`.
    - iOS: `confirmationDialog(titleVisibility: .visible)`; Android: `ModalBottomSheet` with the title (text role
@@ -35,7 +36,7 @@ Copy: `safety.report.*`.
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
 | menu item | C-29 menu, destructive role (red, C-10: Retro draws report actions in its destructive red, APK `vv3.g` call sites include report — RP §3.3) | `safety.report.menuItem.*` | opens the reasons sheet |
-| reasons sheet | C-29 action sheet / M3 bottom sheet; `safety.report.layout.flow` | `safety.report.title.post` / `.message` / `.user` / `.group`; `safety.report.reason.*`; `safety.report.cancel` | one tap files the report |
+| reasons sheet | C-29 action sheet / M3 bottom sheet; `safety.report.layout.flow` | `safety.report.title.post` / `.message` / `.user` / `.group` / `.selfie`; `safety.report.reason.*` (the kind's list in `safety.report.layout.reasons`; a selfie takes the post reasons, MERGE SR-10); `safety.report.cancel` | one tap files the report |
 | next steps | C-29 action sheet | `safety.report.nextSteps.title`, `.nextSteps.leave`, `.nextSteps.block` | as Structure 4 |
 | confirmation | C-26 | `safety.report.sent.title`; `safety.report.left` | — |
 

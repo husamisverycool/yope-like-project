@@ -6,11 +6,13 @@ import app.data.model.MemberRole
 import app.data.model.NotificationSettings
 import app.data.model.ReportTargetKind
 import app.designsystem.R
+import app.designsystem.generated.Tokens
 import app.feature.account.common.AccountEvent
 import app.feature.account.safety.ReportPhase
 import app.feature.account.safety.ReportReasons
 import app.feature.account.safety.ReportViewModel
 import app.feature.account.safety.reportTarget
+import app.feature.account.safety.reportTitle
 import app.feature.account.settings.SettingsNotificationsViewModel
 import app.feature.account.testing.FakeAccountBackend
 import app.feature.account.testing.fakeEnvironment
@@ -77,7 +79,10 @@ class OvernightAlertsAndSelfieReportTest {
         val events = vm.recordEvents(backgroundScope)
         assertEquals("Sam", vm.state.value.firstName) // "Block Sam" in Next Steps
         val reasons = ReportReasons.of(ReportTargetKind.Selfie)
-        assertEquals(ReportReasons.of(ReportTargetKind.Post).map { it.wire }, reasons.map { it.wire })
+        // The sheet asks about the selfie (`safety.report.title.selfie`) with the selfie list, the post reasons (MERGE SR-10).
+        assertEquals(R.string.safety_report_title_selfie, reportTitle(ReportTargetKind.Selfie))
+        assertEquals(Tokens.Layouts.SafetyReportLayoutReasons.selfie.split(" · "), reasons.map { it.wire })
+        assertEquals(ReportReasons.of(ReportTargetKind.Post).map { it.copy }, reasons.map { it.copy })
         vm.choose(reasons[1])
         assertEquals(Triple(ReportTargetKind.Selfie, "s-1", "Nudity or sexual activity"), backend.reports.single())
         assertEquals(listOf(AccountEvent.Toast(R.string.safety_report_sent_title)), events.toasts())

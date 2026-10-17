@@ -1627,6 +1627,8 @@ public enum Copy {
     public static var safetyReportTitleMessage: String { CopyLookup.string("safety.report.title.message", default: "Why are you reporting this message?") }
     /// "Why are you reporting this post?" — Retro · safety.report · verbatim · SOURCED
     public static var safetyReportTitlePost: String { CopyLookup.string("safety.report.title.post", default: "Why are you reporting this post?") }
+    /// "Why are you reporting this selfie?" — Retro · safety.report · adapted · SOURCED
+    public static var safetyReportTitleSelfie: String { CopyLookup.string("safety.report.title.selfie", default: "Why are you reporting this selfie?") }
     /// "What's wrong with this profile?" — Retro · safety.report · verbatim · SOURCED
     public static var safetyReportTitleUser: String { CopyLookup.string("safety.report.title.user", default: "What's wrong with this profile?") }
     /// "Cancel" — Apple HIG · settings.account · verbatim · VERIFIED

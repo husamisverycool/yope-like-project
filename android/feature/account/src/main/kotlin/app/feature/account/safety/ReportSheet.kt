@@ -89,10 +89,13 @@ object ReportReasons {
     fun of(kind: ReportTargetKind): List<ReportReason> {
         val layout = Tokens.Layouts.SafetyReportLayoutReasons
         return when (kind) {
-            // A selfie reaction (viewer.selfiereaction) is photo content: the content list (`post` / `message` hold the same
-            // reasons). safety.report has no list of its own for it (gap reported).
+            // A selfie reaction (viewer.selfiereaction) is photo content: its list holds the post reasons (MERGE SR-10).
             ReportTargetKind.Post, ReportTargetKind.Message, ReportTargetKind.Selfie -> {
-                val wire = (if (kind == ReportTargetKind.Message) layout.message else layout.post).split(SEPARATOR)
+                val wire = when (kind) {
+                    ReportTargetKind.Message -> layout.message
+                    ReportTargetKind.Selfie -> layout.selfie
+                    else -> layout.post
+                }.split(SEPARATOR)
                 listOf(
                     ReportReason(R.string.safety_report_reason_dontlike, wire[0], dontLike = true),
                     ReportReason(R.string.safety_report_reason_nudity, wire[1]),
@@ -261,14 +264,13 @@ internal fun UndimmedDialogWindow() {
     SideEffect { (view.parent as? DialogWindowProvider)?.window?.setDimAmount(0f) }
 }
 
-/** The reasons sheet's title; none for a selfie reaction (`safety.report.title.*` has no `selfie` entry — gap reported). */
-@Composable
-private fun reportTitle(kind: ReportTargetKind): String? = when (kind) {
-    ReportTargetKind.Post -> stringResource(R.string.safety_report_title_post)
-    ReportTargetKind.Message -> stringResource(R.string.safety_report_title_message)
-    ReportTargetKind.User -> stringResource(R.string.safety_report_title_user)
-    ReportTargetKind.Group -> stringResource(R.string.safety_report_title_group)
-    ReportTargetKind.Selfie -> null
+/** The reasons sheet's title (`safety.report.title.*`, Retro's question with the kind's noun). */
+internal fun reportTitle(kind: ReportTargetKind): Int = when (kind) {
+    ReportTargetKind.Post -> R.string.safety_report_title_post
+    ReportTargetKind.Message -> R.string.safety_report_title_message
+    ReportTargetKind.User -> R.string.safety_report_title_user
+    ReportTargetKind.Group -> R.string.safety_report_title_group
+    ReportTargetKind.Selfie -> R.string.safety_report_title_selfie
 }
 
 /**
@@ -292,7 +294,7 @@ fun ReportContent(
             val name = state.firstName
             if (person != null && name != null) Choice(stringResource(R.string.safety_report_nextsteps_block, name), Tokens.Colors.globalDestructive) { onBlock(person) }
         } else {
-            reportTitle(state.target.kind)?.let { SheetTitle(it) }
+            SheetTitle(stringResource(reportTitle(state.target.kind)))
             ReportReasons.of(state.target.kind).forEach { reason ->
                 Choice(stringResource(reason.copy), Tokens.Colors.globalTextPrimary) { onReason(reason) }
             }

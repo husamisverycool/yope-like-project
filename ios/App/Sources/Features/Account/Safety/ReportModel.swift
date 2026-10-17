@@ -32,9 +32,9 @@ enum ReportReason: String, CaseIterable, Identifiable {
     /// "I don't like it" files nothing: it opens the next steps.
     var filesReport: Bool { self != .dontLike }
 
-    /// The reasons offered for a target kind, in Retro's order: posts and messages "I don't like it · Nudity or sexual
-    /// activity · Other", people and groups "It's impersonating someone · It's inappropriate · Other". A selfie reaction
-    /// is a photo on a post: the post's list (`viewer.selfiereaction.menu.report` is "Report Post" with the noun swapped).
+    /// The reasons offered for a target kind, in Retro's order: posts, messages and selfie reactions "I don't like it ·
+    /// Nudity or sexual activity · Other" (a selfie is photo content: its list holds the post reasons, MERGE SR-10),
+    /// people and groups "It's impersonating someone · It's inappropriate · Other".
     static func reasons(for kind: ReportTarget.Kind) -> [ReportReason] {
         switch kind {
         case .post, .message, .selfie: return [.dontLike, .nudity, .other]
@@ -47,8 +47,9 @@ enum ReportReason: String, CaseIterable, Identifiable {
     func wireValue(for kind: ReportTarget.Kind) -> String {
         let list: String
         switch kind {
-        case .post, .selfie: list = Tokens.Layouts.SafetyReportLayoutReasons.post
+        case .post: list = Tokens.Layouts.SafetyReportLayoutReasons.post
         case .message: list = Tokens.Layouts.SafetyReportLayoutReasons.message
+        case .selfie: list = Tokens.Layouts.SafetyReportLayoutReasons.selfie
         case .user: list = Tokens.Layouts.SafetyReportLayoutReasons.user
         case .group: list = Tokens.Layouts.SafetyReportLayoutReasons.group
         }
@@ -82,11 +83,12 @@ final class ReportModel {
         self.data = data
     }
 
-    /// `safety.report.title.*` by target kind (Retro's question).
+    /// `safety.report.title.*` by target kind (Retro's question with the kind's noun).
     var title: String {
         switch target.kind {
-        case .post, .selfie: return Copy.safetyReportTitlePost
+        case .post: return Copy.safetyReportTitlePost
         case .message: return Copy.safetyReportTitleMessage
+        case .selfie: return Copy.safetyReportTitleSelfie
         case .user: return Copy.safetyReportTitleUser
         case .group: return Copy.safetyReportTitleGroup
         }

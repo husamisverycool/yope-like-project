@@ -3338,6 +3338,16 @@
       "level": "SOURCED",
       "notes": "Noun swap profile → group."
     },
+    "safety.report.title.selfie": {
+      "text": "Why are you reporting this selfie?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_report_reason_title` ('Why are you reporting this post?'); mechanic: BeReal reports one RealMoji from its own view ('Tap the RealMoji you want to report.' · 'Select the report option.', help.bereal.com 10100086147229, design/research/selfie-reactions.md §1) — BeReal's report wording is not quoted there",
+      "pattern": "retro.voice.confirm",
+      "level": "SOURCED",
+      "notes": "Noun swap post → selfie, the noun of `viewer.selfiereaction.menu.report` ('Report Selfie'); as `safety.report.title.message`. MERGE SR-10."
+    },
     "safety.report.reason.dontLike": {
       "text": "I don't like it",
       "origin": "verbatim",

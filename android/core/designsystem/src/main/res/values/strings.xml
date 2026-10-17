@@ -1625,6 +1625,8 @@
     <string name="safety_report_title_message" formatted="false">Why are you reporting this message?</string>
     <!-- Retro · safety.report · verbatim · SOURCED -->
     <string name="safety_report_title_post" formatted="false">Why are you reporting this post?</string>
+    <!-- Retro · safety.report · adapted · SOURCED -->
+    <string name="safety_report_title_selfie" formatted="false">Why are you reporting this selfie?</string>
     <!-- Retro · safety.report · verbatim · SOURCED -->
     <string name="safety_report_title_user" formatted="false">What\'s wrong with this profile?</string>
     <!-- Apple HIG · settings.account · verbatim · VERIFIED -->

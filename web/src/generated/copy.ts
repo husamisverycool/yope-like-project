@@ -814,6 +814,7 @@ const table = {
   "safety.report.title.group": "What's wrong with this group?", // Retro · safety.report · SOURCED
   "safety.report.title.message": "Why are you reporting this message?", // Retro · safety.report · SOURCED
   "safety.report.title.post": "Why are you reporting this post?", // Retro · safety.report · SOURCED
+  "safety.report.title.selfie": "Why are you reporting this selfie?", // Retro · safety.report · SOURCED
   "safety.report.title.user": "What's wrong with this profile?", // Retro · safety.report · SOURCED
   "settings.account.alert.cancel": "Cancel", // Apple HIG · settings.account · VERIFIED
   "settings.account.birthday": "Birthday", // Retro · settings.account · SOURCED

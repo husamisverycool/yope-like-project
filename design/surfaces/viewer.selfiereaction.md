@@ -188,7 +188,8 @@ No rising bubbles and no fly-to-stack (BeReal AP #413–#437; same rule as RS-8 
   p_user_id = null)` (yours, or anyone's on your own post; `not_allowed`).
 - **Reads**: `selfie_reactions(id, post_id, user_id, group_id, image_path, created_at)` with the `reactions` read rule
   (members who can see the post, blocks hide both ways). Never a count.
-- **Report**: `report('selfie', <selfie_reactions.id>, reason)` → `safety.report`.
+- **Report**: `report('selfie', <selfie_reactions.id>, reason)` → `safety.report` (title `safety.report.title.selfie`,
+  the `selfie` reasons of `safety.report.layout.reasons`; MERGE SR-10).
 - **Cascades**: removed with the reactor's account, with a block, and with the photo (`delete_media`).
 - **Push**: `push.selfie_reaction` (type `reaction`), once per person, with `notifications.push.selfieReaction.*`;
   channel "Post Activity".

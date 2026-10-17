@@ -1032,15 +1032,16 @@
         "message": "I don't like it · Nudity or sexual activity · Other",
         "user": "It's impersonating someone · It's inappropriate · Other",
         "group": "It's impersonating someone · It's inappropriate · Other",
+        "selfie": "I don't like it · Nudity or sexual activity · Other",
         "sent": "the reason's English text is sent as p_reason (docs/API.md report)"
       },
       "source_app": "Retro",
       "surface": "safety.report",
       "element": "report reasons per target kind",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt media_viewer_report_reason_dont_like_it, _nudity, _other (posts); profile_report_reason_impersonation, _inappropriate, _other (profiles)",
-      "method": "Retro's two reason lists; messages take the post list, groups take the profile list (noun swap in the title only)",
+      "method": "Retro's two reason lists; messages and selfie reactions take the post list (a selfie is photo content), groups take the profile list (noun swap in the title only)",
       "level": "SOURCED",
-      "notes": "Was BLOCKED (moderation categories, owner). Retro's lists close it as a UI list; the owner may still extend the categories for moderation (docs/API.md §12 item 19)."
+      "notes": "Was BLOCKED (moderation categories, owner). Retro's lists close it as a UI list; the owner may still extend the categories for moderation (docs/API.md §12 item 19). `selfie`: a selfie reaction (viewer.selfiereaction, report kind 'selfie'), MERGE SR-10."
     },
     "safety.block.layout.menu": {
       "type": "layout",

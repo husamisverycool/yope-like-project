@@ -195,15 +195,20 @@ final class SocialSelfieReactionTests: XCTestCase {
 
     // MARK: Report
 
-    func testASelfieIsReportedWithThePostsReasons() async {
+    func testASelfieIsReportedWithItsOwnTitleAndThePostsReasons() async {
         XCTAssertEqual(ReportReason.reasons(for: .selfie), ReportReason.reasons(for: .post))
         let account = InMemoryAccountData(signedIn: SocialDemo.me)
         let report = ReportModel(target: ReportTarget(kind: .selfie, id: "00000000-0000-4000-8000-0000000b2001"), data: account)
-        XCTAssertEqual(report.title, Copy.safetyReportTitlePost)
+        // `safety.report.title.selfie` and the `selfie` list of `safety.report.layout.reasons` (MERGE SR-10).
+        XCTAssertEqual(report.title, Copy.safetyReportTitleSelfie)
+        XCTAssertEqual(
+            ReportReason.reasons(for: .selfie).map { $0.wireValue(for: .selfie) },
+            Tokens.Layouts.SafetyReportLayoutReasons.selfie.components(separatedBy: " · ")
+        )
         let filed = await report.submit(.nudity)
         XCTAssertTrue(filed)
         XCTAssertEqual(account.reports.last?.kind, .selfie)
-        XCTAssertEqual(account.reports.last?.reason, ReportReason.nudity.wireValue(for: .post))
+        XCTAssertEqual(account.reports.last?.reason, ReportReason.nudity.wireValue(for: .selfie))
     }
 
     // MARK: Capture layer
