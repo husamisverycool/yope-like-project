@@ -182,6 +182,10 @@ data class PublicAppConfig(
     val weekStartIsodow: Int?,
     val freeHistoryDays: Int?,
     val minAgeYears: Int?,
+    /** `message_edit_window_s` (migration 0047): Edit is offered only inside it; null = no Edit (edit_message fails closed). */
+    val messageEditWindowSeconds: Int? = null,
+    /** `typing_ttl_s` (migration 0048): set_typing is sent again every half of it while typing; null = no typing calls. */
+    val typingTtlSeconds: Int? = null,
 ) {
     companion object {
         fun from(rows: List<PublicAppConfigRow>): PublicAppConfig {
@@ -192,6 +196,8 @@ data class PublicAppConfig(
                 weekStartIsodow = byKey["week_start_isodow"],
                 freeHistoryDays = byKey["free_history_days"],
                 minAgeYears = byKey["min_age_years"],
+                messageEditWindowSeconds = byKey["message_edit_window_s"],
+                typingTtlSeconds = byKey["typing_ttl_s"],
             )
         }
     }

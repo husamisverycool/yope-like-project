@@ -204,11 +204,14 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
     /// Reply to a message; nil if it was deleted.
     public var replyToMessageID: MessageID?
     public var createdAt: Date
+    /// When the author last edited the text (`edit_message`, migration 0047): "Edited" shows under it; nil when never
+    /// edited.
+    public var editedAt: Date?
 
     public init(
         id: MessageID, groupID: GroupID, authorID: UserID, kind: MessageKind, body: String? = nil,
         postID: PostID? = nil, voicePath: String? = nil, voiceDurationMs: Int? = nil, voiceLevels: [Int]? = nil,
-        replyToPostID: PostID? = nil, replyToMessageID: MessageID? = nil, createdAt: Date
+        replyToPostID: PostID? = nil, replyToMessageID: MessageID? = nil, createdAt: Date, editedAt: Date? = nil
     ) {
         self.id = id
         self.groupID = groupID
@@ -222,6 +225,7 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
         self.replyToPostID = replyToPostID
         self.replyToMessageID = replyToMessageID
         self.createdAt = createdAt
+        self.editedAt = editedAt
     }
 
     enum CodingKeys: String, CodingKey {
@@ -236,6 +240,7 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
         case replyToPostID = "reply_to_post_id"
         case replyToMessageID = "reply_to_message_id"
         case createdAt = "created_at"
+        case editedAt = "edited_at"
     }
 }
 
@@ -262,6 +267,52 @@ public struct Reaction: Codable, Hashable, Sendable {
         case emoji
         case groupID = "group_id"
         case createdAt = "created_at"
+    }
+}
+
+/// `message_reactions` (§5.10a, migration 0047): one reaction per person per text or voice message — rows only, never a
+/// count (tenet: no counts).
+public struct MessageReaction: Codable, Hashable, Sendable {
+    public var messageID: MessageID
+    public var userID: UserID
+    public var emoji: String
+    public var groupID: GroupID
+    /// When the current emoji was set.
+    public var createdAt: Date
+
+    public init(messageID: MessageID, userID: UserID, emoji: String, groupID: GroupID, createdAt: Date) {
+        self.messageID = messageID
+        self.userID = userID
+        self.emoji = emoji
+        self.groupID = groupID
+        self.createdAt = createdAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case messageID = "message_id"
+        case userID = "user_id"
+        case emoji
+        case groupID = "group_id"
+        case createdAt = "created_at"
+    }
+}
+
+/// `chat_typing` (§5.10b, migration 0048): the person is typing while `until` is in the future. Never a number of people.
+public struct ChatTyping: Codable, Hashable, Sendable {
+    public var groupID: GroupID
+    public var userID: UserID
+    public var until: Date
+
+    public init(groupID: GroupID, userID: UserID, until: Date) {
+        self.groupID = groupID
+        self.userID = userID
+        self.until = until
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case groupID = "group_id"
+        case userID = "user_id"
+        case until
     }
 }
 

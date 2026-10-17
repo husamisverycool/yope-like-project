@@ -38,6 +38,14 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var messages: [Message] = []
         var posts: [PostWithMedia] = []
         var reactions: [Reaction] = []
+        /// Reactions on text / voice messages, one per person and message (`react_to_message` replaces).
+        var messageReactions: [MessageReaction] = []
+        /// `chat_typing` rows of every group.
+        var typing: [ChatTyping] = []
+        /// Each `set_typing` value sent, in order (kept apart from `calls`).
+        var typingCalls: [Bool] = []
+        /// `public_app_config`: nothing set by default (no Edit item, no typing calls).
+        var config = PublicAppConfig()
         /// Selfie reactions, one per person and post (`react_with_selfie` replaces).
         var selfies: [SelfieReaction] = []
         /// Stores a sent selfie's JPEG and returns its storage path (the Jolt demo keeps the file so the face shows);
@@ -256,7 +264,69 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
 
     func deleteMessage(id: MessageID, groupID: GroupID) async throws {
         try call("deleteMessage")
-        update { $0.messages.removeAll { $0.id == id } }
+        update {
+            $0.messages.removeAll { $0.id == id }
+            $0.messageReactions.removeAll { $0.messageID == id }
+        }
+    }
+
+    /// Like `edit_message`: my own text message gets the new body and `edited_at`; `message_not_found` otherwise.
+    func editMessage(id: MessageID, body: String) async throws -> Message {
+        await hold("editMessage")
+        try call("editMessage")
+        let me = read { $0.me }
+        guard var message = read({ $0.messages.first { $0.id == id } }), message.authorID == me, message.kind == .text else {
+            throw DataError.api(.messageNotFound)
+        }
+        if message.body != body {
+            message.body = body
+            message.editedAt = tick()
+        }
+        let edited = message
+        update { state in
+            if let index = state.messages.firstIndex(where: { $0.id == id }) { state.messages[index] = edited }
+        }
+        return edited
+    }
+
+    func publicConfig() async throws -> PublicAppConfig {
+        try call("publicConfig")
+        return read { $0.config }
+    }
+
+    func messageReactions(messageIDs: [MessageID]) async throws -> [MessageReaction] {
+        try call("messageReactions")
+        let wanted = Set(messageIDs)
+        return read { $0.messageReactions.filter { wanted.contains($0.messageID) }.sorted { $0.createdAt < $1.createdAt } }
+    }
+
+    /// Like `react_to_message`: one per person — a new emoji replaces mine (new time).
+    func reactToMessage(id: MessageID, emoji: String) async throws -> MessageReaction {
+        try call("reactToMessage")
+        let me = read { $0.me } ?? UserID("me")
+        guard let message = read({ $0.messages.first { $0.id == id } }) else { throw DataError.api(.messageNotFound) }
+        let row = MessageReaction(messageID: id, userID: me, emoji: emoji, groupID: message.groupID, createdAt: tick())
+        update { state in
+            state.messageReactions.removeAll { $0.messageID == id && $0.userID == me }
+            state.messageReactions.append(row)
+        }
+        return row
+    }
+
+    func unreactToMessage(id: MessageID) async throws {
+        try call("unreactToMessage")
+        let me = read { $0.me } ?? UserID("me")
+        update { $0.messageReactions.removeAll { $0.messageID == id && $0.userID == me } }
+    }
+
+    func typing(groupID: GroupID) async throws -> [ChatTyping] {
+        try call("typing")
+        return read { state in state.typing.filter { $0.groupID == groupID && $0.until > state.now } }
+    }
+
+    func setTyping(_ typing: Bool, groupID: GroupID) async throws {
+        update { $0.typingCalls.append(typing) }
+        try call("setTyping")
     }
 
     func posts(ids: [PostID]) async throws -> [PostWithMedia] {

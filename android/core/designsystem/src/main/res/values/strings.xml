@@ -613,6 +613,8 @@
     <string name="chat_reactions_picker_search" formatted="false">Search</string>
     <!-- Apple HIG / Material 3 · chat.thread · new · SOURCED -->
     <string name="chat_thread_a11y_back" formatted="false">Back</string>
+    <!-- Apple Messages · chat.thread · adapted · SOURCED -->
+    <string name="chat_thread_a11y_canceledit" formatted="false">Cancel edit</string>
     <!-- Retro · chat.thread · new · SOURCED -->
     <string name="chat_thread_a11y_cancelreply" formatted="false">Cancel reply</string>
     <!-- Retro · chat.thread · new · SOURCED · args: caption -->
@@ -639,6 +641,12 @@
     <string name="chat_thread_divider_today" formatted="false">Today</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_divider_yesterday" formatted="false">Yesterday</string>
+    <!-- Retro · chat.thread · verbatim · SOURCED -->
+    <string name="chat_thread_edit_bar" formatted="false">Edit message</string>
+    <!-- Retro · chat.thread · adapted · SOURCED -->
+    <string name="chat_thread_edit_error" formatted="false">Couldn\'t edit message</string>
+    <!-- Apple Messages · chat.thread · verbatim · SOURCED -->
+    <string name="chat_thread_edited" formatted="false">Edited</string>
     <!-- Retro · chat.thread · new · SOURCED -->
     <string name="chat_thread_empty_detail" formatted="false">Be the first to say hi.</string>
     <!-- Retro · chat.thread · adapted · SOURCED -->
@@ -657,6 +665,8 @@
     <string name="chat_thread_menu_delete" formatted="false">Unsend</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_menu_deletephoto" formatted="false">Delete</string>
+    <!-- Apple Messages · chat.thread · verbatim · SOURCED -->
+    <string name="chat_thread_menu_edit" formatted="false">Edit</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_menu_reply" formatted="false">Reply</string>
     <!-- Retro · chat.thread · adapted · SOURCED -->
@@ -691,6 +701,10 @@
     <string name="chat_thread_system_left">%1$s left the group</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_toast_copied" formatted="false">Copied!</string>
+    <!-- Stream Chat + WhatsApp · chat.thread · adapted · SOURCED · args: name -->
+    <string name="chat_thread_typing_one">%1$s is typing…</string>
+    <!-- Stream Chat · chat.thread · adapted · SOURCED · args: names, name -->
+    <string name="chat_thread_typing_several">%1$s and %2$s are typing…</string>
     <!-- Retro · chat.voice · new · SOURCED -->
     <string name="chat_voice_a11y_discard" formatted="false">Delete recording</string>
     <!-- Retro · chat.voice · new · SOURCED -->

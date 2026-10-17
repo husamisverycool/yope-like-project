@@ -47,6 +47,8 @@ enum SocialNotice: Equatable, Sendable {
     /// `chat.thread.toast.copied`
     case copied
     case reactionFailed
+    /// `chat.thread.edit.error`: `edit_message` failed; the edited text is back in the composer.
+    case editFailed
     case photoSaved
     case photoDeleted
     case saveFailed
@@ -87,7 +89,9 @@ enum SocialNotice: Equatable, Sendable {
 extension SocialNotice {
     /// Shown on screen already (the failed-message label), or an iOS announcement by spec (viewer.selfiereaction's
     /// sent and error lines: "Android Toast / iOS announcement"): announced to VoiceOver, never drawn as a toast.
-    var isAnnouncementOnly: Bool { self == .messageNotSent || self == .selfieSent || self == .selfieFailed }
+    var isAnnouncementOnly: Bool {
+        self == .messageNotSent || self == .selfieSent || self == .selfieFailed || self == .editFailed
+    }
 }
 
 /// One notice event; `id` changes every time.

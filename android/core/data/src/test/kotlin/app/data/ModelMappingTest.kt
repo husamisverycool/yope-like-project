@@ -84,6 +84,15 @@ class ModelMappingTest {
         assertEquals(120, config.invitationWindowSeconds)
         assertNull(config.minAgeYears)
         assertNull(config.freeHistoryDays)
+        assertNull(config.messageEditWindowSeconds) // not set: the chat offers no Edit
+        assertNull(config.typingTtlSeconds)
+        val chat = PublicAppConfig.from(listOf(
+            PublicAppConfigRow("message_edit_window_s", JsonPrimitive(900)),
+            PublicAppConfigRow("message_edit_max", JsonPrimitive(5)),
+            PublicAppConfigRow("typing_ttl_s", JsonPrimitive(6)),
+        ))
+        assertEquals(900, chat.messageEditWindowSeconds)
+        assertEquals(6, chat.typingTtlSeconds)
     }
 
     @Test fun searchHitsAndHistoryMonthsDecodeAndSearchArgumentsAreOptional() {
@@ -197,6 +206,35 @@ class ModelMappingTest {
         // create_overnight_post and due_developed_posts send it with an empty payload.
         assertEquals(GroupEvent.DevelopingChanged("g1"), RealtimeDecoding.broadcast("g1", "developing_changed", JsonObject(emptyMap())))
         assertNull(RealtimeDecoding.broadcast("g1", "unknown_event", bare))
+    }
+
+    /** Migrations 0047 / 0048: an edited message, reactions on messages and the typing rows, live. */
+    @Test fun editsMessageReactionsAndTypingDecodeToTypedEvents() {
+        val edited = JsonObject(mapOf(
+            "id" to JsonPrimitive("m1"), "group_id" to JsonPrimitive("g1"), "author_id" to JsonPrimitive("u1"), "kind" to JsonPrimitive("text"),
+            "body" to JsonPrimitive("hi!"), "post_id" to JsonNull, "voice_path" to JsonNull, "voice_duration_ms" to JsonNull,
+            "reply_to_post_id" to JsonNull, "reply_to_message_id" to JsonNull, "created_at" to JsonPrimitive("2026-10-15T13:35:09+00:00"),
+            "edited_at" to JsonPrimitive("2026-10-15T13:36:00.5+00:00"),
+        ))
+        val update = RealtimeDecoding.change("g1", "messages", edited, update = true) as GroupEvent.MessageUpdated
+        assertEquals(Instant.parse("2026-10-15T13:36:00.500Z"), update.message.editedAt)
+
+        val reaction = JsonObject(mapOf(
+            "message_id" to JsonPrimitive("m1"), "user_id" to JsonPrimitive("u2"), "emoji" to JsonPrimitive("🔥"),
+            "group_id" to JsonPrimitive("g1"), "created_at" to JsonPrimitive("2026-10-15T13:37:00+00:00"),
+        ))
+        val changed = RealtimeDecoding.change("g1", "message_reactions", reaction, update = true) as GroupEvent.MessageReactionChanged
+        assertEquals("🔥", changed.reaction.emoji)
+        assertEquals("u2", changed.reaction.userId)
+        assertNull(RealtimeDecoding.change("g2", "message_reactions", reaction, update = false))
+        assertEquals(
+            GroupEvent.MessageReactionsChanged("g1", "m1"),
+            RealtimeDecoding.broadcast("g1", "message_reactions_changed", JsonObject(mapOf("message_id" to JsonPrimitive("m1")))),
+        )
+
+        val typing = JsonObject(mapOf("group_id" to JsonPrimitive("g1"), "user_id" to JsonPrimitive("u2"), "until" to JsonPrimitive("2026-10-15T13:37:06+00:00")))
+        val typist = RealtimeDecoding.change("g1", "chat_typing", typing, update = false) as GroupEvent.TypingChanged
+        assertEquals(Instant.parse("2026-10-15T13:37:06Z"), typist.typing.until)
     }
 
     @Test fun postAndMessageRowsRoundTrip() {

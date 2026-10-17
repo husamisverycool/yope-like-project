@@ -3,6 +3,7 @@ package app.feature.social.chat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.data.error.DataError
+import app.data.model.ChatTyping
 import app.data.model.Group
 import app.data.model.Media
 import app.feature.social.common.videoDurationMs
@@ -10,6 +11,7 @@ import app.data.model.Message
 import app.data.model.MessageKind
 import app.data.model.Post
 import app.data.model.Profile
+import app.data.model.PublicAppConfig
 import app.data.offline.DataState
 import app.data.realtime.GroupEvent
 import app.data.repo.ReactionEntry
@@ -18,7 +20,9 @@ import app.feature.social.data.dataError
 import app.feature.social.reactions.withReaction
 import app.feature.social.reactions.withoutReaction
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -31,6 +35,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.io.File
+import java.time.Duration
+import java.time.Instant
 
 /** The quote above a reply (`chat.thread.layout.replyQuote`). */
 sealed interface Quote {
@@ -44,7 +50,10 @@ sealed interface Quote {
 /** What the reply bar replies to (`chat.thread.reply.bar` / `.barSelf`): a photo ([postId]) or a message ([messageId]). */
 data class ReplyTarget(val postId: String?, val messageId: String?, val name: String, val self: Boolean)
 
-/** One message as drawn. Photo messages carry their post, media and reaction rows (never a count). */
+/**
+ * One message as drawn. Photo messages carry their post, media and reaction rows; text and voice messages their own
+ * reaction rows (`chat.reactions.layout.messageReactions`, one per person) — never a count.
+ */
 data class ChatRow(
     val message: Message,
     /** Stable list key: an optimistic row keeps its local key after the server confirms it (no scroll jump). */
@@ -59,6 +68,10 @@ data class ChatRow(
     val media: Media? = null,
     val reactions: List<ReactionEntry> = emptyList(),
     val quote: Quote? = null,
+    /** `edited_at` is set: "Edited" under it (`chat.thread.layout.editMessage`). */
+    val edited: Boolean = false,
+    /** My own sent text message inside `message_edit_window_s`: the menu offers Edit. */
+    val canEdit: Boolean = false,
 ) {
     val id: String get() = message.id
     val kind: MessageKind get() = message.kind
@@ -81,6 +94,10 @@ data class ChatState(
     val zone: java.time.ZoneId = java.time.ZoneId.systemDefault(),
     /** Profiles of the group's members and the thread's senders. */
     val people: Map<String, Profile> = emptyMap(),
+    /** The message the composer is editing (`chat.thread.layout.editMessage`); the edit bar shows while set. */
+    val editing: String? = null,
+    /** First names on the typing line (`chat.thread.layout.typingLine`), in the order they started; never mine, never a count. */
+    val typing: List<String> = emptyList(),
 ) {
     enum class Phase { Loading, Ready, Error, OfflineEmpty }
 
@@ -97,6 +114,8 @@ sealed interface ChatEffect {
     data object Sent : ChatEffect
     data object SendFailed : ChatEffect
     data object ReactionFailed : ChatEffect
+    /** `edit_message` failed: the edited text is back in the composer (`chat.thread.edit.error`). */
+    data object EditFailed : ChatEffect
     data object DeleteFailed : ChatEffect
     data object PhotoDeleted : ChatEffect
     data object RecordFailed : ChatEffect
@@ -111,6 +130,8 @@ internal data class ChatHydration(
     val media: List<Media> = emptyList(),
     val profiles: List<Profile> = emptyList(),
     val reactions: Map<String, List<CachedReaction>> = emptyMap(),
+    /** Reactions on text / voice messages, by message id. */
+    val messageReactions: Map<String, List<CachedReaction>> = emptyMap(),
 )
 
 @Serializable
@@ -138,6 +159,17 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
     private val media = LinkedHashMap<String, Media>()
     private val profiles = LinkedHashMap<String, Profile>()
     private val reactions = LinkedHashMap<String, List<ReactionEntry>>()
+    /** Reactions on text / voice messages by message id (`chat.reactions.layout.messageReactions`), oldest first. */
+    private val messageReactions = LinkedHashMap<String, List<ReactionEntry>>()
+    /** `message_edit_window_s` and `typing_ttl_s`; null until read (no Edit, no typing calls). */
+    private var config: PublicAppConfig? = null
+    /** The composer's unsent text, put aside while a message is edited. */
+    private var draftBeforeEdit = ""
+    /** When `set_typing(true)` was last sent; null = not typing as far as the server knows. */
+    private var typingSentAt: Instant? = null
+    /** People typing: user id → `until`, in the order they started (`chat.thread.layout.typingLine`). */
+    private val typists = LinkedHashMap<String, Instant>()
+    private var typingExpiry: Job? = null
     /** Quoted messages older than the loaded pages. */
     private val quoted = HashMap<String, Message>()
     private val cacheKey = "chat/$groupId"
@@ -145,6 +177,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
     init {
         viewModelScope.launch { loadFirstPage() }
         viewModelScope.launch { loadMeta() }
+        viewModelScope.launch { loadTyping() }
         viewModelScope.launch { data.events(groupId).collect(::onEvent) }
         viewModelScope.launch { data.online.distinctUntilChanged().drop(1).collect { online -> if (online) refresh() } }
     }
@@ -179,6 +212,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         val group = runCatching { data.group(groupId) }.getOrNull()
         val members = runCatching { data.members(groupId) }.getOrDefault(emptyList())
         members.mapNotNull { it.profile }.forEach { profiles[it.id] = it }
+        if (config == null) config = runCatching { data.publicConfig() }.getOrNull()
         val zone = group?.timeZone?.let { runCatching { java.time.ZoneId.of(it) }.getOrNull() } ?: java.time.ZoneId.systemDefault()
         _state.update { it.copy(group = group, zone = zone) }
         publish()
@@ -233,14 +267,22 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         }
     }
 
-    fun setDraft(text: String) = _state.update { it.copy(draft = text) }
+    fun setDraft(text: String) {
+        _state.update { it.copy(draft = text) }
+        typingChanged(text)
+    }
 
     /**
      * Sends the draft (`send_message` text), optimistically: the message shows at once and the field
      * clears; if the call fails the message stays in the thread as failed
-     * (`chat.thread.layout.failedMessage`) and a tap on it sends it again ([retrySend]).
+     * (`chat.thread.layout.failedMessage`) and a tap on it sends it again ([retrySend]). While editing, saves the edit
+     * instead ([saveEdit]).
      */
     fun send() {
+        if (_state.value.editing != null) {
+            saveEdit()
+            return
+        }
         val body = _state.value.draft.trim()
         val me = data.currentUserId() ?: return
         if (body.isEmpty()) return
@@ -249,6 +291,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         _state.update { it.copy(draft = "", replyTo = null) }
         publish()
         deliver(local)
+        stopTyping()
     }
 
     /** Reply to [row] (context menu "Reply"): the reply bar shows above the composer. A photo message replies to its post. */
@@ -258,7 +301,152 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         val target = if (row.kind == MessageKind.Photo) ReplyTarget(row.message.postId, null, name, row.message.authorId == me)
         else ReplyTarget(null, row.id.takeUnless { it.startsWith(LOCAL_PREFIX) }, name, row.message.authorId == me)
         if (target.postId == null && target.messageId == null) return
+        if (_state.value.editing != null) cancelEdit()
         _state.update { it.copy(replyTo = target) }
+    }
+
+    // ---- editing (`chat.thread.layout.editMessage`) ----
+
+    /** My own sent text message, younger than `message_edit_window_s`; no window known → no Edit. */
+    private fun canEdit(m: Message): Boolean {
+        val window = config?.messageEditWindowSeconds?.takeIf { it > 0 } ?: return false
+        if (m.authorId != data.currentUserId() || m.kind != MessageKind.Text || m.id in pending) return false
+        return Duration.between(m.createdAt, clock.instant()) < Duration.ofSeconds(window.toLong())
+    }
+
+    /** "Edit": the composer holds the message's text with the edit bar; an unsent draft is put aside, a reply dropped. */
+    fun startEdit(row: ChatRow) {
+        if (!canEdit(row.message)) return
+        if (_state.value.editing == null) draftBeforeEdit = _state.value.draft
+        _state.update { it.copy(editing = row.id, replyTo = null, draft = row.message.body.orEmpty()) }
+        stopTyping()
+    }
+
+    /** The edit bar's close glyph: the message keeps its text, the composer gets back what it held. */
+    fun cancelEdit() {
+        if (_state.value.editing == null) return
+        val restored = draftBeforeEdit
+        draftBeforeEdit = ""
+        _state.update { it.copy(editing = null, draft = restored) }
+    }
+
+    /**
+     * Send while editing (`edit_message`): the new text shows at once; the same text closes the bar without a call. On
+     * failure (offline, `edit_window_closed`, …) the message gets its text back and the composer holds the edited text
+     * with the edit bar again ([ChatEffect.EditFailed]).
+     */
+    private fun saveEdit() {
+        val id = _state.value.editing ?: return
+        val body = _state.value.draft.trim()
+        if (body.isEmpty()) return
+        val before = messages.firstOrNull { it.id == id }
+        val restored = draftBeforeEdit
+        draftBeforeEdit = ""
+        _state.update { it.copy(editing = null, draft = restored) }
+        if (before == null || body == before.body) {
+            publish()
+            return
+        }
+        messages = messages.map { if (it.id == id) it.copy(body = body, editedAt = clock.instant()) else it }
+        publish()
+        viewModelScope.launch {
+            try {
+                val saved = data.editMessage(id, body)
+                messages = messages.map { if (it.id == id) saved else it }
+                publish()
+                _effects.emit(ChatEffect.Sent)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                if (messages.none { it.id == id }) return@launch
+                messages = messages.map { if (it.id == id) before else it }
+                if (_state.value.editing == null) {
+                    draftBeforeEdit = _state.value.draft
+                    _state.update { it.copy(editing = id, draft = body) }
+                }
+                publish()
+                _effects.emit(ChatEffect.EditFailed)
+            }
+        }
+    }
+
+    // ---- typing (`chat.thread.layout.typingLine`) ----
+
+    /**
+     * The composer's text changed: `set_typing(true)` while it holds text (again once half of `typing_ttl_s` passed),
+     * `set_typing(false)` when it empties. Nothing while editing a message, nothing without a TTL.
+     */
+    private fun typingChanged(text: String) {
+        val ttl = config?.typingTtlSeconds?.takeIf { it > 0 } ?: return
+        if (text.isBlank() || _state.value.editing != null) {
+            stopTyping()
+            return
+        }
+        val now = clock.instant()
+        val sent = typingSentAt
+        if (sent != null && Duration.between(sent, now) < Duration.ofMillis(ttl * HALF_SECOND_MS)) return
+        typingSentAt = now
+        viewModelScope.launch { runCatching { data.setTyping(groupId, true) } }
+    }
+
+    /** `set_typing(false)`: the message was sent, the field emptied, or the thread is closing. */
+    fun stopTyping() {
+        if (typingSentAt == null) return
+        typingSentAt = null
+        viewModelScope.launch { runCatching { data.setTyping(groupId, false) } }
+    }
+
+    private suspend fun loadTyping() {
+        val rows = runCatching { data.typing(groupId) }.getOrNull() ?: return
+        rows.sortedBy { it.until }.forEach(::applyTyping)
+        ensureProfiles(rows.map { it.userId })
+        publish()
+    }
+
+    /** One `chat_typing` row: a new typist joins the end of the line, a renewal keeps its place, a past `until` leaves. */
+    private fun applyTyping(row: ChatTyping) {
+        if (row.groupId != groupId || row.userId == data.currentUserId()) return
+        val now = clock.instant()
+        val current = typists[row.userId]
+        when {
+            !row.until.isAfter(now) -> typists.remove(row.userId)
+            current != null && current.isAfter(now) -> typists[row.userId] = row.until
+            else -> {
+                typists.remove(row.userId)
+                typists[row.userId] = row.until
+            }
+        }
+        scheduleTypingExpiry()
+    }
+
+    /** Drops the rows whose `until` passed (the device clock: nothing marks the end of typing). */
+    internal fun pruneTyping() {
+        val now = clock.instant()
+        typists.entries.removeAll { !it.value.isAfter(now) }
+        scheduleTypingExpiry()
+        publish()
+    }
+
+    private fun scheduleTypingExpiry() {
+        typingExpiry?.cancel()
+        val next = typists.values.minOrNull() ?: return
+        val wait = Duration.between(clock.instant(), next).toMillis().coerceAtLeast(0)
+        typingExpiry = viewModelScope.launch {
+            delay(wait)
+            pruneTyping()
+        }
+    }
+
+    private fun typingNames(): List<String> {
+        val now = clock.instant()
+        val me = data.currentUserId()
+        return typists.filter { (user, until) -> user != me && until.isAfter(now) }.keys.mapNotNull { profiles[it]?.firstName }
+    }
+
+    private suspend fun ensureProfiles(ids: Collection<String>) {
+        val missing = ids.filter { it !in profiles }.distinct()
+        if (missing.isEmpty()) return
+        runCatching { data.profiles(missing) }.getOrNull()?.forEach { profiles[it.id] = it }
     }
 
     fun cancelReply() = _state.update { it.copy(replyTo = null) }
@@ -386,6 +574,54 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         }
     }
 
+    /**
+     * An emoji on a text / voice message (`chat.reactions.layout.messageReactions`): one per person — another emoji
+     * replaces mine at once, my own emoji again takes it back; undone if the call fails.
+     */
+    fun reactToMessage(messageId: String, emoji: String) {
+        val me = data.currentUserId() ?: return
+        val before = messageReactions[messageId].orEmpty()
+        if (before.any { it.userId == me && it.emoji == emoji }) {
+            unreactToMessage(messageId)
+            return
+        }
+        val m = messages.firstOrNull { it.id == messageId } ?: return
+        if (m.kind != MessageKind.Text && m.kind != MessageKind.Voice) return
+        messageReactions[messageId] = before.filterNot { it.userId == me } + ReactionEntry(me, emoji)
+        publish()
+        viewModelScope.launch {
+            try {
+                data.reactToMessage(messageId, emoji)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                messageReactions[messageId] = before
+                publish()
+                _effects.emit(ChatEffect.ReactionFailed)
+            }
+        }
+    }
+
+    /** Takes my reaction off a message (`unreact_to_message`): at once, restored if the call fails. */
+    fun unreactToMessage(messageId: String) {
+        val me = data.currentUserId() ?: return
+        val before = messageReactions[messageId].orEmpty()
+        if (before.none { it.userId == me }) return
+        messageReactions[messageId] = before.filterNot { it.userId == me }
+        publish()
+        viewModelScope.launch {
+            try {
+                data.unreactToMessage(messageId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                messageReactions[messageId] = before
+                publish()
+                _effects.emit(ChatEffect.ReactionFailed)
+            }
+        }
+    }
+
     /** Your own text / voice message (`delete_message`, after the confirmation): removed at once, restored if the call fails. A failed (never sent) one just goes. */
     fun deleteMessage(messageId: String) {
         pending[messageId]?.let { local ->
@@ -446,6 +682,8 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
                 }
             }
             is GroupEvent.MessageUpdated -> {
+                // An edit (`edit_message`) or a reply losing its target: the row changes in place.
+                if (event.message.id in quoted) quoted[event.message.id] = event.message
                 messages = messages.map { if (it.id == event.message.id) event.message else it }
                 runCatching { hydrate(listOf(event.message)) }
                 publish()
@@ -478,7 +716,31 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
                     publish()
                 }
             }
-            is GroupEvent.Subscribed -> if (event.resumed) refresh()
+            is GroupEvent.MessageReactionChanged -> {
+                val r = event.reaction
+                if (messages.any { it.id == r.messageId }) {
+                    messageReactions[r.messageId] = messageReactions[r.messageId].orEmpty().filterNot { it.userId == r.userId } + ReactionEntry(r.userId, r.emoji, r.createdAt)
+                    ensureProfiles(listOf(r.userId))
+                    publish()
+                }
+            }
+            is GroupEvent.MessageReactionsChanged -> {
+                if (messages.none { it.id == event.messageId }) return
+                runCatching { data.messageReactions(listOf(event.messageId)) }.getOrNull()?.let { fresh ->
+                    messageReactions[event.messageId] = fresh[event.messageId].orEmpty()
+                    ensureProfiles(messageReactions[event.messageId].orEmpty().map { it.userId })
+                    publish()
+                }
+            }
+            is GroupEvent.TypingChanged -> {
+                applyTyping(event.typing)
+                ensureProfiles(listOf(event.typing.userId))
+                publish()
+            }
+            is GroupEvent.Subscribed -> if (event.resumed) {
+                refresh()
+                if (event.stream == GroupEvent.Stream.Changes) loadTyping()
+            }
             // Selfie reactions show only in photo.viewer (viewer.selfiereaction); a reveal reaches the chat as its photo
             // messages (MessageInserted), not through the developing state.
             is GroupEvent.PostInserted, is GroupEvent.Unavailable, is GroupEvent.SelfieReactionChanged, is GroupEvent.DevelopingChanged -> Unit
@@ -494,6 +756,8 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
 
     private fun remove(messageId: String) {
         messages = messages.filterNot { it.id == messageId }
+        messageReactions.remove(messageId)
+        if (_state.value.editing == messageId) cancelEdit()
         publish()
     }
 
@@ -528,9 +792,15 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
             val rows = data.reactions(reactionPosts)
             reactionPosts.forEach { id -> reactions[id] = rows[id].orEmpty() }
         }
+        // Reactions on text / voice messages; a failure here leaves the rest of the page drawn.
+        val reactable = batch.filter { (it.kind == MessageKind.Text || it.kind == MessageKind.Voice) && it.id !in pending }.map { it.id }
+        if (reactable.isNotEmpty()) {
+            runCatching { data.messageReactions(reactable) }.getOrNull()?.let { rows -> reactable.forEach { id -> messageReactions[id] = rows[id].orEmpty() } }
+        }
         val quotedIds = batch.mapNotNull { it.replyToMessageId }.filter { id -> messages.none { it.id == id } && id !in quoted }
         quotedIds.forEach { id -> runCatching { data.message(id) }.getOrNull()?.let { quoted[id] = it } }
-        val people = (batch.map { it.authorId } + posts.values.map { it.authorId } + quoted.values.map { it.authorId }).filter { it !in profiles }.distinct()
+        val reactors = reactable.flatMap { id -> messageReactions[id].orEmpty().map { it.userId } }
+        val people = (batch.map { it.authorId } + posts.values.map { it.authorId } + quoted.values.map { it.authorId } + reactors).filter { it !in profiles }.distinct()
         if (people.isNotEmpty()) data.profiles(people).forEach { profiles[it.id] = it }
     }
 
@@ -540,6 +810,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
             media = media.values.toList(),
             profiles = profiles.values.toList(),
             reactions = reactions.mapValues { (_, list) -> list.map { CachedReaction(it.userId, it.emoji) } },
+            messageReactions = messageReactions.mapValues { (_, list) -> list.map { CachedReaction(it.userId, it.emoji) } },
         )
         runCatching { data.cachePut(cacheKey, ChatHydration.serializer(), value) }
     }
@@ -550,6 +821,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         cached.media.forEach { media.putIfAbsent(it.id, it) }
         cached.profiles.forEach { profiles.putIfAbsent(it.id, it) }
         cached.reactions.forEach { (id, list) -> reactions.putIfAbsent(id, list.map { ReactionEntry(it.userId, it.emoji) }) }
+        cached.messageReactions.forEach { (id, list) -> messageReactions.putIfAbsent(id, list.map { ReactionEntry(it.userId, it.emoji) }) }
     }
 
     private fun quoteFor(m: Message, post: Post?): Quote? {
@@ -579,11 +851,13 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
                 mine = m.authorId == me,
                 post = post,
                 media = post?.let { media[it.mediaId] },
-                reactions = m.postId?.let { reactions[it] }.orEmpty(),
+                reactions = if (m.kind == MessageKind.Photo) m.postId?.let { reactions[it] }.orEmpty() else messageReactions[m.id].orEmpty(),
                 quote = quoteFor(m, post),
+                edited = m.editedAt != null,
+                canEdit = canEdit(m),
             )
         }
-        _state.update { it.copy(rows = rows, me = me, people = profiles.toMap()) }
+        _state.update { it.copy(rows = rows, me = me, people = profiles.toMap(), typing = typingNames()) }
     }
 
     /** Messages of [ChatRow]s for [Quote] taps etc. */
@@ -592,5 +866,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
     companion object {
         const val PAGE = 50
         private const val LOCAL_PREFIX = "local-"
+        /** `typing_ttl_s / 2` in milliseconds per second of TTL. */
+        private const val HALF_SECOND_MS = 500L
     }
 }

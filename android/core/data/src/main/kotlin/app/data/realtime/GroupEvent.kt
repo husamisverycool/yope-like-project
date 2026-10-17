@@ -1,6 +1,8 @@
 package app.data.realtime
 
+import app.data.model.ChatTyping
 import app.data.model.Message
+import app.data.model.MessageReaction
 import app.data.model.Post
 import app.data.model.Reaction
 import app.data.model.SelfieReaction
@@ -22,13 +24,23 @@ sealed interface GroupEvent {
     data class Unavailable(override val groupId: String, val stream: Stream) : GroupEvent
 
     data class MessageInserted(override val groupId: String, val message: Message) : GroupEvent
-    /** A reply lost its target (`reply_to_*` set to null after a deletion). */
+    /** A message was edited (`edit_message`, migration 0047) or a reply lost its target (`reply_to_*` set to null after a deletion). */
     data class MessageUpdated(override val groupId: String, val message: Message) : GroupEvent
     data class PostInserted(override val groupId: String, val post: Post) : GroupEvent
     data class PostUpdated(override val groupId: String, val post: Post) : GroupEvent
     data class ReactionAdded(override val groupId: String, val reaction: Reaction) : GroupEvent
     /** A selfie reaction was added or replaced (§14.1; removals arrive as [ReactionsChanged]). */
     data class SelfieReactionChanged(override val groupId: String, val selfie: SelfieReaction) : GroupEvent
+
+    /**
+     * Someone set or replaced their reaction on a text / voice message (`message_reactions` inserts and updates, migration
+     * 0047); removals arrive as [MessageReactionsChanged].
+     */
+    data class MessageReactionChanged(override val groupId: String, val reaction: MessageReaction) : GroupEvent
+    /** Refetch that message's reactions (`message_reactions_changed`: a reaction was removed; the payload names no one). */
+    data class MessageReactionsChanged(override val groupId: String, val messageId: String) : GroupEvent
+    /** Someone started or stopped typing (`chat_typing` inserts and updates, migration 0048): typing while `until` is ahead. */
+    data class TypingChanged(override val groupId: String, val typing: ChatTyping) : GroupEvent
 
     /** Remove the post and its chat photo message; drop it from walls, recaps, albums. */
     data class PostDeleted(override val groupId: String, val postId: String, val mediaId: String?) : GroupEvent
@@ -44,7 +56,7 @@ sealed interface GroupEvent {
 
     /** The two subscriptions per group. */
     enum class Stream {
-        /** Postgres changes on `messages`, `posts`, `reactions`, `selfie_reactions` filtered by `group_id`. */
+        /** Postgres changes on `messages`, `posts`, `reactions`, `selfie_reactions`, `message_reactions`, `chat_typing` filtered by `group_id`. */
         Changes,
         /** The private broadcast topic `group:<id>` (deletions, reaction and developing changes). */
         Deletions,

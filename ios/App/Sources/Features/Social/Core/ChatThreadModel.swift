@@ -68,13 +68,32 @@ final class ChatThreadModel {
     private(set) var hasCheckedCache = false
     /// Add-only photo access was denied on "Save": the native alert with the Settings link shows.
     var saveDenied = false
+    /// Reactions on text and voice messages (`chat.reactions.layout.messageReactions`): one row per person, oldest first.
+    private(set) var messageReactions: [MessageID: [MessageReaction]] = [:]
+    /// The tunables the thread reads (`message_edit_window_s`, `typing_ttl_s`); nil until read.
+    private(set) var config: PublicAppConfig?
+    /// The message the composer is editing (`chat.thread.layout.editMessage`); the edit bar shows while set.
+    private(set) var editTarget: MessageID?
+    /// Who is typing (`chat.thread.layout.typingLine`), in the order they started; rows whose `until` passed are dropped.
+    private(set) var typists: [ChatTyping] = []
+    /// The composer's unsent text, put aside while a message is edited.
+    @ObservationIgnored private var draftBeforeEdit = ""
+    /// When `set_typing(true)` was last sent (nil: not typing as far as the server knows).
+    @ObservationIgnored private var typingSentAt: Date?
+    @ObservationIgnored private var typingExpiry: Task<Void, Never>?
+    @ObservationIgnored private let now: @Sendable () -> Date
 
     private var localCounter = 0
 
-    init(groupID: GroupID, focusMessageID: MessageID? = nil, data: any SocialDataSource) {
+    /// - Parameter now: the clock of the edit window and the typing line (tests pass a fixed one).
+    init(
+        groupID: GroupID, focusMessageID: MessageID? = nil, data: any SocialDataSource,
+        now: @escaping @Sendable () -> Date = { Date() }
+    ) {
         self.groupID = groupID
         self.focusMessageID = focusMessageID
         self.data = data
+        self.now = now
     }
 
     // MARK: Derived
@@ -122,6 +141,44 @@ final class ChatThreadModel {
         return message.body?.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
     }
 
+    // MARK: Derived — reactions on messages, editing, typing
+
+    /// The reactions on a text or voice message as the chip and the Reactions sheet show them (`ReactionSummary` rows
+    /// keyed by the message: the sheet reads only who, which emoji and when).
+    func reactionSummary(of messageID: MessageID) -> ReactionSummary {
+        ReactionSummary((messageReactions[messageID] ?? []).map { row in
+            Reaction(postID: PostID(messageID.rawValue), userID: row.userID, emoji: row.emoji, groupID: row.groupID, createdAt: row.createdAt)
+        })
+    }
+
+    /// My emoji on a message (selected in the quick row and the picker): none or one.
+    func myEmoji(onMessage messageID: MessageID) -> Set<String> {
+        guard let me else { return [] }
+        return Set((messageReactions[messageID] ?? []).filter { $0.userID == me }.map(\.emoji))
+    }
+
+    /// Who reacted with what on a message, oldest first — the chip's accessibility value (rows, never a count).
+    func messageReactionRows(_ messageID: MessageID) -> [MessageReaction] {
+        messageReactions[messageID] ?? []
+    }
+
+    /// `chat.thread.layout.editMessage`: my own sent text message, younger than `message_edit_window_s`; no window known
+    /// → no Edit.
+    func canEdit(_ message: Message) -> Bool {
+        guard isMine(message), message.kind == .text, !pending.contains(message.id),
+              let window = config?.messageEditWindowSeconds, window > 0 else { return false }
+        return now().timeIntervalSince(message.createdAt) < TimeInterval(window)
+    }
+
+    var isEditing: Bool { editTarget != nil }
+
+    /// The first names on the typing line (`chat.thread.layout.typingLine`), in the order they started; mine never.
+    func typingNames(at date: Date? = nil) -> [String] {
+        let moment = date ?? now()
+        return typists.filter { $0.until > moment && $0.userID != me }
+            .compactMap { profile($0.userID)?.socialFirstName }
+    }
+
     func hasQuote(_ message: Message) -> Bool {
         quotedPost(of: message) != nil || quotedMessage(of: message) != nil
     }
@@ -145,7 +202,9 @@ final class ChatThreadModel {
         }
         hasCheckedCache = true
         await loadGroup()
+        if config == nil { config = try? await data.publicConfig() }
         await refresh()
+        await loadTyping()
     }
 
     /// Reloads the newest page (pull, foreground, reconnect — docs/API.md §8.3).
@@ -250,7 +309,15 @@ final class ChatThreadModel {
                 reactions[id] = summaries[id] ?? ReactionSummary()
             }
         }
+        let reactable = batch.filter { ($0.kind == .text || $0.kind == .voice) && !pending.contains($0.id) }.map(\.id)
+        if !reactable.isEmpty, let rows = try? await data.messageReactions(messageIDs: reactable) {
+            let byMessage = Dictionary(grouping: rows, by: \.messageID)
+            for id in reactable {
+                messageReactions[id] = (byMessage[id] ?? []).sorted { $0.createdAt < $1.createdAt }
+            }
+        }
         let reactors = photoIDs.flatMap { reactions[$0]?.rows.map(\.userID) ?? [] }
+            + reactable.flatMap { messageReactions[$0]?.map(\.userID) ?? [] }
         let people = (batch.map(\.authorID) + posts.values.map(\.post.authorID) + quotedMessages.values.map(\.authorID) + reactors)
             .socialUnique()
             .filter { profiles[$0] == nil }
@@ -307,6 +374,8 @@ final class ChatThreadModel {
             phase = .ready
             if message.authorID != me { arrival = message }
         case let .messageUpdated(message):
+            // An edit (`edit_message`) or a reply losing its target: the row changes in place.
+            if quotedMessages[message.id] != nil { quotedMessages[message.id] = message }
             guard let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
             messages[index] = message
         case let .postInserted(post), let .postUpdated(post):
@@ -324,8 +393,22 @@ final class ChatThreadModel {
             }
         case let .reactionsChanged(postID):
             await reloadReactions(postID)
+        case let .messageReactionUpserted(reaction):
+            guard reaction.groupID == groupID, messages.contains(where: { $0.id == reaction.messageID }) else { return }
+            var rows = (messageReactions[reaction.messageID] ?? []).filter { $0.userID != reaction.userID }
+            rows.append(reaction)
+            messageReactions[reaction.messageID] = rows.sorted { $0.createdAt < $1.createdAt }
+            await loadProfiles([reaction.userID])
+        case let .messageReactionsChanged(messageID):
+            guard messages.contains(where: { $0.id == messageID }) else { return }
+            await reloadMessageReactions(messageID)
+        case let .typingChanged(row):
+            guard row.groupID == groupID, row.userID != me else { return }
+            applyTyping(row)
+            await loadProfiles([row.userID])
         case .resubscribed:
             await refresh()
+            await loadTyping()
         case .subscribed, .subscriptionFailed:
             break
         case .selfieReactionUpserted, .developingChanged, .plansChanged:
@@ -358,12 +441,26 @@ final class ChatThreadModel {
             messages[index].replyToMessageID = nil
         }
         if case let .message(id, _)? = replyTarget, id == messageID { replyTarget = nil }
+        messageReactions[messageID] = nil
+        if editTarget == messageID { cancelEdit() }
         if messages.isEmpty, phase == .ready { phase = .empty }
     }
 
     private func reloadReactions(_ postID: PostID) async {
         guard let rows = try? await data.reactions(postIDs: [postID]) else { return }
         reactions[postID] = ReactionSummary(rows)
+    }
+
+    private func reloadMessageReactions(_ messageID: MessageID) async {
+        guard let rows = try? await data.messageReactions(messageIDs: [messageID]) else { return }
+        messageReactions[messageID] = rows.filter { $0.messageID == messageID }.sorted { $0.createdAt < $1.createdAt }
+        await loadProfiles(rows.map(\.userID))
+    }
+
+    private func loadProfiles(_ ids: [UserID]) async {
+        let missing = ids.socialUnique().filter { profiles[$0] == nil }
+        guard !missing.isEmpty, let found = try? await data.profiles(ids: missing) else { return }
+        for profile in found { profiles[profile.id] = profile }
     }
 
     private func insert(_ message: Message) {
@@ -381,6 +478,7 @@ final class ChatThreadModel {
     /// Context menu "Reply": the reply bar shows above the field (`chat.composer.placeholderReply`).
     func startReply(to message: Message) {
         guard !pending.contains(message.id) else { return }
+        if isEditing { cancelEdit() }
         if message.kind == .photo, let postID = message.postID {
             replyTarget = .post(postID, author: message.authorID)
         } else {
@@ -411,6 +509,10 @@ final class ChatThreadModel {
     /// with `chat.thread.sending` under it and is replaced by the server's row. On failure it stays with
     /// `chat.thread.sendFailed` (`chat.thread.layout.failedMessage`); tapping it sends it again.
     func sendDraft() async {
+        if editTarget != nil {
+            await saveEdit()
+            return
+        }
         let body = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !body.isEmpty, let me else { return }
         draft = ""
@@ -428,6 +530,8 @@ final class ChatThreadModel {
         ))
         outgoing[local.id] = .text(body, replyToPost: replyToPost, replyToMessage: replyToMessage)
         await deliver(local.id)
+        // Sent: the typing line ends (the message is already on screen, so the call never holds it up).
+        await stopTyping()
     }
 
     /// Uploads and sends a recorded voice message with its waveform (`chat.voice`, C-36); shown at once, playable from
@@ -672,6 +776,172 @@ final class ChatThreadModel {
         }
     }
 
+    // MARK: Reactions on messages (`chat.reactions.layout.messageReactions`)
+
+    /// An emoji on a text or voice message (quick row or picker): one per person — another emoji replaces mine at once,
+    /// my own emoji again takes it back (`unreact_to_message`). Undone if the call fails (`chat.reactions.error`).
+    func toggleReaction(messageID: MessageID, emoji: String) async {
+        guard let me else { return }
+        let before = messageReactions[messageID] ?? []
+        if before.contains(where: { $0.userID == me && $0.emoji == emoji }) {
+            await unreact(messageID: messageID)
+            return
+        }
+        guard let message = messages.first(where: { $0.id == messageID }), message.kind == .text || message.kind == .voice,
+              !pending.contains(messageID) else { return }
+        messageReactions[messageID] = before.filter { $0.userID != me }
+            + [MessageReaction(messageID: messageID, userID: me, emoji: emoji, groupID: groupID, createdAt: now())]
+        do {
+            _ = try await data.reactToMessage(id: messageID, emoji: emoji)
+        } catch {
+            messageReactions[messageID] = before
+            if SocialFailure(error) == .offline { isOffline = true }
+            signals.emit(.failed)
+            signals.post(.reactionFailed)
+        }
+    }
+
+    /// Takes my reaction off a message (`unreact_to_message`; the Reactions sheet's own row, or my emoji again).
+    func unreact(messageID: MessageID) async {
+        guard let me, let before = messageReactions[messageID], before.contains(where: { $0.userID == me }) else { return }
+        messageReactions[messageID] = before.filter { $0.userID != me }
+        do {
+            try await data.unreactToMessage(id: messageID)
+        } catch {
+            if SocialFailure(error) == .notFound { return }
+            messageReactions[messageID] = before
+            signals.emit(.failed)
+            signals.post(.reactionFailed)
+        }
+    }
+
+    // MARK: Editing (`chat.thread.layout.editMessage`)
+
+    /// "Edit" on my own text message: the composer holds its text with the edit bar; an unsent draft is put aside and a
+    /// reply in progress dropped.
+    func startEdit(_ message: Message) {
+        guard canEdit(message) else { return }
+        if editTarget == nil { draftBeforeEdit = draft }
+        replyTarget = nil
+        editTarget = message.id
+        draft = message.body ?? ""
+    }
+
+    /// The edit bar's close glyph: the message keeps its text, the composer gets back what it held.
+    func cancelEdit() {
+        guard editTarget != nil else { return }
+        editTarget = nil
+        draft = draftBeforeEdit
+        draftBeforeEdit = ""
+    }
+
+    /// Send while editing (`edit_message`): the new text shows at once; the same text closes the bar without a call. On
+    /// failure (offline, `edit_window_closed`, …) the message gets its text back, the composer holds the edited text with
+    /// the edit bar, and `chat.thread.edit.error` is announced.
+    private func saveEdit() async {
+        guard let id = editTarget else { return }
+        let body = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !body.isEmpty else { return }
+        guard let index = messages.firstIndex(where: { $0.id == id }) else {
+            cancelEdit()
+            return
+        }
+        let before = messages[index]
+        editTarget = nil
+        draft = draftBeforeEdit
+        draftBeforeEdit = ""
+        guard body != before.body else { return }
+        messages[index].body = body
+        messages[index].editedAt = now()
+        do {
+            let saved = try await data.editMessage(id: id, body: body)
+            if let current = messages.firstIndex(where: { $0.id == id }) { messages[current] = saved }
+            isOffline = false
+            signals.emit(.sent)
+        } catch {
+            if SocialFailure(error) == .offline { isOffline = true }
+            guard let current = messages.firstIndex(where: { $0.id == id }) else { return }
+            messages[current] = before
+            if editTarget == nil {
+                draftBeforeEdit = draft
+                editTarget = id
+                draft = body
+            }
+            signals.emit(.failed)
+            signals.post(.editFailed)
+        }
+    }
+
+    // MARK: Typing (`chat.thread.layout.typingLine`)
+
+    /// The composer's text changed: `set_typing(true)` while it holds text (again once half of `typing_ttl_s` passed),
+    /// `set_typing(false)` when it empties. Nothing while editing a message, nothing without a TTL.
+    func composerTextChanged() async {
+        guard let ttl = config?.typingTTLSeconds, ttl > 0 else { return }
+        let typing = !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && editTarget == nil
+        if typing {
+            let moment = now()
+            if let sent = typingSentAt, moment.timeIntervalSince(sent) < TimeInterval(ttl) / 2 { return }
+            typingSentAt = moment
+            try? await data.setTyping(true, groupID: groupID)
+        } else {
+            await stopTyping()
+        }
+    }
+
+    /// `set_typing(false)`: the message was sent, the field emptied, or the thread is closing.
+    func stopTyping() async {
+        guard typingSentAt != nil else { return }
+        typingSentAt = nil
+        try? await data.setTyping(false, groupID: groupID)
+    }
+
+    /// The rows of people typing right now, read when the thread opens.
+    private func loadTyping() async {
+        guard let rows = try? await data.typing(groupID: groupID) else { return }
+        for row in rows.sorted(by: { $0.until < $1.until }) where row.userID != me { applyTyping(row) }
+        await loadProfiles(rows.map(\.userID))
+    }
+
+    /// One `chat_typing` row: someone who was not typing joins the end of the line; a renewal keeps their place; a past
+    /// `until` takes them off.
+    private func applyTyping(_ row: ChatTyping) {
+        let moment = now()
+        if let index = typists.firstIndex(where: { $0.userID == row.userID }) {
+            if row.until > moment && typists[index].until > moment {
+                typists[index] = row
+            } else {
+                typists.remove(at: index)
+                if row.until > moment { typists.append(row) }
+            }
+        } else if row.until > moment {
+            typists.append(row)
+        }
+        scheduleTypingExpiry()
+    }
+
+    /// Drops the rows whose `until` has passed (the device clock; no event marks the end of typing).
+    func pruneTyping() {
+        let moment = now()
+        let alive = typists.filter { $0.until > moment }
+        if alive != typists { typists = alive }
+        scheduleTypingExpiry()
+    }
+
+    private func scheduleTypingExpiry() {
+        typingExpiry?.cancel()
+        guard let next = typists.map(\.until).min() else {
+            typingExpiry = nil
+            return
+        }
+        let wait = max(0, next.timeIntervalSince(now()))
+        typingExpiry = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            self?.pruneTyping()
+        }
+    }
+
     // MARK: Ordering
 
     private static func isOrdered(_ lhs: Message, before rhs: Message) -> Bool {
@@ -766,5 +1036,29 @@ enum ChatThreadLayout {
             return .yesterday
         }
         return .date(day)
+    }
+}
+
+// MARK: - Links (`chat.thread.layout.links`)
+
+/// The web addresses of a text message, found by the platform's own detector (`NSDataDetector`, `.link`), http and https
+/// only (an address without a scheme comes back completed by the detector). No preview is fetched (privacy).
+enum ChatLinks {
+    struct Link: Equatable {
+        let range: Range<String.Index>
+        let url: URL
+    }
+
+    // NSDataDetector is immutable once made and documented thread-safe (NSRegularExpression).
+    nonisolated(unsafe) private static let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+
+    static func find(in text: String) -> [Link] {
+        guard let detector = Self.detector, !text.isEmpty else { return [] }
+        let whole = NSRange(text.startIndex..., in: text)
+        return detector.matches(in: text, options: [], range: whole).compactMap { match in
+            guard let url = match.url, let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https",
+                  let range = Range(match.range, in: text) else { return nil }
+            return Link(range: range, url: url)
+        }
     }
 }

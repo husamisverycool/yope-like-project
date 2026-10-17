@@ -1,7 +1,9 @@
 package app.data.realtime
 
+import app.data.model.ChatTyping
 import app.data.model.DataJson
 import app.data.model.Message
+import app.data.model.MessageReaction
 import app.data.model.Post
 import app.data.model.Reaction
 import app.data.model.SelfieReaction
@@ -206,8 +208,8 @@ class SupabaseRealtimeChannels(private val client: SupabaseClient, private val s
     }
 
     private companion object {
-        val CHANGE_TABLES = listOf("messages", "posts", "reactions", "selfie_reactions")
-        val BROADCAST_EVENTS = listOf("post_deleted", "message_deleted", "reactions_changed", "developing_changed")
+        val CHANGE_TABLES = listOf("messages", "posts", "reactions", "selfie_reactions", "message_reactions", "chat_typing")
+        val BROADCAST_EVENTS = listOf("post_deleted", "message_deleted", "reactions_changed", "developing_changed", "message_reactions_changed")
     }
 }
 
@@ -234,6 +236,10 @@ object RealtimeDecoding {
                 ?.let { GroupEvent.ReactionAdded(groupId, it) }
             "selfie_reactions" -> DataJson.decodeFromJsonElement(SelfieReaction.serializer(), record).takeIf { it.groupId == groupId }
                 ?.let { GroupEvent.SelfieReactionChanged(groupId, it) }
+            "message_reactions" -> DataJson.decodeFromJsonElement(MessageReaction.serializer(), record).takeIf { it.groupId == groupId }
+                ?.let { GroupEvent.MessageReactionChanged(groupId, it) }
+            "chat_typing" -> DataJson.decodeFromJsonElement(ChatTyping.serializer(), record).takeIf { it.groupId == groupId }
+                ?.let { GroupEvent.TypingChanged(groupId, it) }
             else -> null
         }
     } catch (_: Exception) {
@@ -249,6 +255,7 @@ object RealtimeDecoding {
             "message_deleted" -> field("message_id")?.let { GroupEvent.MessageDeleted(groupId, it) }
             "reactions_changed" -> field("post_id")?.let { GroupEvent.ReactionsChanged(groupId, it) }
             "developing_changed" -> GroupEvent.DevelopingChanged(groupId)
+            "message_reactions_changed" -> field("message_id")?.let { GroupEvent.MessageReactionsChanged(groupId, it) }
             else -> null
         }
     }

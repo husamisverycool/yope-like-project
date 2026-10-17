@@ -71,6 +71,27 @@ public struct ChatRepository: Sendable {
         ])
     }
 
+    /// `edit_message` (migration 0047): your own text message, inside `message_edit_window_s`; returns the row with
+    /// `edited_at` set. Fails with `edit_window_closed` once the window passed (or the edits ran out).
+    public func edit(messageID: MessageID, body: String) async throws -> Message {
+        try await client.rpc("edit_message", ["p_message_id": .id(messageID), "p_body": .string(body)])
+    }
+
+    /// `set_typing` (migration 0048): `true` while typing (again every `typing_ttl_s / 2`), `false` when the field
+    /// empties, the message is sent or the thread closes.
+    public func setTyping(groupID: GroupID, typing: Bool) async throws {
+        try await client.rpcVoid("set_typing", ["p_group_id": .id(groupID), "p_typing": .bool(typing)])
+    }
+
+    /// The group's `chat_typing` rows whose `until` is still ahead (§5.10b): who is typing now. Never a count.
+    public func typing(groupID: GroupID, now: Date = Date()) async throws -> [ChatTyping] {
+        try await client.rows(ChatTyping.self) {
+            client.supabase.from("chat_typing").select()
+                .eq("group_id", value: groupID.rawValue)
+                .gt("until", value: Timestamp.format(now))
+        }
+    }
+
     /// Deletes the caller's own text or voice message (a photo message goes with `deletePost`).
     public func delete(messageID: MessageID, groupID: GroupID) async throws {
         try await client.rpcVoid("delete_message", ["p_message_id": .id(messageID)])

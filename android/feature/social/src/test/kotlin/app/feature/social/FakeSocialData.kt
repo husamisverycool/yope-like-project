@@ -5,6 +5,7 @@ import app.data.error.DataError
 import app.data.error.DataException
 import app.data.model.Album
 import app.data.model.AlbumItem
+import app.data.model.ChatTyping
 import app.data.model.Collage
 import app.data.model.FavoritePhoto
 import app.data.model.Group
@@ -21,6 +22,7 @@ import app.data.model.MessageKind
 import app.data.model.Post
 import app.data.model.PostTag
 import app.data.model.Profile
+import app.data.model.PublicAppConfig
 import app.data.model.RenderStatus
 import app.data.model.SelfieReaction
 import app.data.model.WallItem
@@ -56,6 +58,16 @@ class FakeSocialData(var me: String = ME) : SocialData {
     val posts = LinkedHashMap<String, Post>()
     val media = LinkedHashMap<String, Media>()
     val reactions = LinkedHashMap<String, MutableList<ReactionEntry>>()
+    /** `message_reactions`: message id → rows, oldest first (one per person; `react_to_message` replaces). */
+    val messageReactions = LinkedHashMap<String, MutableList<ReactionEntry>>()
+    /** `chat_typing` rows of every group. */
+    val typingRows = ArrayList<ChatTyping>()
+    /** Each `set_typing` value sent, in order (kept apart from [calls]). */
+    val typingCalls = ArrayList<Boolean>()
+    /** `public_app_config`: nothing set by default (no Edit item, no typing calls). */
+    var config = PublicAppConfig(invitationWindowSeconds = null, maxGroupMembers = null, weekStartIsodow = null, freeHistoryDays = null, minAgeYears = null)
+    /** The time the fake's `chat_typing` read compares `until` with. */
+    var typingNow: Instant = BASE
     /** `selfie_reactions`: post id → rows, oldest first (one per person). */
     val selfies = LinkedHashMap<String, MutableList<SelfieReaction>>()
     /** `post_tags`: post id → who said "I'm in this", in tag order. */
@@ -153,6 +165,47 @@ class FakeSocialData(var me: String = ME) : SocialData {
     override suspend fun deleteMessage(messageId: String) {
         write("deleteMessage:$messageId")
         messages.removeAll { it.id == messageId }
+        messageReactions.remove(messageId)
+    }
+
+    /** Like `edit_message`: your own text message gets the body and `edited_at`; `message_not_found` otherwise. */
+    override suspend fun editMessage(messageId: String, body: String): Message {
+        write("editMessage:$messageId:$body")
+        val i = messages.indexOfFirst { it.id == messageId && it.authorId == me && it.kind == MessageKind.Text }
+        if (i < 0) throw DataException(DataError.Api(ApiError.MessageNotFound, "message_not_found", 404, null))
+        val edited = if (messages[i].body == body) messages[i] else messages[i].copy(body = body, editedAt = clock())
+        messages[i] = edited
+        return edited
+    }
+
+    override suspend fun publicConfig(): PublicAppConfig { net("publicConfig"); return config }
+
+    override suspend fun messageReactions(messageIds: Collection<String>): Map<String, List<ReactionEntry>> {
+        net("messageReactions")
+        return messageIds.associateWith { messageReactions[it].orEmpty().toList() }
+    }
+
+    override suspend fun reactToMessage(messageId: String, emoji: String) {
+        write("reactToMessage:$messageId:$emoji")
+        messageReactions.getOrPut(messageId) { ArrayList() }.apply {
+            removeAll { it.userId == me }
+            add(ReactionEntry(me, emoji, clock()))
+        }
+    }
+
+    override suspend fun unreactToMessage(messageId: String) {
+        write("unreactToMessage:$messageId")
+        messageReactions[messageId]?.removeAll { it.userId == me }
+    }
+
+    override suspend fun typing(groupId: String): List<ChatTyping> {
+        net("typing")
+        return typingRows.filter { it.groupId == groupId && it.until.isAfter(typingNow) }
+    }
+
+    override suspend fun setTyping(groupId: String, typing: Boolean) {
+        typingCalls += typing
+        net("setTyping")
     }
 
     override suspend fun feed(groupId: String, before: Instant?): List<Post> {

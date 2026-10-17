@@ -1,5 +1,6 @@
 package app.data.repo
 
+import app.data.model.MessageReaction
 import app.data.model.PostTag
 import app.data.model.Reaction
 import app.data.remote.Api
@@ -49,6 +50,27 @@ class ReactionRepository(private val api: Api) {
         put("p_post_id", postId)
         put("p_emoji", emoji)
     }
+
+    /** Reactions on several text / voice messages (§5.10a, migration 0047), per message id, oldest first: one row per person. */
+    suspend fun messageReactionsFor(messageIds: Collection<String>): Map<String, List<ReactionEntry>> {
+        if (messageIds.isEmpty()) return emptyMap()
+        val rows = messageIds.distinct().chunked(IN_CHUNK).flatMap { chunk ->
+            api.select(Tables.MESSAGE_REACTIONS, MessageReaction.serializer()) {
+                filter { isIn("message_id", chunk) }
+                order("created_at", Order.ASCENDING)
+            }
+        }
+        return rows.groupBy({ it.messageId }, { ReactionEntry(it.userId, it.emoji, it.createdAt) })
+    }
+
+    /** `react_to_message`: sets or replaces your one reaction on a text or voice message. */
+    suspend fun reactToMessage(messageId: String, emoji: String): MessageReaction = api.rpc(Rpc.ReactToMessage, MessageReaction.serializer()) {
+        put("p_message_id", messageId)
+        put("p_emoji", emoji)
+    }
+
+    /** `unreact_to_message`: removes your reaction (others learn it from `message_reactions_changed`). */
+    suspend fun unreactToMessage(messageId: String) = api.rpcUnit(Rpc.UnreactToMessage) { put("p_message_id", messageId) }
 
     private companion object {
         const val IN_CHUNK = 100

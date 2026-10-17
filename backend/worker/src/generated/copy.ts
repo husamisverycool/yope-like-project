@@ -308,6 +308,7 @@ const table = {
   "chat.reactions.picker.group.travelPlaces": "Travel & Places", // Unicode (UTS #51) · chat.reactions · VERIFIED
   "chat.reactions.picker.search": "Search", // Retro · chat.reactions · SOURCED
   "chat.thread.a11y.back": "Back", // Apple HIG / Material 3 · chat.thread · SOURCED
+  "chat.thread.a11y.cancelEdit": "Cancel edit", // Apple Messages · chat.thread · SOURCED
   "chat.thread.a11y.cancelReply": "Cancel reply", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.caption": "Caption: {caption}", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.message": "{name}, {message}", // Retro · chat.thread · SOURCED
@@ -321,6 +322,9 @@ const table = {
   "chat.thread.deleteMessage.title": "Unsend message?", // Retro · chat.thread · SOURCED
   "chat.thread.divider.today": "Today", // Retro · chat.thread · SOURCED
   "chat.thread.divider.yesterday": "Yesterday", // Retro · chat.thread · SOURCED
+  "chat.thread.edit.bar": "Edit message", // Retro · chat.thread · SOURCED
+  "chat.thread.edit.error": "Couldn't edit message", // Retro · chat.thread · SOURCED
+  "chat.thread.edited": "Edited", // Apple Messages · chat.thread · SOURCED
   "chat.thread.empty.detail": "Be the first to say hi.", // Retro · chat.thread · SOURCED
   "chat.thread.empty.invite": "Add members", // Retro · chat.thread · SOURCED
   "chat.thread.empty.title": "Let's get started", // Retro · chat.thread · SOURCED
@@ -330,6 +334,7 @@ const table = {
   "chat.thread.menu.copy": "Copy", // Retro · chat.thread · SOURCED
   "chat.thread.menu.delete": "Unsend", // Retro · chat.thread · SOURCED
   "chat.thread.menu.deletePhoto": "Delete", // Retro · chat.thread · SOURCED
+  "chat.thread.menu.edit": "Edit", // Apple Messages · chat.thread · SOURCED
   "chat.thread.menu.reply": "Reply", // Retro · chat.thread · SOURCED
   "chat.thread.menu.report": "Report Message", // Retro · chat.thread · SOURCED
   "chat.thread.menu.retry": "Retry", // Retro · chat.thread · SOURCED
@@ -347,6 +352,8 @@ const table = {
   "chat.thread.system.joined": "{name} joined", // Yope · chat.thread · SOURCED
   "chat.thread.system.left": "{name} left the group", // Retro · chat.thread · SOURCED
   "chat.thread.toast.copied": "Copied!", // Retro · chat.thread · SOURCED
+  "chat.thread.typing.one": "{name} is typing…", // Stream Chat + WhatsApp · chat.thread · SOURCED
+  "chat.thread.typing.several": "{names} and {name} are typing…", // Stream Chat · chat.thread · SOURCED
   "chat.voice.a11y.discard": "Delete recording", // Retro · chat.voice · SOURCED
   "chat.voice.a11y.lock": "Keep recording", // Retro · chat.voice · SOURCED
   "chat.voice.a11y.message": "{name}'s voice message, {duration}", // Retro · chat.voice · SOURCED

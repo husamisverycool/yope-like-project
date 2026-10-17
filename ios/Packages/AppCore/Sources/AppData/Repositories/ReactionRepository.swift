@@ -47,6 +47,34 @@ public struct ReactionRepository: Sendable {
         try await client.rpcVoid("unreact", ["p_post_id": .id(postID), "p_emoji": .string(emoji)])
     }
 
+    // MARK: Message reactions (§5.10a, migration 0047)
+
+    /// Reactions on several text / voice messages, oldest first: one row per person and message. Never a count.
+    public func messageReactions(messageIDs: [MessageID]) async throws -> [MessageReaction] {
+        let unique = Array(Set(messageIDs))
+        guard !unique.isEmpty else { return [] }
+        var result: [MessageReaction] = []
+        for chunk in unique.chunked(into: 100) {
+            result += try await client.rows(MessageReaction.self) {
+                client.supabase.from("message_reactions").select()
+                    .in("message_id", values: chunk.map(\.rawValue))
+                    .order("created_at", ascending: true)
+            }
+        }
+        return result
+    }
+
+    /// `react_to_message`: sets or replaces the caller's one reaction on a text or voice message.
+    @discardableResult
+    public func react(messageID: MessageID, emoji: String) async throws -> MessageReaction {
+        try await client.rpc("react_to_message", ["p_message_id": .id(messageID), "p_emoji": .string(emoji)])
+    }
+
+    /// `unreact_to_message`: removes the caller's reaction (others learn it from `message_reactions_changed`).
+    public func unreact(messageID: MessageID) async throws {
+        try await client.rpcVoid("unreact_to_message", ["p_message_id": .id(messageID)])
+    }
+
     // MARK: Self-tags
 
     public func tags(postID: PostID) async throws -> [PostTag] {

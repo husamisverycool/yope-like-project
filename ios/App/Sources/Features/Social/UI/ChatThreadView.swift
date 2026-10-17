@@ -19,6 +19,9 @@ struct ChatThreadView: View {
     @State private var viewer: PhotoViewerContext?
     @State private var pickerTarget: ReactionPickerTarget?
     @State private var reactionsTarget: ReactionsSheetTarget?
+    /// The text / voice message whose picker or Reactions sheet is open (`chat.reactions.layout.messageReactions`).
+    @State private var messagePickerTarget: MessageReactionTarget?
+    @State private var messageReactionsTarget: MessageReactionTarget?
     @State private var unsendCandidate: Message?
     @State private var deletePhotoCandidate: Message?
     /// The bottom-most visible message (keeps the reading position when older pages load or messages arrive).
@@ -60,6 +63,13 @@ struct ChatThreadView: View {
         .onChange(of: model.arrival) { _, message in
             if let message { AccessibilityNotification.Announcement(accessibilityLabel(for: message)).post() }
         }
+        // `chat.thread.layout.typingLine`: the composer's text drives set_typing; leaving the thread ends it.
+        .onChange(of: model.draft) { _, _ in
+            Task { await model.composerTextChanged() }
+        }
+        .onDisappear {
+            Task { await model.stopTyping() }
+        }
         .socialFeedback(model.signals.feedback)
         .socialNotices(model.signals.notice, toasts: toasts)
         .toastHost(toasts)
@@ -78,6 +88,22 @@ struct ChatThreadView: View {
                 me: model.me,
                 profile: { model.profile($0) },
                 onRemove: { emoji in Task { await model.unreact(postID: target.postID, emoji: emoji) } }
+            )
+            .presentationDetents([.medium, .large])
+        }
+        .sheet(item: $messagePickerTarget) { target in
+            ReactionPicker(
+                mine: model.myEmoji(onMessage: target.messageID),
+                onPick: { emoji in Task { await model.toggleReaction(messageID: target.messageID, emoji: emoji) } },
+                onRemove: { _ in Task { await model.unreact(messageID: target.messageID) } }
+            )
+        }
+        .sheet(item: $messageReactionsTarget) { target in
+            ReactionsSheet(
+                reactions: model.reactionSummary(of: target.messageID),
+                me: model.me,
+                profile: { model.profile($0) },
+                onRemove: { _ in Task { await model.unreact(messageID: target.messageID) } }
             )
             .presentationDetents([.medium, .large])
         }
@@ -269,7 +295,14 @@ struct ChatThreadView: View {
             retry: { message in Task { await model.retry(message) } },
             react: { postID, emoji in Task { await model.toggleReaction(postID: postID, emoji: emoji) } },
             openPicker: { pickerTarget = ReactionPickerTarget(postID: $0) },
-            openReactions: { reactionsTarget = ReactionsSheetTarget(postID: $0) }
+            openReactions: { reactionsTarget = ReactionsSheetTarget(postID: $0) },
+            reactToMessage: { messageID, emoji in Task { await model.toggleReaction(messageID: messageID, emoji: emoji) } },
+            openMessagePicker: { messagePickerTarget = MessageReactionTarget(messageID: $0) },
+            openMessageReactions: { messageReactionsTarget = MessageReactionTarget(messageID: $0) },
+            edit: { message in
+                model.startEdit(message)
+                fieldFocused = true
+            }
         )
     }
 
@@ -315,11 +348,41 @@ struct ChatThreadView: View {
 
     // MARK: Composer
 
-    /// The reply bar (when replying) `size.global.sectionHeaderToContent` from its baseline to the field, then the field.
+    /// The typing line (`chat.thread.layout.typingLine`), then the reply bar (when replying) or the edit bar (when editing,
+    /// `chat.thread.layout.editMessage`) `size.global.sectionHeaderToContent` from its baseline to the field, then the
+    /// field.
     private var composerArea: some View {
+        let hasBar = model.replyTarget != nil || model.isEditing
+        let typing = typingLine
+        return VStack(spacing: Tokens.Sizes.chatThreadDimensionItemGap) {
+            if let typing {
+                ChatTypingLine(text: typing)
+                    .transition(.opacity)
+            }
+            composerStack(hasBar: hasBar)
+        }
+        .padding(.top, Tokens.Sizes.chatThreadDimensionItemGap)
+        .background(Tokens.Colors.globalBackground)
+        .dsAnimation(ComponentMotion.fade, value: model.replyTarget)
+        .dsAnimation(ComponentMotion.fade, value: model.editTarget)
+        .dsAnimation(ComponentMotion.fade, value: typing)
+    }
+
+    /// "{name} is typing…" / "{names} and {name} are typing…" — names only, never a number; nil when nobody types.
+    private var typingLine: String? {
+        let names = model.typingNames()
+        guard let last = names.last else { return nil }
+        if names.count == 1 { return Copy.chatThreadTypingOne(name: last) }
+        return Copy.chatThreadTypingSeveral(names: names.dropLast().joined(separator: ", "), name: last) // provenance-ok: list separator
+    }
+
+    private func composerStack(hasBar: Bool) -> some View {
         MetricStack {
             if let target = model.replyTarget {
                 ChatReplyBar(label: replyLabel(target)) { model.cancelReply() }
+                    .transition(.opacity)
+            } else if model.isEditing {
+                ChatReplyBar(label: Copy.chatThreadEditBar, cancelLabel: Copy.chatThreadA11yCancelEdit) { model.cancelEdit() }
                     .transition(.opacity)
             }
             ChatComposer(
@@ -336,11 +399,8 @@ struct ChatThreadView: View {
                 onMicDenied: { micDenied = true },
                 focus: $fieldFocused
             )
-            .metricGap(model.replyTarget == nil ? 0 : Tokens.Sizes.globalSectionHeaderToContent, from: model.replyTarget == nil ? .top : .lastBaseline, to: .top)
+            .metricGap(hasBar ? Tokens.Sizes.globalSectionHeaderToContent : 0, from: hasBar ? .lastBaseline : .top, to: .top)
         }
-        .padding(.top, Tokens.Sizes.chatThreadDimensionItemGap)
-        .background(Tokens.Colors.globalBackground)
-        .dsAnimation(ComponentMotion.fade, value: model.replyTarget)
     }
 
     private func replyLabel(_ target: ChatReplyTarget) -> String {
@@ -380,6 +440,18 @@ struct ChatMessageActions {
     let react: (PostID, String) -> Void
     let openPicker: (PostID) -> Void
     let openReactions: (PostID) -> Void
+    /// `chat.reactions.layout.messageReactions`: an emoji on a text / voice message (mine again takes it back).
+    let reactToMessage: (MessageID, String) -> Void
+    let openMessagePicker: (MessageID) -> Void
+    let openMessageReactions: (MessageID) -> Void
+    /// `chat.thread.layout.editMessage`: "Edit" on my own text message.
+    let edit: (Message) -> Void
+}
+
+/// Identifies the text / voice message whose picker or Reactions sheet is open.
+struct MessageReactionTarget: Identifiable, Hashable {
+    let messageID: MessageID
+    var id: String { messageID.rawValue }
 }
 
 /// A message in its run (`chat.thread.layout.runs`): the run's first message is the C-16 comment row — avatar
@@ -437,6 +509,11 @@ struct ChatMessageRow: View {
                     .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
             }
             items
+            messageChip
+            if message.editedAt != nil, !model.isPending(message), !model.isFailed(message) {
+                editedLine
+                    .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+            }
             if row.isMine, model.isPending(message) || model.isFailed(message) {
                 statusLine
                     .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
@@ -493,21 +570,63 @@ struct ChatMessageRow: View {
                 .accessibilityLabel(Text(label))
                 .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
         } else {
-            Text(string)
+            Text(isCaption ? AttributedString(string) : ChatLinkText.attributed(string))
                 .dsTextRole(SocialTextRole.threadBody)
                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                .tint(Tokens.Colors.globalTextPrimary)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
                 .modifier(MessageMenu(row: row, model: model, actions: actions))
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(label))
-                .accessibilityValue(Text(model.isFailed(message) ? Copy.chatThreadSendFailed : ""))
+                .accessibilityValue(Text(textValue(isCaption: isCaption)))
                 .metricGap(
                     afterHeader ? Tokens.Sizes.chatThreadDimensionRowLinePitch : Tokens.Sizes.chatThreadDimensionItemGap,
                     from: afterHeader ? .lastBaseline : .bottom,
                     to: afterHeader ? .firstBaseline : .top
                 )
         }
+    }
+
+    /// The text's accessibility value: the failed state, else "Edited" (`chat.thread.layout.editMessage`).
+    private func textValue(isCaption: Bool) -> String {
+        if model.isFailed(message) { return Copy.chatThreadSendFailed }
+        if !isCaption, message.editedAt != nil { return Copy.chatThreadEdited }
+        return ""
+    }
+
+    /// The reaction chip under a text or voice message (`chat.reactions.layout.messageReactions`): distinct emoji, newest
+    /// first, `chat.reactions.dimension.chipTop` below; its value names who reacted with what — rows, never a count. Tap →
+    /// the Reactions sheet.
+    @ViewBuilder
+    private var messageChip: some View {
+        if message.kind == .text || message.kind == .voice {
+            let summary = model.reactionSummary(of: message.id)
+            if !summary.isEmpty {
+                ReactionChip(emoji: summary.distinctEmoji) { actions.openMessageReactions(message.id) }
+                    .accessibilityValue(Text(whoReacted))
+                    .accessibilityIdentifier("chat.reactions.message." + message.id.rawValue) // provenance-ok: accessibility identifier for UI tests
+                    .metricGap(Tokens.Sizes.chatReactionsDimensionChipTop, from: .bottom, to: .top)
+            }
+        }
+    }
+
+    private var whoReacted: String {
+        model.messageReactionRows(message.id).map { row in
+            row.userID == model.me
+                ? Copy.chatReactionsActivityRowMine(emoji: SocialEmoji.name(row.emoji))
+                : Copy.chatReactionsActivityRow(name: model.profile(row.userID)?.socialFirstName ?? "", emoji: SocialEmoji.name(row.emoji))
+        }
+        .joined(separator: ", ") // provenance-ok: list separator
+    }
+
+    /// "Edited" one line under an edited message (text role `caption`, `color.global.textSecondary`); the message's
+    /// accessibility value says it.
+    private var editedLine: some View {
+        Text(Copy.chatThreadEdited)
+            .dsTextStyle(TextRole.caption)
+            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            .accessibilityHidden(true)
     }
 
     private var textLabel: String {
@@ -692,23 +811,69 @@ struct ChatSystemLine: View {
     }
 }
 
+/// `chat.thread.layout.links`: a text message's web addresses as links in the body's own colour (the Text's tint,
+/// `color.global.textPrimary`), underlined so they read as links without colour (WCAG F73); a tap opens the browser
+/// through SwiftUI's `openURL`, a long press still opens the message's menu.
+enum ChatLinkText {
+    static func attributed(_ text: String) -> AttributedString {
+        let links = ChatLinks.find(in: text)
+        guard !links.isEmpty else { return AttributedString(text) }
+        var result = AttributedString()
+        var cursor = text.startIndex
+        for link in links {
+            if cursor < link.range.lowerBound { result += AttributedString(String(text[cursor..<link.range.lowerBound])) }
+            var attributes = AttributeContainer()
+            attributes.link = link.url
+            attributes.swiftUI.underlineStyle = .single
+            result += AttributedString(String(text[link.range]), attributes: attributes)
+            cursor = link.range.upperBound
+        }
+        if cursor < text.endIndex { result += AttributedString(String(text[cursor...])) }
+        return result
+    }
+}
+
 /// The native context menu of a message (C-29; items Sentence case, destructive last and red) and the same items as
 /// accessibility custom actions.
-/// - text: Reply · Copy · Report Message (others') / Unsend (mine)
-/// - voice: Reply · Report Message / Unsend
+/// - text: the quick-reaction row · Reply · Copy · Edit (mine, inside the edit window) · Report Message (others') /
+///   Unsend (mine); each link of the text is also an accessibility action (`chat.thread.layout.links`)
+/// - voice: the quick-reaction row · Reply · Report Message / Unsend
 /// - photo: the quick-reaction row · Reply · Save (any photo, owner decision 28) · Delete (mine) / Report Message (others')
 /// - my failed message: Retry · Unsend
 struct MessageMenu: ViewModifier {
     let row: ChatRow
     let model: ChatThreadModel
     let actions: ChatMessageActions
+    @Environment(\.openURL) private var openURL
 
     private var message: Message { row.message }
 
     func body(content: Content) -> some View {
         content
             .contextMenu { items(includingPalette: true) }
-            .accessibilityActions { items(includingPalette: false) }
+            .accessibilityActions {
+                items(includingPalette: false)
+                if message.kind == .text {
+                    ForEach(ChatLinks.find(in: message.body ?? "").map(\.url), id: \.self) { url in
+                        Button(url.absoluteString) { openURL(url) }
+                    }
+                }
+            }
+    }
+
+    /// The quick-reaction row of a text / voice message (`chat.reactions.layout.messageReactions`), or its
+    /// "Add reaction" action for VoiceOver.
+    @ViewBuilder
+    private func messagePalette(includingPalette: Bool) -> some View {
+        if includingPalette {
+            QuickReactionsPalette(
+                mine: model.myEmoji(onMessage: message.id),
+                onEmoji: { actions.reactToMessage(message.id, $0) },
+                onAdd: { actions.openMessagePicker(message.id) }
+            )
+        } else {
+            Button(Copy.chatReactionsA11yAdd) { actions.openMessagePicker(message.id) }
+        }
     }
 
     @ViewBuilder
@@ -736,6 +901,7 @@ struct MessageMenu: ViewModifier {
                     Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }
                 }
             case .voice:
+                messagePalette(includingPalette: includingPalette)
                 Button(Copy.chatThreadMenuReply) { actions.reply(message) }
                 if row.isMine {
                     Button(Copy.chatThreadMenuDelete, role: .destructive) { actions.unsend(message) }
@@ -743,8 +909,12 @@ struct MessageMenu: ViewModifier {
                     Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }
                 }
             default:
+                if message.kind == .text { messagePalette(includingPalette: includingPalette) }
                 Button(Copy.chatThreadMenuReply) { actions.reply(message) }
                 Button(Copy.chatThreadMenuCopy) { actions.copy(message) }
+                if model.canEdit(message) {
+                    Button(Copy.chatThreadMenuEdit) { actions.edit(message) }
+                }
                 if row.isMine {
                     Button(Copy.chatThreadMenuDelete, role: .destructive) { actions.unsend(message) }
                 } else {

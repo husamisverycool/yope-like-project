@@ -24,6 +24,14 @@ public enum GroupEvent: Hashable, Sendable {
     /// "Realtime: inserts and updates of both tables"): refetch the plans. Rows are not decoded: the screens refetch what
     /// RLS lets them read (a Can't go only reaches its author and the plan's maker).
     case plansChanged
+    /// Someone set or replaced their reaction on a text / voice message (`message_reactions` inserts and updates,
+    /// migration 0047); removals arrive as `messageReactionsChanged`.
+    case messageReactionUpserted(MessageReaction)
+    /// Refetch that message's reactions (`message_reactions_changed`: a reaction was removed; the payload names no one).
+    case messageReactionsChanged(MessageID)
+    /// Someone started or stopped typing (`chat_typing` inserts and updates, migration 0048): typing while `until` is
+    /// ahead.
+    case typingChanged(ChatTyping)
     /// The topic was joined (first join; `realtime:group-<id>` or `realtime:group:<id>`).
     case subscribed(topic: String)
     /// The subscription is live again after a dropped connection: refetch the visible page
@@ -63,9 +71,11 @@ public struct GroupEventFilter: OptionSet, Hashable, Sendable {
 ///
 /// Per group there are up to two channels, each opened on first use and closed when its last
 /// subscriber goes away:
-/// - `group-<id>`: `postgres_changes` INSERT/UPDATE on messages, posts, reactions, selfie_reactions, plans and
-///   plan_answers filtered by `group_id` (RLS applies, so only rows the caller could select arrive);
-/// - `group:<id>` (private): broadcasts `post_deleted`, `message_deleted`, `reactions_changed`, `developing_changed`;
+/// - `group-<id>`: `postgres_changes` INSERT/UPDATE on messages, posts, reactions, selfie_reactions, plans,
+///   plan_answers, message_reactions and chat_typing filtered by `group_id` (RLS applies, so only rows the caller could
+///   select arrive);
+/// - `group:<id>` (private): broadcasts `post_deleted`, `message_deleted`, `reactions_changed`, `developing_changed`,
+///   `message_reactions_changed`;
 ///   only current members can join.
 public actor RealtimeHub {
     public let client: DataClient
@@ -203,6 +213,10 @@ public actor RealtimeHub {
         let planUpdates = channel.postgresChange(UpdateAction.self, schema: "public", table: "plans", filter: filter)
         let answerInserts = channel.postgresChange(InsertAction.self, schema: "public", table: "plan_answers", filter: filter)
         let answerUpdates = channel.postgresChange(UpdateAction.self, schema: "public", table: "plan_answers", filter: filter)
+        let messageReactionInserts = channel.postgresChange(InsertAction.self, schema: "public", table: "message_reactions", filter: filter)
+        let messageReactionUpdates = channel.postgresChange(UpdateAction.self, schema: "public", table: "message_reactions", filter: filter)
+        let typingInserts = channel.postgresChange(InsertAction.self, schema: "public", table: "chat_typing", filter: filter)
+        let typingUpdates = channel.postgresChange(UpdateAction.self, schema: "public", table: "chat_typing", filter: filter)
         box.tasks.append(forward(postInserts, groupID: groupID) { try GroupEvent.postInserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         box.tasks.append(forward(postUpdates, groupID: groupID) { try GroupEvent.postUpdated($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         box.tasks.append(forward(messageInserts, groupID: groupID) { try GroupEvent.messageInserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
@@ -210,6 +224,10 @@ public actor RealtimeHub {
         box.tasks.append(forward(reactionInserts, groupID: groupID) { try GroupEvent.reactionInserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         box.tasks.append(forward(selfieInserts, groupID: groupID) { try GroupEvent.selfieReactionUpserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         box.tasks.append(forward(selfieUpdates, groupID: groupID) { try GroupEvent.selfieReactionUpserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
+        box.tasks.append(forward(messageReactionInserts, groupID: groupID) { try GroupEvent.messageReactionUpserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
+        box.tasks.append(forward(messageReactionUpdates, groupID: groupID) { try GroupEvent.messageReactionUpserted($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
+        box.tasks.append(forward(typingInserts, groupID: groupID) { try GroupEvent.typingChanged($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
+        box.tasks.append(forward(typingUpdates, groupID: groupID) { try GroupEvent.typingChanged($0.decodeRecord(decoder: DataCoding.makeDecoder())) })
         for plans in [planInserts, answerInserts] {
             box.tasks.append(forward(plans, groupID: groupID) { _ in GroupEvent.plansChanged })
         }
@@ -226,6 +244,7 @@ public actor RealtimeHub {
         let messageDeleted = channel.broadcastStream(event: "message_deleted")
         let reactionsChanged = channel.broadcastStream(event: "reactions_changed")
         let developingChanged = channel.broadcastStream(event: "developing_changed")
+        let messageReactionsChanged = channel.broadcastStream(event: "message_reactions_changed")
         box.tasks.append(forwardBroadcast(postDeleted, groupID: groupID) { (payload: JSONObject) -> GroupEvent? in
             guard let post = payload["post_id"]?.stringValue else { return nil }
             let media: MediaID? = payload["media_id"]?.stringValue.map { (text: String) -> MediaID in MediaID(rawValue: text) }
@@ -241,6 +260,10 @@ public actor RealtimeHub {
         })
         box.tasks.append(forwardBroadcast(developingChanged, groupID: groupID) { (_: JSONObject) -> GroupEvent? in
             GroupEvent.developingChanged
+        })
+        box.tasks.append(forwardBroadcast(messageReactionsChanged, groupID: groupID) { (payload: JSONObject) -> GroupEvent? in
+            guard let message = payload["message_id"]?.stringValue else { return nil }
+            return GroupEvent.messageReactionsChanged(MessageID(rawValue: message))
         })
         return box
     }
