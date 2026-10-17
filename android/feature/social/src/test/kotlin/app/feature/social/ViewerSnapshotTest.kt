@@ -108,11 +108,11 @@ class ViewerSnapshotTest : SnapshotBase() {
         viewer(state("v-1", d), ViewerUiState(saveDenied = true), d, screen = true)
     }
 
-    /** The field's "•••" menu on someone else's photo: Report Post · Block Ana — no Save (owner decision 12). */
+    /** The field's "•••" menu on someone else's photo: Save to Camera Roll (owner decision 28) · Report Post · Block Ana. */
     @Test fun menuOthers() {
         val d = viewerData()
         viewer(state("v-1", d), ViewerUiState(menu = true), d, screen = true)
-        compose.onNodeWithText("Save to Camera Roll").assertDoesNotExist()
+        compose.onNodeWithText("Save to Camera Roll").assertExists()
         compose.onNodeWithText("Report Post").assertExists()
     }
 

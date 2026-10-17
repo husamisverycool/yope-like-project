@@ -124,9 +124,9 @@ data class OnThisDayActions(
  * status bar (aspect fill, `radius.global.photo`, no top scrim), the C-02 header on media (back chevron, the date in
  * the display serif, the subtitle), the glass "•••" (C-11, `size.global.circleButtonPhoto`) with the native menu,
  * `layout.global.photoScrim`, and the control row (share, dial, random) centred
- * `dimension.onthisday.controls.centerY` above the safe-area bottom with equal gaps. [isMine] decides the menu (yours:
- * Save + Delete; someone else's: Report) and the share circle (yours only — owner decision 12: a photo leaves the app only
- * when it is your own). [showIntro]: the feature intro (C-29) over the page.
+ * `dimension.onthisday.controls.centerY` above the safe-area bottom with equal gaps. The menu saves every memory (owner
+ * decision 28); [isMine] decides the rest of it (yours: Delete; someone else's: Report) and the share circle (yours only —
+ * owner decision 12: sharing out of the app is for your own photos). [showIntro]: the feature intro (C-29) over the page.
  */
 @Composable
 fun OnThisDayScreen(
@@ -274,8 +274,8 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
                     menuOpen,
                     { menuOpen = false },
                     buildList {
+                        add(DsMenuItem(stringResource(R.string.onthisday_menu_save), actions.onSave))
                         if (isMine(memory)) {
-                            add(DsMenuItem(stringResource(R.string.onthisday_menu_save), actions.onSave))
                             add(DsMenuItem(stringResource(R.string.onthisday_menu_delete), { confirmDelete = true }, destructive = true))
                         } else {
                             add(DsMenuItem(stringResource(R.string.onthisday_menu_report), actions.onReport, destructive = true))

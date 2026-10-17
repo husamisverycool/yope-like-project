@@ -319,15 +319,16 @@ final class SocialPhotoViewerModelTests: XCTestCase {
         XCTAssertTrue(model.saveDenied, "denied: the inline permission card")
     }
 
-    /// Owner decision 12: a photo leaves the app only when it is your own.
-    func testOthersPhotosAreNeverSaved() async {
+    /// Owner decision 28: any member saves any photo they can see to their own library.
+    func testOthersPhotosAreSavedToo() async {
         let model = makeModel(start: SocialDemo.p4)
         await model.load()
         XCTAssertFalse(model.isCurrentOwn, "Cleo's Live Photo")
         let saver = RecordingPhotoSaver()
         await model.saveCurrent(using: saver)
-        XCTAssertEqual(saver.savedCount, 0)
-        XCTAssertNil(model.signals.notice)
+        XCTAssertEqual(saver.savedCount, 1)
+        XCTAssertNotNil(saver.lastMotionURL, "a Live Photo saves its motion too")
+        XCTAssertEqual(model.signals.notice?.notice, .photoSaved)
         XCTAssertFalse(model.saveDenied)
     }
 

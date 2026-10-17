@@ -96,7 +96,7 @@ appearance (it is not a media surface).
 |---|---|---|---|
 | any text message | Reply · Copy · (others') Report Message · (yours) Unsend | `chat.thread.menu.reply`, `.menu.copy`, `.menu.report`, `.menu.delete` | Reply → reply bar + `chat.composer.placeholderReply`; Copy → clipboard + Android Toast `chat.thread.toast.copied`; Report → `safety.report` (kind `message`); Unsend → confirmation below → `delete_message` |
 | voice message | Reply · (others') Report Message · (yours) Unsend | as above | as above |
-| photo message | quick-reaction row (`chat.reactions.layout.quickReactions`) · Reply · (yours) Save · (others') Report Message · (yours) Delete | + `chat.thread.menu.save`, `.menu.deletePhoto` | Save → as `photo.viewer` save, your own photo only (owner decision 12: saving to the camera roll takes a photo out of the app); Delete → `photo.viewer` delete confirmation → `delete_media` |
+| photo message | quick-reaction row (`chat.reactions.layout.quickReactions`) · Reply · Save · (others') Report Message · (yours) Delete | + `chat.thread.menu.save`, `.menu.deletePhoto` | Save → as `photo.viewer` save, on any photo (owner decision 28); Delete → `photo.viewer` delete confirmation → `delete_media` |
 | your failed message | Retry · Unsend | `chat.thread.menu.retry`, `.menu.delete` | send again / remove locally |
 
 **Unsend confirmation** (C-29 alert; `photo.viewer.layout.deleteConfirm` component): title `chat.thread.deleteMessage.title`,

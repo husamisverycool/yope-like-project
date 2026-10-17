@@ -189,11 +189,11 @@ class ChatSnapshotTest : SnapshotBase() {
         chat(state, ChatUiState(menuFor = "m-5"), data, screen = true)
     }
 
-    /** Long press on Ana's photo: the quick-reaction row (🔥 💖 +) then Reply · Report Message — no Save (owner decision 12). */
+    /** Long press on Ana's photo: the quick-reaction row (🔥 💖 +) then Reply · Save (owner decision 28) · Report Message. */
     @Test fun contextMenuPhoto() {
         val (data, state) = loaded()
         chat(state, ChatUiState(menuFor = "m-1"), data, screen = true)
-        compose.onAllNodesWithText("Save").assertCountEquals(0)
+        compose.onAllNodesWithText("Save").assertCountEquals(1)
     }
 
     @Test fun unsendConfirmation() {

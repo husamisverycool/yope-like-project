@@ -177,6 +177,18 @@ jobs:
           print(f"core:data integration: {tests} tests, {skipped} skipped ({len(files)} classes)")
           sys.exit(0 if files and tests > 0 and skipped == 0 else 1)
           PY
+      # A snapshot that no longer matches its baseline: Roborazzi's new image and the comparison, to review and, when the
+      # change is intended, commit as the baseline (recordRoborazziDebug needs the Android SDK).
+      - name: upload changed snapshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-snapshot-changes
+          path: |
+            android/**/build/outputs/roborazzi/**
+            android/**/src/test/snapshots/**/*_actual.png
+            android/**/src/test/snapshots/**/*_compare.png
+          if-no-files-found: ignore
 
   android-e2e:
     name: android e2e

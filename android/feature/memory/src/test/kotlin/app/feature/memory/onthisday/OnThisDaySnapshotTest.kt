@@ -95,11 +95,11 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.mainClock.autoAdvance = false
         compose.setContent { MemoryTestContent { OnThisDayScreen(samplePage, OnThisDayActions(), isMine = { false }) } }
         compose.mainClock.advanceTimeBy(settleMillis)
-        // Owner decision 12: someone else's photo is never saved or shared outside the app.
+        // Owner decision 12: someone else's photo is never shared out of the app; decision 28: it saves to your library.
         compose.onNodeWithTag(OnThisDayTags.SHARE).assertDoesNotExist()
         compose.onNodeWithTag(OnThisDayTags.MORE).performClick()
         compose.mainClock.advanceTimeBy(settleMillis)
-        compose.onNodeWithText("Save to Camera Roll").assertDoesNotExist()
+        compose.onNodeWithText("Save to Camera Roll").assertExists()
         compose.onNodeWithText("Report Post").assertExists()
         compose.onNodeWithText("Delete Post").assertDoesNotExist()
         compose.waitForIdle()

@@ -513,10 +513,10 @@ final class PhotoViewerModel {
         }
     }
 
-    /// Saves the original (Live Photo: still + motion) of your own photo to the photo library; someone else's photo never
-    /// leaves the app (owner decision 12).
+    /// Saves the original (Live Photo: still + motion) of the photo to your photo library — any photo you can see (owner
+    /// decision 28); sharing to other apps stays your own photos only (decision 12).
     func saveCurrent(using saver: any SocialPhotoSaving) async {
-        guard isCurrentOwn, let media = current?.media else { return }
+        guard let media = current?.media else { return }
         do {
             let fileURL = try await data.fileURL(path: media.originalPath)
             var motionURL: URL?

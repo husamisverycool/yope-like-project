@@ -93,10 +93,10 @@ the newest). One post = one memory. The indicator starts on slot 0; slot index =
 `onthisday.nux.button` ("Try it out") which closes it. Retro shows the same intro for Rewind (`rewind_home_nux_*`).
 Never shown again (no nagging).
 
-**D. Menu ('•••', native — C-29 context menu)**, items in this order: your own memory — `onthisday.menu.save` ("Save
-to Camera Roll") and `onthisday.menu.delete` ("Delete Post", destructive red); someone else's memory —
-`onthisday.menu.report` ("Report Post", destructive red) only: saving or sharing another member's photo is not
-offered (owner decision 12; the camera roll is outside the app). Report → `safety.report`; Delete → native confirmation
+**D. Menu ('•••', native — C-29 context menu)**, items in this order: `onthisday.menu.save` ("Save to
+Camera Roll", every memory — owner decision 28), then your own memory — `onthisday.menu.delete` ("Delete Post",
+destructive red); someone else's memory — `onthisday.menu.report` ("Report Post", destructive red). Sharing another
+member's photo is not offered (owner decision 12). Report → `safety.report`; Delete → native confirmation
 (`onthisday.delete.title` / `.message` / `.confirm` "Yes, delete" / `.cancel`) → `delete_post` → toast
 `onthisday.toast.deleted`, the memory leaves the dial. Save → toast `onthisday.toast.saved`; failure
 `onthisday.saveFailed`; add-only photo access denied → native alert `onthisday.saveDenied.title` / `.message` /
@@ -233,5 +233,5 @@ banners, progress bar, streaks, mascot, watermark and nag pushes; any count of m
 | play cadence | 4 s (VidDay) | 20 s recording of Rewind playing |
 | top legibility over bright photos | no top scrim, as Retro (contrast not guaranteed) | — (owner / verification) |
 | shuffle source | built (RM-5) | owner decision |
-| sharing others' photos | decided: your own photos only (owner decision 12; RM-6 closed) | — |
+| sharing others' photos | decided: your own photos only (owner decision 12; RM-6 closed); saving any memory to your library (decision 28) | — |
 | Retro's 'Pick a date…' and its mode menu's look | not built / platform menu (Retro's sheet never captured) | one RAW recording of Retro's Rewind: tap the date title, pick a date |

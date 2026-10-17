@@ -287,15 +287,15 @@ struct OnThisDayScreen: View {
         .accessibilityIdentifier("onthisday.title")
     }
 
-    /// D. The native menu: save and delete (your memory; delete destructive) or report (someone else's, destructive). Saving
-    /// someone else's photo is not offered (owner decision 12).
+    /// D. The native menu: save (every memory, owner decision 28), then delete (your memory, destructive) or report
+    /// (someone else's, destructive).
     private var moreMenu: some View {
         CircleMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.onthisdayA11yMore, style: .glass) {
             if let current = model.current {
+                Button(Copy.onthisdayMenuSave) {
+                    Task { await model.save() }
+                }
                 if current.isMine {
-                    Button(Copy.onthisdayMenuSave) {
-                        Task { await model.save() }
-                    }
                     Button(Copy.onthisdayMenuDelete, role: .destructive) {
                         model.requestDelete()
                     }

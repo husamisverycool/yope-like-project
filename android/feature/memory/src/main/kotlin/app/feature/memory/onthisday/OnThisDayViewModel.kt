@@ -292,14 +292,14 @@ class OnThisDayViewModel(
     // ---- menu and share ------------------------------------------------------------------------------
 
     /**
-     * Whether the current memory is yours (menu: Save to Camera Roll + Delete Post, the share circle) or someone else's
-     * (Report Post only): a photo leaves the app only when it is your own (owner decision 12).
+     * Whether the current memory is yours (menu: Delete Post; the share circle) or someone else's (Report Post): sharing
+     * out of the app is for your own photos (owner decision 12). Save to Camera Roll is on every memory (decision 28).
      */
     fun isMine(memory: Memory): Boolean = memory.authorId == backend.currentUserId
 
-    /** "Save to Camera Roll" (your own memory only): the original into the photo library; toast saved / failed. */
+    /** "Save to Camera Roll" (any memory you can see, owner decision 28): the original into the photo library; toast saved / failed. */
     fun save(accessGranted: Boolean = true) {
-        val memory = (_state.value as? OnThisDayState.Page)?.memory?.takeIf(::isMine) ?: return
+        val memory = (_state.value as? OnThisDayState.Page)?.memory ?: return
         if (!accessGranted) {
             queue.haptic(Tokens.Haptics.globalError)
             events.trySend(OnThisDayEvent.SaveDenied)

@@ -430,14 +430,16 @@ struct PhotoViewerView: View {
 
     // MARK: Menu (`photo.viewer.layout.menu`)
 
-    /// Mine: Save to Camera Roll · Delete (destructive). Others': Report Post (destructive) · Block {name} — no Save: a
-    /// photo leaves the app only when it is your own (owner decision 12).
+    /// Save to Camera Roll on every photo (owner decision 28: any member saves any photo they can see), then mine:
+    /// Delete (destructive); others': Report Post (destructive) · Block {name}.
     @ViewBuilder
     private var menuItems: some View {
-        if model.isCurrentOwn {
+        if model.current != nil {
             Button { Task { await model.saveCurrent(using: SocialServices.shared.saver) } } label: {
                 Label(Copy.photoViewerMenuSave, systemImage: Tokens.Icons.globalDownload)
             }
+        }
+        if model.isCurrentOwn {
             Button(role: .destructive) { confirmingDelete = true } label: {
                 Label(Copy.photoViewerMenuDelete, systemImage: Tokens.Icons.globalTrash)
             }

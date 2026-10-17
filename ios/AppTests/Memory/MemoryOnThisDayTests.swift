@@ -197,8 +197,8 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertEqual(failing.lastToast, Copy.onthisdaySaveFailed)
     }
 
-    /// Owner decision 12: save and share take a photo out of the app, so only your own memory offers them.
-    func testOnlyYourOwnMemoryCanBeSavedOrShared() async {
+    /// Owner decision 12: only your own memory is shared out of the app. Decision 28: any memory saves to your library.
+    func testAnyMemorySavesButOnlyYourOwnIsShared() async {
         let saved = SavedData()
         let context = MemoryTestContext()
         let model = makeModel(context, savePhoto: { await saved.append($0) })
@@ -207,10 +207,9 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertFalse(model.canExport)
         XCTAssertNil(model.shareItem, "no share sheet for someone else's photo")
         await model.save()
-        let none = await saved.count
-        XCTAssertEqual(none, 0, "someone else's photo is never saved")
-        XCTAssertEqual(context.data.calls(of: .downloadData), 0)
-        XCTAssertNil(context.lastToast)
+        let one = await saved.count
+        XCTAssertEqual(one, 1, "Bea's photo, saved to my own library")
+        XCTAssertEqual(context.lastToast, Copy.onthisdayToastSaved)
         showOwnMemory(model, context)
         XCTAssertTrue(model.canExport)
         XCTAssertNotNil(model.shareItem, "your own memory: the share sheet with its original")

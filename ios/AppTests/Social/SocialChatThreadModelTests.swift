@@ -477,18 +477,18 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertFalse(data.read { $0.calls }.contains("deleteMessage"))
     }
 
-    /// Owner decision 12: Save on a photo message exists for your own photo only.
-    func testOnlyMyOwnPhotoMessagesAreSaved() async {
+    /// Owner decision 28: Save on a photo message is there for any photo you can see, yours or someone else's.
+    func testAnyPhotoMessageIsSaved() async {
         let model = makeModel()
         await model.load()
         let theirs = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p4 })
         let saver = RecordingPhotoSaver()
         await model.savePhoto(theirs, using: saver)
-        XCTAssertEqual(saver.savedCount, 0, "Cleo's photo never leaves the app")
-        XCTAssertNil(model.signals.notice)
+        XCTAssertEqual(saver.savedCount, 1, "Cleo's photo, saved to my own library")
+        XCTAssertEqual(model.signals.notice?.notice, .photoSaved)
         let mine = try! XCTUnwrap(model.messages.first { $0.postID == SocialDemo.p3 })
         await model.savePhoto(mine, using: saver)
-        XCTAssertEqual(saver.savedCount, 1)
+        XCTAssertEqual(saver.savedCount, 2)
         XCTAssertEqual(model.signals.notice?.notice, .photoSaved)
     }
 
@@ -779,7 +779,7 @@ final class SocialChatThreadModelTests: XCTestCase {
         XCTAssertTrue(model.messages.contains { $0.id == theirs.id }, "only my own photos")
     }
 
-    /// Saving is offered on your own photo only (owner decision 12: the camera roll is outside the app); p3 is mine.
+    /// Saving a photo message asks for photo-library access when it was denied; p3 is mine.
     func testSavingAPhotoAskForPermissionWhenDenied() async {
         let model = makeModel()
         await model.load()

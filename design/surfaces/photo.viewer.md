@@ -78,14 +78,14 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 
 | item | shown | glyph | copy | action |
 |---|---|---|---|---|
-| Save to Camera Roll | your photo (owner decision 12) | `icon.global.download` | `photo.viewer.menu.save` | saves the original (Live Photo: still + motion) → Android Toast `photo.viewer.toast.saved` / iOS announcement; `haptic.global.success` |
+| Save to Camera Roll | every photo (owner decision 28) | `icon.global.download` | `photo.viewer.menu.save` | saves the original (Live Photo: still + motion) → Android Toast `photo.viewer.toast.saved` / iOS announcement; `haptic.global.success` |
 | Delete | your photo | `icon.global.trash`, destructive | `photo.viewer.menu.delete` | confirmation → `delete_media` |
 | Report Post | someone else's | `icon.global.report`, destructive | `photo.viewer.menu.report` | `safety.report` (kind `post`) |
 | Block {name} | someone else's | none | `photo.viewer.menu.block` | `safety.block` for the author |
 
-Save is your own photo only: saving to the camera roll takes the photo out of the app, and owner decision 12 lets a
-photo leave the app only when it is the viewer's own (Retro's Rewind and Timehop resurface only your own photos; BeReal
-has no way to save or share another person's post). Someone else's photo shows Report and Block only.
+Save is on every photo the viewer can see (owner decision 28: any member saves any photo to their own library, as
+Apple Shared Albums lets subscribers save shared items, support.apple.com/108314). Sharing to other apps stays your own
+photos only (decision 12). Someone else's photo shows Save, Report and Block.
 
 **Delete confirmation** (`photo.viewer.layout.deleteConfirm`: iOS action sheet, Android AlertDialog): title
 `photo.viewer.delete.title`, message `photo.viewer.delete.message` (removed everywhere), destructive

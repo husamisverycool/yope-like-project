@@ -434,15 +434,15 @@ final class OnThisDayModel {
 
     // MARK: Save, share, report, delete (the '•••' menu, D)
 
-    /// Save and share take a photo out of the app, so they exist only for your own memory (owner decision 12: sharing
-    /// outside the app is for your own photos; other members' memories have no share action).
+    /// Share exists only for your own memory (owner decision 12: sharing outside the app is for your own photos; other
+    /// members' memories have no share action). Save is on every memory (decision 28).
     var canExport: Bool { current?.isMine == true }
 
-    /// "Save to Camera Roll" (your own memory only): the original, add-only photo access. `haptic.global.success` +
-    /// `onthisday.toast.saved`; denied → the native alert (`onthisday.saveDenied.*`); failed → `haptic.global.error` +
-    /// `onthisday.saveFailed`.
+    /// "Save to Camera Roll" (any memory you can see, owner decision 28): the original, add-only photo access.
+    /// `haptic.global.success` + `onthisday.toast.saved`; denied → the native alert (`onthisday.saveDenied.*`); failed →
+    /// `haptic.global.error` + `onthisday.saveFailed`.
     func save() async {
-        guard let current, current.isMine, let data = dependencies.data, let url = current.originalURL ?? current.displayURL else { return }
+        guard let current, let data = dependencies.data, let url = current.originalURL ?? current.displayURL else { return }
         do {
             let bytes = try await data.downloadData(from: url)
             try await savePhoto(bytes)

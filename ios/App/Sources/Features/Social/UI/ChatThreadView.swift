@@ -696,7 +696,7 @@ struct ChatSystemLine: View {
 /// accessibility custom actions.
 /// - text: Reply · Copy · Report Message (others') / Unsend (mine)
 /// - voice: Reply · Report Message / Unsend
-/// - photo: the quick-reaction row · Reply · Save + Delete (mine) / Report Message (others' — no Save, owner decision 12)
+/// - photo: the quick-reaction row · Reply · Save (any photo, owner decision 28) · Delete (mine) / Report Message (others')
 /// - my failed message: Retry · Unsend
 struct MessageMenu: ViewModifier {
     let row: ChatRow
@@ -729,8 +729,8 @@ struct MessageMenu: ViewModifier {
                     Button(Copy.chatReactionsA11yAdd) { actions.openPicker(postID) }
                 }
                 Button(Copy.chatThreadMenuReply) { actions.reply(message) }
+                Button(Copy.chatThreadMenuSave) { actions.save(message) }
                 if row.isMine {
-                    Button(Copy.chatThreadMenuSave) { actions.save(message) }
                     Button(Copy.chatThreadMenuDeletePhoto, role: .destructive) { actions.deletePhoto(message) }
                 } else {
                     Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }

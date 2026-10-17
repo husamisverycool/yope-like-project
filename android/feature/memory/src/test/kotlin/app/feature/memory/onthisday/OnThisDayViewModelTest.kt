@@ -143,16 +143,17 @@ class OnThisDayViewModelTest {
         val effects = mutableListOf<MemoryEffect>()
         val a = launch(UnconfinedTestDispatcher(testScheduler)) { vm.requests.toList(events) }
         val b = launch(UnconfinedTestDispatcher(testScheduler)) { vm.effects.toList(effects) }
-        // Owner decision 12: someone else's photo never leaves the app — no save, no share sheet.
-        assertFalse("Ana's memory: Report Post only", vm.isMine(vm.page.memory))
+        // Owner decision 28: any memory saves to your own library. Decision 12: only your own is shared out of the app.
+        assertFalse("Ana's memory: Save and Report Post", vm.isMine(vm.page.memory))
+        val anas = vm.page.memory.postId
         vm.save()
         vm.share()
-        assertTrue(files.saved.isEmpty())
+        assertEquals(listOf(anas), files.saved)
         assertTrue(files.shared.isEmpty())
         repeat(3) { vm.step(+1) }
         assertTrue("your own memory: Save, Delete Post and the share circle", vm.isMine(vm.page.memory))
         vm.save()
-        assertEquals(listOf("p-2023c"), files.saved)
+        assertEquals(listOf(anas, "p-2023c"), files.saved)
         vm.share()
         assertEquals(listOf("p-2023c"), files.shared)
         files.ok = false
@@ -167,6 +168,7 @@ class OnThisDayViewModelTest {
         assertEquals(
             listOf(
                 OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.Saved),
+                OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.Saved),
                 OnThisDayEvent.Share(Uri.parse("content://test/p-2023c")),
                 OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.SaveFailed),
                 OnThisDayEvent.SaveDenied,
@@ -175,7 +177,7 @@ class OnThisDayViewModelTest {
             events,
         )
         assertEquals(
-            listOf(Tokens.Haptics.globalSuccess, Tokens.Haptics.globalError, Tokens.Haptics.globalError, Tokens.Haptics.globalWarning),
+            listOf(Tokens.Haptics.globalSuccess, Tokens.Haptics.globalSuccess, Tokens.Haptics.globalError, Tokens.Haptics.globalError, Tokens.Haptics.globalWarning),
             effects.map { (it as MemoryEffect.Haptic).constant },
         )
     }
