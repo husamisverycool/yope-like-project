@@ -77,12 +77,14 @@ public final class DataEnvironment: Sendable {
     ///   - uploadTransport: defaults to a background `URLSession` on Apple platforms
     ///     (`BackgroundUploadTransport`), a foreground one elsewhere.
     ///   - widgetStore: the App Group widget store kept in sync (nil in the App Clip and tests).
+    ///   - widgetDownload: how widget renditions are fetched (tests); defaults to `widgetDownloader`.
     public init(
         client: DataClient,
         directories: Directories = .standard(),
         uploadTransport: (any UploadTransport)? = nil,
         widgetStore: WidgetStore? = nil,
-        hooks: SessionHooks = SessionHooks()
+        hooks: SessionHooks = SessionHooks(),
+        widgetDownload: WidgetContentSync.Download? = nil
     ) {
         self.client = client
         auth = AuthService(client: client)
@@ -106,7 +108,8 @@ public final class DataEnvironment: Sendable {
         let relay = GroupChangeRelay()
         profiles = ProfileRepository(client: client)
         groups = GroupRepository(client: client, cache: cache, onGroupsChanged: { await relay.notify() })
-        posts = PostRepository(client: client, cache: cache)
+        let feedRelay = FeedLoadRelay()
+        posts = PostRepository(client: client, cache: cache, onFeedLoaded: { await feedRelay.notify($0) })
         chat = ChatRepository(client: client, cache: cache)
         reactions = ReactionRepository(client: client)
         selfies = SelfieReactionRepository(client: client, uploader: uploader)
@@ -119,17 +122,30 @@ public final class DataEnvironment: Sendable {
         questions = QuestionRepository(client: client)
         publisher = PostPublisher(posts: posts, uploader: uploader, directory: directories.outbox)
 
+        var widgetContent: WidgetContentSync?
+        if let widgetStore {
+            widgetContent = WidgetContentSync(
+                posts: posts, memories: memories, profiles: profiles, signedURLs: signedURLs, store: widgetStore,
+                download: widgetDownload ?? { try await DataEnvironment.widgetDownloader.data(from: $0) }
+            )
+        }
         let coordinator = SessionCoordinator(
             services: SessionCoordinator.Services(
                 auth: auth, groups: groups, account: account, memories: memories, realtime: realtime,
                 cache: cache, signedURLs: signedURLs, publisher: publisher, reachability: reachability
             ),
             widgetStore: widgetStore,
-            hooks: hooks
+            hooks: hooks,
+            widgetContent: widgetContent
         )
         self.coordinator = coordinator
         relay.setHandler { [weak coordinator] in await coordinator?.refreshGroups() }
+        feedRelay.setHandler { [weak coordinator] groupID in await coordinator?.refreshWidgetContent(groupID: groupID) }
     }
+
+    /// Widget renditions the app writes itself (`WidgetContentSync`): the Notification Service Extension's limits (a
+    /// rendition covers the largest widget, well under the cap).
+    public static let widgetDownloader = HTTPDownloader(timeout: 20, maxBytes: 10 * 1024 * 1024)
 
     /// The app's environment from `config/app.json`; throws `DataError.notConfigured` while the
     /// Supabase URL / anon key are not provided. Create it once per process.
@@ -160,6 +176,28 @@ public final class DataEnvironment: Sendable {
         }
         #endif
         return false
+    }
+}
+
+/// Lets `PostRepository` tell the coordinator a group's feed was loaded (the coordinator is created after it).
+final class FeedLoadRelay: @unchecked Sendable {
+    private let lock = NSLock()
+    private var handler: (@Sendable (GroupID) async -> Void)?
+
+    func setHandler(_ handler: @escaping @Sendable (GroupID) async -> Void) {
+        lock.lock()
+        self.handler = handler
+        lock.unlock()
+    }
+
+    func notify(_ groupID: GroupID) async {
+        await currentHandler()?(groupID)
+    }
+
+    private func currentHandler() -> (@Sendable (GroupID) async -> Void)? {
+        lock.lock()
+        defer { lock.unlock() }
+        return handler
     }
 }
 

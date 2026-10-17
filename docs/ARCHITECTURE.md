@@ -43,7 +43,7 @@
 | Collage | Server-side, deterministic (same inputs → byte-identical output) | Directive. Layout is a pure function `layout(n, option)` with unit tests for n = 1…30. |
 | Tribute / year videos | Server-side ffmpeg | One implementation for both platforms; cost documented in `docs/COSTS.md`. |
 | Server-rendered text font | Roboto Serif Headline (narrow display role, the apps' bundled headline face) and Inter (UI role), SIL OFL (Retro redesign, MERGE L-8) | SF Pro may not be used off Apple platforms. |
-| Widget delivery | Push-driven: alert push with `mutable-content` → Notification Service Extension downloads the widget rendition into the App Group and reloads timelines; plus WidgetKit push / background push where allowed. Android: FCM data message → WorkManager → Glance update. | See `docs/WIDGET_REFRESH.md` (from `docs/PLATFORM_CONSTRAINTS.md`). |
+| Widget delivery | Push-driven: alert push with `mutable-content` → Notification Service Extension downloads the widget rendition into the App Group and reloads timelines; plus background pushes where allowed (muted groups, deletions, collages), and the app writes each group's newest photo itself whenever it loads groups and feeds. Android: FCM data message → WorkManager → Glance update. | See `docs/WIDGET_REFRESH.md` (from `docs/PLATFORM_CONSTRAINTS.md`). |
 | Countdown | iOS Live Activity started by push-to-start at the invitation moment; Android ongoing notification with a count-down chronometer | Every member gets it at the same moment, server-driven. |
 | AI | Anthropic Messages API, model configurable (`RECAP_MODEL`, default `claude-opus-5-5`, $4/$20 per MTok), effort `low`, structured output; only that group's content is sent; cost per job logged to `ai_cost_log` | Directive Part 7. |
 | Subscriptions | RevenueCat (StoreKit 2 / Play Billing); webhook → `entitlements` table; server checks entitlement for premium-only writes (video posts) | Directive. |
@@ -65,7 +65,7 @@
 - `weekly_recaps` (group_id, week_start, items, text, status) ; `albums`, `album_items`
 - `tribute_requests`, `tribute_contributions`, `tributes`
 - `year_stories` (group_id, year, data)
-- `devices` (user_id, platform, push_token, push_to_start_token, widget_push_token)
+- `devices` (user_id, platform, push_token, push_to_start_token, live_activities_enabled)
 - `notification_settings` (user quiet hours) ; per-group mute in `group_members`
 - `blocks`, `reports`, `entitlements`, `jobs`, `ai_cost_log`
 

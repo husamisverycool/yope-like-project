@@ -34,6 +34,42 @@ object WidgetPrefetch {
         scope.launch(Dispatchers.IO) { fill(app, data, group, meta) }
     }
 
+    /**
+     * Every placed widget's group brought up to date from the app itself when it comes to the front (iOS parity:
+     * `WidgetContentSync`, docs/WIDGET_REFRESH.md "The app itself"): a group whose newest photo or collage is not the one
+     * its widget shows is queued through the regular [WidgetUpdateScheduler] path; a group with nothing left shows its
+     * empty state. Offline or unreadable groups are left as they are.
+     */
+    suspend fun refreshPlaced(context: Context, data: CaptureData, placed: Set<String>? = null) {
+        val app = context.applicationContext
+        val store = WidgetFileStore.default(app)
+        val meta = WidgetGroupMeta.of(store)
+        val groups = placed ?: try {
+            WidgetBinding.boundGroups(app)
+        } catch (_: Exception) {
+            return
+        }
+        for (groupId in groups) {
+            val newest = try {
+                data.newestForWidget(groupId)
+            } catch (_: Exception) {
+                continue
+            }
+            val shown = store.read(groupId)
+            if (newest != null && shown?.sourceId == newest.sourceId) continue
+            if (newest == null && shown == null) continue
+            // The shown item is gone (nothing left, or the newest is not newer than it: it was deleted or hidden). The
+            // store keeps the newest, so it is removed before the older one is written.
+            if (shown != null && (newest == null || !newest.postedAt.isAfter(shown.postedAt))) store.remove(groupId)
+            val group = try {
+                data.group(groupId)
+            } catch (_: Exception) {
+                null
+            } ?: continue
+            fill(app, data, group, meta)
+        }
+    }
+
     internal suspend fun fill(context: Context, data: CaptureData, group: Group, meta: WidgetGroupMeta) {
         runCatching {
             val newest = data.newestForWidget(group.id)

@@ -89,6 +89,8 @@ public actor SessionCoordinator {
     public let environment: Services
     public let widgetStore: WidgetStore?
     public let hooks: SessionHooks
+    /// The app's own writes of each group's newest photo and collage to the widgets (nil: no widget store).
+    public let widgetContent: WidgetContentSync?
 
     private var tokens = DevicePushTokens()
     private var registered: (user: UserID, tokens: DevicePushTokens)?
@@ -96,11 +98,14 @@ public actor SessionCoordinator {
     private var authTask: Task<Void, Never>?
     private var reachabilityTask: Task<Void, Never>?
     private var deletionWatchers: [GroupID: Task<Void, Never>] = [:]
+    /// Groups whose widget content is being written (a second request meanwhile is dropped, not queued).
+    private var widgetSyncs: Set<GroupID> = []
 
-    public init(services: Services, widgetStore: WidgetStore?, hooks: SessionHooks = SessionHooks()) {
+    public init(services: Services, widgetStore: WidgetStore?, hooks: SessionHooks = SessionHooks(), widgetContent: WidgetContentSync? = nil) {
         self.environment = services
         self.widgetStore = widgetStore
         self.hooks = hooks
+        self.widgetContent = widgetContent
     }
 
     // MARK: Lifecycle
@@ -181,13 +186,15 @@ public actor SessionCoordinator {
     // MARK: Groups and widgets
 
     /// Reloads the caller's groups, writes the widget's group list (which also deletes the
-    /// widget folders of groups the user left) and follows each group's deletion topic.
+    /// widget folders of groups the user left) and each group's newest photo and collage (`WidgetContentSync`), and
+    /// follows each group's deletion topic.
     public func refreshGroups() async {
         guard signedInUser != nil else { return }
         guard let groups = try? await environment.groups.myGroups() else { return }
         if let widgetStore {
             try? widgetStore.syncGroups(groups.map { WidgetGroup(id: $0.id.rawValue, name: $0.name) })
             await hooks.reloadWidgets?()
+            if await syncWidgetContent(groups) { await hooks.reloadWidgets?() }
         }
         for group in groups where deletionWatchers[group.id] == nil {
             watchDeletions(group.id)
@@ -198,6 +205,33 @@ public actor SessionCoordinator {
             deletionWatchers[id] = nil
             await environment.cache.removeGroup(id)
         }
+    }
+
+    /// The widgets follow what the app sees: each group's newest photo and collage (`WidgetContentSync`). Call when the
+    /// app comes to the foreground; `groupID`: only that group (its feed was just loaded).
+    public func refreshWidgetContent(groupID: GroupID? = nil) async {
+        guard signedInUser != nil, widgetContent != nil else { return }
+        let groups: [PhotoGroup]
+        if let groupID {
+            guard let group = (try? await environment.groups.myGroups())?.first(where: { $0.id == groupID }) else { return }
+            groups = [group]
+        } else {
+            guard let mine = try? await environment.groups.myGroups() else { return }
+            groups = mine
+        }
+        if await syncWidgetContent(groups) { await hooks.reloadWidgets?() }
+    }
+
+    /// Returns whether a snapshot changed.
+    private func syncWidgetContent(_ groups: [PhotoGroup]) async -> Bool {
+        guard let widgetContent else { return false }
+        var changed = false
+        for group in groups where !widgetSyncs.contains(group.id) {
+            widgetSyncs.insert(group.id)
+            if await widgetContent.sync(group) { changed = true }
+            widgetSyncs.remove(group.id)
+        }
+        return changed
     }
 
     private func watchDeletions(_ groupID: GroupID) {

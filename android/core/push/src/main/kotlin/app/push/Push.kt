@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.core.content.edit
 import app.links.AppLinkConfig
 import app.model.DeepLinkCodec
+import app.model.PushKeys
 import app.model.PushMessage
+import app.model.PushTypes
 import app.widget.WidgetUpdateRequest
 import app.widget.WidgetUpdateScheduler
 import com.google.firebase.FirebaseApp
@@ -52,20 +54,27 @@ class AppMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        val outcome = PushHandler(applicationContext).handle(message.data)
-        // The worker sends the widget message when a deletion changes the widget: alerts of photos that are gone leave
-        // the shade (DeliveredAlerts). Bounded: FCM gives onMessageReceived a short window.
+        val data = message.data
+        // The worker sends the widget message when a deletion changes the widget: a shown photo that is gone is dropped
+        // first, so the older photo the message carries is not refused (ShownWidgetPhoto) …
+        val widgetGroup = data[PushKeys.GROUP_ID]?.takeIf { data[PushKeys.TYPE] == PushTypes.WIDGET && DeepLinkCodec.isId(it) }
+        if (widgetGroup != null) {
+            runBlocking { withTimeoutOrNull(LOOKUP_BUDGET_MS) { ShownWidgetPhoto.dropIfDeleted(applicationContext, widgetGroup) } }
+        }
+        val outcome = PushHandler(applicationContext).handle(data)
+        // … and alerts of photos that are gone leave the shade (DeliveredAlerts). Bounded: FCM gives onMessageReceived a
+        // short window.
         if (outcome == PushHandler.Outcome.WidgetRefreshQueued) {
-            runBlocking { withTimeoutOrNull(RECONCILE_BUDGET_MS) { DeliveredAlerts.reconcile(applicationContext) } }
+            runBlocking { withTimeoutOrNull(LOOKUP_BUDGET_MS) { DeliveredAlerts.reconcile(applicationContext) } }
         }
     }
 
     private companion object {
         /**
-         * One server lookup, kept short: Firebase, "Receive messages in an Android app" — "For long-running tasks (10 seconds
-         * or more) use WorkManager".
+         * One server lookup each, both together kept under Firebase's limit for work in the handler ("Receive messages in
+         * an Android app": "For long-running tasks (10 seconds or more) use WorkManager").
          */
-        const val RECONCILE_BUDGET_MS = 5_000L
+        const val LOOKUP_BUDGET_MS = 4_000L
     }
 
     // Token-based registration matches the worker's FCM HTTP v1 sends to `devices.push_token`

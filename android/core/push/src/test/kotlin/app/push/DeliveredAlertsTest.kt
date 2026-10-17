@@ -8,6 +8,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.links.DeepLinkIntents
 import app.model.DeepLinkCodec
+import app.model.WidgetSnapshot
+import app.widget.WidgetFileStore
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -71,5 +73,27 @@ class DeliveredAlertsTest {
         assertEquals(setOf("p1"), shownPosts())
     }
 
+    @Test fun aShownPhotoTheServerNoLongerReturnsLeavesTheWidget() = runBlocking {
+        val store = WidgetFileStore(java.io.File(app.cacheDir, "widgets-${System.nanoTime()}"))
+        fun show(kind: WidgetSnapshot.Kind, source: String) = store.write(
+            WidgetFileStore.Incoming("g1", "Group", kind, Instant.parse("2026-10-15T11:00:00Z"), source, null, null),
+            writePhoto = { it.write(byteArrayOf(1, 2, 3)) },
+        )
+        show(WidgetSnapshot.Kind.Photo, "p1")
+        assertFalse(ShownWidgetPhoto.dropIfDeleted(app, "g1", store), "no lookup: kept")
+        DeliveredAlerts.existingPosts = { ids -> ids }
+        assertFalse(ShownWidgetPhoto.dropIfDeleted(app, "g1", store), "still there: kept")
+        DeliveredAlerts.existingPosts = { emptySet() }
+        assertTrue(ShownWidgetPhoto.dropIfDeleted(app, "g1", store))
+        assertNull(store.read("g1"))
+
+        show(WidgetSnapshot.Kind.Collage, "c1")
+        assertFalse(ShownWidgetPhoto.dropIfDeleted(app, "g1", store), "collages are not looked up as posts")
+        assertEquals("c1", store.read("g1")?.sourceId)
+    }
+
     private fun assertEquals(expected: Any, actual: Any, message: String) = org.junit.Assert.assertEquals(message, expected, actual)
+    private fun assertFalse(value: Boolean, message: String) = org.junit.Assert.assertFalse(message, value)
+    private fun assertTrue(value: Boolean) = org.junit.Assert.assertTrue(value)
+    private fun assertNull(value: Any?) = org.junit.Assert.assertNull(value)
 }

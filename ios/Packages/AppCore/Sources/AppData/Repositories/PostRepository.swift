@@ -54,10 +54,13 @@ public struct PostRepository: Sendable {
 
     public let client: DataClient
     private let cache: OfflineCache?
+    /// A group's first feed page was loaded (the session glue brings that group's widget up to date).
+    private let onFeedLoaded: (@Sendable (GroupID) async -> Void)?
 
-    public init(client: DataClient, cache: OfflineCache? = nil) {
+    public init(client: DataClient, cache: OfflineCache? = nil, onFeedLoaded: (@Sendable (GroupID) async -> Void)? = nil) {
         self.client = client
         self.cache = cache
+        self.onFeedLoaded = onFeedLoaded
     }
 
     // MARK: Feed
@@ -76,7 +79,10 @@ public struct PostRepository: Sendable {
     public func feed(groupID: GroupID, before: Date? = nil, limit: Int = PostRepository.pageSize) async throws -> Page<PostWithMedia> {
         let page = try await page(groupID: groupID, before: before, limit: limit)
         let items = try await withMedia(page.items)
-        if before == nil { await cache?.write(items, for: .feed(groupID)) }
+        if before == nil {
+            await cache?.write(items, for: .feed(groupID))
+            if let onFeedLoaded { Task { await onFeedLoaded(groupID) } }
+        }
         return Page(items: items, nextCursor: page.nextCursor)
     }
 

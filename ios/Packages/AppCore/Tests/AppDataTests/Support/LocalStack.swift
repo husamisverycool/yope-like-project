@@ -260,7 +260,10 @@ final class TestUsers: @unchecked Sendable {
     private var directories: [URL] = []
     let runID = String(UUID().uuidString.prefix(8)).lowercased()
 
-    func make(_ name: String, widgetStore: WidgetStore? = nil, hooks: SessionHooks = SessionHooks()) async throws -> TestUser {
+    func make(
+        _ name: String, widgetStore: WidgetStore? = nil, hooks: SessionHooks = SessionHooks(),
+        widgetDownload: WidgetContentSync.Download? = nil
+    ) async throws -> TestUser {
         let phone = await LocalStack.nextPhone()
         let password = "pw-\(UUID().uuidString)"
         let id = try await LocalStack.createAuthUser(phone: phone, password: password, displayName: "\(name) Test\(runID)")
@@ -272,7 +275,8 @@ final class TestUsers: @unchecked Sendable {
             directories: .under(root),
             uploadTransport: FoundationUploadTransport(),
             widgetStore: widgetStore,
-            hooks: hooks
+            hooks: hooks,
+            widgetDownload: widgetDownload
         )
         let user = TestUser(id: UserID(id), name: name, phone: phone, password: password, data: data)
         register(user, directory: root)

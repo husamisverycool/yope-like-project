@@ -60,9 +60,11 @@ The widget's label updates with the content (`widget.home.small.a11y.*`); no ann
 
 ## Data & actions
 
-- Server: `create_post` enqueues `widget.refresh` (dedupe per group) and `push.new_post`; the worker sends widget pushes
-  to `devices.widget_push_token` (iOS) and FCM messages (Android).
-- Client: `register_device(p_widget_push_token)` whenever the WidgetKit push token changes.
+- Server: `create_post` enqueues `widget.refresh` (dedupe per group) and `push.new_post`; the worker sends the new-photo
+  alert (the Notification Service Extension writes the widget) or a background push with the widget fields (iOS) and FCM
+  messages (Android). No WidgetKit push: the app has no widget push handler (docs/WIDGET_REFRESH.md).
+- Client: the app writes each group's newest photo or collage into the widget store whenever it loads groups and feeds,
+  and reloads the timelines (docs/WIDGET_REFRESH.md "The app itself").
 - Renditions: `media.widget_path` / `collages.widget_path` (signed URLs, 1 h).
 
 ## Platform notes

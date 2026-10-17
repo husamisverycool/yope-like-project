@@ -209,6 +209,10 @@ final class AppEnvironment {
             let pushService = self.push
             Task { await pushService.registerIfAuthorized() }
             Task { await self.withdrawDeletedNotifications() }
+            // Each group's newest photo and collage reach the widgets from the app itself (docs/WIDGET_REFRESH.md).
+            if let coordinator = data?.coordinator {
+                Task { await coordinator.refreshWidgetContent() }
+            }
             let liveActivities = self.liveActivities
             Task { await liveActivities.endClosedActivities() }
         case .background:

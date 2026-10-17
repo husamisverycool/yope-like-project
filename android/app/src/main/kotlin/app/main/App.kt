@@ -21,6 +21,8 @@ import app.designsystem.DsAppearance
 import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironments
 import app.feature.account.invite.InstallReferrerReader
+import app.feature.capture.data.CaptureDataProvider
+import app.feature.capture.widget.WidgetPrefetch
 import app.links.AppLinks
 import app.links.DeepLinkIntents
 import app.model.DeepLink
@@ -112,10 +114,18 @@ class MainActivity : ComponentActivity() {
         window.setBackgroundDrawable(ColorDrawable(DsAppearance.pick(this, light, dark)))
     }
 
-    /** Alerts of photos deleted while the app was in the background leave the shade (core:push `DeliveredAlerts`). */
+    /**
+     * Alerts of photos deleted while the app was in the background leave the shade (core:push `DeliveredAlerts`), and each
+     * placed widget's group shows its newest photo or collage (`WidgetPrefetch.refreshPlaced`).
+     */
     override fun onStart() {
         super.onStart()
-        DataGraph.get(this)?.let { graph -> graph.scope.launch { DeliveredAlerts.reconcile(applicationContext) } }
+        DataGraph.get(this)?.let { graph ->
+            graph.scope.launch { DeliveredAlerts.reconcile(applicationContext) }
+            if (graph.auth.currentUserId != null) {
+                graph.scope.launch { WidgetPrefetch.refreshPlaced(applicationContext, CaptureDataProvider.get(applicationContext)) }
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -95,6 +95,23 @@ When a member gets the alert, its high-priority message wakes the device, and th
 widget message sent at the same time is delivered while it is awake. A muted member's widget
 message waits for a maintenance window when the device is in Doze ("delivery may be delayed").
 
+## The app itself
+
+Pushes alone left two gaps: a widget added (or a group joined) after the last push showed "No photos yet" although the
+group had photos, and a person without a push token (notifications never allowed, no Firebase) never got an update.
+So the apps write the widgets from their own data too, with the same downloads as the pushes:
+
+| when | iOS (`AppData/Glue/WidgetContentSync.swift`, `SessionCoordinator`) | Android (`WidgetPrefetch`) |
+|---|---|---|
+| sign-in, a group joined or left (the group list reloads) | every group | — (the widget picker fills a widget when it is placed) |
+| each return to the foreground | every group | every group a placed widget shows (`refreshPlaced`, MainActivity start) |
+| a group's feed loads its first page | that group | — |
+
+Per group: the newest photo the person may see (RLS applies blocks) and the newest ready collage; nothing is
+downloaded for an item the widget store already shows. When the shown photo is gone (deleted or hidden) the older
+newest one replaces it, and a group with no photo left shows the widget's empty state. iOS reloads the timelines only
+when a snapshot changed; reloads from the foreground app are not budgeted (PLATFORM_CONSTRAINTS §1.1).
+
 ## Limits (what can make a widget late or stale)
 
 - **Budgets.** iOS widget reloads (40–70/day per widget) and background pushes (throttled, not
@@ -107,8 +124,11 @@ message waits for a maintenance window when the device is in Doze ("delivery may
   (PLATFORM_CONSTRAINTS §1.2); its real value is the downloaded rendition in the App Group.
 - **Nothing left to show.** When every photo of a group is deleted, the background-push and
   Android widget messages carry nothing (they require a `rendition_url`, shared contract): the app
-  clears the widget when it is running (the realtime deletion) or next opened, Android on its next
-  periodic update.
+  clears the widget when it is running (the realtime deletion) or next opened ("The app itself").
+- **An older photo after a deletion.** The stores keep the newest item, so the older photo sent
+  after the shown one was deleted would be refused: the iOS app replaces it when it runs; Android
+  drops a shown photo the server no longer returns when the widget message arrives
+  (`ShownWidgetPhoto`, one lookup inside FCM's handler window) and when the app starts.
 - **Throttle state is in memory** in the worker (one instance, docs/OWNER_SETUP.md §7). A restart
   forgets it, which can let one extra push per device through; running several worker instances
   multiplies the per-device allowance.

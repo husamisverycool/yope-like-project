@@ -8,6 +8,9 @@ import app.model.DeepLink
 import app.model.DeepLinkCodec
 import app.model.PushKeys
 import app.model.PushMessage
+import app.model.WidgetSnapshot
+import app.widget.WidgetBinding
+import app.widget.WidgetFileStore
 
 /**
  * The alerts of deleted photos and messages leave the notification shade (directive Part 6, "Deleting a photo removes it
@@ -69,4 +72,25 @@ object DeliveredAlerts {
 
     private fun active(context: Context): List<StatusBarNotification> =
         runCatching { context.getSystemService(NotificationManager::class.java)?.activeNotifications?.toList() }.getOrNull().orEmpty()
+}
+
+/**
+ * A widget showing a deleted photo. The widget store keeps the newest item ([WidgetSnapshot.supersedes]), so the older
+ * photo the worker sends after a deletion would be refused while the deleted one stays: when a widget message arrives
+ * (and when the app starts, `WidgetPrefetch.refreshPlaced`), a shown photo the server no longer returns is dropped
+ * first ([DeliveredAlerts.existingPosts]). Collages are not looked up here (their deletion recomposes them).
+ */
+object ShownWidgetPhoto {
+    /** Returns whether [groupId]'s photo was dropped. */
+    suspend fun dropIfDeleted(context: Context, groupId: String, store: WidgetFileStore = WidgetFileStore.default(context)): Boolean {
+        val shown = store.read(groupId) ?: return false
+        if (shown.kind != WidgetSnapshot.Kind.Photo) return false
+        val postId = shown.sourceId ?: return false
+        val lookup = DeliveredAlerts.existingPosts ?: return false
+        val existing = lookup(setOf(postId)) ?: return false
+        if (postId in existing) return false
+        store.remove(groupId)
+        runCatching { WidgetBinding.refresh(context, groupId) }
+        return true
+    }
 }
