@@ -420,8 +420,8 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             OnThisDayEntry(groupId, onOpen = { nav.openOnThisDay(groupId) }) { title, subtitle, button, onClick ->
                 FeedEntryCard(Tokens.Icons.globalRewind, title, subtitle, button = button, photo = null, onClick = onClick)
             }
-            YearStoryEntry(groupId, onOpen = { year -> nav.navigate(AppRoute.YearStory(groupId, year)) }) { title, subtitle, button, onClick ->
-                FeedEntryCard(Tokens.Icons.globalRecap, title, subtitle, button = button, photo = null, onClick = onClick)
+            YearStoryEntry(groupId, onOpen = { year -> nav.navigate(AppRoute.YearStory(groupId, year)) }) { title, subtitle, button, photo, onClick ->
+                FeedEntryCard(Tokens.Icons.globalRecap, title, subtitle, button = button, photo = photo, onClick = onClick)
             }
         },
     )

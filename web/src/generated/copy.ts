@@ -489,12 +489,14 @@ const table = {
   "groups.settings.group.header": "Admin Settings", // Retro · groups.settings · SOURCED
   "groups.settings.invitation.adminOnly": "Only admins can change these.", // Retro · groups.settings · SOURCED
   "groups.settings.invitation.default": "Default", // Retro · groups.settings · SOURCED
+  "groups.settings.invitation.end": "End", // Retro · groups.settings · SOURCED
   "groups.settings.invitation.footer": "Everyone gets the invitation at the same moment, once a day, sometime between these hours.", // Retro · groups.settings · SOURCED
   "groups.settings.invitation.header": "Daily Invitation", // Retro · groups.settings · SOURCED
   "groups.settings.invitation.hours": "Invitation Hours", // Retro · groups.settings · SOURCED
   "groups.settings.invitation.invalid": "Please pick hours that are further apart.", // Retro · groups.settings · SOURCED
   "groups.settings.invitation.pause": "Pause Invitations", // Retro · groups.settings · SOURCED
   "groups.settings.invitation.range": "{start} – {end}", // Retro · groups.settings · SOURCED
+  "groups.settings.invitation.start": "Start", // Retro · groups.settings · SOURCED
   "groups.settings.leave": "Leave Group", // Retro · groups.settings · SOURCED
   "groups.settings.leave.confirm": "Yes, leave", // Retro · groups.settings · SOURCED
   "groups.settings.leave.message": "Your photos stay in the group. Delete them first if you want them gone.", // Retro · groups.settings · SOURCED

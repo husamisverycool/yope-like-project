@@ -424,14 +424,14 @@ fun GroupSettingsScreen(state: GroupSettingsUiState, actions: GroupSettingsActio
         )
     }
     if (group != null && pickingStart) {
-        TimeDialog(stringResource(R.string.settings_notifications_quiethours_start), group.wakingStart, onCancel = { pickingStart = false }) { start ->
+        TimeDialog(stringResource(R.string.groups_settings_invitation_start), group.wakingStart, onCancel = { pickingStart = false }) { start ->
             pickingStart = false
             hoursStart = start
         }
     }
     if (group != null) {
         hoursStart?.let { start ->
-            TimeDialog(stringResource(R.string.settings_notifications_quiethours_end), group.wakingEnd, onCancel = { hoursStart = null }) { end ->
+            TimeDialog(stringResource(R.string.groups_settings_invitation_end), group.wakingEnd, onCancel = { hoursStart = null }) { end ->
                 hoursStart = null
                 actions.onHours(start, end)
             }

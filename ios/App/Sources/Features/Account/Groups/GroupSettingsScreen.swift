@@ -290,7 +290,7 @@ struct InvitationHoursSheet: View {
                 SettingsGroup(rows: [
                     SettingsCustomRow {
                         DatePicker(selection: $start, displayedComponents: .hourAndMinute) {
-                            Text(Copy.settingsNotificationsQuietHoursStart)
+                            Text(Copy.groupsSettingsInvitationStart)
                                 .dsTextStyle(TextRole.body)
                                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
                         }
@@ -298,7 +298,7 @@ struct InvitationHoursSheet: View {
                     .asSettingsRow(),
                     SettingsCustomRow {
                         DatePicker(selection: $end, displayedComponents: .hourAndMinute) {
-                            Text(Copy.settingsNotificationsQuietHoursEnd)
+                            Text(Copy.groupsSettingsInvitationEnd)
                                 .dsTextStyle(TextRole.body)
                                 .foregroundStyle(Tokens.Colors.globalTextPrimary)
                         }

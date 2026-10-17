@@ -52,7 +52,7 @@ between rows); sections `size.global.sectionGap` apart; footers under a group in
 | invite capsule | C-07 | `groups.settings.members.invite.friends` / `.family` / `.roommates` / `.custom` | → `groups.invite` |
 | Group updates | C-14 row + native switch (`color.global.selection` / `color.global.system.primary`); `settings.root.layout.toggleHaptic` | `groups.settings.notifications.updates`, `.footer` | `set_group_muted(p_group_id, !on)` |
 | Quiet Hours | C-14 row + `icon.global.chevron` | `groups.settings.notifications.quietHours` | → `settings.notifications` |
-| Invitation Hours | C-14 row + value + native time pickers (iOS `DatePicker(.hourAndMinute)` in a sheet; Android M3 `TimePicker` dialog) | `groups.settings.invitation.hours`, `.range` ({start}, {end} locale short time), `.default`, `.invalid` | `set_group_invitation_hours(p_group_id, p_start, p_end)`; too-short window → message-only alert `groups.settings.invitation.invalid` |
+| Invitation Hours | C-14 row + value + native time pickers (iOS `DatePicker(.hourAndMinute)` in a sheet titled `.hours` with the rows `.start` / `.end`; Android two M3 `TimePicker` dialogs titled `.start`, then `.end`) | `groups.settings.invitation.hours`, `.start`, `.end`, `.range` ({start}, {end} locale short time), `.default`, `.invalid` | `set_group_invitation_hours(p_group_id, p_start, p_end)`; too-short window → message-only alert `groups.settings.invitation.invalid` |
 | Pause Invitations | C-14 row + switch | `groups.settings.invitation.pause` | `set_group_invitation_paused` |
 | Edit Group | C-14 row + chevron | `groups.settings.group.edit` | → `groups.create` (edit) |
 | Report Group | C-14 row, C-10 | `groups.settings.report` | → `safety.report` (group) |

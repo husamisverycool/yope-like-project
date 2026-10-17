@@ -977,6 +977,8 @@ public enum Copy {
     public static var groupsSettingsInvitationAdminOnly: String { CopyLookup.string("groups.settings.invitation.adminOnly", default: "Only admins can change these.") }
     /// "Default" — Retro · groups.settings · new · SOURCED
     public static var groupsSettingsInvitationDefault: String { CopyLookup.string("groups.settings.invitation.default", default: "Default") }
+    /// "End" — Retro · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationEnd: String { CopyLookup.string("groups.settings.invitation.end", default: "End") }
     /// "Everyone gets the invitation at the same moment, once a day, sometime between these hours." — Retro · groups.settings · new · SOURCED
     public static var groupsSettingsInvitationFooter: String { CopyLookup.string("groups.settings.invitation.footer", default: "Everyone gets the invitation at the same moment, once a day, sometime between these hours.") }
     /// "Daily Invitation" — Retro · groups.settings · new · SOURCED
@@ -989,6 +991,8 @@ public enum Copy {
     public static var groupsSettingsInvitationPause: String { CopyLookup.string("groups.settings.invitation.pause", default: "Pause Invitations") }
     /// "{start} – {end}" — Retro · groups.settings · new · SOURCED
     public static func groupsSettingsInvitationRange(start: String, end: String) -> String { CopyLookup.format("groups.settings.invitation.range", default: "{start} – {end}", ["start": start, "end": end]) }
+    /// "Start" — Retro · groups.settings · new · SOURCED
+    public static var groupsSettingsInvitationStart: String { CopyLookup.string("groups.settings.invitation.start", default: "Start") }
     /// "Leave Group" — Retro · groups.settings · adapted · SOURCED
     public static var groupsSettingsLeave: String { CopyLookup.string("groups.settings.leave", default: "Leave Group") }
     /// "Yes, leave" — Retro · groups.settings · adapted · SOURCED

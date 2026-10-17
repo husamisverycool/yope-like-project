@@ -252,7 +252,8 @@ data class BrowseState(
 /**
  * `walls.browse`: everyone sharing a group with me, in the order `walls.browse.layout.rowOrder` (Apple Photos'
  * people grid "Sort by Name": display name A to Z in the device locale's collation, ignoring case and accents; ties
- * by profile id — [orderedByName]).
+ * by profile id — [orderedByName]). Offline (walls.browse.md States, as iOS `BrowseModel`): the last grid from the
+ * page cache stays; nothing cached → the error line.
  */
 class BrowseViewModel(private val data: SocialData, private val locale: Locale = Locale.getDefault()) : ViewModel() {
     private val _state = MutableStateFlow(BrowseState())
@@ -265,18 +266,36 @@ class BrowseViewModel(private val data: SocialData, private val locale: Locale =
     fun load() {
         viewModelScope.launch {
             val me = data.currentUserId()
+            if (_state.value.people.isEmpty()) {
+                // The offline copy first (no loading indicator over cached content).
+                runCatching { data.cacheGet(CACHE_KEY, PEOPLE) }.getOrNull()?.filter { it.id != me }?.takeIf { it.isNotEmpty() }?.let { cached ->
+                    _state.update { it.copy(phase = BrowseState.Phase.Ready, people = orderedByName(cached, locale), alone = false) }
+                }
+            }
             try {
                 val groups = data.myGroups()
                 val members = coroutineScope { groups.map { g -> async { data.members(g.id) } }.awaitAll() }.flatten()
                 val others = members.mapNotNull { it.profile }.distinctBy { it.id }.filter { it.id != me }
                 val ordered = orderedByName(others, locale)
                 _state.update { it.copy(phase = BrowseState.Phase.Ready, people = ordered, alone = ordered.isEmpty()) }
+                runCatching { data.cachePut(CACHE_KEY, PEOPLE, ordered) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                _state.update { it.copy(phase = if (e.dataError() == DataError.Network) BrowseState.Phase.OfflineEmpty else BrowseState.Phase.Error) }
+                // People already on screen (cached) stay; otherwise the error line (offline included: the spec's
+                // "nothing cached → the error line").
+                if (_state.value.people.isEmpty()) {
+                    _state.update { it.copy(phase = if (e.dataError() == DataError.Network) BrowseState.Phase.OfflineEmpty else BrowseState.Phase.Error) }
+                } else {
+                    _state.update { it.copy(phase = BrowseState.Phase.Ready) }
+                }
             }
         }
+    }
+
+    private companion object {
+        const val CACHE_KEY = "walls.browse" // provenance-ok: cache key
+        val PEOPLE = kotlinx.serialization.builtins.ListSerializer(Profile.serializer())
     }
 
     fun setQuery(query: String) = _state.update { it.copy(query = query) }

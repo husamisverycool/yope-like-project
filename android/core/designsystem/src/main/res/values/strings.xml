@@ -976,6 +976,8 @@
     <!-- Retro · groups.settings · new · SOURCED -->
     <string name="groups_settings_invitation_default" formatted="false">Default</string>
     <!-- Retro · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_end" formatted="false">End</string>
+    <!-- Retro · groups.settings · new · SOURCED -->
     <string name="groups_settings_invitation_footer" formatted="false">Everyone gets the invitation at the same moment, once a day, sometime between these hours.</string>
     <!-- Retro · groups.settings · new · SOURCED -->
     <string name="groups_settings_invitation_header" formatted="false">Daily Invitation</string>
@@ -987,6 +989,8 @@
     <string name="groups_settings_invitation_pause" formatted="false">Pause Invitations</string>
     <!-- Retro · groups.settings · new · SOURCED · args: start, end -->
     <string name="groups_settings_invitation_range">%1$s – %2$s</string>
+    <!-- Retro · groups.settings · new · SOURCED -->
+    <string name="groups_settings_invitation_start" formatted="false">Start</string>
     <!-- Retro · groups.settings · adapted · SOURCED -->
     <string name="groups_settings_leave" formatted="false">Leave Group</string>
     <!-- Retro · groups.settings · adapted · SOURCED -->

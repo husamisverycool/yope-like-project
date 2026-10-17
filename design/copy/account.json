@@ -2207,6 +2207,26 @@
       "pattern": "retro.voice.settings",
       "level": "SOURCED"
     },
+    "groups.settings.invitation.start": {
+      "text": "Start",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "groups.settings",
+      "evidence": "design/copy-patterns.md retro.voice.settings (row label, as settings.notifications.quietHours.start; Retro video_editor_start_earlier 'Start one second earlier' uses the same word)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "The invitation window's start: the iOS sheet's first row and the title of Android's first time picker (it used the quiet-hours key before)."
+    },
+    "groups.settings.invitation.end": {
+      "text": "End",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "groups.settings",
+      "evidence": "design/copy-patterns.md retro.voice.settings (row label, as settings.notifications.quietHours.end; Retro video_editor_end_earlier 'End one second earlier' uses the same word)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "The invitation window's end: the iOS sheet's second row and the title of Android's second time picker."
+    },
     "groups.settings.invitation.pause": {
       "text": "Pause Invitations",
       "origin": "new",
