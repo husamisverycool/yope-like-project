@@ -61,18 +61,23 @@ enum ShareTargetDonations {
     }
 
     /// Deletes the donations of every group not in `current` (the person's groups now); nil deletes all (sign-out).
+    /// The Intents deletions run on their own and are not awaited: sign-out (`SessionCoordinator.clearLocalData`) and
+    /// the group refresh wait for this hook, and `INInteraction`'s delete calls can stay unanswered (seen on the CI
+    /// simulator: sign-out never reached auth.phone).
     static func keep(only current: Set<String>?) async {
         guard let current else {
             record([])
-            try? await INInteraction.deleteAll()
+            Task.detached { try? await INInteraction.deleteAll() }
             return
         }
         let donated = donated()
         let gone = donated.subtracting(current)
         guard !gone.isEmpty else { return }
         record(donated.intersection(current))
-        for id in gone {
-            try? await INInteraction.delete(with: id)
+        Task.detached {
+            for id in gone {
+                try? await INInteraction.delete(with: id)
+            }
         }
     }
 
