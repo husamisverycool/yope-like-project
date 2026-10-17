@@ -100,6 +100,25 @@ class ChatRepository(
         put("p_body", body)
     }
 
+    /**
+     * `set_link_preview` (migration 0053): the preview the sender's device built for [url] (written as it is in the text of
+     * your own text message, http / https, ≤ 2000; title ≤ 300, site ≤ 100). [jpeg], when given, is uploaded first to
+     * `u/<uid>/links/<uuid>.jpg`. Errors: `message_not_found`, `invalid_kind`, `invalid_argument`, `invalid_text`,
+     * `invalid_path`.
+     */
+    suspend fun setLinkPreview(messageId: String, url: String, title: String?, site: String?, jpeg: ByteArray?): Message {
+        val path = jpeg?.let { bytes ->
+            StoragePaths.linkPreview(api.requireUserId(), UUID.randomUUID().toString()).also { storage.uploadBytes(it, bytes, "image/jpeg") }
+        }
+        return api.rpc(Rpc.SetLinkPreview, Message.serializer()) {
+            put("p_message_id", messageId)
+            put("p_url", url)
+            opt("p_title", title)
+            opt("p_site", site)
+            opt("p_image_path", path)
+        }
+    }
+
     /** `set_typing` (migration 0048): true while typing (again every `typing_ttl_s / 2`), false when stopped or sent. */
     suspend fun setTyping(groupId: String, typing: Boolean) = api.rpcUnit(Rpc.SetTyping) {
         put("p_group_id", groupId)

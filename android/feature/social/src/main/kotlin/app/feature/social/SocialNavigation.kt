@@ -22,6 +22,8 @@ import app.feature.social.albums.AlbumsViewModel
 import app.feature.social.chat.ChatNav
 import app.feature.social.chat.ChatScreen
 import app.feature.social.chat.ChatViewModel
+import app.feature.social.chat.LinkPreviewBuilder
+import app.feature.social.data.GraphSocialData
 import app.feature.social.common.LocalSocialData
 import app.feature.social.common.SocialRoot
 import app.feature.social.data.SocialData
@@ -89,7 +91,10 @@ fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
     composable<AppRoute.Chat> { entry ->
         val route = entry.toRoute<AppRoute.Chat>()
         SocialHost { data ->
-            val vm = viewModel(key = "chat:${route.groupId}") { ChatViewModel(data, route.groupId) }
+            // Link previews are read from the network only over the real backend (never with a test / demo override).
+            val vm = viewModel(key = "chat:${route.groupId}") {
+                ChatViewModel(data, route.groupId, linkPreviews = if (data is GraphSocialData) LinkPreviewBuilder.live() else null)
+            }
             ChatScreen(vm, route.focusMessageId, nav.chat(route.groupId, data))
         }
     }

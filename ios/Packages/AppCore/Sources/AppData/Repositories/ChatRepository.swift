@@ -77,6 +77,22 @@ public struct ChatRepository: Sendable {
         try await client.rpc("edit_message", ["p_message_id": .id(messageID), "p_body": .string(body)])
     }
 
+    /// `set_link_preview` (migration 0053): the preview the sender's device built for `url` (written as it is in the
+    /// text of your own text message, http / https, ≤ 2000); title ≤ 300, site ≤ 100; `imagePath` your own upload
+    /// (`MediaUploader.uploadLinkPreview`). `url` nil clears it. Errors: `message_not_found`, `invalid_kind`,
+    /// `invalid_argument`, `invalid_text`, `invalid_path`.
+    public func setLinkPreview(
+        messageID: MessageID, url: String?, title: String? = nil, site: String? = nil, imagePath: String? = nil
+    ) async throws -> Message {
+        try await client.rpc("set_link_preview", [
+            "p_message_id": .id(messageID),
+            "p_url": .text(url),
+            "p_title": .text(title),
+            "p_site": .text(site),
+            "p_image_path": .text(imagePath),
+        ])
+    }
+
     /// `set_typing` (migration 0048): `true` while typing (again every `typing_ttl_s / 2`), `false` when the field
     /// empties, the message is sent or the thread closes.
     public func setTyping(groupID: GroupID, typing: Bool) async throws {

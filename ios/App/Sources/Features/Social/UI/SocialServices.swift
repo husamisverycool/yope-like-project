@@ -19,19 +19,23 @@ final class SocialServices {
     /// The front camera of the selfie-reaction layer (viewer.selfiereaction): the capture group's camera
     /// (`CaptureCamera`), one per open viewer.
     let selfieCamera: @MainActor () -> CaptureCamera
+    /// Builds the preview of a link in a text I send (`chat.thread.layout.linkPreview`); nil (demo, tests): none.
+    let linkPreviews: LinkPreviewBuilder?
 
     init(
         data: any SocialDataSource,
         images: SocialImageLoader,
         flags: SocialFlags = SocialFlags(),
         saver: any SocialPhotoSaving = LibraryPhotoSaver(),
-        selfieCamera: @escaping @MainActor () -> CaptureCamera = { CaptureEnvironment.shared.makeCamera(false) }
+        selfieCamera: @escaping @MainActor () -> CaptureCamera = { CaptureEnvironment.shared.makeCamera(false) },
+        linkPreviews: LinkPreviewBuilder? = nil
     ) {
         self.data = data
         self.images = images
         self.flags = flags
         self.saver = saver
         self.selfieCamera = selfieCamera
+        self.linkPreviews = linkPreviews
         playback = SocialVoicePlayback(data: data)
     }
 
@@ -54,7 +58,7 @@ final class SocialServices {
         #endif
         if let environment = AppEnvironment.shared.data {
             let data = LiveSocialData(environment: environment)
-            return SocialServices(data: data, images: SocialImageLoader(data: data))
+            return SocialServices(data: data, images: SocialImageLoader(data: data), linkPreviews: .live)
         }
         let data = UnconfiguredSocialData()
         return SocialServices(data: data, images: SocialImageLoader(data: data))

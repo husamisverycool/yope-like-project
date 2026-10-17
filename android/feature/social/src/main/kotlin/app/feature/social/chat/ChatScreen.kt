@@ -955,6 +955,7 @@ private fun MessageItem(
             // name's; after a quote the item follows at `chat.thread.dimension.itemGap` (the quote's own spacer).
             val afterName = item.startsRun && row.quote == null
             MessageBody(row, afterName, state, ui, nav, voice, labels, onReact, onUnreact, onRetrySend, onReply, onCopy, onSave, actions)
+            if (!row.pending && !row.failed) row.linkPreview?.let { LinkPreviewCard(it) }
             if (row.kind == MessageKind.Text || row.kind == MessageKind.Voice) MessageReactionChip(row, state.me, state, ui)
             if (row.edited && !row.pending && !row.failed) EditedLine()
             if (row.mine && (row.pending || row.failed)) StatusLine(row, onRetrySend)
@@ -998,6 +999,59 @@ private fun MessageReactionChip(row: ChatRow, me: String?, state: ChatState, ui:
     ReactionChip(row.reactions, onClick = { ui.messageReactionsFor = row.id }, whoReacted = who)
 }
 
+/**
+ * `chat.thread.layout.linkPreview`: the preview the sender's device built, under the text — a C-15 row (the photo quote's
+ * form): the image as the thumbnail (`size.global.rowThumbWidth` × `.rowThumbHeight`, `radius.global.thumbnail`; none → no
+ * thumbnail), then (`size.global.rowThumbGap`) the title (`listTitle`) over the site (`listSubtitle`, secondary text), one
+ * line each; no title → the site on the title line. A tap opens the address as the link in the text does (the URI
+ * handler). Readers load only the uploaded image, never the page.
+ */
+@Composable
+private fun LinkPreviewCard(preview: app.data.model.LinkPreview) {
+    val uriHandler = LocalUriHandler.current
+    val site = preview.site ?: ChatLinkPreviews.host(preview.url)
+    val title = preview.title ?: site ?: preview.url
+    val subtitle = if (preview.title != null) site else null
+    val label = listOfNotNull(title, subtitle).joinToString(", ") // provenance-ok: joins title and site (data)
+    Spacer(Modifier.height(Tokens.Sizes.chatThreadDimensionItemGap))
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .tapClickable { runCatching { uriHandler.openUri(preview.url) } }
+            .clearAndSetSemantics {
+                contentDescription = label
+                role = Role.Button
+            }
+            .testTag("chat.linkPreview"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        preview.imagePath?.let { path ->
+            Box(Modifier.size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight).clip(RoundedCornerShape(Tokens.Radii.globalThumbnail))) {
+                RemotePhoto(path, null, Modifier.fillMaxSize())
+            }
+            Spacer(Modifier.width(Tokens.Sizes.globalRowThumbGap))
+        }
+        Column(Modifier.weight(1f)) {
+            Text(
+                title,
+                style = TextRoles.listTitle,
+                color = Tokens.Colors.globalTextPrimary,
+                maxLines = Tokens.Layouts.ChatThreadLayoutLinkPreview.titleLines.toInt(),
+                overflow = TextOverflow.Ellipsis,
+            )
+            subtitle?.let {
+                Text(
+                    it,
+                    style = TextRoles.listSubtitle,
+                    color = PageRoles.secondaryText(),
+                    maxLines = Tokens.Layouts.ChatThreadLayoutLinkPreview.siteLines.toInt(),
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
 /** "Edited" one line under an edited message (`chat.thread.layout.editMessage`; text role `caption`, secondary text). */
 @Composable
 private fun EditedLine() {
@@ -1012,7 +1066,8 @@ private fun EditedLine() {
 
 /**
  * `chat.thread.layout.links`: the web addresses of a text message, found by the platform's own detector (Linkify
- * WEB_URLS, which completes an address without a scheme), http and https only. No preview is fetched (privacy).
+ * WEB_URLS, which completes an address without a scheme), http and https only. Previews are built on the sender's device
+ * only ([ChatLinkPreviews], `chat.thread.layout.linkPreview`); a reader's device never contacts the site.
  */
 object ChatLinks {
     data class Link(val start: Int, val end: Int, val url: String)

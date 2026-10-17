@@ -509,6 +509,10 @@ struct ChatMessageRow: View {
                     .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
             }
             items
+            if let preview = model.linkPreview(of: message), !model.isPending(message), !model.isFailed(message) {
+                ChatLinkPreviewCard(preview: preview)
+                    .metricGap(Tokens.Sizes.chatThreadDimensionItemGap, from: .bottom, to: .top)
+            }
             messageChip
             if message.editedAt != nil, !model.isPending(message), !model.isFailed(message) {
                 editedLine
@@ -830,6 +834,63 @@ enum ChatLinkText {
         }
         if cursor < text.endIndex { result += AttributedString(String(text[cursor...])) }
         return result
+    }
+}
+
+/// `chat.thread.layout.linkPreview`: the preview the sender's device built, under the text — a C-15 row: the image as
+/// the thumbnail (`size.global.rowThumbWidth` × `.rowThumbHeight`, `radius.global.thumbnail`; none → no thumbnail), then
+/// (`size.global.rowThumbGap`) the title (`listTitle`) over the site (`listSubtitle`, `color.global.textSecondary`), one
+/// line each; no title → the site on the title line. A tap opens the address as the link in the text does (`openURL`).
+/// Readers load only the uploaded image, never the page.
+struct ChatLinkPreviewCard: View {
+    let preview: LinkPreview
+    @Environment(\.openURL) private var openURL
+
+    private var url: URL? { URL(string: preview.url) }
+
+    /// The title line and the site line (nil: none).
+    private var lines: (title: String, site: String?) {
+        let site = preview.site ?? url.flatMap { ChatLinkPreviews.host(of: $0) }
+        guard let title = preview.title else { return (site ?? preview.url, nil) }
+        return (title, site)
+    }
+
+    var body: some View {
+        let content = lines
+        Button {
+            if let url { openURL(url) }
+        } label: {
+            HStack(alignment: .top, spacing: Tokens.Sizes.globalRowThumbGap) {
+                if let path = preview.imagePath {
+                    PhotoView(source: SocialImages.source(path))
+                        .frame(width: Tokens.Sizes.globalRowThumbWidth, height: Tokens.Sizes.globalRowThumbHeight)
+                        .clipShape(DSShape.rounded(Tokens.Radii.globalThumbnail))
+                }
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(content.title)
+                        .dsTextStyle(TextRole.listTitle)
+                        .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                        .lineLimit(Int(Tokens.Layouts.ChatThreadLayoutLinkPreview.titleLines))
+                        .truncationMode(.tail)
+                    if let site = content.site {
+                        Text(site)
+                            .dsTextStyle(TextRole.listSubtitle)
+                            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                            .lineLimit(Int(Tokens.Layouts.ChatThreadLayoutLinkPreview.siteLines))
+                            .truncationMode(.tail)
+                    }
+                }
+                .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text([content.title, content.site].compactMap { $0 }.joined(separator: ", "))) // provenance-ok: joins title and site (data)
+        .accessibilityRemoveTraits(.isButton)
+        .accessibilityAddTraits(.isLink)
+        .accessibilityIdentifier("chat.linkPreview") // provenance-ok: accessibility identifier for UI tests
     }
 }
 

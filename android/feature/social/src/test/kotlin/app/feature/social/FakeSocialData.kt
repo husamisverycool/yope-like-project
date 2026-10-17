@@ -13,6 +13,7 @@ import app.data.model.GroupKind
 import app.data.model.GroupMember
 import app.data.model.HistoryMonth
 import app.data.model.HistoryWeek
+import app.data.model.LinkPreview
 import app.data.model.Media
 import app.data.model.MediaKind
 import app.data.model.MemberRole
@@ -32,6 +33,7 @@ import app.data.offline.DataState
 import app.data.realtime.GroupEvent
 import app.data.repo.Member
 import app.data.repo.ReactionEntry
+import app.feature.social.data.LinkPreviewDraft
 import app.feature.social.data.PhotoSearchQuery
 import app.feature.social.data.SocialData
 import kotlinx.coroutines.channels.BufferOverflow
@@ -173,9 +175,27 @@ class FakeSocialData(var me: String = ME) : SocialData {
         write("editMessage:$messageId:$body")
         val i = messages.indexOfFirst { it.id == messageId && it.authorId == me && it.kind == MessageKind.Text }
         if (i < 0) throw DataException(DataError.Api(ApiError.MessageNotFound, "message_not_found", 404, null))
-        val edited = if (messages[i].body == body) messages[i] else messages[i].copy(body = body, editedAt = clock())
+        // As the server's trigger (migration 0053): an edit that drops the previewed address drops the preview.
+        val edited = if (messages[i].body == body) messages[i]
+        else messages[i].copy(body = body, editedAt = clock(), linkPreview = messages[i].linkPreview?.takeIf { body.contains(it.url) })
         messages[i] = edited
         return edited
+    }
+
+    /** Each `set_link_preview` draft received, in order. */
+    val linkPreviewsSent = ArrayList<LinkPreviewDraft>()
+
+    /** Like `set_link_preview`: your own text message whose text holds the address; the image "uploaded" under `u/<me>/links/`. */
+    override suspend fun setLinkPreview(messageId: String, preview: LinkPreviewDraft): Message {
+        write("setLinkPreview:$messageId:${preview.url}")
+        val i = messages.indexOfFirst { it.id == messageId && it.authorId == me && it.kind == MessageKind.Text }
+        if (i < 0) throw DataException(DataError.Api(ApiError.MessageNotFound, "message_not_found", 404, null))
+        if (messages[i].body?.contains(preview.url) != true) throw DataException(DataError.Api(ApiError.InvalidArgument, "invalid_argument", 400, null))
+        linkPreviewsSent += preview
+        val path = preview.jpeg?.let { "u/$me/links/l${linkPreviewsSent.size}.jpg" }
+        val saved = messages[i].copy(linkPreview = LinkPreview(preview.url, preview.title, preview.site, path))
+        messages[i] = saved
+        return saved
     }
 
     override suspend fun publicConfig(): PublicAppConfig { net("publicConfig"); return config }

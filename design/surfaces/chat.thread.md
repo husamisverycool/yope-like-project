@@ -23,6 +23,7 @@ in Apple Messages / WhatsApp's order"`.
 | WA | `references/auto/whatsapp/store/whatsapp-store-04.png` | mechanics: sender shown once per run; reaction summary under a message |
 | IM-E | https://support.apple.com/guide/iphone/unsend-or-edit-messages-iphe67195653/ios (accessed 2026-10-17) | "Touch and hold the message bubble, then tap Edit", the Send Edit / Cancel Edit buttons, "marked as Edited", "up to five times within 15 minutes" (`chat.thread.layout.editMessage`) |
 | IM-T | https://support.apple.com/guide/iphone/react-with-tapbacks-iph018d3c336/ios (accessed 2026-10-17) | "You can only add one Tapback per message"; tap a different one to change it, the same one to remove it; tap the stack to see who (`chat.reactions.layout.messageReactions`) |
+| LP | https://developer.apple.com/documentation/linkpresentation/lpmetadataprovider, https://ogp.me, https://developers.facebook.com/documentation/sharing/webmasters/web-crawlers, https://developers.facebook.com/documentation/sharing/webmasters/images (accessed 2026-10-17) | link previews on the sender's device: the page read once (LinkPresentation; og: tags in the first 1 MB, images ≤ 8 MB) (`chat.thread.layout.linkPreview`) |
 | ST-T | https://unpkg.com/stream-chat-react@12.0.0/dist/i18n/en.json, https://getstream.io/chat/docs/sdk/react/v12/components/utility-components/indicators/ | Stream Chat's typing wording ("{{ user }} is typing...", "{{ users }} and {{ user }} are typing...") and its place at the end of the message list; "Edit Message", "Edited" |
 
 ## Structure (top → bottom)
@@ -49,7 +50,17 @@ appearance (it is not a media surface).
        at the same pitch; links and long words wrap. A message of only 1–3 emoji (`chat.thread.count.emojiOnlyMax`) renders
        its emoji at `fontSize.global.headerTitle`. Web addresses in it are links (`chat.thread.layout.links`, owner decision
        34): the platform's detector finds them (http / https), they keep the body's colour and are underlined, a tap opens
-       the browser; no preview is fetched.
+       the browser.
+     - **link preview** (`chat.thread.layout.linkPreview`, owner decision 34, research #16) — under a text whose
+       `link_preview` is set, `chat.thread.dimension.itemGap` below it and above the reaction chip: a C-15 row (the photo
+       quote's form) — the image as the thumbnail (`size.global.rowThumbWidth` × `.rowThumbHeight`, `radius.global.thumbnail`;
+       none → no thumbnail), then `size.global.rowThumbGap` after it the title (text role `listTitle`) over the site (text
+       role `listSubtitle`, `color.global.textSecondary`), one line each; no title → the site on the title line. A tap opens
+       the address as the link does. Built on the **sender's** device only, after `send_message` returns: the first link
+       written with its own scheme, the page read once (iOS LPMetadataProvider; Android one GET, og: tags within
+       `htmlMaxBytes`), its image downscaled to `imageMaxPixels` JPEG, uploaded to `u/<uid>/links/<uuid>.jpg`, then
+       `set_link_preview`. Best effort and silent: any failure → no preview, no message. Readers load only the uploaded
+       image; nobody else's device contacts the site.
      - **photo** — C-18 photo card (`chat.thread.layout.photoFit`: `size.global.friendCardWidth` × `.friendCardHeight`,
        `radius.global.card`, aspect fill). The post's caption follows as a text item; a voice note follows as the voice
        capsule with its waveform (`chat.voice.md`, C-36); the reaction chip follows the photo (`chat.reactions.layout.chip`,
@@ -100,6 +111,7 @@ appearance (it is not a media surface).
 | caption | text role `body` | caption (data) | — |
 | reaction chip | `chat.reactions.layout.chip`, `chat.reactions.dimension.chipTop`; under text / voice: `chat.reactions.layout.messageReactions` | `chat.reactions.a11y.cluster`; on a message its value lists `chat.reactions.activity.row` / `.rowMine` | tap → Reactions sheet (`chat.reactions.md`) |
 | "Edited" line | text role `caption`, `color.global.textSecondary`; `chat.thread.layout.editMessage` | `chat.thread.edited` | none (read as the message's value) |
+| link preview | C-15 row; `chat.thread.layout.linkPreview`; `size.global.rowThumbWidth` / `.rowThumbHeight` / `.rowThumbGap`, `radius.global.thumbnail`, text roles `listTitle` + `listSubtitle` | title and site (data); read as "title, site", iOS link trait / Android button role | tap → the browser (as the link in the text) |
 | typing line | text role `caption`, `color.global.textSecondary`; `chat.thread.layout.typingLine` | `chat.thread.typing.one`, `.typing.several` | none; not a live region |
 | edit bar | the reply bar's form; `chat.thread.layout.editMessage` | `chat.thread.edit.bar`, `chat.thread.a11y.cancelEdit` | close → the message keeps its text, the draft comes back |
 | voice message | `chat.voice.layout.capsule` | `chat.voice.a11y.*` | `chat.voice.md` |
@@ -215,7 +227,9 @@ the edited text with the bar again, and `chat.thread.edit.error` shows (Android 
 - **RPCs**: `send_message` (text; `p_reply_to_post_id` / `p_reply_to_message_id` when replying); `delete_message`;
   `delete_media` (own photo, via the viewer's confirmation); `report` (`message`) via `safety.report`; `react` / `unreact` via
   `chat.reactions`; `create_post` (photo) via `chat.composer` → `camera.capture`; `react_to_message` / `unreact_to_message`
-  (text and voice); `edit_message` (`edit_window_closed`); `set_typing` — true while the field holds text, again at most
+  (text and voice); `edit_message` (`edit_window_closed`); `set_link_preview` (migration 0053: after `send_message` of my
+  own text with an http(s) address, the image uploaded first to `u/<uid>/links/<uuid>.jpg`; the readers get the Realtime
+  UPDATE); `set_typing` — true while the field holds text, again at most
   every `typing_ttl_s / 2`, false when it empties, on send and when the thread closes (nothing while editing, nothing
   without a TTL).
 - **Realtime** (§8): channel `group-<id>` INSERTs on `messages`, `posts`, `reactions` and UPDATEs (reply target removed, an
@@ -256,5 +270,5 @@ the edited text with the bar again, and `chat.thread.edit.error` shows (Android 
 | context-menu focus animation ("initial context message position / scale", APK-X m6a) | values not in the excerpts; native menu animation used | 60 fps recording of a long press in a Retro thread |
 | Engadget inbox capture | low resolution: layout only (back chevron + serif "Messages", search field, row "Lali / Thank you · 5d"); no value taken from it | — |
 | `color.global.textSecondary`, `color.global.destructive` text contrast in light | FAIL (Retro palette, R-13) | owner / verification |
-| link previews built on the sender's device (LinkPresentation / a fetch by the sender, research #16) | not built this pass: links are tappable text only; no server fetch ever (privacy) | owner decision on whether the sender's device may fetch the page |
+| Retro's own link previews | Retro shows none (not captured); the card is the thread's C-15 photo-quote row (`chat.thread.layout.linkPreview`), not iMessage's large LPLinkView card | one Retro DM screenshot with a link, if Retro ever previews links |
 | Retro's own edit / typing UI | not captured; Messages' flow and Stream's wording used | one Retro DM screenshot while editing and while someone types |

@@ -114,6 +114,14 @@ public struct MediaUploader: Sendable {
         return path
     }
 
+    /// Uploads a link preview's image (`u/<uid>/links/<uuid>.jpg`) and returns its path for
+    /// `ChatRepository.setLinkPreview`.
+    public func uploadLinkPreview(jpeg: Data) async throws -> String {
+        let path = StoragePaths.linkPreview(owner: try await client.requireUserID())
+        try await upload(data: jpeg, path: path, contentType: ContentType.jpeg)
+        return path
+    }
+
     /// Uploads a chat voice message (`u/<uid>/voice/<uuid>.m4a`) and returns its path for
     /// `ChatRepository.sendVoice`.
     public func uploadChatVoice(fileURL: URL) async throws -> String {

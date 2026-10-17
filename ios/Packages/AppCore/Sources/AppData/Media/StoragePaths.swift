@@ -39,6 +39,11 @@ public enum StoragePaths {
         "u/\(owner.rawValue)/selfies/\(id.uuidString.lowercased()).jpg"
     }
 
+    /// `u/<uid>/links/<uuid>.jpg` — a link preview's image (passed to `set_link_preview`, migration 0053).
+    public static func linkPreview(owner: UserID, id: UUID = UUID()) -> String {
+        "u/\(owner.rawValue)/links/\(id.uuidString.lowercased()).jpg"
+    }
+
     /// `avatars/<uid>/<uuid>.jpg`
     public static func avatar(owner: UserID, id: UUID = UUID()) -> String {
         "avatars/\(owner.rawValue)/\(id.uuidString.lowercased()).jpg"

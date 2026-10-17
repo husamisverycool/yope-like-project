@@ -16,7 +16,8 @@ struct ChatScreen: View {
         _model = State(initialValue: ChatThreadModel(
             groupID: GroupID(groupID),
             focusMessageID: messageID.map { MessageID($0) },
-            data: SocialServices.shared.data
+            data: SocialServices.shared.data,
+            linkPreviews: SocialServices.shared.linkPreviews
         ))
     }
 
