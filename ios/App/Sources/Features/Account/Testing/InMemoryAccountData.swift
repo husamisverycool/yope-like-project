@@ -26,6 +26,8 @@ final class InMemoryAccountData: AccountDataSource {
     var recaps: [GroupID: WeeklyRecap] = [:]
     /// Ready same-moment collages by group (`group_collages`).
     var collagesByGroup: [GroupID: [GroupCollage]] = [:]
+    /// Daily invitations by group; `open_invitations` returns the one open at the fixture clock.
+    var invitationsByGroup: [GroupID: DailyInvitation] = [:]
     /// Calls that throw: method name → error.
     var failures: [String: DataError] = [:]
     /// Every call, in order (method name).
@@ -346,6 +348,12 @@ final class InMemoryAccountData: AccountDataSource {
     func latestRecap(groupID: GroupID) async throws -> WeeklyRecap? {
         try await record("latestRecap")
         return recaps[groupID]
+    }
+
+    func openInvitation(groupID: GroupID) async throws -> DailyInvitation? {
+        try await record("openInvitation")
+        guard let invitation = invitationsByGroup[groupID], invitation.firesAt <= now, now <= invitation.closesAt else { return nil }
+        return invitation
     }
 
     func groupCollages(groupID: GroupID, from: LocalDate, to: LocalDate) async throws -> [GroupCollage] {

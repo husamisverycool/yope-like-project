@@ -52,6 +52,10 @@ final class GroupFeedModel {
     /// This week's ready same-moment collages (`group_collages`, migration 0033): each day's collage joins the strip on
     /// its day once composed, the group's photo of that day.
     private(set) var thisWeekCollages: [GroupCollage] = []
+    /// The group's daily invitation while it is open (`open_invitations`, migration 0035): the row above the week counts
+    /// down to `closes_at` and opens the daily capture, an answer that counts like one from the notification. Read with
+    /// every refresh (and so when the app comes back); dropped at `closes_at` (`invitationClosed`), nothing after.
+    private(set) var openInvitation: DailyInvitation?
     /// Bumped when a realtime insert added photos (VoiceOver layout-changed announcement).
     private(set) var insertedCount = 0
 
@@ -190,6 +194,12 @@ final class GroupFeedModel {
             ) {
                 thisWeekCollages = found.sorted { $0.localDate < $1.localDate }
             }
+            do {
+                openInvitation = try await data.openInvitation(groupID: groupID)
+            } catch {
+                // unread: a shown invitation stays until its window closes
+                if let shown = openInvitation, now() > shown.closesAt { openInvitation = nil }
+            }
             updatePhase()
         } catch {
             let failure = DataError.from(error)
@@ -288,6 +298,11 @@ final class GroupFeedModel {
     func blocked(_ userID: UserID) async {
         posts.removeAll { $0.post.authorID == userID }
         await refresh()
+    }
+
+    /// The window closed while the row was on screen: it goes, and nothing replaces it (tenet 5).
+    func invitationClosed() {
+        openInvitation = nil
     }
 
     // MARK: Previews and tests

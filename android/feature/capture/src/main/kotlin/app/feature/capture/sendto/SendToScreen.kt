@@ -55,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.invisibleToUser
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
@@ -398,7 +399,13 @@ private fun GroupsSection(
         is SendToViewModel.Groups.Loaded -> Column {
             state.visibleGroups.forEachIndexed { index, group ->
                 if (index > 0) Hairline(Modifier.padding(horizontal = Tokens.Sizes.globalScreenMargin), onMedia = true)
-                GroupRow(group, covers[group.id], selected = group.id in state.selected, enabled = !state.sending && state.replyGroupId == null) { onToggle(group.id) }
+                GroupRow(
+                    group,
+                    covers[group.id],
+                    selected = group.id in state.selected,
+                    enabled = !state.sending && state.replyGroupId == null,
+                    closesAt = state.shownInvitation(group.id)?.closesAt,
+                ) { onToggle(group.id) }
             }
         }
     }
@@ -415,27 +422,35 @@ private const val GROUPS_LABEL_BELOW_PHOTO = 35.2f // provenance-ok: camera.send
  * (`haptic.global.select`); the check cross-fades.
  */
 @Composable
-private fun GroupRow(group: Group, cover: Any?, selected: Boolean, enabled: Boolean, onToggle: () -> Unit) {
+private fun GroupRow(group: Group, cover: Any?, selected: Boolean, enabled: Boolean, closesAt: java.time.Instant? = null, onToggle: () -> Unit) {
     val padding = Dp(Tokens.Layouts.CameraSendtoLayoutRecipientRow.padding)
+    // The group's open daily invitation (migration 0035): its countdown under the name until `closes_at`, then nothing.
+    val seconds = app.ui.format.InvitationCountdown.rememberSeconds(closesAt)
     Row(
         Modifier
             .fillMaxWidth()
             .tickToggleable(value = selected, enabled = enabled, role = Role.Checkbox) { onToggle() }
-            .semantics(mergeDescendants = true) {}
+            .semantics(mergeDescendants = true) {
+                if (seconds != null) stateDescription = app.ui.format.InvitationCountdown.spoken(seconds)
+            }
             .padding(horizontal = Tokens.Sizes.globalScreenMargin, vertical = padding)
             .testTag("sendto.row.${group.id}"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         OnMedia { Avatar(cover, Tokens.Sizes.globalAvatarPicker, fallbackIcon = Tokens.Icons.globalGroup) }
         Spacer(Modifier.width(Tokens.Sizes.globalCardNameGap))
-        Text(
-            group.name,
-            style = TextRoles.listTitle,
-            color = Tokens.Colors.globalTextOnMedia,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                group.name,
+                style = TextRoles.listTitle,
+                color = Tokens.Colors.globalTextOnMedia,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (seconds != null) {
+                app.ui.format.InvitationCountdownText(seconds, Tokens.ColorsDark.globalTextSecondary, Modifier.semantics { invisibleToUser() })
+            }
+        }
         Spacer(Modifier.width(Tokens.Sizes.globalCardNameGap))
         Crossfade(selected, animationSpec = app.ui.foundation.DsMotion.crossfade(), label = "check") { on -> OnMedia { CheckCircle(on) } }
     }

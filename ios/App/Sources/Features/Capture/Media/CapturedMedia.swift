@@ -70,6 +70,9 @@ struct CaptureSendRequest: Sendable, Identifiable {
     var caption: String?
     var voice: VoiceNote?
     var invitationID: String?
+    /// The chosen groups' open invitations this post answers (camera.sendto while a window is open; `create_post
+    /// p_invitation_ids`, migration 0035).
+    var invitationIDs: [String]?
     /// The confirmation announced once posted (`camera.sendto.toast.postedOne` / `.postedMany`; C-26).
     var confirmation: String?
     /// A photo replying to this post (`create_post p_reply_to_post_id`; exactly one group, the post's).
@@ -110,6 +113,8 @@ enum CaptureDraftBuilder {
         let caption = request.caption.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
         let voice = request.voice.map { PostDraft.File(url: $0.fileURL, contentType: ContentType.m4a) }
         let invitationID = request.invitationID.map { InvitationID($0) }
+        // 9 AM photos develop later (`create_overnight_post`): they answer no invitation.
+        let answering = request.overnight ? nil : request.invitationIDs?.map { InvitationID($0) }
         let replyTo = request.replyToPostID.map { PostID($0) }
 
         switch request.payload {
@@ -137,6 +142,7 @@ enum CaptureDraftBuilder {
                     groupIDs: groupIDs,
                     caption: caption,
                     invitationID: invitationID,
+                    invitationIDs: answering,
                     replyToPostID: replyTo,
                     overnight: request.overnight ? true : nil
                 )
@@ -158,6 +164,7 @@ enum CaptureDraftBuilder {
                     groupIDs: groupIDs,
                     caption: caption,
                     invitationID: invitationID,
+                    invitationIDs: answering,
                     replyToPostID: replyTo
                 )
             }

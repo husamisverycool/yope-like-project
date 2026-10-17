@@ -6,6 +6,8 @@
 // references/auto/retro/video/ig-DDbA_F7x-j7-composer-f130-147-f188-197.png (sheet presentation),
 // references/owner/locket-review-sendto.jpg, -review-sending.jpg, -review-sent.jpg (mechanics)
 // (design/surfaces/camera.sendto.md; MERGE_DECISIONS RC-5 … RC-8).
+import AppData
+import AppModels
 import DesignSystem
 import SwiftUI
 
@@ -255,7 +257,8 @@ struct SendToView: View {
                     SendToGroupRow(
                         group: group,
                         cover: model.covers[group.id],
-                        isSelected: model.isSelected(group.id)
+                        isSelected: model.isSelected(group.id),
+                        invitation: model.shownInvitation(for: group.id)
                     ) {
                         model.toggle(group.id)
                     }
@@ -287,6 +290,10 @@ struct SendToGroupRow: View {
     let group: CaptureGroup
     let cover: UIImage?
     let isSelected: Bool
+    /// The group's open daily invitation: while it is open the countdown (`daily.capture.countdown`, MM:SS, text role
+    /// `listSubtitle`, monospaced digits, `color.global.textSecondary`) sits under the name; at `closes_at` it goes and
+    /// nothing else changes (tenet 5). Accessibility value: the spoken duration.
+    var invitation: DailyInvitation? = nil
     let onToggle: () -> Void
     /// False in a sheet that follows the appearance (camera.overnight's destination sheet): the name in
     /// `color.global.textPrimary`.
@@ -294,14 +301,30 @@ struct SendToGroupRow: View {
     var identifierPrefix = "camera.sendto.row." // provenance-ok: accessibility identifier for UI tests
 
     var body: some View {
+        if let invitation {
+            // The whole row follows the countdown, so its accessibility value is current too.
+            TimelineView(.periodic(from: .now, by: 1)) { context in // provenance-ok: one tick per second (MM:SS countdown)
+                row(remaining: InvitationCountdown.remainingSeconds(invitation, at: context.date))
+            }
+        } else {
+            row(remaining: nil)
+        }
+    }
+
+    private func row(remaining: Int?) -> some View {
         Button(action: onToggle) {
             HStack(spacing: 0) {
                 AvatarView(source: cover.map { PhotoSource.image($0) }, diameter: Tokens.Sizes.globalAvatarPicker, placeholderIcon: Tokens.Icons.globalGroup)
-                Text(group.name)
-                    .dsTextStyle(TextRole.listTitle)
-                    .foregroundStyle(onMedia ? Tokens.Colors.globalTextOnMedia : Tokens.Colors.globalTextPrimary)
-                    .lineLimit(1)
-                    .padding(.leading, Tokens.Sizes.globalCardNameGap)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(group.name)
+                        .dsTextStyle(TextRole.listTitle)
+                        .foregroundStyle(onMedia ? Tokens.Colors.globalTextOnMedia : Tokens.Colors.globalTextPrimary)
+                        .lineLimit(1)
+                    if let remaining {
+                        InvitationCountdownText(seconds: remaining)
+                    }
+                }
+                .padding(.leading, Tokens.Sizes.globalCardNameGap)
                 Spacer(minLength: Tokens.Sizes.globalCardNameGap)
                 Image(systemName: isSelected ? Tokens.Icons.globalCheck : Tokens.Icons.globalUncheck)
                     .resizable()
@@ -318,8 +341,33 @@ struct SendToGroupRow: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(group.name))
+        .accessibilityValue(Text(remaining.map { CaptureFormat.spokenCountdown(remainingSeconds: $0) } ?? ""))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityIdentifier(identifierPrefix + group.id)
+    }
+}
+
+/// An open daily invitation's countdown as a list subtitle (camera.sendto rows, groups.screen's invitation row): MM:SS
+/// (`daily.capture.countdown`, text role `listSubtitle`, monospaced digits, `color.global.textSecondary`). The caller
+/// ticks it once a second against `closes_at` and drops it once the window closed — no "late", no colour change
+/// (tenet 5).
+struct InvitationCountdownText: View {
+    let seconds: Int
+
+    var body: some View {
+        Text(CaptureFormat.countdown(remainingSeconds: seconds))
+            .dsTextStyle(TextRole.listSubtitle)
+            .monospacedDigit()
+            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            .lineLimit(1)
+    }
+}
+
+/// The window of an open daily invitation at a device time.
+enum InvitationCountdown {
+    /// Whole seconds left while the window is open at `date`; nil before it opens and after it closes.
+    static func remainingSeconds(_ invitation: DailyInvitation, at date: Date, clock: ServerClock = .device) -> Int? {
+        CountdownState(opensAt: invitation.firesAt, closesAt: invitation.closesAt, now: date, clock: clock).remainingWholeSeconds
     }
 }
 

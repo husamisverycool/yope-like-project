@@ -62,6 +62,8 @@ class FakeCaptureData : CaptureData {
     val progressFlows = mutableMapOf<String, MutableStateFlow<UploadProgress>>()
     val onlineFlow = MutableStateFlow(true)
     var invitation: DailyInvitation? = null
+    /** `open_invitations` (camera.sendto's countdowns). */
+    var openInvitations: List<DailyInvitation> = emptyList()
     var groupById = mutableMapOf<String, Group>()
     var collage: Collage? = null
     var collageError: DataError? = null
@@ -97,6 +99,7 @@ class FakeCaptureData : CaptureData {
     }
     override val online: Flow<Boolean> get() = onlineFlow
     override suspend fun invitation(invitationId: String): DailyInvitation? = invitation
+    override suspend fun openInvitations(): List<DailyInvitation> = openInvitations
     override suspend fun group(groupId: String): Group? = groupById[groupId]
     override suspend fun collageForInvitation(invitationId: String): Collage? {
         collageError?.let { throw DataException(it) }

@@ -47,6 +47,8 @@ data class PostDraft(
     /** The weekly question this photo answers (§14.4): its post in [questionGroupId] is linked with `answer_question`. */
     val questionId: String? = null,
     val questionGroupId: String? = null,
+    /** The chosen groups' open invitations this post answers (camera.sendto; `p_invitation_ids`, migration 0035). */
+    val invitationIds: List<String>? = null,
     // Progress.
     val uploaded: Set<String> = emptySet(),
     val mediaInserted: Boolean = false,

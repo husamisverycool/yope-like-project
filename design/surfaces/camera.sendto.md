@@ -78,6 +78,7 @@ in `color.global.textSecondary` (Android `.textSecondary.android`); counter `cam
 | note capsule | `chat.voice.layout.capsule` on media (C-36 waveform `chat.voice.dimension.waveform`) · `camera.sendto.layout.messageField` `.note` | `chat.voice.a11y.play` / `.pause`; action `chat.voice.a11y.discard` | tap plays / pauses the note; context menu / accessibility action deletes it |
 | groups label | text role `meta`, `color.global.textSecondary` | `camera.sendto.groupsLabel` | header trait |
 | group row | C-16 · `camera.sendto.layout.recipientRow`, `size.global.avatarPicker`, `size.global.checkCircle`, `icon.global.check` / `.uncheck`, `color.global.selection` | group name (data) | tap toggles (multi-select). Preselected: the group from context (`app://camera?group=`, group screen, chat); without context, all of the member's groups (owner to confirm) |
+| open invitation | under the group name: text role `listSubtitle`, tabular figures, `color.global.textSecondary` (dark value) | `daily.capture.countdown` (MM:SS) | while that group's daily invitation is open (`open_invitations`, migration 0035) the countdown ticks each second to `closes_at`, then goes — no "late", no colour change (tenet 5). Sending while it is open answers it for each chosen group (`p_invitation_ids`), exactly as the notification's daily capture does (BeReal: "You have 2 minutes to open the app and take your BeReal", design/research/bereal.md). Not shown, and nothing answered, for a photo reply or a 9 AM photo |
 | send | C-05 on media · `size.global.buttonHeight`, `size.global.buttonMarginH`, `camera.sendto.size.sendButtonBottom`, `color.global.surfaceLight` / `.onSurfaceLight` | `camera.sendto.send` | disabled with no group selected; tap → busy (C-05 busy: the label is replaced by the platform activity indicator in `color.global.onSurfaceLight`), title "Sending…", upload + `create_post`; success → the modal closes, `haptic.global.send`, Android toast `.toast.postedOne` / `.postedMany` (iOS announcement) |
 
 ## States
@@ -112,7 +113,9 @@ while the microphone records (HIG).
 
 - Labels: close `camera.sendto.a11y.close`, save `.a11y.save`, voice `.a11y.voice`; pill = its visible text; send =
   its visible text, disabled trait when nothing is selected; rows: label = group name, selected trait (iOS
-  `.isSelected`, Android `Modifier.toggleable`); counter read as "58 of 250" via the platform (value of the field).
+  `.isSelected`, Android `Modifier.toggleable`); a row with an open invitation carries the time left as its value
+  (iOS: the spoken duration; Android: `stateDescription`, the platform's elapsed-time format); counter read as "58 of
+  250" via the platform (value of the field).
   Preview hidden (own photo).
 - Dynamic Type: `sheetTitle` → headline, `listTitle` → subheadline, `meta` → footnote, `pill` → subheadline,
   `button` → headline, `placeholder` → body, counter → callout (`camera.sendto.layout.textStyleMap`).
@@ -137,7 +140,9 @@ while the microphone records (HIG).
 - Reads: `groups` + own `group_members` rows (names, `cover_path` signed URLs).
 - Writes (docs/API.md recipe 9.4): upload `u/<uid>/<media_id>/original.<ext>` (+ `motion.mov`, `voice.m4a`), insert
   `media`, `create_post(p_media_id, p_group_ids, p_caption?, p_voice_path?, p_voice_duration_ms?, p_voice_levels?,
-  p_reply_to_post_id?)` (`p_voice_levels`: the note's 100 levels of 0…31, C-36).
+  p_reply_to_post_id?, p_invitation_ids?)` (`p_voice_levels`: the note's 100 levels of 0…31, C-36; `p_invitation_ids`:
+  the chosen groups' invitations still open on the device clock — the server decides at `create_post`).
+- Reads also `open_invitations()` once the groups load (each group's open daily invitation, server clock).
   `p_caption` = the message (≤ 250 here; API ≤ 1000). Errors: `premium_required`, `not_group_member`, `already_posted`,
   `invalid_caption`, `invalid_voice`, `no_groups`.
 - In: `camera.capture` (capture or library pick). Out: back to the screen the camera was opened from; `groups.create`

@@ -53,6 +53,10 @@ final class SendToModel: Identifiable {
     /// Selected group ids in list order.
     private(set) var selection: [String] = []
     private(set) var covers: [String: UIImage] = [:]
+    /// Each group's daily invitation open when the list loaded (`open_invitations`, migration 0035), by group id: its row
+    /// counts down to `closes_at`, and a post sent while it is open answers it as from the notification. Nothing marks
+    /// a post sent after (tenet 5).
+    private(set) var openInvitations: [String: DailyInvitation] = [:]
     var caption = ""
     /// The voice note attached to the post (optional; it goes on every chosen group's post).
     private(set) var voiceNote: VoiceNote? = nil
@@ -176,6 +180,20 @@ final class SendToModel: Identifiable {
         selection.contains(groupID)
     }
 
+    /// The open invitation `groupID`'s row shows: none for a photo reply (a reply is not an answer).
+    func shownInvitation(for groupID: String) -> DailyInvitation? {
+        replyToPostID == nil ? openInvitations[groupID] : nil
+    }
+
+    /// The chosen groups' invitations still open at `date` (device clock; the server decides at `create_post`).
+    func answeredInvitations(at date: Date) -> [String] {
+        selection.compactMap { groupID in
+            guard let invitation = shownInvitation(for: groupID),
+                  CountdownState(opensAt: invitation.firesAt, closesAt: invitation.closesAt, now: date).isOpen else { return nil }
+            return invitation.id.rawValue
+        }
+    }
+
     // MARK: Loading
 
     func load() async {
@@ -189,6 +207,8 @@ final class SendToModel: Identifiable {
         previewImage = await decoded
         do {
             apply(try await groupSource.loadGroups())
+            let open = await groupSource.openInvitations()
+            openInvitations = Dictionary(open.map { ($0.groupID.rawValue, $0) }, uniquingKeysWith: { first, _ in first })
         } catch {
             guard groups.isEmpty else { return }
             let offline = groupSource.isOffline || DataError.from(error) == .offline
@@ -255,11 +275,13 @@ final class SendToModel: Identifiable {
         sendFailure = nil
         isSending = true
         let names = groups.filter { selection.contains($0.id) }.map(\.name)
+        let answering = answeredInvitations(at: Date())
         let request = CaptureSendRequest(
             payload: .media(media),
             groupIDs: selection,
             caption: hasMessage ? caption : nil,
             voice: voiceNote,
+            invitationIDs: answering.isEmpty ? nil : answering,
             confirmation: names.count == 1 ? Copy.cameraSendtoToastPostedOne(group: names[0]) : Copy.cameraSendtoToastPostedMany,
             replyToPostID: replyToPostID
         )

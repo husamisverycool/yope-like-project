@@ -282,10 +282,63 @@ struct GroupFeedView: View {
             .plans: GroupEntryDay(planEntry.entryDay),
         ]
         return VStack(spacing: 0) {
+            // The open daily invitation is now, so it leads.
+            openInvitationRow
             ForEach(GroupEntryOrder.order(days), id: \.self) { slot in
                 switch slot {
                 case .birthday: birthdayRequests
                 case .plans: planRow
+                }
+            }
+        }
+    }
+
+    // MARK: Open daily invitation (capture group's entry)
+
+    /// While the group's daily invitation is open (`open_invitations`): one C-14 single row `size.global.sectionGap` under
+    /// the capsules, drawn as the birthday request row — the C-16 `size.global.avatarPicker` circle with
+    /// `icon.global.camera` (the avatar placeholder), `notifications.push.dailyInvitation.body` (`listTitle`) over the
+    /// countdown (`daily.capture.countdown`, `listSubtitle`, grey, monospaced digits), `icon.global.chevron` → daily.capture
+    /// for this invitation, the same answer the notification opens. At `closes_at` the row goes; nothing says "late" and
+    /// nothing follows (tenet 5).
+    @ViewBuilder
+    private var openInvitationRow: some View {
+        if let invitation = model.openInvitation {
+            TimelineView(.periodic(from: .now, by: 1)) { context in // provenance-ok: one tick per second (MM:SS countdown)
+                if let seconds = InvitationCountdown.remainingSeconds(invitation, at: context.date) {
+                    Button {
+                        dependencies.router.modal = .camera(groupID: groupID, invitationID: invitation.id.rawValue)
+                    } label: {
+                        SettingsGroup(rows: [
+                            SettingsCustomRow {
+                                HStack {
+                                    AvatarView(source: nil, diameter: Tokens.Sizes.globalAvatarPicker, placeholderIcon: Tokens.Icons.globalCamera)
+                                    VStack(alignment: .leading) {
+                                        Text(Copy.notificationsPushDailyInvitationBody)
+                                            .dsTextStyle(TextRole.listTitle)
+                                            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                                        InvitationCountdownText(seconds: seconds)
+                                    }
+                                    .multilineTextAlignment(.leading)
+                                    Spacer(minLength: 0)
+                                    Glyph(Tokens.Icons.globalChevron, relativeTo: TextRole.body.relativeTo)
+                                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                                }
+                            }
+                            .asSettingsRow(),
+                        ])
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, Tokens.Sizes.globalSectionGap)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(Copy.notificationsPushDailyInvitationBody))
+                    .accessibilityValue(Text(CaptureFormat.spokenCountdown(remainingSeconds: seconds)))
+                    .accessibilityAddTraits([.isButton, .updatesFrequently])
+                    .accessibilityIdentifier("groups.screen.invitation")
+                } else {
+                    Color.clear
+                        .frame(height: 0)
+                        .onAppear { model.invitationClosed() }
                 }
             }
         }

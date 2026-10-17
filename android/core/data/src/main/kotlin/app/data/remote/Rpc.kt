@@ -25,7 +25,7 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     // §6.2 Photos, chat, reactions, tags
     CreatePost(
         "create_post", setOf("p_media_id", "p_group_ids"),
-        setOf("p_caption", "p_voice_path", "p_voice_duration_ms", "p_voice_levels", "p_invitation_id", "p_reply_to_post_id"),
+        setOf("p_caption", "p_voice_path", "p_voice_duration_ms", "p_voice_levels", "p_invitation_id", "p_reply_to_post_id", "p_invitation_ids"),
     ),
     SendMessage(
         "send_message", setOf("p_group_id", "p_kind"),
@@ -58,6 +58,7 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     OnThisDay("on_this_day", setOf("p_group_id", "p_local_date")),
     UpdateRecap("update_recap", setOf("p_recap_id"), setOf("p_items", "p_text", "p_collage_ids")),
     GroupCollages("group_collages", setOf("p_group_id"), setOf("p_from", "p_to")),
+    OpenInvitations("open_invitations", emptySet(), setOf("p_group_ids")),
     SaveAlbum("save_album", setOf("p_group_id", "p_name", "p_post_ids")),
     RenameAlbum("rename_album", setOf("p_album_id", "p_name")),
     DeleteAlbum("delete_album", setOf("p_album_id")),

@@ -50,6 +50,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import java.time.Instant
 import java.time.Duration
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -169,9 +170,42 @@ class ViewModelTests {
 
     private fun media(kind: MediaKind = MediaKind.Photo) = CapturedMedia(kind, Images.photoFile(dir, "c-${System.nanoTime()}.jpg"), 300, 400, if (kind == MediaKind.Video) 3000 else null, fromLibrary = false)
 
-    private fun sendTo(context: String?, kind: MediaKind = MediaKind.Photo, gate: SessionPromptGate = SessionPromptGate(), reply: String? = null, maxCaption: Int? = null): SendToViewModel {
+    private fun sendTo(
+        context: String?,
+        kind: MediaKind = MediaKind.Photo,
+        gate: SessionPromptGate = SessionPromptGate(),
+        reply: String? = null,
+        maxCaption: Int? = null,
+        now: Instant = T0.plusSeconds(30),
+    ): SendToViewModel {
         handoff.put(media(kind), context, reply)
-        return SendToViewModel(data, handoff, gate, voiceRecorderAvailable = false, maxCaption = maxCaption)
+        return SendToViewModel(data, handoff, gate, voiceRecorderAvailable = false, maxCaption = maxCaption, now = { now })
+    }
+
+    /** camera.sendto with open daily invitations (migration 0035): each chosen group's open one is answered at once. */
+    @Test fun sendAnswersEveryChosenGroupsOpenInvitation() = runTest(dispatcher) {
+        data.loaded(group("g1", "Family"), group("g2", "Roommates"), group("g3", "Work"))
+        data.openInvitations = listOf(invitation("inv1", "g1"), invitation("inv2", "g2", firesAt = T0.plusSeconds(10), closesAt = T0.plusSeconds(130)), invitation("inv3", "g3"))
+        val vm = sendTo("g1")
+        vm.toggle("g2")
+        assertEquals("inv1", vm.ui.value.shownInvitation("g1")?.id)
+        assertEquals("shown on its row even when not chosen", "inv3", vm.ui.value.shownInvitation("g3")?.id)
+        vm.send()
+        assertEquals(listOf("inv1", "inv2"), data.enqueued.single().invitationIds)
+    }
+
+    @Test fun aClosedWindowOrAReplyAnswersNothing() = runTest(dispatcher) {
+        data.loaded(group("g1", "Family"))
+        data.openInvitations = listOf(invitation("inv1", "g1"))
+        sendTo("g1", now = T0.plusSeconds(121)).send()
+        assertNull("closed: an ordinary post, nothing marked", data.enqueued.last().invitationIds)
+        val reply = sendTo("g1", reply = "p9")
+        assertNull(reply.ui.value.shownInvitation("g1"))
+        reply.send()
+        assertNull("a photo reply is not an answer", data.enqueued.last().invitationIds)
+        data.openInvitations = emptyList()
+        sendTo("g1").send()
+        assertNull(data.enqueued.last().invitationIds)
     }
 
     @Test fun groupsLoadCacheFirstWithoutALoadingFlash() {

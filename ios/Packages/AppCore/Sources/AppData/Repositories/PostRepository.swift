@@ -154,7 +154,8 @@ public struct PostRepository: Sendable {
 
     /// `create_post` (step 3): one post and one chat photo message per group, all or nothing.
     /// `invitationID` marks the post in-window only while that invitation is open (never "late").
-    /// `replyToPostID` needs exactly one group, the replied post's group.
+    /// `invitationIDs` (migration 0035): the chosen groups' open invitations this post answers (the camera's send-to);
+    /// each group's post is matched to its own. `replyToPostID` needs exactly one group, the replied post's group.
     public func create(
         mediaID: MediaID,
         groupIDs: [GroupID],
@@ -163,9 +164,10 @@ public struct PostRepository: Sendable {
         voiceDurationMs: Int? = nil,
         voiceLevels: [Int]? = nil,
         invitationID: InvitationID? = nil,
+        invitationIDs: [InvitationID]? = nil,
         replyToPostID: PostID? = nil
     ) async throws -> [Post] {
-        try await client.rpc("create_post", [
+        var params: [String: AnyJSON] = [
             "p_media_id": .id(mediaID),
             "p_group_ids": .ids(groupIDs),
             "p_caption": .text(caption),
@@ -174,7 +176,9 @@ public struct PostRepository: Sendable {
             "p_voice_levels": .levels(voiceLevels),
             "p_invitation_id": .id(invitationID),
             "p_reply_to_post_id": .id(replyToPostID),
-        ])
+        ]
+        if let invitationIDs, !invitationIDs.isEmpty { params["p_invitation_ids"] = .ids(invitationIDs) }
+        return try await client.rpc("create_post", params)
     }
 
     // MARK: Overnight (docs/API.md §14.3; camera.overnight)

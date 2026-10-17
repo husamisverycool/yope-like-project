@@ -48,6 +48,8 @@ class SendToViewModel(
     private val maxCaption: Int? = null,
     /** The recorder and player of the voice note (null: no microphone, or a test without one). */
     private val voiceIo: SendToVoice? = null,
+    /** The device clock the open invitations count against (the server decides at `create_post`). */
+    private val now: () -> java.time.Instant = java.time.Instant::now,
 ) : ViewModel() {
 
     sealed interface Groups {
@@ -80,7 +82,16 @@ class SendToViewModel(
         val micAvailable: Boolean = false,
         val sending: Boolean = false,
         val alert: Alert? = null,
+        /**
+         * Each group's daily invitation open when the composer loaded (`open_invitations`, migration 0035), by group id:
+         * its row counts down to `closes_at`, and a post sent while it is open answers it as from the notification.
+         * Nothing marks a post sent after (tenet 5).
+         */
+        val invitations: Map<String, app.data.model.DailyInvitation> = emptyMap(),
     ) {
+        /** The open invitation [groupId]'s row shows: none for a photo reply (a reply is not an answer). */
+        fun shownInvitation(groupId: String): app.data.model.DailyInvitation? = if (replyGroupId != null) null else invitations[groupId]
+
         val visibleGroups: List<Group>
             get() {
                 val all = (groups as? Groups.Loaded)?.groups.orEmpty()
@@ -135,6 +146,10 @@ class SendToViewModel(
 
     init {
         loadGroups()
+        viewModelScope.launch {
+            val open = runCatching { data.openInvitations() }.getOrDefault(emptyList())
+            state.update { s -> s.copy(invitations = open.groupBy { it.groupId }.mapValues { (_, list) -> list.first() }) }
+        }
         viewModelScope.launch {
             val premium = runCatching { data.isPremium() }.getOrDefault(false)
             state.update { it.copy(premium = premium) }
@@ -382,6 +397,8 @@ class SendToViewModel(
         val order = s.visibleGroups.filter { it.id in s.selected }
         sentTo = order.map { it.name }
         val caption = s.caption.trim().takeIf { it.isNotEmpty() }
+        val at = now()
+        val answering = order.mapNotNull { g -> s.shownInvitation(g.id)?.takeIf { it.isOpen(at) }?.id }
         sender.send(
             NewPost(
                 kind = media.kind,
@@ -398,6 +415,8 @@ class SendToViewModel(
                 // The weekly question (question.weekly B): only the post to the camera's group answers it.
                 questionId = pending?.questionId,
                 questionGroupId = pending?.questionId?.let { pending.contextGroupId },
+                // The chosen groups' open invitations (migration 0035): answered as from the notification.
+                invitationIds = answering.takeIf { it.isNotEmpty() },
             ),
         )
     }

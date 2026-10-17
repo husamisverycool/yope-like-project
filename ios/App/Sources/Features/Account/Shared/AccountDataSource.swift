@@ -81,6 +81,8 @@ protocol AccountDataSource: AnyObject, Sendable {
     /// `group_collages`: the group's ready same-moment collages whose day is in `from…to` (group-local), newest first
     /// (the week strip's collage of the day, migration 0033).
     func groupCollages(groupID: GroupID, from: LocalDate, to: LocalDate) async throws -> [GroupCollage]
+    /// `open_invitations` for one group: its daily invitation while open by the server's clock, else nil (migration 0035).
+    func openInvitation(groupID: GroupID) async throws -> DailyInvitation?
     /// Realtime inserts, updates and deletions of the group (shared channels, §8).
     func groupEvents(groupID: GroupID) -> AsyncStream<GroupEvent>
     /// A signed URL for a storage path (1 h, cached).
@@ -325,6 +327,11 @@ final class LiveAccountData: AccountDataSource {
     func groupCollages(groupID: GroupID, from: LocalDate, to: LocalDate) async throws -> [GroupCollage] {
         let memories = try env().memories
         return try await memories.groupCollages(groupID: groupID, from: from, to: to)
+    }
+
+    func openInvitation(groupID: GroupID) async throws -> DailyInvitation? {
+        let invitations = try env().invitations
+        return try await invitations.openInvitations(groupIDs: [groupID]).first
     }
 
     func groupEvents(groupID: GroupID) -> AsyncStream<GroupEvent> {

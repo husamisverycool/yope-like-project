@@ -49,6 +49,9 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
     public var caption: String?
     /// The daily invitation being answered (the post is in-window only while it is open).
     public var invitationID: InvitationID?
+    /// The chosen groups' open invitations this post answers (the camera's send-to while a window is open; migration
+    /// 0035). Optional so drafts saved before it existed still decode.
+    public var invitationIDs: [InvitationID]?
     /// Reply to a photo with a photo (exactly one group: the replied post's).
     public var replyToPostID: PostID?
     public var createdAt: Date
@@ -80,6 +83,7 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         groupIDs: [GroupID],
         caption: String? = nil,
         invitationID: InvitationID? = nil,
+        invitationIDs: [InvitationID]? = nil,
         replyToPostID: PostID? = nil,
         createdAt: Date = Date(),
         overnight: Bool? = nil,
@@ -102,6 +106,7 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         self.groupIDs = groupIDs
         self.caption = caption
         self.invitationID = invitationID
+        self.invitationIDs = invitationIDs
         self.replyToPostID = replyToPostID
         self.createdAt = createdAt
         self.overnight = overnight
@@ -263,6 +268,7 @@ public actor PostPublisher {
                 voiceDurationMs: draft.voice == nil ? nil : draft.voiceDurationMs,
                 voiceLevels: draft.voice == nil ? nil : draft.voiceLevels,
                 invitationID: draft.invitationID,
+                invitationIDs: draft.invitationIDs,
                 replyToPostID: draft.replyToPostID
             )
         } catch DataError.api(.alreadyPosted, _) {

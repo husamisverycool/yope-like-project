@@ -117,7 +117,8 @@ VIRTUAL_KEY; iOS none). Sent: `haptic.global.send`; failed: `haptic.global.error
 
 ## Data & actions
 
-- In: `app://daily?group=<id>&invitation=<id>` (push, Live Activity, ongoing notification) → read
+- In: `app://daily?group=<id>&invitation=<id>` (push, Live Activity, ongoing notification) and the group screen's
+  open-invitation row (`groups.screen`, migration 0035: the same answer from inside the app) → read
   `daily_invitations` by id (visible after `fires_at`).
 - Writes (recipe 9.4 / 9.5): upload `original.jpg` (main) and `front.jpg` (inset) under `u/<uid>/<media_id>/`; insert
   `media` (`kind = photo`, `front_original_path`, `front_width/height`); `create_post(p_media_id, [group_id],

@@ -34,7 +34,16 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
    `size.global.screenMargin`: outline capsule `groups.screen.recap.accessibilityLabel` ("Recaps") and outline capsule
    `groups.screen.invite` ("Invite"), equal widths, then the icon-only outline capsule (`size.global.iconPillWidth` 49,
    `icon.global.settings` `size.global.iconSmall`), all `size.global.pillHeight` high, `size.global.pillGap` apart.
-6. **Birthday request row** (only while a request for this group is open for you — `birthday.request` places its copy
+6. **Open invitation row** (only while the group's daily invitation is open — `open_invitations`, migration 0035; read
+   with the screen and when it comes back): first of the dated entries, `size.global.sectionGap` below the capsules,
+   one C-14 single row drawn as the birthday request row: the C-16 `size.global.avatarPicker` circle with
+   `icon.global.camera` (the avatar's fallback), title `notifications.push.dailyInvitation.body` (`listTitle`), line
+   the countdown `daily.capture.countdown` (MM:SS, `listSubtitle`, tabular figures, `color.global.textSecondary`),
+   trailing `icon.global.chevron` → `daily.capture` for that invitation — the answer the notification opens, so it
+   counts for the collage the same way (BeReal: "You have 2 minutes to open the app and take your BeReal",
+   design/research/bereal.md). At `closes_at` the row goes; nothing says "late", nothing follows (tenet 5).
+   Accessibility: the title, the time left as its value (iOS spoken duration; Android `stateDescription`).
+   **Birthday request row** (only while a request for this group is open for you — `birthday.request` places its copy
    here): `size.global.sectionGap` below the capsules, one C-14 single row inside the margins: honoree avatar
    `size.global.avatarPicker` (C-16), title `birthday.request.title` (`listTitle`), line `birthday.request.due`
    (`listSubtitle`, `color.global.textSecondary`), trailing `icon.global.chevron` → `birthday.request`.
@@ -148,11 +157,12 @@ Presses (glyphs, capsules, tiles, cards, cells) → `haptic.global.tap` (Android
 - Reads: `groups` (+ cover signed URL), `group_members` + `profiles` (avatars, first names), `posts` + `media`
   (`display_path` / `thumb_path` signed URLs) newest first and paged (docs/API.md §5.8, §7); the current week's range from
   `groups.time_zone` and `app_config.week_start_isodow` (Monday); `group_collages(group, week's first day, last day)`
-  for the strip's collages (re-read with each refresh of the screen; §6.4); `group_history_weeks` for `week.history` (§6.4).
+  for the strip's collages (re-read with each refresh of the screen; §6.4); `group_history_weeks` for `week.history` (§6.4);
+  `open_invitations([group])` for the open invitation row (§6.2).
 - Realtime: channel `group-<id>` inserts (`posts`) and private broadcast `group:<id>` (`post_deleted`) (§8); refetch on
   foreground / reconnect.
 - In: `groups.list`, `groups.create`, invite join, deep links (`DeepLink.post`, `.chatMessage`, `.recap` put this screen
-  in the back stack). Out: `chat.thread`, `albums.list`, `week.history`, `week.recap`, `photo.viewer`, `collage.view`, `groups.invite`,
+  in the back stack). Out: `chat.thread`, `albums.list`, `week.history`, `week.recap`, `photo.viewer`, `collage.view`, `daily.capture`, `groups.invite`,
   `groups.settings`, `camera.capture`, `onthisday`, `year.story`, `birthday.request`, `safety.report`, `safety.block`.
 - Entry conditions: `on_this_day(group, localDate)` returns rows (§6.4); `year_stories` row `status = 'ready'` for the
   current year (§5.19); an open `tribute_requests` row for you in this group (§5.16).

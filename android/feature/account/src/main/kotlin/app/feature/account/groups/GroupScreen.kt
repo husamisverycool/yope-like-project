@@ -395,6 +395,12 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             )
         },
         entryOrder = GroupEntryOrder.order(birthdayDay, planDay),
+        // The open daily invitation (migration 0035): answered in the app like from the notification (daily.capture).
+        invitationRow = {
+            OpenInvitationEntry(env.backend, groupId, refreshKey = newestPost) { invitationId ->
+                nav.navigate(AppRoute.DailyCapture(groupId, invitationId))
+            }
+        },
         feedCards = {
             // question.weekly A: the first feed card, after the friend cards, before the memory cards.
             QuestionCardEntry(
@@ -497,7 +503,8 @@ internal fun createdInviteLabel(kind: GroupKind): String = when (kind) {
  * 3. the name (display serif `displayMedium`, centred, ≤ 2 lines), its cap top `groups.screen.size.coverToTitle` under the cover;
  * 4. the C-23 member stack `groups.screen.size.titleToMeta` under the name's baseline (as many as fit, no count) → members;
  * 5. `groups.screen.size.metaToActions` below: outline "Recaps", outline "Invite" (equal widths) and the gear capsule;
- * 6. the birthday request row(s) (`size.global.sectionGap` apart), then the plan row (release builds: only without a
+ * 6. while the group's daily invitation is open, its row with the countdown (→ daily.capture); the birthday request
+ *    row(s) (`size.global.sectionGap` apart), then the plan row (release builds: only without a
  *    birthday row — order BLOCKED);
  * 7. this week: the C-20 header as one button (chevron → week.history), the C-17 strip (photos oldest → newest, add tile
  *    last; an empty week: add tile first, then empty-day tiles to the week's end) and, for an empty group, the C-27 block;
@@ -517,6 +524,7 @@ fun GroupFeedScreen(
     developing: DayTile? = null,
     entryOrder: List<GroupEntrySlot> = GroupEntryOrder.declared,
     collages: List<WeekCollage> = emptyList(),
+    invitationRow: @Composable () -> Unit = {},
 ) {
     val zone = GroupWeek.zone(state.group, fallbackZone)
     val today = now.atZone(zone).toLocalDate()
@@ -556,7 +564,7 @@ fun GroupFeedScreen(
                     item(key = "actions") { ActionRow(actions) }
                     item(key = "error") { TapLine(stringResource(R.string.groups_screen_error_title), actions.onRetry, Modifier.padding(top = Tokens.Sizes.globalSectionGap)) }
                 }
-                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards, planRows, developing, entryOrder, collages)
+                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards, planRows, developing, entryOrder, collages, invitationRow)
             }
         }
     }
@@ -574,6 +582,7 @@ private fun LazyListScope.loaded(
     developing: DayTile?,
     entryOrder: List<GroupEntrySlot>,
     collages: List<WeekCollage> = emptyList(),
+    invitationRow: @Composable () -> Unit = {},
 ) {
     val weekStart = GroupWeek.start(today)
     // A photo is in the week (and on the day) it became visible: an overnight photo taken on Sunday night is in
@@ -586,6 +595,8 @@ private fun LazyListScope.loaded(
     // The birthday rows and the plans block in date order; keyed so a change of order moves them (state kept).
     item(key = "dated") {
         Column {
+            // The open daily invitation is now, so it leads.
+            invitationRow()
             for (slot in entryOrder) {
                 key(slot) {
                     when (slot) {

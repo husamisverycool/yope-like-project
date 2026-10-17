@@ -156,6 +156,8 @@ data class Post(
     @SerialName("revealed_at") val revealedAt: Instant? = null,
     /** §14.4: the group week's question this post answers (`answer_question`); null for every other post. */
     @SerialName("question_id") val questionId: String? = null,
+    /** The stored `posts.visible_at` (migration 0027); null in rows made on the device. Read [visibleAt]. Last, so positional calls keep working. */
+    @SerialName("visible_at") val visibleAtColumn: Instant? = null,
 ) {
     /**
      * When the group could first see the photo (`posts.visible_at` = `revealed_at ?: created_at`, migration 0027): the week
@@ -348,6 +350,10 @@ data class YearStory(
     @SerialName("asset_paths") val assetPaths: List<String>,
     @SerialName("generated_at") val generatedAt: Instant?,
     @SerialName("created_at") val createdAt: Instant,
+    /** When the 31 December refresh ran (migration 0031); null before. */
+    @SerialName("refreshed_at") val refreshedAt: Instant? = null,
+    /** When the ready push went (once; migration 0031); null before. */
+    @SerialName("announced_at") val announcedAt: Instant? = null,
 )
 
 /** §5.20 `devices` */

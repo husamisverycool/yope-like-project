@@ -186,6 +186,14 @@ class InvitationRepository(private val api: Api, private val clock: Clock = Cloc
     suspend fun invitation(invitationId: String): DailyInvitation? =
         api.selectSingleOrNull(Tables.DAILY_INVITATIONS, DailyInvitation.serializer()) { filter { eq("id", invitationId) } }
 
+    /**
+     * `open_invitations` (migration 0035): your groups' invitations open now by the server's clock, soonest to close
+     * first ([groupIds] null = all of your groups). The group screen and the camera's send-to show them with their
+     * countdown; an answer from there counts like one from the notification.
+     */
+    suspend fun openInvitations(groupIds: List<String>? = null): List<DailyInvitation> =
+        api.rpcList(Rpc.OpenInvitations, DailyInvitation.serializer()) { opt("p_group_ids", groupIds) }
+
     /** Your posts made inside that invitation's window ("my answer"); empty if none. */
     suspend fun myAnswer(invitationId: String): List<Post> = api.select(Tables.POSTS, Post.serializer()) {
         filter {

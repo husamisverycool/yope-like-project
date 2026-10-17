@@ -64,6 +64,12 @@ interface CaptureData {
 
     suspend fun invitation(invitationId: String): DailyInvitation?
 
+    /**
+     * `open_invitations` (migration 0035): your groups' daily invitations open now, soonest to close first; empty when
+     * none or unreadable (camera.sendto then shows no countdown and the post is an ordinary post).
+     */
+    suspend fun openInvitations(): List<DailyInvitation> = emptyList()
+
     suspend fun group(groupId: String): Group?
 
     suspend fun collageForInvitation(invitationId: String): Collage?
@@ -116,6 +122,8 @@ class GraphCaptureData(private val graph: DataGraph) : CaptureData {
     override val online: Flow<Boolean> get() = graph.connectivity.online
 
     override suspend fun invitation(invitationId: String): DailyInvitation? = graph.invitations.invitation(invitationId)
+
+    override suspend fun openInvitations(): List<DailyInvitation> = graph.invitations.openInvitations()
 
     override suspend fun group(groupId: String): Group? = graph.groups.group(groupId)
 

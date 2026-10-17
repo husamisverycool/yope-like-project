@@ -98,6 +98,9 @@ protocol CaptureGroupSource: AnyObject, Sendable {
     func loadGroups() async throws -> [CaptureGroup]
     /// The group cover for the recipient avatar (signed URL download).
     func coverImage(path: String) async -> UIImage?
+    /// The member's groups' daily invitations open now (`open_invitations`, migration 0035); empty when none or when
+    /// they cannot be read (send-to then shows no countdown and the post is an ordinary post).
+    func openInvitations() async -> [DailyInvitation]
     var isOffline: Bool { get }
 }
 

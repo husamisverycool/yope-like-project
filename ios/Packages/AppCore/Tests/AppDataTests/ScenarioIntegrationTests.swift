@@ -346,6 +346,16 @@ final class ScenarioIntegrationTests: XCTestCase {
         XCTAssertEqual(value24, g1.id)
         let value25 = try await ana.data.invitations.answers(invitationID: invitationID).count
         XCTAssertEqual(value25, 1)
+        // In-app answer (migration 0035): the open invitation by the server's clock, answered from send-to.
+        let openNow = try await ana.data.invitations.openInvitations(groupIDs: [g1.id])
+        XCTAssertEqual(openNow.map(\.id), [invitationID])
+        let sendToFile = try temporaryFile(tinyJPEG, extension: "jpg")
+        let sendToPosts = try await ana.data.publisher.publish(PostDraft(
+            kind: .photo, original: .init(url: sendToFile, contentType: ContentType.jpeg),
+            groupIDs: [g1.id], invitationIDs: openNow.map(\.id)
+        ))
+        XCTAssertEqual(sendToPosts.first?.inWindow, true, "counts like the notification's answer")
+        XCTAssertEqual(sendToPosts.first?.invitationID, invitationID)
         let collageRow = try await LocalStack.insert("collages", [
             "group_id": g1.id.rawValue, "invitation_id": invitationID.rawValue, "option": "B",
             "post_ids": [answerPosts[0].id.rawValue, post1.id.rawValue],

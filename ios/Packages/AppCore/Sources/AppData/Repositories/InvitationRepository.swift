@@ -21,6 +21,13 @@ public struct InvitationRepository: Sendable {
         }
     }
 
+    /// `open_invitations` (migration 0035): the caller's groups' invitations open now by the server's clock, soonest to
+    /// close first (nil = all of the caller's groups). The group screen and the camera's send-to show them with their
+    /// countdown; an answer from there counts like one from the notification.
+    public func openInvitations(groupIDs: [GroupID]? = nil) async throws -> [DailyInvitation] {
+        try await client.rpc("open_invitations", ["p_group_ids": groupIDs.map(AnyJSON.ids) ?? .null])
+    }
+
     public func invitation(id: InvitationID) async throws -> DailyInvitation? {
         try await client.firstRow(DailyInvitation.self) {
             client.supabase.from("daily_invitations").select().eq("id", value: id.rawValue).limit(1)

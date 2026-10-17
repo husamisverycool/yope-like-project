@@ -235,6 +235,8 @@ final class FakeCaptureGroups: CaptureGroupSource {
     /// Holds `loadGroups` until cancelled (the loading state in snapshots).
     var suspendsLoad = false
     var covers: [String: UIImage] = [:]
+    /// The groups' open daily invitations (`open_invitations`).
+    var invitations: [DailyInvitation] = []
 
     init(groups: [CaptureGroup], cached: [CaptureGroup]? = nil) {
         self.groups = groups
@@ -250,6 +252,8 @@ final class FakeCaptureGroups: CaptureGroupSource {
     }
 
     func coverImage(path: String) async -> UIImage? { covers[path] }
+
+    func openInvitations() async -> [DailyInvitation] { invitations }
 }
 
 @MainActor

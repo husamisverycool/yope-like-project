@@ -73,6 +73,10 @@ final class IsolationIntegrationTests: XCTestCase {
         XCTAssertNil(invitation)
         let memberInvitation = try await rui.data.invitations.currentInvitation(groupID: group.id)
         XCTAssertNotNil(memberInvitation, "control: members see the open invitation")
+        let eveOpen = try await eve.data.invitations.openInvitations()
+        XCTAssertFalse(eveOpen.contains { $0.groupID == group.id })
+        let memberOpen = try await rui.data.invitations.openInvitations(groupIDs: [group.id])
+        XCTAssertEqual(memberOpen.map(\.groupID), [group.id], "control: open_invitations for a member")
         let profile = try await eve.data.profiles.profile(id: ana.id)
         XCTAssertNil(profile, "no shared group, no profile")
         let wall = try await eve.data.memories.wall(userID: ana.id)
@@ -80,6 +84,7 @@ final class IsolationIntegrationTests: XCTestCase {
 
         // RPCs refuse.
         await assertThrows(.api(.notGroupMember)) { try await eve.data.memories.historyWeeks(groupID: group.id) }
+        await assertThrows(.api(.notGroupMember)) { try await eve.data.invitations.openInvitations(groupIDs: [group.id]) }
         await assertThrows(.api(.notGroupMember)) { try await eve.data.memories.onThisDay(groupID: group.id, localDate: LocalDate(year: 2026, month: 1, day: 1)!) }
         await assertThrows(.api(.notGroupMember)) { try await eve.data.groups.createInvite(groupID: group.id) }
         await assertThrows(.api(.notGroupMember)) { try await eve.data.chat.sendText(groupID: group.id, body: "hi") }

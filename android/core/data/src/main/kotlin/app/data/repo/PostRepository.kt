@@ -35,6 +35,11 @@ data class PostOptions(
     val invitationId: String? = null,
     /** Reply to a photo with a photo: exactly one group, the replied post's group. */
     val replyToPostId: String? = null,
+    /**
+     * The chosen groups' open invitations this post answers (camera.sendto while a window is open, `p_invitation_ids`,
+     * migration 0035): each group's post is matched to its own; never fails, never "late".
+     */
+    val invitationIds: List<String>? = null,
 )
 
 /**
@@ -132,6 +137,7 @@ class PostRepository(private val api: Api, private val cache: OfflineCache, priv
             optInts("p_voice_levels", options.voiceLevels?.takeIf { options.voicePath != null })
             opt("p_invitation_id", options.invitationId)
             opt("p_reply_to_post_id", options.replyToPostId)
+            opt("p_invitation_ids", options.invitationIds?.takeIf { it.isNotEmpty() })
         }
 
     /**

@@ -61,6 +61,11 @@ data class NewPost(
      */
     val questionId: String? = null,
     val questionGroupId: String? = null,
+    /**
+     * The chosen groups' open invitations this post answers (`camera.sendto` while a window is open; `create_post
+     * p_invitation_ids`, migration 0035). Last, so positional calls keep working.
+     */
+    val invitationIds: List<String>? = null,
 ) {
     init {
         require(groupIds.isNotEmpty()) { "no groups" }
@@ -68,7 +73,7 @@ data class NewPost(
         require(kind != MediaKind.Video || durationMs != null) { "video needs its duration" }
         require((voice == null) == (voiceDurationMs == null)) { "voice note and its duration go together" }
         require(voiceDurationMs == null || voiceDurationMs > 0) { "voice duration must be > 0" }
-        require(!overnight || (kind == MediaKind.Photo && caption == null && voice == null && invitationId == null && replyToPostId == null)) {
+        require(!overnight || (kind == MediaKind.Photo && caption == null && voice == null && invitationId == null && invitationIds == null && replyToPostId == null)) {
             "an overnight post is a photo without caption, voice note, invitation or reply"
         }
     }
@@ -134,6 +139,7 @@ class UploadQueue(
                 overnight = post.overnight,
                 questionId = post.questionId?.takeIf { post.questionGroupId in post.groupIds },
                 questionGroupId = post.questionGroupId?.takeIf { post.questionId != null && it in post.groupIds },
+                invitationIds = post.invitationIds?.takeIf { it.isNotEmpty() },
             )
             if (draft.files.any { it.size > StoragePaths.MAX_OBJECT_BYTES }) {
                 throw DataException(DataError.Storage(app.data.error.StorageFailure.TooLarge, null, null))

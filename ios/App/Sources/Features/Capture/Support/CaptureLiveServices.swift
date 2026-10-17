@@ -244,6 +244,10 @@ final class LiveCaptureGroups: CaptureGroupSource {
         return try await data.groups.myGroups().map(CaptureGroup.init)
     }
 
+    func openInvitations() async -> [DailyInvitation] {
+        (try? await data?.invitations.openInvitations()) ?? []
+    }
+
     func coverImage(path: String) async -> UIImage? {
         if let image = covers[path] { return image }
         guard let data, let url = try? await data.signedURLs.url(for: path),

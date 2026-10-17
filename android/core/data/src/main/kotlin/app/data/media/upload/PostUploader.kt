@@ -147,6 +147,7 @@ class PostUploader(private val remote: PostRemote, private val store: UploadStor
         voiceLevels = voiceLevels,
         invitationId = invitationId,
         replyToPostId = replyToPostId,
+        invitationIds = invitationIds,
     )
 
     private fun deleteLocalFiles(draft: PostDraft) {
