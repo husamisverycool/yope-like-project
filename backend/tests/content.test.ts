@@ -172,6 +172,58 @@ describe('create_post', () => {
     expect(x.in_window).toBe(false);
   });
 
+  it('in-app answers: open_invitations lists what is open now; p_invitation_ids answers each group\'s own (0035)', async () => {
+    const open = async (g: TestGroup, opensAgo: number, closesIn: number) =>
+      (
+        await sql<{ id: string }>(
+          `insert into public.daily_invitations (group_id, local_date, fires_at, closes_at, status)
+           values ($1, current_date + 500 + $2::int, now() - make_interval(secs => $3), now() + make_interval(secs => $4), 'fired')
+           returning id`,
+          [g.id, Math.floor(Math.random() * 10_000), opensAgo, closesIn],
+        )
+      )[0].id;
+    const inv1 = await open(g1, 20, 100);
+    const inv2 = await open(g2, 60, 60);
+    const scheduled = (
+      await sql<{ id: string }>(
+        `insert into public.daily_invitations (group_id, local_date, fires_at, closes_at, status)
+         values ($1, current_date + 900, now() + interval '1 hour', now() + interval '1 hour 2 minutes', 'scheduled') returning id`,
+        [g2.id],
+      )
+    )[0].id;
+    const strangers = await open(other, 10, 110);
+
+    // the caller's groups' open invitations, soonest to close first; not one before it fires, not another group's
+    const mine = await rpc<any[]>(b.client, 'open_invitations', {});
+    const ids = mine.map((i) => i.id);
+    expect(ids).toContain(inv1);
+    expect(ids).toContain(inv2);
+    expect(ids).not.toContain(scheduled);
+    expect(ids).not.toContain(strangers);
+    expect(ids.indexOf(inv2)).toBeLessThan(ids.indexOf(inv1));
+    expect((await rpc<any[]>(b.client, 'open_invitations', { p_group_ids: [g1.id] })).map((i) => i.id)).toEqual([inv1]);
+    await expectRpcError(rpc(b.client, 'open_invitations', { p_group_ids: [other.id] }), 'not_group_member', 403);
+
+    // one photo from the camera's send-to answers both groups' open invitations
+    const m = await createMedia(b);
+    const posts = await rpc<any[]>(b.client, 'create_post', { p_media_id: m.id, p_group_ids: [g1.id, g2.id], p_invitation_ids: [inv1, inv2] });
+    expect(posts.find((p) => p.group_id === g1.id)).toMatchObject({ in_window: true, invitation_id: inv1 });
+    expect(posts.find((p) => p.group_id === g2.id)).toMatchObject({ in_window: true, invitation_id: inv2 });
+
+    // another group's invitation never marks a post (the stranger's group, or g1's id on g2's post)
+    const m2 = await createMedia(b);
+    const [crossed] = await rpc<any[]>(b.client, 'create_post', { p_media_id: m2.id, p_group_ids: [g2.id], p_invitation_ids: [inv1, strangers] });
+    expect(crossed).toMatchObject({ in_window: false, invitation_id: null });
+
+    // closed: an ordinary post, no error, no "late"
+    await sql(`update public.daily_invitations set fires_at = now() - interval '200 seconds', closes_at = now() - interval '80 seconds' where id = $1`, [inv2]);
+    expect((await rpc<any[]>(b.client, 'open_invitations', { p_group_ids: [g2.id] }))).toEqual([]);
+    const m3 = await createMedia(b);
+    const [after] = await rpc<any[]>(b.client, 'create_post', { p_media_id: m3.id, p_group_ids: [g2.id], p_invitation_ids: [inv2] });
+    expect(after).toMatchObject({ in_window: false, invitation_id: null });
+    expect(Object.keys(after)).not.toContain('late');
+  });
+
   it('a photo can reply to a photo (same group only)', async () => {
     const target = (await postPhoto(b, [g1.id])).posts[0];
     const m = await createMedia(c);

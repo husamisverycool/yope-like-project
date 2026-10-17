@@ -349,7 +349,9 @@ invitations are invisible.
 | `created_at` | timestamptz | |
 
 Current open invitation:
-`from("daily_invitations").select().eq("group_id", g).gte("closes_at", now).order("fires_at", ascending: false).limit(1)`.
+`from("daily_invitations").select().eq("group_id", g).gte("closes_at", now).order("fires_at", ascending: false).limit(1)`,
+or, by the server's clock and for several groups at once, `open_invitations` ([6.2](#62-photos-chat-reactions-tags)):
+the group screen and the camera's send-to show these with their countdown (migration 0035).
 
 ### 5.13 `collages`
 
@@ -653,7 +655,7 @@ Errors: `not_group_member`, `not_group_admin`, `invalid_argument`.
 create_post(p_media_id uuid, p_group_ids uuid[],
             p_caption text = null, p_voice_path text = null, p_voice_duration_ms int = null,
             p_invitation_id uuid = null, p_reply_to_post_id uuid = null,
-            p_voice_levels smallint[] = null) → setof posts
+            p_voice_levels smallint[] = null, p_invitation_ids uuid[] = null) → setof posts
 ```
 Sends your media to one or more groups: one `posts` row and one `photo` message per
 group, all or nothing. Duplicate group ids are ignored.
@@ -681,11 +683,27 @@ group, all or nothing. Duplicate group ids are ignored.
   invitation's group, `in_window = true` and `invitation_id` are set if now is within
   `[fires_at, closes_at]`. Otherwise (window closed, another group, unknown id) the post
   is an ordinary post. This never fails and never labels anything "late".
+- `p_invitation_ids` (migration 0035): the open invitations of the chosen groups this post
+  answers — the camera's send-to passes every chosen group's open invitation
+  (`open_invitations`). Each group's post is matched to that group's invitation among them
+  with the same rule as `p_invitation_id` (both may be given). An in-app answer counts for
+  the collage exactly like one from the notification.
 - `p_reply_to_post_id`: reply to a photo with a photo. Allowed with exactly one group,
   the replied post's group (`reply_group_mismatch`, `post_not_found`).
 - `already_posted` if the media is already in one of the groups.
 Jobs: `media.renditions` (once per media), `push.new_post` and `widget.refresh` per
 group.
+
+#### `open_invitations`
+```
+open_invitations(p_group_ids uuid[] = null) → setof daily_invitations
+```
+The caller's groups' daily invitations that are open now by the server's clock
+(`fires_at ≤ now() ≤ closes_at`), soonest to close first; `p_group_ids` narrows to those
+groups (null = all of yours). Nothing before `fires_at` (the moment stays a surprise,
+[5.12](#512-daily_invitations)). For the group screen's open invitation and the camera's
+send-to (migration 0035); count down to `closes_at` and drop it then — nothing changes after
+the window. Errors: `not_group_member` 403 (a named group you are not in).
 
 #### `send_message`
 ```
