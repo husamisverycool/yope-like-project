@@ -43,6 +43,18 @@ final class SelfieOvernightCodingTests: XCTestCase {
         XCTAssertEqual(settings.quietStart, LocalTime(hour: 22, minute: 0))
     }
 
+    /// The opt-in memory notification (migration 0049): off when the column is missing (older offline copies), else as sent.
+    func testNotificationSettingsMemoriesDefaultOff() throws {
+        let old = #"{"user_id":"9f1c1d2e-0000-4000-8000-000000000002","quiet_start":null,"quiet_end":null,"time_zone":null,"updated_at":"2026-10-16T08:00:00Z"}"#
+        let before = try DataCoding.makeDecoder().decode(NotificationSettings.self, from: Data(old.utf8))
+        XCTAssertFalse(before.memories)
+        XCTAssertNil(before.memoryTimeZone)
+        let on = #"{"user_id":"9f1c1d2e-0000-4000-8000-000000000002","quiet_start":null,"quiet_end":null,"time_zone":null,"updated_at":"2026-10-16T08:00:00Z","memories":true,"memory_time_zone":"Europe/Lisbon"}"#
+        let settings = try DataCoding.makeDecoder().decode(NotificationSettings.self, from: Data(on.utf8))
+        XCTAssertTrue(settings.memories)
+        XCTAssertEqual(settings.memoryTimeZone, "Europe/Lisbon")
+    }
+
     func testSelfiePathAndReportKind() {
         let owner = UserID("9F1C1D2E-0000-4000-8000-000000000002")
         let id = UUID(uuidString: "7C9E6679-7425-40DE-944B-E07FC1F90AE7")!

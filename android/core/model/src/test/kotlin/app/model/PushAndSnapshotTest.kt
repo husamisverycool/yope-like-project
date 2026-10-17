@@ -108,6 +108,30 @@ class PushMessageTest {
         assertEquals(PushMessage.AlertKind.NewPost, alert("type" to "new_post", "revealed_at" to "not a time").kind)
     }
 
+    @Test fun theMemoryNotificationOpensItsPhoto() {
+        // push.memory (docs/API.md §5.21): type memory with the photo's post_id, title / body rendered by the worker.
+        val m = PushMessage.parse(
+            mapOf("type" to "memory", "group_id" to "g", "post_id" to "p", "title" to "On This Day", "body" to "Relive your memories from this day over the years.", "collapse_key" to "memory:u:2026-10-17"),
+            codec,
+        ) as PushMessage.Alert
+        assertEquals(PushMessage.AlertKind.Memory, m.kind)
+        assertEquals(DeepLink.Post("g", "p"), m.link)
+        assertEquals("p", m.postId)
+        assertEquals("memory", PushTypes.MEMORY)
+    }
+
+    @Test fun alertsCarryThePhotoAndMessageTheyAreAbout() {
+        fun alert(vararg kv: Pair<String, String>) = PushMessage.parse(mapOf("title" to "t", "group_id" to "g", *kv), codec) as PushMessage.Alert
+        val reply = alert("type" to "reply", "message_id" to "m")
+        assertEquals("m", reply.messageId)
+        assertNull(reply.postId)
+        val photo = alert("type" to "new_post", "post_id" to "p")
+        assertEquals("p", photo.postId)
+        assertNull(photo.messageId)
+        // An id that is not URL-safe is dropped.
+        assertNull(alert("type" to "new_post", "post_id" to "p/..").postId)
+    }
+
     @Test fun explicitLinkWinsAndUnknownTypesAreIgnored() {
         val m = PushMessage.parse(
             mapOf("type" to "new_post", "title" to "t", "group_id" to "g", "post_id" to "p", "link" to "app://chat?group=g&message=m"),

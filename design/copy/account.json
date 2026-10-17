@@ -3014,6 +3014,26 @@
       "level": "PLATFORM",
       "notes": "Shown under Pause All while it is on; {time} is the end (the next local midnight) in the locale's short time format."
     },
+    "settings.notifications.memories": {
+      "text": "Memories",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.notifications",
+      "evidence": "Google Photos memories notifications, opt-in (https://support.google.com/photos/answer/9454489, accessed 2026-10-17; docs/RESEARCH_FEATURES_2026-10-17.md #15); design/copy-patterns.md retro.voice.settings (Title-Case row: 'Pause All', `notification_setting_title_pause_all`)",
+      "pattern": "retro.voice.settings — Title-Case row label",
+      "level": "SOURCED",
+      "notes": "The opt-in memory notification: set_memory_alerts(p_on, p_time_zone = the device's IANA zone); off by default (notification_settings.memories)."
+    },
+    "settings.notifications.memories.footer": {
+      "text": "Revisit memories from this day over the years, only on days with a memory.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "settings.notifications",
+      "evidence": "onthisday.entry.subtitle ('Revisit memories from {date} over the years', references/auto/retro/apk/retro-android-2026.10.1150-strings.txt home_rewind_upsell_feed_card_title); docs/API.md §5.21 (sent only on a local day with a memory, at most once a day)",
+      "pattern": "retro.voice.settings — description: one Sentence-case sentence ending with a period",
+      "level": "SOURCED",
+      "notes": "{date} → 'this day'; the clause after the comma states when it is sent (never a count, never a reminder to post)."
+    },
     "settings.notifications.liveActivity": {
       "text": "Live Activity",
       "origin": "new",

@@ -1,5 +1,5 @@
-// Surface: settings.notifications — per-group notifications, quiet hours, Live Activity. Visual reference: Retro
-// Notification Settings (strings references/auto/retro/apk/retro-android-2026.10.1150-strings.txt
+// Surface: settings.notifications — Pause All, per-group notifications, quiet hours, developed photos, memories, Live
+// Activity. Visual reference: Retro Notification Settings (strings references/auto/retro/apk/retro-android-2026.10.1150-strings.txt
 // `notification_settings_*`; grouped rows references/auto/retro/video/ig-DJXvmqRv2_N-referrals-sheet-f042-059.png,
 // VID-SET; the off block on references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png, H43). Native switches
 // and time pickers (design/surfaces/settings.notifications.md).
@@ -58,6 +58,7 @@ struct SettingsNotificationsView: View {
             groupsSection
             quietHoursSection
             overnightSection
+            memoriesSection
             SettingsGroup(footer: [Copy.settingsNotificationsLiveActivityFooter], rows: [
                 SettingsRow(Copy.settingsNotificationsLiveActivity, kind: .toggle($liveActivityOn))
                     .accessibilityIdentifier("settings.notifications.liveActivity")
@@ -208,6 +209,23 @@ struct SettingsNotificationsView: View {
                 isEnabled: !isOffline
             )
             .accessibilityIdentifier("settings.notifications.overnight") // provenance-ok: accessibility identifier for UI tests
+            .asSettingsRow(),
+        ])
+    }
+
+    /// The opt-in memory notification (Google Photos' memories notifications are opt-in; research #15): "Memories", off by
+    /// default, footer `settings.notifications.memories.footer` — `set_memory_alerts` with the device's zone.
+    private var memoriesSection: some View {
+        SettingsGroup(footer: [Copy.settingsNotificationsMemoriesFooter], rows: [
+            SettingsRow(
+                Copy.settingsNotificationsMemories,
+                kind: .toggle(Binding(
+                    get: { model.memoriesOn },
+                    set: { value in Task { await model.setMemoryAlerts(value) } }
+                )),
+                isEnabled: !isOffline
+            )
+            .accessibilityIdentifier("settings.notifications.memories") // provenance-ok: accessibility identifier for UI tests
             .asSettingsRow(),
         ])
     }

@@ -1875,6 +1875,7 @@ public enum Tokens {
             public static let tribute: String = "IMPORTANCE_DEFAULT"
             public static let developedPhotos: String = "IMPORTANCE_DEFAULT"
             public static let plans: String = "IMPORTANCE_DEFAULT"
+            public static let memories: String = "IMPORTANCE_DEFAULT"
         }
         /// Apple HIG · notifications.push · iOS alert presentation for every push text · PLATFORM
         /// token: `notifications.push.layout.ios`

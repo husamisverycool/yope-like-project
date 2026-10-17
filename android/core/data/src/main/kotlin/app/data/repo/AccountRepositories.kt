@@ -80,6 +80,16 @@ class SettingsRepository(private val api: Api) {
             put("p_time_zone", if (paused) timeZone else null)
         }.also(::publish)
 
+    /**
+     * The opt-in memory notification (`set_memory_alerts`, migration 0049): on needs [timeZone], the device's IANA zone
+     * (`invalid_time_zone` otherwise); off sends none and the server keeps the last zone.
+     */
+    suspend fun setMemoryAlerts(on: Boolean, timeZone: String?): NotificationSettings =
+        api.rpc(Rpc.SetMemoryAlerts, NotificationSettings.serializer()) {
+            put("p_on", on)
+            put("p_time_zone", if (on) timeZone else null)
+        }.also(::publish)
+
     internal fun reset() {
         current.value = null
     }

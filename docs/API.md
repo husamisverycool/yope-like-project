@@ -535,7 +535,11 @@ the opt-in memory notification (Google Photos memories notifications, Timehop): 
 (title `onthisday.push.title` "On This Day"), only on a local day the person has a memory — their own or self-tagged
 photo of this month and day in an earlier year that they can still see and have not hidden — at most once a day,
 from `memory_alert_local_time` ("09:48") in `memory_time_zone`. Muting the photo's group, Pause All and quiet
-hours apply as to any alert. The apps open the photo (or On This Day of its group).
+hours apply as to any alert. The apps open the photo (or On This Day of its group). The apps' switch is Settings →
+Notifications → "Memories" (off by default); Android posts it on the `memories` channel; it carries no notification
+actions. Alerts of type `new_post`, `reply` and `reaction` offer actions (design/surfaces/notifications.push.md
+"Actions"): Reply → `send_message` (reply to `message_id`, else `post_id`), the quick reaction → `react` (`new_post`),
+Mute This Group → `set_group_muted(true)`.
 
 ### 5.22 `entitlements`
 

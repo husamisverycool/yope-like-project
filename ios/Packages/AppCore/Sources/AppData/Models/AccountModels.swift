@@ -54,10 +54,14 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
     /// Pause All (`set_notifications_paused`, migration 0037): no notification at all before this instant (the next
     /// local midnight when it was turned on); nil or past = not paused.
     public var pausedUntil: Date?
+    /// The opt-in memory notification (`set_memory_alerts`, migration 0049): off by default and when no row exists.
+    public var memories: Bool
+    /// The IANA zone the memory notification's day is counted in (`memory_time_zone`).
+    public var memoryTimeZone: String?
 
     public init(
         userID: UserID, quietStart: LocalTime?, quietEnd: LocalTime?, timeZone: String?, updatedAt: Date, overnight: Bool = true,
-        pausedUntil: Date? = nil
+        pausedUntil: Date? = nil, memories: Bool = false, memoryTimeZone: String? = nil
     ) {
         self.userID = userID
         self.quietStart = quietStart
@@ -66,6 +70,8 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
         self.updatedAt = updatedAt
         self.overnight = overnight
         self.pausedUntil = pausedUntil
+        self.memories = memories
+        self.memoryTimeZone = memoryTimeZone
     }
 
     /// Pause All is on at `now` (its end has not come).
@@ -82,9 +88,12 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
         case updatedAt = "updated_at"
         case overnight
         case pausedUntil = "paused_until"
+        case memories
+        case memoryTimeZone = "memory_time_zone"
     }
 
-    /// Rows read before the `overnight` column existed (offline copies) decode with alerts on, the server default.
+    /// Rows read before the `overnight` column existed (offline copies) decode with alerts on, the server default; before
+    /// `memories` existed, with the memory notification off (its default).
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         userID = try container.decode(UserID.self, forKey: .userID)
@@ -94,6 +103,8 @@ public struct NotificationSettings: Codable, Hashable, Sendable {
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
         overnight = try container.decodeIfPresent(Bool.self, forKey: .overnight) ?? true
         pausedUntil = try container.decodeIfPresent(Date.self, forKey: .pausedUntil)
+        memories = try container.decodeIfPresent(Bool.self, forKey: .memories) ?? false
+        memoryTimeZone = try container.decodeIfPresent(String.self, forKey: .memoryTimeZone)
     }
 
     /// The quiet hours as the shared AppModels rule, when set.

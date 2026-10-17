@@ -86,6 +86,16 @@ public struct AccountRepository: Sendable {
         ])
     }
 
+    /// `set_memory_alerts` (migration 0049): the opt-in memory notification on or off. On needs `timeZone`, the
+    /// device's IANA zone (`invalid_time_zone` otherwise); off sends none and the server keeps the last zone.
+    @discardableResult
+    public func setMemoryAlerts(_ on: Bool, timeZone: String? = TimeZone.current.identifier) async throws -> NotificationSettings {
+        try await client.rpc("set_memory_alerts", [
+            "p_on": .bool(on),
+            "p_time_zone": .text(on ? timeZone : nil),
+        ])
+    }
+
     // MARK: Devices
 
     /// `register_device` (iOS): upsert by APNs token. Send everything every time any of it changes; nil clears the

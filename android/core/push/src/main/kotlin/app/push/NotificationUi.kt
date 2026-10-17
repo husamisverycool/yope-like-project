@@ -36,6 +36,7 @@ object ChannelCopy {
         AppChannel.YearStory -> R.string.notifications_push_channel_yearstory_name
         AppChannel.DevelopedPhotos -> R.string.notifications_push_channel_developedphotos_name
         AppChannel.Plans -> R.string.notifications_push_channel_plans_name
+        AppChannel.Memories -> R.string.notifications_push_channel_memories_name
     }
 
     fun descriptionRes(channel: AppChannel): Int? = when (channel) {
@@ -48,6 +49,7 @@ object ChannelCopy {
         AppChannel.YearStory -> R.string.notifications_push_channel_yearstory_description
         AppChannel.DevelopedPhotos -> R.string.notifications_push_channel_developedphotos_description
         AppChannel.Plans -> R.string.notifications_push_channel_plans_description
+        AppChannel.Memories -> R.string.notifications_push_channel_memories_description
     }
 
     /**

@@ -105,6 +105,8 @@ protocol AccountDataSource: AnyObject, Sendable {
     func hasPremium() async throws -> Bool
     /// `set_notifications_paused` (Pause All) with the device's zone; returns the end of the pause (nil when off).
     func setNotificationsPaused(_ paused: Bool) async throws -> Date?
+    /// `set_memory_alerts` (the opt-in memory notification) with the device's zone.
+    func setMemoryAlerts(_ on: Bool) async throws
 
     // MARK: Hidden memories (settings.hidden; migration 0038)
 
@@ -397,6 +399,11 @@ final class LiveAccountData: AccountDataSource {
     func setNotificationsPaused(_ paused: Bool) async throws -> Date? {
         let account = try env().account
         return try await account.setNotificationsPaused(paused).pausedUntil
+    }
+
+    func setMemoryAlerts(_ on: Bool) async throws {
+        let account = try env().account
+        _ = try await account.setMemoryAlerts(on)
     }
 
     // MARK: Hidden memories

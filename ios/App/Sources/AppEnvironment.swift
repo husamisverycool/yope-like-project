@@ -154,7 +154,13 @@ final class AppEnvironment {
             deviceTokens.apnsToken = token
             self?.syncDeviceTokens()
         }
-        push.install()
+        // notifications.push "Actions": Reply / the first quick reaction / Mute This Group, performed in the background
+        // with the stored session (the app is launched without coming to the front).
+        push.onAction = { [weak self] request in
+            guard let self else { throw NotificationActionFailure.unavailable }
+            try await self.performNotificationAction(request)
+        }
+        push.install(quickReaction: SocialEmoji.quick.first)
         // Every launch: APNs registration when notifications are allowed (the token can change; onboarding is not the
         // only way in — returning accounts and App Clip joiners skip it). The stored token reaches the session glue at
         // once, so sign-in registers this device and sign-out unregisters it before APNs answers.
@@ -300,6 +306,26 @@ final class AppEnvironment {
         }
     }
 
+    /// A notification action (notifications.push "Actions"): `send_message` as a reply to the alert's message or photo,
+    /// `react` with the first quick reaction, or `set_group_muted(true)`. Throws when there is no backend or the call
+    /// fails; `PushService` then shows the failure notification.
+    func performNotificationAction(_ request: NotificationActionRequest) async throws {
+        guard let data else { throw NotificationActionFailure.unavailable }
+        switch request {
+        case let .reply(groupID, body, replyToPostID, replyToMessageID):
+            _ = try await data.chat.sendText(
+                groupID: GroupID(groupID),
+                body: body,
+                replyToPostID: replyToPostID.map { PostID($0) },
+                replyToMessageID: replyToMessageID.map { MessageID($0) }
+            )
+        case let .react(postID, emoji):
+            _ = try await data.reactions.react(postID: PostID(postID), emoji: emoji)
+        case let .muteGroup(groupID):
+            try await data.groups.setMuted(groupID: GroupID(groupID), muted: true)
+        }
+    }
+
     /// "Deleting a photo removes it everywhere": the posts the delivered notifications show are checked against the
     /// server (`posts` by id, as this person can see them); notifications of the ones that are gone are withdrawn. Runs
     /// at launch, on each return to the foreground and on background pushes; nothing happens signed out or offline.
@@ -310,6 +336,11 @@ final class AppEnvironment {
         let gone = NotificationWithdrawal.gone(shown: shown, existing: Set(existing.map(\.id.rawValue)))
         await deliveredNotifications.withdraw(posts: gone, messages: [])
     }
+}
+
+/// A notification action that cannot run (no backend configured, or the environment is gone).
+enum NotificationActionFailure: Error {
+    case unavailable
 }
 
 /// Download limits for widget renditions delivered by push (shared with the Notification Service Extension's values).

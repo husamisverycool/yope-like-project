@@ -26,6 +26,7 @@ object AppNotificationChannels {
         AppChannel.YearStory -> null
         AppChannel.DevelopedPhotos -> R.string.notifications_push_channel_developedphotos_name to R.string.notifications_push_channel_developedphotos_description
         AppChannel.Plans -> R.string.notifications_push_channel_plans_name to R.string.notifications_push_channel_plans_description
+        AppChannel.Memories -> R.string.notifications_push_channel_memories_name to R.string.notifications_push_channel_memories_description
     }
 
     fun register(context: Context) {

@@ -53,14 +53,18 @@ sealed interface PushMessage {
         val link: DeepLink?,
         /** Collapses repeated alerts about the same thing (e.g. several reactions to one post). */
         val collapseKey: String?,
+        /** The photo the alert is about (`post_id`), what its actions react to or reply to (core:push `AlertActions`). */
+        val postId: String? = null,
+        /** The chat message the alert is about (`message_id`): a text reply answers it. */
+        val messageId: String? = null,
     ) : PushMessage
 
     /**
-     * [Plan]: a plan was made, changed or cancelled, or the day-before reminder (`push.plan_*`, docs/API.md §14.2). New
-     * kinds go last: the ordinal is part of the notification id.
+     * [Plan]: a plan was made, changed or cancelled, or the day-before reminder (`push.plan_*`, docs/API.md §14.2).
+     * [Memory]: the opt-in memory notification (`push.memory`, docs/API.md §5.21), opening its photo. New kinds go last:
+     * the ordinal is part of the notification id.
      */
-    /** The ordinal is part of the notification id: new kinds go last. */
-    enum class AlertKind { NewPost, Reaction, Reply, RecapReady, BirthdayRequest, TributeForYou, YearStory, Plan, PhotosDeveloped }
+    enum class AlertKind { NewPost, Reaction, Reply, RecapReady, BirthdayRequest, TributeForYou, YearStory, Plan, PhotosDeveloped, Memory }
 
     companion object {
         fun parse(data: Map<String, String>, codec: DeepLinkCodec): PushMessage? {
@@ -119,13 +123,15 @@ sealed interface PushMessage {
                 PushTypes.TRIBUTE -> AlertKind.TributeForYou
                 PushTypes.YEAR_STORY -> AlertKind.YearStory
                 PushTypes.PLAN -> AlertKind.Plan
+                PushTypes.MEMORY -> AlertKind.Memory
                 else -> return null
             }
             val group = id(PushKeys.GROUP_ID)
             // A plan opens without its group too (the page reads the plan's own group).
             val derived: DeepLink? = if (kind == AlertKind.Plan) id(PushKeys.PLAN_ID)?.let { DeepLink.Plan(it, group) } else group?.let { g ->
                 when (kind) {
-                    AlertKind.NewPost, AlertKind.Reaction, AlertKind.PhotosDeveloped -> id(PushKeys.POST_ID)?.let { DeepLink.Post(g, it) }
+                    // A memory opens its photo in the viewer (docs/API.md §5.21: "The apps open the photo").
+                    AlertKind.NewPost, AlertKind.Reaction, AlertKind.PhotosDeveloped, AlertKind.Memory -> id(PushKeys.POST_ID)?.let { DeepLink.Post(g, it) }
                     AlertKind.Reply -> id(PushKeys.MESSAGE_ID)?.let { DeepLink.ChatMessage(g, it) }
                         ?: id(PushKeys.POST_ID)?.let { DeepLink.Post(g, it) }
                     AlertKind.RecapReady -> id(PushKeys.RECAP_ID)?.let { DeepLink.Recap(g, it) }
@@ -143,6 +149,8 @@ sealed interface PushMessage {
                 // A premium link only ever comes from a widget (widget.styles), never from a notification.
                 link = codec.parse(s(PushKeys.LINK))?.takeUnless { it is DeepLink.Premium } ?: derived,
                 collapseKey = s(PushKeys.COLLAPSE_KEY),
+                postId = id(PushKeys.POST_ID),
+                messageId = id(PushKeys.MESSAGE_ID),
             )
         }
 
@@ -200,6 +208,8 @@ object PushTypes {
     const val TRIBUTE = "tribute"
     const val YEAR_STORY = "year_story"
     const val PLAN = "plan"
+    /** The opt-in memory notification (`post_id` of the memory's photo). */
+    const val MEMORY = "memory"
 
     const val KIND_PHOTO = "photo"
     const val KIND_COLLAGE = "collage"

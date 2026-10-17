@@ -15,6 +15,12 @@
             </intent-filter>
         </service>
 
+        <!-- Reply / quick reaction / Mute This Group on an alert (AlertActions): explicit broadcasts from the
+             notification's own PendingIntents only. -->
+        <receiver
+            android:name="app.push.AlertActionReceiver"
+            android:exported="false" />
+
         <!-- Firebase initialises lazily (FirebaseBootstrap), only when google-services.json was
              present at build time; the app runs without it. -->
         <provider
