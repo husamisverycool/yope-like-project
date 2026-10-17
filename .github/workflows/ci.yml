@@ -167,7 +167,9 @@ jobs:
         env:
           ANDROID_INTEGRATION_REQUIRED: "1"
         run: |
-          ./gradlew --no-daemon assembleDebug testDebugUnitTest
+          set -o pipefail
+          mkdir -p build
+          ./gradlew --no-daemon assembleDebug testDebugUnitTest 2>&1 | tee build/ci-gradle.log
           # The integration tests ran (none skipped).
           python3 - <<'PY'
           import glob, sys, xml.etree.ElementTree as ET
@@ -177,8 +179,26 @@ jobs:
           print(f"core:data integration: {tests} tests, {skipped} skipped ({len(files)} classes)")
           sys.exit(0 if files and tests > 0 and skipped == 0 else 1)
           PY
+      # What failed, in a few lines at the end of the log: compiler errors, failed tests with their first message line,
+      # snapshots that no longer match their baselines.
+      - name: failure summary
+        if: failure()
+        working-directory: android
+        run: |
+          echo "::group::failure summary"
+          grep -E '^e: ' build/ci-gradle.log | sort -u | head -60 || true
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          for f in sorted(glob.glob("**/build/test-results/testDebugUnitTest/*.xml", recursive=True)):
+              for case in ET.parse(f).getroot().iter("testcase"):
+                  for bad in list(case.findall("failure")) + list(case.findall("error")):
+                      first = (bad.get("message") or bad.text or "").strip().splitlines()[:2]
+                      print(f"FAILED {case.get('classname')}.{case.get('name')}: {' | '.join(first)[:400]}")
+          PY
+          echo "::endgroup::"
       # A snapshot that no longer matches its baseline: Roborazzi's new image and the comparison, to review and, when the
-      # change is intended, commit as the baseline (recordRoborazziDebug needs the Android SDK).
+      # change is intended, commit as the baseline (recordRoborazziDebug needs the Android SDK; or push a commit whose
+      # message contains [record-snapshots], see android-record-snapshots below).
       - name: upload changed snapshots
         if: failure()
         uses: actions/upload-artifact@v4
@@ -189,6 +209,42 @@ jobs:
             android/**/src/test/snapshots/**/*_actual.png
             android/**/src/test/snapshots/**/*_compare.png
           if-no-files-found: ignore
+
+  # Intended changes to Android screens: a commit whose message contains [record-snapshots] re-records every Roborazzi
+  # baseline and commits them to the same branch ("Android snapshot baselines re-recorded"), so they can be reviewed in
+  # the diff. Never runs otherwise; a commit pushed with GITHUB_TOKEN starts no new workflow run.
+  android-record-snapshots:
+    name: android snapshot baselines (on request)
+    runs-on: ubuntu-24.04
+    needs: detect
+    if: github.event_name == 'push' && needs.detect.outputs.android == 'true' && contains(github.event.head_commit.message, '[record-snapshots]')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: install Android platform 37
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0"
+      - name: record the baselines
+        working-directory: android
+        run: ./gradlew --no-daemon --continue recordRoborazziDebug || true
+      - name: commit them
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A 'android/**/src/test/snapshots/**'
+          if git diff --cached --quiet; then echo "no baseline changed"; exit 0; fi
+          git diff --cached --stat
+          git commit -m "Android snapshot baselines re-recorded (CI, on request of ${GITHUB_SHA::7})"
+          git push origin "HEAD:${GITHUB_REF#refs/heads/}"
 
   android-e2e:
     name: android e2e
