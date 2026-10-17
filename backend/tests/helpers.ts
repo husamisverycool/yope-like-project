@@ -192,7 +192,7 @@ export interface TestMedia {
 /** Uploads an original (and optional front image) and inserts the media row. */
 export async function createMedia(
   user: TestUser,
-  opts: Partial<{ kind: 'photo' | 'live_photo' | 'video'; dual: boolean; skipUpload: boolean }> = {},
+  opts: Partial<{ kind: 'photo' | 'live_photo' | 'video'; dual: boolean; skipUpload: boolean; takenOn: string }> = {},
 ): Promise<TestMedia> {
   const id = randomUUID();
   const kind = opts.kind ?? 'photo';
@@ -213,6 +213,7 @@ export async function createMedia(
     width: 1,
     height: 1,
     duration_ms: kind === 'photo' ? null : 1500,
+    ...(opts.takenOn ? { taken_on: opts.takenOn } : {}),
   });
   if (error) throw new RpcError(error.message, error.code ?? '', undefined);
   return { id, originalPath, frontPath };

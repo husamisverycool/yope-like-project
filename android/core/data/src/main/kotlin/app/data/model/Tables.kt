@@ -114,6 +114,8 @@ data class Media(
     @SerialName("duration_ms") val durationMs: Int?,
     @SerialName("renditions_ready_at") val renditionsReadyAt: Instant?,
     @SerialName("created_at") val createdAt: Instant,
+    /** Migration 0050: the day a library photo was taken (date only, from the library); null for camera photos. */
+    @SerialName("taken_on") val takenOn: LocalDate? = null,
 ) {
     /**
      * §7 "Which image to show": the rendition once ready, the original until then. A video's original is the movie: its
@@ -162,6 +164,8 @@ data class Post(
     @SerialName("visible_at") val visibleAtColumn: Instant? = null,
     /** Migration 0047: when the author last changed the caption (`edit_caption`); null when never edited. */
     @SerialName("caption_edited_at") val captionEditedAt: Instant? = null,
+    /** Migration 0050: the day the photo was taken, copied from its media; it places the post's week (visible_at). */
+    @SerialName("taken_on") val takenOn: LocalDate? = null,
 ) {
     /**
      * When the group could first see the photo (`posts.visible_at` = `revealed_at ?: created_at`, migration 0027): the week

@@ -167,7 +167,7 @@ Everything else is written by RPCs or by the service role.
 | Table | Operation | Columns the client may send | Rule |
 |---|---|---|---|
 | `profiles` | UPDATE | `display_name`, `avatar_path` | own row; `avatar_path` must start with `avatars/<uid>/` |
-| `media` | INSERT | `id`, `owner_id`, `kind`, `original_path`, `front_original_path`, `motion_path`, `width`, `height`, `front_width`, `front_height`, `duration_ms` | `owner_id` = you (defaults to you); every path under `u/<uid>/<id>/` |
+| `media` | INSERT | `id`, `owner_id`, `kind`, `original_path`, `front_original_path`, `motion_path`, `width`, `height`, `front_width`, `front_height`, `duration_ms`, `taken_on` | `owner_id` = you (defaults to you); every path under `u/<uid>/<id>/` |
 | `post_tags` | INSERT / DELETE | `post_id`, `user_id` | `user_id` = you and you can see the post (the RPCs `tag_self`/`untag_self` do the same) |
 | `reports` | INSERT | `reporter_id`, `target_kind`, `target_id`, `reason` | `reporter_id` = you (prefer the `report` RPC, which validates the target) |
 | `devices` | DELETE | — | own rows |
@@ -270,6 +270,7 @@ block between viewer and owner).
 | `front_width`, `front_height` | int? | client | |
 | `duration_ms` | int? | client (worker for video) | **required** for `video`; Live Photo motion length. For a video the worker replaces it with the stored file's real length after transcoding (≤ `app_config.video_max_ms`) |
 | `renditions_ready_at` | timestamptz? | worker | null until the renditions exist; show `original_path` until then |
+| `taken_on` | date? | client | migration 0050: the calendar day a **library** photo was taken (device zone; `PHAsset.creationDate` / MediaStore `DATE_TAKEN`) — the date only, never a time or a place; null for camera photos; 1900-01-01 … today |
 | `created_at` | timestamptz | | |
 
 All paths must be under `u/<owner_id>/<id>/`. Rows cannot be updated or deleted
@@ -287,6 +288,7 @@ block with you.
 | `group_id` | uuid | |
 | `author_id` | uuid | = media owner |
 | `caption` | text? | ≤ 1000 chars; the author changes it with `edit_caption` |
+| `taken_on` | date? | copied from `media.taken_on` (migration 0050): a backfilled library photo's day; `visible_at` is then noon of it in the group's zone, so it lands in that week (Retro's backfill); On This Day and memories match it |
 | `caption_edited_at` | timestamptz? | set by `edit_caption` (migration 0047): the viewer shows "{date} · Edited"; null when never edited |
 | `voice_path`, `voice_duration_ms` | text?, int? | optional voice note (both or neither) |
 | `voice_levels` | smallint[]? | the voice note's waveform: exactly 100 levels, each 0–31, sampled while recording (see §6.2 `create_post`); null when the note has none (sent before 2026-10-16 or by a client that sent none) or there is no voice note |
@@ -295,7 +297,7 @@ block with you.
 | `reply_to_post_id` | uuid? | a photo replying to a photo; null if the original was deleted |
 | `created_at` | timestamptz | feed order; the time the photo was taken |
 | `revealed_at` | timestamptz? | an overnight photo (§14.3): the reveal time it joined the group at; null otherwise |
-| `visible_at` | timestamptz | generated: `coalesce(revealed_at, created_at)`, when the group could first see the photo (migration 0027). **Weeks and years follow it**: history weeks, recaps, walls' week sections, year stories. Place a photo in a week or in a week strip's day by `visible_at`, never by `created_at` |
+| `visible_at` | timestamptz | set by the server: `coalesce(revealed_at, noon of taken_on in the group zone, created_at)` — when the group could first see the photo (migration 0027), or the day a library photo was taken (0050). **Weeks and years follow it**: history weeks, recaps, walls' week sections, year stories. Place a photo in a week or in a week strip's day by `visible_at`, never by `created_at` |
 
 Feed: `from("posts").select().eq("group_id", g).order("created_at", ascending: false).limit(30)`,
 then page with `.lt("created_at", last)`.
