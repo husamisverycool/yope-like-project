@@ -21,6 +21,8 @@ let seeded: SeededGroup;
 let soloGroupId: string;
 let otherGroupId: string;
 let firstJobId: number;
+let doomedAlbumId: string;
+let pastPlanId: string;
 
 beforeAll(async () => {
   users = await createUsers(5, 'Acct');
@@ -41,6 +43,15 @@ beforeAll(async () => {
     [otherGroupId, doomed.id],
   );
   await rpc(users[4].client, 'block_user', { p_user_id: doomed.id });
+  // an album the doomed user named (holding another member's photo) and a past plan of theirs
+  doomedAlbumId = (
+    await rpc<any>(doomed.client, 'save_album', { p_group_id: seeded.group.id, p_name: 'Our summer', p_post_ids: [seeded.postIds[1]] })
+  ).id;
+  [{ id: pastPlanId }] = await sql<{ id: string }>(
+    `insert into public.plans (group_id, created_by, title, starts_at, local_date, place, note)
+     values ($1, $2, 'Picnic', now() - interval '20 days', current_date - 20, 'The park', 'Bring a blanket') returning id`,
+    [seeded.group.id, doomed.id],
+  );
 
   firstJobId = (await sql<{ id: number }>(`select coalesce(max(id), 0)::int as id from public.jobs`))[0].id;
   await rpc(doomed.client, 'delete_account');
@@ -65,6 +76,22 @@ describe('delete_account', () => {
     expect(await sql(`select 1 from public.posts where id = $1`, [seeded.postIds[0]])).toEqual([]);
     // other members' content stays
     expect(await sql(`select 1 from public.posts where id = $1`, [seeded.postIds[1]])).toHaveLength(1);
+  });
+
+  it("removes the plans they made and the albums they named; others' albums and photos stay", async () => {
+    // Partiful: deleting an account removes its history; Apple Shared Albums: the owner's album goes for everyone
+    expect(await sql(`select 1 from public.plans where id = any($1)`, [[seeded.planId, pastPlanId]])).toEqual([]);
+    expect(await sql(`select 1 from public.plans where title in ('Dinner', 'Picnic') and group_id = $1`, [seeded.group.id])).toEqual([]);
+    expect(await sql(`select 1 from public.plan_answers where plan_id = $1`, [seeded.planId])).toEqual([]);
+    expect(await sql(`select 1 from public.albums where id = $1`, [doomedAlbumId])).toEqual([]);
+    expect(await sql(`select 1 from public.albums where id = $1`, [seeded.albumId])).toHaveLength(1);
+    expect(await sql(`select 1 from public.posts where id = $1`, [seeded.postIds[1]])).toHaveLength(1);
+    // the plan's queued pushes are dropped
+    const queued = await sql(
+      `select kind from public.jobs where status = 'queued' and kind like 'push.plan%' and payload ->> 'plan_id' = $1`,
+      [seeded.planId],
+    );
+    expect(queued).toEqual([]);
   });
 
   it('hands the admin role to the longest-standing member and deletes groups left empty', async () => {

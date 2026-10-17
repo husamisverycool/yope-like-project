@@ -86,7 +86,7 @@ def worker_secrets() -> dict[str, str]:
     fcm = json_secret("FCM_SERVICE_ACCOUNT_JSON")
     if fcm:
         values["FCM_SERVICE_ACCOUNT_JSON"] = json.dumps(fcm)
-    for name in ("REVENUECAT_WEBHOOK_AUTH", "ANTHROPIC_API_KEY", "RECAP_MODEL", "MODERATION_WEBHOOK_URL"):
+    for name in ("REVENUECAT_WEBHOOK_AUTH", "REVENUECAT_SECRET_KEY", "ANTHROPIC_API_KEY", "RECAP_MODEL", "MODERATION_WEBHOOK_URL"):
         if env(name):
             values[name] = env(name)
     return values

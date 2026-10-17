@@ -53,6 +53,13 @@ export interface WorkerConfig {
   anthropicApiKey: string | null;
   recapModel: string;
   revenuecatWebhookAuth: string | null;
+  /**
+   * RevenueCat secret API key (REVENUECAT_SECRET_KEY). When set, auth.delete_user also deletes the account's
+   * RevenueCat customer (REST API v1 `DELETE /subscribers/{app_user_id}`); unset, the customer record stays.
+   */
+  revenuecatSecretKey?: string | null;
+  /** override of https://api.revenuecat.com for tests */
+  revenuecatApiOrigin?: string;
   moderationWebhookUrl: string | null;
   fontsDir: string;
 }
@@ -143,6 +150,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
     anthropicApiKey: nonEmpty(env.ANTHROPIC_API_KEY),
     recapModel: nonEmpty(env.RECAP_MODEL) ?? DEFAULT_RECAP_MODEL,
     revenuecatWebhookAuth: nonEmpty(env.REVENUECAT_WEBHOOK_AUTH),
+    revenuecatSecretKey: nonEmpty(env.REVENUECAT_SECRET_KEY),
     moderationWebhookUrl: nonEmpty(env.MODERATION_WEBHOOK_URL),
     fontsDir: nonEmpty(env.FONTS_DIR) ?? path.join(WORKER_ROOT, "fonts"),
   };

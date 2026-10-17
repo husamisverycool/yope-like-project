@@ -238,6 +238,8 @@ def check_services() -> None:
                            "settings → Service accounts → Generate new private key, then paste that file's text (OWNER_SETUP.md §3.2)")
     if not env("REVENUECAT_WEBHOOK_AUTH"):
         warnings.append("GitHub secret REVENUECAT_WEBHOOK_AUTH is not set: subscriptions bought in the app are not recorded yet (OWNER_SETUP.md §6.2)")
+    if env("REVENUECAT_WEBHOOK_AUTH") and not env("REVENUECAT_SECRET_KEY"):
+        warnings.append("GitHub secret REVENUECAT_SECRET_KEY is not set: a deleted account's purchase record stays at RevenueCat (OWNER_SETUP.md §6.2)")
     if not env("ANTHROPIC_API_KEY"):
         print("::notice::No ANTHROPIC_API_KEY: weekly recaps use the plain order and template text (optional, OWNER_SETUP.md §6.3)")
 

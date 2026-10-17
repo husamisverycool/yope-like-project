@@ -1,7 +1,8 @@
-// storage.delete, auth.delete_user, moderation.report.
+// storage.delete, auth.delete_user (and the RevenueCat customer), moderation.report.
 
 import { maybe } from "../db.js";
 import { PermanentError, RetryableError } from "../errors.js";
+import { deleteRevenueCatCustomer, RevenueCatError } from "../revenuecat.js";
 import { Storage } from "../storage.js";
 import { str, type JobContext } from "../services.js";
 
@@ -21,7 +22,11 @@ export async function storageDelete(ctx: JobContext): Promise<void> {
   ctx.log.info("storage objects deleted", { bucket, paths: paths.length, prefixes: prefixes.length, removed });
 }
 
-/** auth.delete_user {user_id}: the account's rows are already gone (delete_account); now the auth user. */
+/**
+ * auth.delete_user {user_id}: the account's rows are already gone (delete_account); now the auth user, then — when
+ * REVENUECAT_SECRET_KEY is set — the account's RevenueCat customer ("Full account deletion deletes all data").
+ * Both steps are idempotent, so a retry repeats them safely.
+ */
 export async function authDeleteUser(ctx: JobContext): Promise<void> {
   const userId = str(ctx.job.payload, "user_id");
   const { error } = await ctx.db.auth.admin.deleteUser(userId);
@@ -29,11 +34,26 @@ export async function authDeleteUser(ctx: JobContext): Promise<void> {
     const status = (error as { status?: number }).status;
     if (status === 404 || /not.?found/i.test(error.message)) {
       ctx.log.info("auth user already deleted", { user_id: userId });
-      return;
+    } else {
+      throw new RetryableError(`auth.admin.deleteUser: ${error.message}`);
     }
-    throw new RetryableError(`auth.admin.deleteUser: ${error.message}`);
+  } else {
+    ctx.log.info("auth user deleted", { user_id: userId });
   }
-  ctx.log.info("auth user deleted", { user_id: userId });
+
+  const key = ctx.config.revenuecatSecretKey;
+  if (!key) {
+    ctx.log.info("revenuecat customer kept (no REVENUECAT_SECRET_KEY)", { user_id: userId });
+    return;
+  }
+  try {
+    const outcome = await deleteRevenueCatCustomer(userId, key, ctx.config.revenuecatApiOrigin);
+    ctx.log.info(outcome === "deleted" ? "revenuecat customer deleted" : "revenuecat customer not found", { user_id: userId });
+  } catch (e) {
+    // a wrong or revoked key never succeeds; rate limits and RevenueCat outages are retried
+    if (e instanceof RevenueCatError && (e.status === 401 || e.status === 403)) throw new PermanentError(e.message);
+    throw new RetryableError(e instanceof Error ? e.message : String(e));
+  }
 }
 
 /**

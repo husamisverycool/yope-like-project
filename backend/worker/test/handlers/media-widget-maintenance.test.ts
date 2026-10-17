@@ -1,6 +1,8 @@
 // media.renditions, widget.refresh, storage.delete, auth.delete_user, moderation.report.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import http from "node:http";
+import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
@@ -166,6 +168,41 @@ describe("storage.delete / auth.delete_user / moderation.report", () => {
     expect(await w.runner.runUntilIdle({ kinds: ["auth.delete_user"] })).toBe(1);
     const [last] = (await jobs("auth.delete_user", { user_id: x!.id })).slice(-1);
     expect(last.status).toBe("done");
+  });
+
+  it("auth.delete_user deletes the RevenueCat customer when a secret key is set (200 and 404 both finish)", async () => {
+    const calls: Array<{ method?: string; url?: string; auth?: string; type?: string }> = [];
+    let answer = 200;
+    const server = http.createServer((req, res) => {
+      calls.push({ method: req.method, url: req.url, auth: req.headers.authorization, type: req.headers["content-type"] });
+      res.writeHead(answer, { "content-type": "application/json" }).end(JSON.stringify({ deleted: answer === 200 }));
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    w.config.revenuecatSecretKey = "sk_test_delete";
+    w.config.revenuecatApiOrigin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    try {
+      const [x] = await createUsers(1, "Subscriber");
+      await rpc(x!.client, "delete_account");
+      await w.runner.runUntilIdle({ kinds: ["auth.delete_user"] });
+      expect(calls).toEqual([{ method: "DELETE", url: `/v1/subscribers/${x!.id}`, auth: "Bearer sk_test_delete", type: "application/json" }]);
+      expect((await jobs("auth.delete_user", { user_id: x!.id })).map((j) => j.status)).toEqual(["done"]);
+      // already gone at RevenueCat: still done
+      answer = 404;
+      await rpc(admin, "enqueue_job", { p_kind: "auth.delete_user", p_payload: { user_id: x!.id } });
+      await w.runner.runUntilIdle({ kinds: ["auth.delete_user"] });
+      expect((await jobs("auth.delete_user", { user_id: x!.id })).map((j) => j.status)).toEqual(["done", "done"]);
+      // a rejected key fails for good instead of retrying
+      answer = 401;
+      const id = await rpc(admin, "enqueue_job", { p_kind: "auth.delete_user", p_payload: { user_id: x!.id } });
+      await w.runner.runUntilIdle({ kinds: ["auth.delete_user"] });
+      const [j] = await sql(`select status, last_error from public.jobs where id = $1`, [id]);
+      expect(j.status).toBe("failed");
+      expect(j.last_error).toMatch(/401/);
+    } finally {
+      w.config.revenuecatSecretKey = null;
+      w.config.revenuecatApiOrigin = undefined;
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
   });
 
   it("moderation.report completes and leaves the report open for review when no destination is configured", async () => {

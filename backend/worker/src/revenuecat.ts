@@ -107,3 +107,34 @@ export async function handleRevenueCat(db: Db, log: Logger, authHeader: string |
   log.info("revenuecat event", { event_id: event.id, type: event.type, result });
   return { status: 200, body: { result } };
 }
+
+/**
+ * Deletes the RevenueCat customer of a deleted account (REST API v1 "Delete Customer",
+ * `DELETE https://api.revenuecat.com/v1/subscribers/{app_user_id}`, Bearer secret key; read 2026-10-17 at
+ * https://www.revenuecat.com/docs/api-v1/customers: "Permanently deletes a customer … treat both 200 and 404 as
+ * successful"). The apps log in to RevenueCat with the Supabase user id, so that id is the app user id. It erases
+ * RevenueCat's purchase history only: a store subscription keeps renewing until the person cancels it in the store
+ * (the delete-account sheet says so, `settings.account.delete.subscriptionNote`).
+ * Returns "deleted" (200) or "absent" (404); throws on any other answer.
+ */
+export async function deleteRevenueCatCustomer(
+  userId: string,
+  secretKey: string,
+  origin = "https://api.revenuecat.com",
+): Promise<"deleted" | "absent"> {
+  const res = await fetch(`${origin}/v1/subscribers/${encodeURIComponent(userId)}`, {
+    method: "DELETE",
+    // RevenueCat answers 400 "Content-Type not application/json" to a bare DELETE (community thread 2808)
+    headers: { authorization: `Bearer ${secretKey}`, "content-type": "application/json", accept: "application/json" },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (res.status === 200) return "deleted";
+  if (res.status === 404) return "absent";
+  throw new RevenueCatError(res.status, (await res.text().catch(() => "")).slice(0, 200));
+}
+
+export class RevenueCatError extends Error {
+  constructor(readonly status: number, body: string) {
+    super(`RevenueCat DELETE /v1/subscribers answered ${status}${body ? `: ${body}` : ""}`);
+  }
+}

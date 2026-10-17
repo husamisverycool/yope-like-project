@@ -24,7 +24,7 @@ GitHub → Actions → **start the background service** (`.github/workflows/serv
    value on standard input, never on a command line or in the log). Worker: `SUPABASE_URL` (from `config/app.json`),
    `SUPABASE_SERVICE_ROLE_KEY`, the `APNS_*` set (`APNS_BUNDLE_ID` = `config/app.json` `ios.bundleId`, `APNS_TEAM_ID` =
    `APNS_TEAM_ID` or `APPLE_TEAM_ID`, `APNS_ENV` default `production`), `FCM_SERVICE_ACCOUNT_JSON`,
-   `REVENUECAT_WEBHOOK_AUTH`, `ANTHROPIC_API_KEY`, `RECAP_MODEL`, `MODERATION_WEBHOOK_URL` (each only when set). Web:
+   `REVENUECAT_WEBHOOK_AUTH`, `REVENUECAT_SECRET_KEY`, `ANTHROPIC_API_KEY`, `RECAP_MODEL`, `MODERATION_WEBHOOK_URL` (each only when set). Web:
    `SUPABASE_URL`, `SUPABASE_ANON_KEY` (from `config/app.json`), `SUPABASE_SERVICE_ROLE_KEY`.
 5. `flyctl deploy --config deploy/worker.fly.toml` (then `deploy/web.fly.toml`) `--app <name> --primary-region
    <FLY_REGION, default iad> --remote-only --ha=false`, from the repository root: the build context is the root and the
@@ -117,6 +117,7 @@ docker build -f web/Dockerfile -t web .
 | `APNS_ENV` | with the key | §1.3: `sandbox` or `production` (default `production`) | APNs host; tokens of the other environment are rejected |
 | `FCM_SERVICE_ACCOUNT_JSON` | for Android pushes | §3.2 (service-account key JSON) | FCM HTTP v1 OAuth (JWT bearer grant) |
 | `REVENUECAT_WEBHOOK_AUTH` | for subscriptions | §6.2 (the exact Authorization header value set in RevenueCat) | `POST /webhooks/revenuecat`; without it the endpoint answers 503 |
+| `REVENUECAT_SECRET_KEY` | optional | §6.2 (a V1 secret API key, `sk_…`) | `auth.delete_user` also calls `DELETE https://api.revenuecat.com/v1/subscribers/{user id}`; without it the RevenueCat customer stays |
 | `ANTHROPIC_API_KEY` | optional | §6.3 | recap photo choice/order and text; without it recaps use the deterministic order and the template text |
 | `RECAP_MODEL` | optional | §6.3 (default `claude-opus-5-5`) | recap model; its price must be in `src/recap/pricing.ts` for `ai_cost_log` |
 

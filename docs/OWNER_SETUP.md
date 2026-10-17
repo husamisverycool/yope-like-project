@@ -231,8 +231,10 @@ Placeholders used below:
    (iOS and Android) into `config/app.json` → `revenuecat.iosApiKey` / `androidApiKey` →
    Integrations → Webhooks → URL `https://jolt-worker-<your GitHub name>.fly.dev/webhooks/revenuecat` (the exact
    address is on the summary page of "start the background service", §7) with an authorization header value of your
-   choice (a long random string) → the same value as the GitHub secret `REVENUECAT_WEBHOOK_AUTH`, then run "start the
-   background service" again.
+   choice (a long random string) → the same value as the GitHub secret `REVENUECAT_WEBHOOK_AUTH` → Project settings →
+   **API keys** → **+ New secret API key** (API version **V1**, name `worker`) → copy the key (it starts with `sk_`) into
+   the GitHub secret `REVENUECAT_SECRET_KEY`, so deleting an account in the app also deletes that person's purchase
+   record at RevenueCat (REST API v1 "Delete Customer"); then run "start the background service" again.
 3. **Anthropic API key** (recaps only): https://console.anthropic.com → API keys → GitHub secret
    `ANTHROPIC_API_KEY`, then run "start the background service" again. Optional repository variable `RECAP_MODEL`
    (default `claude-opus-5-5`). Without a key, recaps still assemble (deterministic order, template text from
@@ -252,7 +254,7 @@ run on **Fly.io**, started by one button:
    as the GitHub secret `FLY_API_TOKEN` (§10).
 3. **The secrets it hands over** (§10): `SUPABASE_SERVICE_ROLE_KEY` (§5.3) is required; `APNS_KEY_P8` + `APNS_KEY_ID`
    (§1.3, iPhone notifications), `FCM_SERVICE_ACCOUNT_JSON` (§3.2, Android notifications), `REVENUECAT_WEBHOOK_AUTH`
-   (§6.2), `ANTHROPIC_API_KEY` (§6.3) and `MODERATION_WEBHOOK_URL` (where reports are sent; docs/API.md §12.19) are
+   and `REVENUECAT_SECRET_KEY` (§6.2), `ANTHROPIC_API_KEY` (§6.3) and `MODERATION_WEBHOOK_URL` (where reports are sent; docs/API.md §12.19) are
    optional: the run names each one that is missing and what goes without it.
 4. **Start it**: GitHub → **Actions** → **start the background service** → **Run workflow** → **Run workflow**. The
    first run creates the apps `jolt-worker-<your GitHub name>` and `jolt-<your GitHub name>` (names are shared by all
@@ -299,6 +301,7 @@ the researcher to capture the flows listed under "approximated" in the session r
 | `APNS_KEY_P8`, `APNS_KEY_ID` | iPhone notifications from the worker (§1.3); `APPLE_TEAM_ID` (above) is the team. `APNS_ENV` (`sandbox`) only for builds installed from Xcode. Optional |
 | `FCM_SERVICE_ACCOUNT_JSON` | Android notifications from the worker: the whole text of Firebase's service account key (§3.2). Optional |
 | `REVENUECAT_WEBHOOK_AUTH` | The authorization value you gave RevenueCat's webhook (§6.2). Optional until subscriptions are sold |
+| `REVENUECAT_SECRET_KEY` | RevenueCat secret API key, V1 (§6.2): a deleted account's RevenueCat customer is deleted too. Optional: without it that purchase record stays at RevenueCat |
 | `ANTHROPIC_API_KEY` | Weekly recaps written by Claude (§6.3). Optional |
 | `MODERATION_WEBHOOK_URL` | Where the worker sends reported photos and people (docs/API.md §12.19). Optional: without it reports wait in the database |
 

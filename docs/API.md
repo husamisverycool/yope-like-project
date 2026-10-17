@@ -726,10 +726,12 @@ cascade. When it was the photo's last post, the media and its files are deleted 
 delete_account() → void
 ```
 Deletes everything the caller owns: media (full cascade), messages, reactions, tags,
-tribute contributions, tribute requests about them, memberships (with admin hand-off;
-groups where they were the last member are deleted), invites they created, devices,
+tribute contributions, tribute requests about them, the plans they made (with their answers and
+cover; no notice is sent) and the albums they named (the photos in them stay), memberships (with
+admin hand-off; groups where they were the last member are deleted), invites they created, devices,
 quiet hours, blocks (both directions), reports they filed, entitlements, profile.
-Their files (`u/<uid>/`, `avatars/<uid>/`) and the auth user are deleted by the worker.
+Their files (`u/<uid>/`, `avatars/<uid>/`) and the auth user are deleted by the worker, which also
+deletes their RevenueCat customer when `REVENUECAT_SECRET_KEY` is set (migration 0025).
 Afterwards every call returns `not_authenticated`; sign out.
 
 #### `block_user` / `unblock_user`
@@ -1157,8 +1159,8 @@ Storage: a selfie image is readable by whoever can read its row.
 
 `plans(id, group_id, created_by?, title, starts_at, ends_at?, all_day, local_date, place?, note?, cover_path?, canceled_at?,
 canceled_by?, created_at, updated_at)` — `local_date` is the plan's day in the group time zone; an all-day plan starts at
-00:00 of it. No delete (a cancelled plan stays and can be restored); a deleted account leaves its plans (`created_by`
-null, its cover cleared). `plan_answers(plan_id, user_id, group_id, answer, answered_at)`, answer `going` / `maybe` /
+00:00 of it. No delete (a cancelled plan stays and can be restored); a deleted account's plans go with it (migration
+0025, MERGE_DECISIONS FV-5). `plan_answers(plan_id, user_id, group_id, answer, answered_at)`, answer `going` / `maybe` /
 `cant_go`; no answer = no row. Read: members; **Can't go rows only for their author and the plan's maker**. Realtime:
 inserts and updates of both tables.
 
