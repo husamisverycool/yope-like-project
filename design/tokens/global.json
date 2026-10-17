@@ -1808,6 +1808,40 @@
       "method": "Retro's pill and inset (measured, size.global.videoPill*); its top-trailing placement on thumbnails is the platform picker's",
       "notes": "Locket's video marker was not captured. Retro shows its pill on a 247-pt card; on 84-pt strip tiles the duration does not fit beside the glyph with the measured insets, hence the narrow rule."
     },
+    "layout.global.batchMarker": {
+      "level": "SOURCED",
+      "source_app": "Instagram + Retro",
+      "surface": "global",
+      "type": "layout",
+      "value": {
+        "marker": "C-25 glyph-only pill (the video marker's form without digits): capsule color.global.surfaceLight, size.global.videoPillHeight tall, size.global.videoPillPadding each side, icon.global.batch (size.global.iconSmall) in color.global.onSurfaceLight",
+        "placement": "top-trailing corner of the photo or tile, size.global.videoPillInset from both edges (Instagram: the carousel icon in the top right of the first photo)",
+        "withVideo": "when the first photo is a video, the batch marker sits under the video marker, size.global.pillGap below it",
+        "where": "the chat thread's batch item (its photo card), groups.screen's week strip, walls.mine / walls.member week strips",
+        "accessibility": "hidden itself; the item's or tile's label adds chat.thread.a11y.batch (\"Photos posted together\")"
+      },
+      "element": "how a photo that leads a batch is marked among photos",
+      "evidence": "https://help.instagram.com/269314186824048/ (\"Share a post with multiple photos or videos on Instagram\", accessed 2026-10-17): \"In your feed, you'll see the first photo or video from your post with a row of dots below it. In your profile, you'll see the first photo or video from your carousel with [the carousel icon] in the top right\"; layout.global.videoMarker (Retro's pill and inset, measured: size.global.videoPill*)",
+      "method": "Instagram's top-right carousel icon drawn in Retro's measured marker pill (the video marker), without its digits",
+      "notes": "A glyph, never a count (Instagram's grid icon carries no number either)."
+    },
+    "layout.global.photoBatch": {
+      "level": "SOURCED",
+      "source_app": "Instagram + Apple Shared Albums",
+      "surface": "global",
+      "type": "layout",
+      "value": {
+        "group": "photos with the same author and the same non-null posts.batch_id that follow one another in created_at order are one batch run (PhotoBatches.runs on both apps); anything between two of them (another message, someone else's photo, a collage) splits the batch into two runs; a photo deleted from a batch leaves the rest together; a run of one photo is an ordinary photo",
+        "show": "a run is drawn once, as its first photo — one chat item (chat.thread.layout.batch), one strip tile — carrying layout.global.batchMarker; the viewer pages through the batch's photos side by side in the order they were posted, with page dots for the batch only (photo.viewer.layout.batchDots)",
+        "perPhoto": "each photo stays its own post: reactions, replies, tags, favorites, save, delete and report act on one photo (the drawn first photo in the thread and on tiles; the photo on screen in the viewer)",
+        "where": "chat.thread, photo.viewer, groups.screen (this week's strip), walls.mine / walls.member (week strips); other grids and lists show each photo",
+        "never": "a number of photos (no \"+3\", no \"5 photos\"; tenet 2) — the marker is a glyph, the dots are positions"
+      },
+      "element": "how several photos posted together show",
+      "evidence": "docs/API.md posts.batch_id (\"Show a batch's posts (same author and batch_id) together — one chat bubble, swiped through in the viewer, one strip tile — in created_at order. Each stays its own post\"); backend/supabase/migrations/20261017000051_photo_batches.sql; docs/RESEARCH_FEATURES_2026-10-17.md #1; https://help.instagram.com/269314186824048/ (\"Share a post with multiple photos or videos on Instagram\", accessed 2026-10-17): \"In your feed, you'll see the first photo or video from your post with a row of dots below it. In your profile, you'll see the first photo or video from your carousel with [the carousel icon] in the top right\"; https://www.techradar.com/computing/instagram/instagram-will-now-let-you-post-up-to-20-photos-or-videos-in-a-gallery-your-friends-should-be-thrilled (carousels of up to 20 photos, swiped through in order)",
+      "method": "Instagram's carousel display (its first photo with the carousel icon on a grid, dots under it, swiped through in order) applied to the server's batch rule; the grouping is the API's (same author and batch_id, created_at order)",
+      "notes": "Owner decision 34 (research #1). The composer (multi-select) writes media.batch_id; this token covers the display."
+    },
     "size.global.tabBarHeight": {
       "level": "SOURCED",
       "source_app": "Retro",
@@ -3442,6 +3476,19 @@
       },
       "element": "video duration pill",
       "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png; glyph table design/research/retro-visual.md §3.6 (SF Symbol / Material candidates); Compose names checked in material-icons-extended / -core 1.7.8 classes.jar (Gradle cache, this pass)"
+    },
+    "icon.global.batch": {
+      "level": "PLATFORM",
+      "source_app": "Instagram",
+      "surface": "global",
+      "type": "icon",
+      "value": {
+        "ios": "square.on.square",
+        "android": "Rounded.FilterNone"
+      },
+      "element": "batch marker glyph: photos posted together (layout.global.batchMarker)",
+      "evidence": "https://help.instagram.com/269314186824048/ (\"Share a post with multiple photos or videos on Instagram\", accessed 2026-10-17): \"In your feed, you'll see the first photo or video from your post with a row of dots below it. In your profile, you'll see the first photo or video from your carousel with [the carousel icon] in the top right\"; Instagram's carousel icon is two overlapping squares — SF Symbols \"square.on.square\", Material Icons \"filter_none\" (two overlapping squares; Compose Icons.Rounded.FilterNone in material-icons-extended)",
+      "notes": "Compose name not re-checked against the jar this pass (no Gradle cache in this environment); filter_none ships in every Material Icons theme."
     },
     "icon.global.newAlbum": {
       "level": "PLATFORM",

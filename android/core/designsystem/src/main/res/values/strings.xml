@@ -613,6 +613,8 @@
     <string name="chat_reactions_picker_search" formatted="false">Search</string>
     <!-- Apple HIG / Material 3 · chat.thread · new · SOURCED -->
     <string name="chat_thread_a11y_back" formatted="false">Back</string>
+    <!-- Retro · chat.thread · new · SOURCED -->
+    <string name="chat_thread_a11y_batch" formatted="false">Photos posted together</string>
     <!-- Apple Messages · chat.thread · adapted · SOURCED -->
     <string name="chat_thread_a11y_canceledit" formatted="false">Cancel edit</string>
     <!-- Retro · chat.thread · new · SOURCED -->

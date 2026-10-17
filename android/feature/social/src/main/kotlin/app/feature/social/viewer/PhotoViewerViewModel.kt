@@ -6,7 +6,11 @@ import app.data.error.ApiError
 import app.data.error.DataError
 import app.data.model.Media
 import app.data.model.Message
+import app.data.model.PhotoBatchKey
+import app.data.model.PhotoBatchPosition
+import app.data.model.PhotoBatches
 import app.data.model.Post
+import app.data.model.batchKey
 import app.data.model.Profile
 import app.data.model.WallItemKind
 import app.data.realtime.GroupEvent
@@ -70,6 +74,11 @@ data class ViewerState(
     val online: Boolean = true,
     /** Opened from a wall: the header names the group ("{group} · Week 28"). */
     val fromWall: Boolean = false,
+    /**
+     * The batches among the photos (`layout.global.photoBatch`: the same author and `batch_id`), each in posted order and
+     * side by side in [photos] (`photo.viewer.layout.batchDots`).
+     */
+    val batches: List<List<String>> = emptyList(),
     /** Every photo is gone, or the last one was passed: the viewer closes. */
     val closed: Boolean = false,
     /** Your private favorites among the photos, by media (your own `favorites` rows, then this session's changes). */
@@ -80,6 +89,20 @@ data class ViewerState(
     enum class Phase { Loading, Ready }
 
     val current: ViewerPhoto? get() = photos.getOrNull(index)
+
+    /**
+     * The photos of the batch [postId] belongs to, in posted order (still in the viewer and not gone, [postId] always);
+     * empty when it was posted alone or is the one photo left of its batch.
+     */
+    fun batchMembers(postId: String): List<String> {
+        val batch = batches.firstOrNull { postId in it } ?: return emptyList()
+        val present = photos.filter { !it.gone || it.postId == postId }.map { it.postId }.toSet()
+        val members = batch.filter { it in present }
+        return if (members.size > 1) members else emptyList()
+    }
+
+    /** The page dots' position (`photo.viewer.layout.batchDots`): [postId] among its batch's photos; null without a batch. */
+    fun batchPosition(postId: String): PhotoBatchPosition? = batchMembers(postId).let { PhotoBatches.position(postId, it, it) }
     val mine: Boolean get() = current?.post?.authorId != null && current?.post?.authorId == me
 
     /** A selfie can be sent to the current photo: it is loaded and not yours ("You cannot react to your own BeReal"). */
@@ -165,6 +188,9 @@ class PhotoViewerViewModel(
     private val roles = HashMap<String, Boolean>()
     /** ≤ one `set_favorite` in flight per photo (by media). */
     private val favoritePending = HashSet<String>()
+    /** The batches read so far (`photo.viewer.layout.batchDots`), each in posted order; one read per batch. */
+    private val batches = LinkedHashMap<PhotoBatchKey, List<String>>()
+    private val askedBatches = HashSet<PhotoBatchKey>()
 
     init {
         viewModelScope.launch { load() }
@@ -202,7 +228,42 @@ class PhotoViewerViewModel(
             val photos = ids.filter { id -> known[id]?.gone != true || id == currentId }.map { id -> known[id] ?: ViewerPhoto(id) }
             s.copy(photos = photos, index = photos.indexOfFirst { it.postId == currentId }.coerceAtLeast(0))
         }
+        arrangeBatches()
+    }
+
+    /**
+     * `photo.viewer.layout.batchDots`: the photos of each batch read so far side by side in posted order where the first of
+     * them stood (`PhotoBatches.gather`); opened on one photo by a link ([PhotoContext.Reveal]: a push, groups.screen), the
+     * list is that photo's batch. The photo on screen stays.
+     */
+    private fun arrangeBatches() {
+        _state.update { s ->
+            val currentId = s.current?.postId ?: postId
+            var ids = s.photos.map { it.postId }
+            if (context == PhotoContext.Reveal && ids.size == 1) batches.values.firstOrNull { ids[0] in it }?.let { ids = it }
+            for (batch in batches.values) ids = PhotoBatches.gather(ids, batch)
+            val known = s.photos.associateBy { it.postId }
+            val photos = ids.map { id -> known[id] ?: ViewerPhoto(id) }
+            s.copy(photos = photos, index = photos.indexOfFirst { it.postId == currentId }.coerceAtLeast(0), batches = batches.values.toList())
+        }
         prefetch()
+    }
+
+    /** The photos posted together with [post] (`batchOf`), once per batch; a failure leaves the photo alone (read again with the next photo of it). */
+    private suspend fun loadBatch(post: Post) {
+        val key = post.batchKey ?: return
+        if (!askedBatches.add(key)) return
+        val ids = try {
+            data.batchOf(post)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Throwable) {
+            askedBatches.remove(key)
+            return
+        }
+        if (ids.size < 2 || post.id !in ids) return
+        batches[key] = ids
+        arrangeBatches()
     }
 
     /** The opener's list, in the order the spec gives for it. */
@@ -301,6 +362,7 @@ class PhotoViewerViewModel(
                     selfies = withPending(id, selfies), fromCache = false,
                 )
             }
+            loadBatch(post)
             runCatching {
                 data.cachePut(cacheKey(id), ViewerCopy.serializer(), ViewerCopy(post, media, people.values.toList(), group?.name, group?.timeZone,
                     reactions.map { app.feature.social.chat.CachedReaction(it.userId, it.emoji) }, comments, tags))

@@ -54,6 +54,16 @@ appearance (it is not a media surface).
        `radius.global.card`, aspect fill). The post's caption follows as a text item; a voice note follows as the voice
        capsule with its waveform (`chat.voice.md`, C-36); the reaction chip follows the photo (`chat.reactions.layout.chip`,
        `chat.reactions.dimension.chipTop` below it).
+     - **photos posted together** (`chat.thread.layout.batch`, `layout.global.photoBatch`; owner decision 34, research #1):
+       consecutive photo messages of one sender with the same `posts.batch_id` (in `created_at` order, same day, no reply
+       quote between) are **one photo item**: the first photo's C-18 card carrying the batch marker at its top-trailing
+       corner (`layout.global.batchMarker`: the video pill's form with `icon.global.batch` and no digits — Instagram's
+       carousel icon, never a count such as "+3"), then the **first photo's** reaction chip, caption and voice note. The
+       batch's other photos are not drawn here. Tap → `photo.viewer` at the first photo, the batch's photos side by side in
+       posted order with page dots (`photo.viewer.layout.batchDots`). The long-press menu (quick reactions, Reply, Save,
+       Report / Delete) acts on the first photo; the others are reacted to, replied to, saved or deleted in the viewer
+       (each stays its own post). Another message between photos of a batch splits it into two items; a photo deleted from
+       a batch leaves the rest; one photo left is an ordinary photo message.
      - **voice** — the voice capsule (`chat.voice.layout.capsule`): play glyph · C-36 waveform
        (`chat.voice.dimension.waveform`, the message's `voice_levels`; none stored → a row of dots until first played) ·
        duration (owner decision 16).
@@ -97,6 +107,7 @@ appearance (it is not a media surface).
 | run header | C-16; `size.global.avatarComment`, `chat.thread.dimension.rowAvatarToText`, text roles `listTitle` + `caption`, `color.global.textSecondary`, `chat.thread.layout.timeFormat` | name, time (data) | avatar / name tap → `walls.member` (yours → `walls.mine`) |
 | text message | text role `body`; `chat.thread.dimension.rowLinePitch`; emoji-only `chat.thread.count.emojiOnlyMax` + `fontSize.global.headerTitle`; links `chat.thread.layout.links` | text (data); `chat.thread.a11y.message` / `.messageMine`; value `chat.thread.edited` when edited | long press → context menu (below); a link → the browser |
 | photo message | C-18; `chat.thread.layout.photoFit`, `radius.global.card` | `chat.thread.a11y.photo` / `.photoMine` + `chat.thread.a11y.caption` | tap → `photo.viewer` (this thread's photos, chronological) with `duration.global.photoOpen`; long press → context menu with the quick-reaction row |
+| photos posted together | C-18 + `layout.global.batchMarker` (`icon.global.batch`); `chat.thread.layout.batch`, `layout.global.photoBatch` | the first photo's label + `chat.thread.a11y.batch` ("Photos posted together") | tap → `photo.viewer` at the first photo (batch side by side, `photo.viewer.layout.batchDots`); long press → the first photo's menu |
 | caption | text role `body` | caption (data) | — |
 | reaction chip | `chat.reactions.layout.chip`, `chat.reactions.dimension.chipTop`; under text / voice: `chat.reactions.layout.messageReactions` | `chat.reactions.a11y.cluster`; on a message its value lists `chat.reactions.activity.row` / `.rowMine` | tap → Reactions sheet (`chat.reactions.md`) |
 | "Edited" line | text role `caption`, `color.global.textSecondary`; `chat.thread.layout.editMessage` | `chat.thread.edited` | none (read as the message's value) |
@@ -176,7 +187,8 @@ the edited text with the bar again, and `chat.thread.edit.error` shows (Android 
 ## Accessibility
 
 - Labels: back `chat.thread.a11y.back`; each message is one element — text `chat.thread.a11y.message` / `.messageMine`,
-  photo `chat.thread.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.caption`), voice `chat.voice.a11y.message` / `.messageMine`;
+  photo `chat.thread.a11y.photo` / `.photoMine` (+ `chat.thread.a11y.video`, + `chat.thread.a11y.batch` for photos posted
+  together, + `chat.thread.a11y.caption`), voice `chat.voice.a11y.message` / `.messageMine`;
   the run header (avatar + name + time) is read as part of the first message; the reaction chip `chat.reactions.a11y.cluster`
   (emoji names, never a count; under a text or voice message its value says who reacted with what); quotes
   `chat.thread.a11y.replyQuote`. Context-menu actions are exposed as accessibility custom actions, with "Add reaction"
@@ -244,6 +256,7 @@ the edited text with the bar again, and `chat.thread.edit.error` shows (Android 
 - Yope's streak pill, sticker composer, lime quote block and bubble rims (superseded design).
 - Messages' coloured bubbles and red "!" circle; WhatsApp's reaction count and wallpaper.
 - Any unread count on the chat entry or tabs.
+- A number of photos on a batch ("+3", "5 photos", Instagram's "1/5" counter): the batch marker is a glyph (tenet 2).
 - Read receipts, "seen", online dots, "N typing" or "3 people are typing" (names only); Stream's "{{ users }} and more are
   typing..." (hides who); Messages' history of earlier versions behind "Edited" (the server keeps none).
 

@@ -51,7 +51,8 @@ sealed interface DayTile {
     /**
      * A day with a photo: aspect-fill photo, bottom scrim, [weekday] label ("Mon"). [menu]: the long-press menu (native
      * C-29 menu; also TalkBack custom actions), e.g. "Report Post" / "Block {first_name}" on someone else's photo.
-     * [videoDurationMs]: a video — the video marker at the top-trailing corner (`layout.global.videoMarker`).
+     * [videoDurationMs]: a video — the video marker at the top-trailing corner (`layout.global.videoMarker`). [batch]: the
+     * first of photos posted together — the batch marker there (under the video marker for a video).
      */
     data class Photo(
         override val key: Any,
@@ -61,6 +62,8 @@ sealed interface DayTile {
         val onClick: (() -> Unit)? = null,
         val menu: List<DsMenuItem> = emptyList(),
         val videoDurationMs: Long? = null,
+        /** The tile stands for photos posted together: the batch marker (`layout.global.batchMarker`). */
+        val batch: Boolean = false,
     ) : DayTile
 
     /** A day without photos: [month] / [day] / [weekday] lines on the fill. */
@@ -196,6 +199,7 @@ fun DayTileView(tile: DayTile, shape: Shape, modifier: Modifier = Modifier) {
                     modifier = Modifier.align(Alignment.BottomCenter).paddingFrom(LastBaseline, after = Tokens.Sizes.globalTileLabelBaseline),
                 )
                 tile.videoDurationMs?.let { VideoTileMarker(it) }
+                if (tile.batch) BatchTileMarker(belowVideoMarker = tile.videoDurationMs != null)
             }
             is DayTile.Empty -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 val color = Tokens.Colors.globalEmptyTileText

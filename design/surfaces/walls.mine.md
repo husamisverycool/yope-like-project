@@ -40,7 +40,10 @@ account group).
      84 × 112 tiles `size.global.stripGap` apart, outer corners `radius.global.card`, scrolling sideways with no trailing
      inset. Photo tiles (aspect fill, bottom `layout.global.photoScrim`, weekday label `tileLabel` in
      `color.global.textOnMedia` at `size.global.tileLabelBaseline`) in time order, Monday → Sunday; a collage item is a photo
-     tile showing the collage image;
+     tile showing the collage image; photos posted together (`layout.global.photoBatch`: one `batch_id`, one after another
+     in the week) are **one tile**, the batch's first photo with the batch marker (`layout.global.batchMarker`, never a
+     count), label + `chat.thread.a11y.batch`; a tap opens `photo.viewer` on it, the batch side by side with its page dots
+     (`photo.viewer.layout.batchDots`), then the wall's other photos;
    - **current week** always first (`week.history.layout.currentWeek`): with no photos, the add tile then seven dated
      empty-day tiles; with photos, the photo tiles, the add tile, then one blank placeholder tile per remaining day;
    - next section: `size.global.sectionGap` from the strip bottom to the next header's cap top; past weeks appear only when
@@ -59,6 +62,7 @@ account group).
 | settings capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `size.global.pillHeight`, `icon.global.settings`, `size.global.iconSmall`, `walls.mine.dimension.nameToActions` | `walls.mine.a11y.settings` | → `settings.root` |
 | section header | C-20; text roles `sectionLabel` + `listSubtitle` | `week.history.header.title`; range (data) | header trait |
 | photo tile | C-17 photo tile | `photo.viewer.a11y.photoMine` ("Your photo, {date}") | tap → `photo.viewer` (context = this wall's photos, newest week first, time order inside a week) |
+| batch tile | C-17 photo tile + `layout.global.batchMarker` (`icon.global.batch`) | `photo.viewer.a11y.photoMine` + `chat.thread.a11y.batch` | tap → `photo.viewer` at the batch's first photo (`photo.viewer.layout.batchDots`) |
 | collage tile | C-17 photo tile with the collage image | `walls.browse.a11y.collage` | tap → `collage.view` (capture group) |
 | add tile | C-17 add tile (`color.global.control`, `icon.global.add` 23 pt) | `week.history.a11y.add` | → `camera.capture` (group chosen in `camera.sendto`) |
 | empty-day tile | C-17 empty-day tile (`color.global.control`, `color.global.emptyTileText`, `tileMonth` / `tileDay`) | `week.history.a11y.emptyDay` | not interactive |

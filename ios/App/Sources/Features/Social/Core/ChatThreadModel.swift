@@ -185,7 +185,18 @@ final class ChatThreadModel {
 
     /// The thread as day dividers and runs (`chat.thread.layout.runs`, `.timeFormat.dayDividers`).
     func entries(calendar: Calendar = .current) -> [ChatEntry] {
-        ChatThreadLayout.entries(messages, me: me, calendar: calendar) { [self] in hasQuote($0) }
+        ChatThreadLayout.entries(
+            messages, me: me, calendar: calendar,
+            hasQuote: { [self] in hasQuote($0) },
+            batchKey: { [self] in batchKey(of: $0) }
+        )
+    }
+
+    /// The batch of a photo message's post (`layout.global.photoBatch`); nil for every other message, a photo posted alone,
+    /// or a local copy not yet confirmed.
+    func batchKey(of message: Message) -> PhotoBatchKey? {
+        guard message.kind == .photo, !pending.contains(message.id) else { return nil }
+        return post(of: message)?.post.batchKey
     }
 
     // MARK: Loading
@@ -976,8 +987,14 @@ struct ChatRow: Identifiable, Equatable, Sendable {
     let startsRun: Bool
     let isMine: Bool
     let gap: ChatGap
+    /// `chat.thread.layout.batch`: the other photo messages of the batch run this photo leads (posted together, in
+    /// `created_at` order), not drawn themselves; empty for every other message.
+    var batch: [Message] = []
 
     var id: MessageID { message.id }
+
+    /// The photo leads photos posted together: its card carries `layout.global.batchMarker`.
+    var isBatch: Bool { !batch.isEmpty }
 }
 
 /// An entry of the thread: a day divider (C-20 dated header) or a message.
@@ -998,16 +1015,35 @@ enum ChatThreadLayout {
     /// Day dividers before the first message of each day; runs of consecutive messages from one sender, broken by
     /// another sender, a day divider, or a reply quote (`chat.thread.layout.runs.breaks`). A joined / left line
     /// (`chat.thread.layout.systemLine`) stands alone: it starts no run, sits `size.global.listGap` from its neighbours,
-    /// and the message after it starts a new run.
+    /// and the message after it starts a new run. Photo messages posted together (`batchKey`, `layout.global.photoBatch`)
+    /// that follow one another on one day without a reply quote between are one entry: the first, holding the others in
+    /// `ChatRow.batch` (`chat.thread.layout.batch`).
     static func entries(
         _ messages: [Message],
         me: UserID?,
         calendar: Calendar = .current,
-        hasQuote: (Message) -> Bool = { _ in false }
+        hasQuote: (Message) -> Bool = { _ in false },
+        batchKey: (Message) -> PhotoBatchKey? = { _ in nil }
     ) -> [ChatEntry] {
         var result: [ChatEntry] = []
         var previous: Message?
-        for message in messages {
+        // A photo that would break the run (a new day, a reply quote) does not join the batch before it.
+        let units = PhotoBatches.runs(messages) { message in
+            message.kind == .photo ? batchKey(message) : nil
+        }.flatMap { run -> [[Message]] in
+            guard run.count > 1 else { return [run] }
+            var split: [[Message]] = []
+            for message in run {
+                if let last = split.last?.last, calendar.isDate(last.createdAt, inSameDayAs: message.createdAt), !hasQuote(message) {
+                    split[split.count - 1].append(message)
+                } else {
+                    split.append([message])
+                }
+            }
+            return split
+        }
+        for unit in units {
+            guard let message = unit.first else { continue }
             let day = calendar.startOfDay(for: message.createdAt)
             let newDay = previous.map { calendar.startOfDay(for: $0.createdAt) != day } ?? true
             if newDay {
@@ -1017,8 +1053,10 @@ enum ChatThreadLayout {
             let afterSystemLine = previous?.kind.isSystemLine ?? false
             let startsRun = !isSystemLine && (newDay || previous?.authorID != message.authorID || afterSystemLine || hasQuote(message))
             let gap: ChatGap = newDay ? .afterDivider : (startsRun || isSystemLine ? .run : .item)
-            result.append(.message(ChatRow(message: message, startsRun: startsRun, isMine: message.authorID == me, gap: gap)))
-            previous = message
+            result.append(.message(ChatRow(
+                message: message, startsRun: startsRun, isMine: message.authorID == me, gap: gap, batch: Array(unit.dropFirst())
+            )))
+            previous = unit.last ?? message
         }
         return result
     }

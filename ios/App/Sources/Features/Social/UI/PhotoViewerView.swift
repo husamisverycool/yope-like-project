@@ -628,6 +628,11 @@ struct ViewerPostPage: View {
                     selfieStack(frame: CGSize(width: area.width, height: photoHeight))
                 }
                 .metricGap(Tokens.Sizes.photoViewerDimensionHeaderToPhoto, from: .top, to: .top)
+            if let position = model.batchPosition(of: post.id) {
+                batchDots(position)
+                    .frame(width: area.width, height: Tokens.Sizes.yearStoryDotsOffset * 2) // provenance-ok: the dots' centre one offset below the photo (photo.viewer.layout.batchDots)
+                    .metricGap(0, from: .bottom, to: .top)
+            }
             footer
                 .metricGap(0, from: .bottom, to: .top)
             if !model.currentComments.isEmpty {
@@ -644,6 +649,20 @@ struct ViewerPostPage: View {
     }
 
     private var hasVoice: Bool { post.post.voicePath != nil && post.post.voiceDurationMs != nil }
+
+    /// `photo.viewer.layout.batchDots`: C-31 dots on media, one per photo of the batch (never the whole list), centred
+    /// under the photo; read as "2 of 3" within the batch (`photo.viewer.position`), adjustable within the batch.
+    private func batchDots(_ position: PhotoBatchPosition) -> some View {
+        PageDots(
+            count: position.total,
+            index: position.index - 1,
+            onMedia: true,
+            accessibilityValue: Copy.photoViewerPosition(index: String(position.index), total: String(position.total))
+        ) { index in
+            Task { await model.selectInBatch(index) }
+        }
+        .accessibilityIdentifier("photo.viewer.batchDots") // provenance-ok: accessibility identifier for UI tests
+    }
 
     // MARK: Photo
 

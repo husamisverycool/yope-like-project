@@ -71,7 +71,9 @@ import app.data.error.DataError
 import app.data.model.Group
 import app.data.model.GroupKind
 import app.data.model.Media
+import app.data.model.PhotoBatches
 import app.data.model.Post
+import app.data.model.batchKey
 import app.data.offline.DataState
 import app.data.realtime.GroupEvent
 import app.data.repo.Member
@@ -786,15 +788,22 @@ private fun stripTiles(
     val locale = Locale.getDefault()
     val add = DayTile.Add(stringResource(R.string.groups_screen_week_add_accessibilitylabel), actions.onCamera)
     val days: List<DayTile> = if (thisWeek.isNotEmpty() || collages.isNotEmpty()) {
-        val photoTiles = thisWeek.reversed().map { photo ->
+        // Photos posted together are one tile, the batch's first photo with the batch marker (`layout.global.photoBatch`);
+        // the viewer opens on it with the whole batch (`photo.viewer.layout.batchDots`).
+        val batchLabel = stringResource(R.string.chat_thread_a11y_batch)
+        val photoTiles = PhotoBatches.runs(thisWeek.reversed()) { it.post.batchKey }.map { run ->
+            val photo = run.first()
+            val batch = run.size > 1
             val day = photo.post.visibleAt.atZone(zone).toLocalDate()
+            val label = photoLabel(day, photo.authorFirstName)
             photo.post.visibleAt to DayTile.Photo(
                 key = photo.post.id,
                 image = photo.url,
                 weekday = day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
-                accessibilityLabel = photoLabel(day, photo.authorFirstName),
+                accessibilityLabel = if (batch) "$label, $batchLabel" else label,
                 onClick = { actions.onPhoto(photo.post) },
                 menu = photoMenu(photo, actions),
+                batch = batch,
             )
         }
         // The group's photo of the day (the same-moment collage) on its day, before that day's photos.

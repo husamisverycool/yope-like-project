@@ -35,13 +35,28 @@ final class WallModel {
         }
     }
 
-    /// One week section: its tiles in time order (Monday → Sunday).
+    /// One week section: its tiles in time order (Monday → Sunday). Photos posted together are one tile, the batch's first
+    /// photo (`layout.global.photoBatch`); `batches` holds each such tile's whole run by its tile id.
     struct Week: Identifiable, Equatable {
         let weekStart: LocalDate
         let tiles: [Tile]
         let isCurrent: Bool
+        /// Tile id → the photos posted together it stands for (two or more, posted order).
+        var batches: [String: [Tile]] = [:]
 
         var id: LocalDate { weekStart }
+
+        /// The tile leads photos posted together (`layout.global.batchMarker`).
+        func isBatch(_ tile: Tile) -> Bool { batches[tile.id] != nil }
+
+        /// Every photo of the week in order, a batch's photos where its tile stands.
+        var allTiles: [Tile] { tiles.flatMap { batches[$0.id] ?? [$0] } }
+    }
+
+    /// The batch of a tile's photo; nil for a collage or a photo posted alone.
+    private static func batchKey(_ tile: Tile) -> PhotoBatchKey? {
+        if case let .post(post) = tile { return post.post.batchKey }
+        return nil
     }
 
     let owner: Owner
@@ -101,8 +116,13 @@ final class WallModel {
         }
         if byWeek[current] == nil { byWeek[current] = [] }
         return byWeek
-            .map { week, tiles in
-                Week(weekStart: week, tiles: tiles.sorted { $0.createdAt < $1.createdAt }, isCurrent: week == current)
+            .map { week, tiles -> Week in
+                let runs = PhotoBatches.runs(tiles.sorted { $0.createdAt < $1.createdAt }, key: Self.batchKey)
+                var batches: [String: [Tile]] = [:]
+                for run in runs where run.count > 1 {
+                    if let first = run.first { batches[first.id] = run }
+                }
+                return Week(weekStart: week, tiles: runs.compactMap(\.first), isCurrent: week == current, batches: batches)
             }
             .sorted { $0.weekStart > $1.weekStart }
     }
@@ -116,7 +136,7 @@ final class WallModel {
 
     /// Photo tiles in wall order (`photo.viewer` context): newest week first, time order inside a week.
     var photoPostIDs: [PostID] {
-        weeks.flatMap(\.tiles).compactMap { tile in
+        weeks.flatMap(\.allTiles).compactMap { tile in
             if case let .post(post) = tile { return post.id }
             return nil
         }

@@ -13,9 +13,9 @@ import java.time.ZoneId
 
 /**
  * A photo of a week strip: [path] = its thumbnail, [label] = its TalkBack label (copy); [videoDurationMs] = a video's length
- * (its marker, `layout.global.videoMarker`).
+ * (its marker, `layout.global.videoMarker`); [batch] = it stands for photos posted together (`layout.global.batchMarker`).
  */
-data class StripPhoto(val key: String, val path: String?, val at: Instant, val label: String, val onClick: (() -> Unit)?, val videoDurationMs: Long? = null)
+data class StripPhoto(val key: String, val path: String?, val at: Instant, val label: String, val onClick: (() -> Unit)?, val videoDurationMs: Long? = null, val batch: Boolean = false)
 
 /** A video's length for its marker and label (`layout.global.videoMarker`); null for photos and Live Photos. */
 val Media.videoDurationMs: Long? get() = if (kind == MediaKind.Video) (durationMs ?: 0).toLong() else null
@@ -23,6 +23,10 @@ val Media.videoDurationMs: Long? get() = if (kind == MediaKind.Video) (durationM
 /** [label], then `chat.thread.a11y.video` ("Video, 10 seconds") for a video. */
 fun withVideoLabel(context: Context, label: String, videoDurationMs: Long?): String =
     if (videoDurationMs == null) label else label + ", " + context.getString(R.string.chat_thread_a11y_video, Formats.spokenDuration(videoDurationMs))
+
+/** [label], then `chat.thread.a11y.batch` ("Photos posted together") for the first of photos posted together. */
+fun withBatchLabel(context: Context, label: String, batch: Boolean): String =
+    if (!batch) label else label + ", " + context.getString(R.string.chat_thread_a11y_batch)
 
 /**
  * The C-17 tiles of one week (`week.history.layout.weeks` / `.currentWeek`, `walls.mine.layout.weeks`):
@@ -37,7 +41,11 @@ fun withVideoLabel(context: Context, label: String, videoDurationMs: Long?): Str
 fun weekStripTiles(weekStart: LocalDate, photos: List<StripPhoto>, current: Boolean, add: DayTile.Add?, zone: ZoneId): List<DayTile> {
     val context = LocalContext.current
     val photoTiles = photos.sortedBy { it.at }.map { p ->
-        DayTile.Photo(p.key, photoModel(p.path), Formats.weekdayShort(p.at.atZone(zone).toLocalDate()), withVideoLabel(context, p.label, p.videoDurationMs), p.onClick, videoDurationMs = p.videoDurationMs)
+        DayTile.Photo(
+            p.key, photoModel(p.path), Formats.weekdayShort(p.at.atZone(zone).toLocalDate()),
+            withBatchLabel(context, withVideoLabel(context, p.label, p.videoDurationMs), p.batch), p.onClick,
+            videoDurationMs = p.videoDurationMs, batch = p.batch,
+        )
     }
     if (!current) return photoTiles
     if (photoTiles.isEmpty()) return listOfNotNull(add) + emptyDays(context, weekStart)

@@ -408,8 +408,13 @@ struct GroupFeedView: View {
         if model.phase == .loading {
             tiles = WeekStripLayout.placeholders(count: WeekStripLayout.days(ofWeekContaining: Date(), calendar: model.calendar).count)
         } else {
-            let photos = model.thisWeekPosts.map { post in
-                WeekStripPhoto(id: post.id.rawValue, date: post.post.visibleAt, source: post.media?.imagePath(for: .thumb).map { PhotoSource.storage($0) })
+            // photos posted together: one tile, the batch's first photo with the batch marker (`layout.global.photoBatch`)
+            let photos = model.thisWeekRuns.compactMap { run -> WeekStripPhoto? in
+                guard let post = run.first else { return nil }
+                return WeekStripPhoto(
+                    id: post.id.rawValue, date: post.post.visibleAt,
+                    source: post.media?.imagePath(for: .thumb).map { PhotoSource.storage($0) }, isBatch: run.count > 1
+                )
             } + model.thisWeekCollages.map { collage in
                 // the day's same-moment collage once composed, on its day (migration 0033)
                 WeekStripPhoto(id: Self.collageTilePrefix + collage.collageID.rawValue, date: collageDay(collage), source: collage.tilePath.map { PhotoSource.storage($0) })
@@ -453,7 +458,7 @@ struct GroupFeedView: View {
                 return Copy.wallsBrowseA11yCollage(date: GroupDates.monthDay(collageDay(collage), calendar: model.calendar))
             }
             guard let post = post(for: tile) else { return "" }
-            return photoLabel(post)
+            return SocialA11y.withBatch(photoLabel(post), isBatch: tile.isBatch)
         case .placeholder:
             return ""
         }

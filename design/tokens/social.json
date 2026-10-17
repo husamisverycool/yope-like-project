@@ -709,6 +709,23 @@
       "level": "SOURCED",
       "notes": "Replaces Yope's horizontal swipe (MERGE RS-12). 'Closes after the last photo' follows 'Tap anywhere to advance' with nothing left to show (Gap: one recording)."
     },
+    "photo.viewer.layout.batchDots": {
+      "type": "layout",
+      "value": {
+        "order": "the photos of a batch sit side by side in the viewer's list in the order they were posted, where the first of them stood (PhotoBatches.gather); opened on one photo (a link, a push, groups.screen's strip and cards) the list is that photo's batch, read by group, author and batch_id in created_at order",
+        "dots": "while the photo on screen belongs to a batch with at least two photos in the list: C-31 page dots on media (size.global.pageDot, size.global.pageDotPitch; active color.global.textOnMedia, inactive color.global.pageDotInactive's dark value), one per photo of the batch — never the whole list — the one on screen active; tap to advance and the position pill work as before",
+        "placement": "centred under the photo, their centre dimension.year.story.dots.offset below its bottom edge; the footer then starts twice that offset below the photo (its photo.viewer.dimension.footerFirstBaseline measured from there)",
+        "accessibility": "one adjustable element valued photo.viewer.position (\"2 of 3\") within the batch; swiping up / down moves within the batch",
+        "none": "a photo posted alone, or the one photo left of a batch: no dots, the footer where it was"
+      },
+      "source_app": "Instagram + Retro",
+      "surface": "photo.viewer",
+      "element": "page dots of the photos posted together",
+      "evidence": "https://help.instagram.com/269314186824048/ (\"Share a post with multiple photos or videos on Instagram\", accessed 2026-10-17): \"In your feed, you'll see the first photo or video from your post with a row of dots below it. In your profile, you'll see the first photo or video from your carousel with [the carousel icon] in the top right\" (the row of dots below a carousel); design/components.md C-31 (Retro page dots); dimension.year.story.dots.offset (Retro's recap preview: dots under the media page, retro-store-04.png)",
+      "method": "Instagram's dots under a carousel, drawn with Retro's measured page dots and their offset under a media page",
+      "level": "SOURCED",
+      "notes": "Dots are positions, not a count (C-31); they cover only the batch, as Instagram's cover only the carousel."
+    },
     "photo.viewer.layout.backZone": {
       "type": "layout",
       "value": {
@@ -1754,6 +1771,23 @@
       "method": "the platforms' link detectors; WCAG's rule for telling links apart without colour (no colour of our own is added)",
       "level": "SOURCED",
       "notes": "Owner decision 34 (research #16)."
+    },
+    "chat.thread.layout.batch": {
+      "type": "layout",
+      "value": {
+        "item": "a run of photos posted together (layout.global.photoBatch) is one photo message of the thread: the first photo's C-18 card with layout.global.batchMarker, then the first photo's reaction chip, caption and voice note as for any photo message; the run's other photos are not drawn in the thread",
+        "tap": "opens photo.viewer at the first photo with the thread's photos, the batch side by side in posted order (photo.viewer.layout.batchDots)",
+        "menu": "the long-press menu (quick reactions, Reply, Save, Report Message / Delete) acts on the first photo; the others are reacted to, replied to, saved or deleted in the viewer",
+        "runs": "the item sits in its sender's run as one photo message (chat.thread.layout.runs); a reply quote, a day divider or another message between photos of the batch splits it into two items",
+        "accessibility": "one element: the first photo's label (chat.thread.a11y.photo / .photoMine, + chat.thread.a11y.video), then chat.thread.a11y.batch, then the caption"
+      },
+      "source_app": "Instagram",
+      "surface": "chat.thread",
+      "element": "photos posted together in the thread",
+      "evidence": "docs/API.md posts.batch_id (\"Show a batch's posts (same author and batch_id) together — one chat bubble, swiped through in the viewer, one strip tile — in created_at order. Each stays its own post\"); backend/supabase/migrations/20261017000051_photo_batches.sql; docs/RESEARCH_FEATURES_2026-10-17.md #1; https://help.instagram.com/269314186824048/ (\"Share a post with multiple photos or videos on Instagram\", accessed 2026-10-17): \"In your feed, you'll see the first photo or video from your post with a row of dots below it. In your profile, you'll see the first photo or video from your carousel with [the carousel icon] in the top right\"",
+      "method": "Instagram's carousel shown as its first photo with the carousel icon; Jolt's photos stay posts of their own (docs/API.md posts.batch_id), so the chip, caption and menu are the first photo's",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (research #1)."
     }
   }
 }

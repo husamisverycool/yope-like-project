@@ -345,6 +345,16 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         }
     }
 
+    func batchWith(_ post: Post) async throws -> [PostWithMedia] {
+        try call("batchWith")
+        guard let key = post.batchKey else { return [] }
+        return read { state in
+            state.posts
+                .filter { $0.post.groupID == post.groupID && $0.post.batchKey == key }
+                .sorted { ($0.post.createdAt, $0.id.rawValue) < ($1.post.createdAt, $1.id.rawValue) }
+        }
+    }
+
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { read { $0.cachedFeeds[groupID] ?? [] } }
 
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] {

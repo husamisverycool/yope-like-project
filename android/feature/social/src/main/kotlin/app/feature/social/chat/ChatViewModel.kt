@@ -72,9 +72,17 @@ data class ChatRow(
     val edited: Boolean = false,
     /** My own sent text message inside `message_edit_window_s`: the menu offers Edit. */
     val canEdit: Boolean = false,
+    /**
+     * `chat.thread.layout.batch`: the post ids of the other photos of the batch run this photo leads (posted together, in
+     * `created_at` order; set by [app.feature.social.chat.threadItems]), not drawn themselves; empty for every other row.
+     */
+    val batch: List<String> = emptyList(),
 ) {
     val id: String get() = message.id
     val kind: MessageKind get() = message.kind
+
+    /** The photo leads photos posted together: its card carries `layout.global.batchMarker`. */
+    val isBatch: Boolean get() = batch.isNotEmpty()
 }
 
 data class ChatState(

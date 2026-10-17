@@ -41,6 +41,7 @@ block with (docs/API.md §6.4). The screen never says which groups a photo came 
 | name | C-02 title; text role `headerTitle`, `font.global.display` | display name (data); screen label `walls.member.a11y.wall` | header trait |
 | more capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `size.global.pillHeight`, `icon.global.more`, `size.global.iconSmall` | `walls.member.a11y.more` | menu: `walls.member.menu.report`, `walls.member.menu.block` |
 | photo tile | C-17 | `week.history.a11y.tile` ("{weekday}, {date}, {name}'s photo") | → `photo.viewer` (context = this wall) |
+| batch tile (photos posted together, `layout.global.photoBatch`) | C-17 + `layout.global.batchMarker` (`icon.global.batch`), as `walls.mine` | `week.history.a11y.tile` + `chat.thread.a11y.batch` | → `photo.viewer` at the batch's first photo (`photo.viewer.layout.batchDots`) |
 | collage tile | C-17 | `walls.browse.a11y.collage` | → `collage.view` |
 
 ## States

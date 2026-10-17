@@ -615,6 +615,8 @@ public enum Copy {
     public static var chatReactionsPickerSearch: String { CopyLookup.string("chat.reactions.picker.search", default: "Search") }
     /// "Back" — Apple HIG / Material 3 · chat.thread · new · SOURCED
     public static var chatThreadA11yBack: String { CopyLookup.string("chat.thread.a11y.back", default: "Back") }
+    /// "Photos posted together" — Retro · chat.thread · new · SOURCED
+    public static var chatThreadA11yBatch: String { CopyLookup.string("chat.thread.a11y.batch", default: "Photos posted together") }
     /// "Cancel edit" — Apple Messages · chat.thread · adapted · SOURCED
     public static var chatThreadA11yCancelEdit: String { CopyLookup.string("chat.thread.a11y.cancelEdit", default: "Cancel edit") }
     /// "Cancel reply" — Retro · chat.thread · new · SOURCED

@@ -128,6 +128,14 @@ struct LiveSocialData: SocialDataSource {
         return posts
     }
 
+    func batchWith(_ post: Post) async throws -> [PostWithMedia] {
+        guard let batchID = post.batchID else { return [] }
+        let rows = try await environment.posts.batch(groupID: post.groupID, authorID: post.authorID, batchID: batchID)
+        let posts = try await environment.posts.withMedia(rows)
+        memo.store(posts: posts, asked: rows.map(\.id))
+        return posts
+    }
+
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] {
         let known = memo.posts(ids)
         let missing = ids.filter { known[$0] == nil }

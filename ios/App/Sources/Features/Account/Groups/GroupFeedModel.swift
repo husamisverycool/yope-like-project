@@ -110,6 +110,12 @@ final class GroupFeedModel {
         return posts.filter { week.contains($0.post.visibleAt) }.sorted { $0.post.visibleAt < $1.post.visibleAt }
     }
 
+    /// This week's photos as the strip shows them (`layout.global.photoBatch`): photos posted together that follow one
+    /// another are one run, drawn as its first photo; every other photo is a run of its own. Oldest → newest.
+    var thisWeekRuns: [[PostWithMedia]] {
+        PhotoBatches.runs(thisWeekPosts) { $0.post.batchKey }
+    }
+
     /// The days of this week from today to its end (start of day, group time zone): the empty-day tiles of a week
     /// without photos (Retro's empty week, H43 / H22).
     var remainingDaysOfWeek: [Date] {

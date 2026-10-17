@@ -49,6 +49,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.data.model.PhotoBatchKey
+import app.data.model.PhotoBatches
 import app.data.model.Profile
 import app.designsystem.R
 import app.designsystem.generated.Tokens
@@ -317,7 +319,10 @@ private fun WallWeekSection(
     val hasPhotos = week.tiles.isNotEmpty()
     val range = if (week.current && !hasPhotos) null else Formats.weekRange(context, week.weekStart, zone)
     val spoken = if (range == null) title else "$title, ${Formats.spokenWeekRange(context, week.weekStart, zone)}"
-    val photos = week.tiles.map { tile ->
+    // Photos posted together are one tile, the batch's first photo with the batch marker (`layout.global.photoBatch`).
+    val runs = PhotoBatches.runs(week.tiles.sortedBy { it.createdAt }) { tile -> (tile as? WallTile.Photo)?.batchId?.let { PhotoBatchKey(userId, it) } }
+    val photos = runs.map { run ->
+        val tile = run.first()
         val day = tile.createdAt.atZone(zone).toLocalDate()
         when (tile) {
             is WallTile.Photo -> StripPhoto(
@@ -328,6 +333,7 @@ private fun WallWeekSection(
                 else stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), name),
                 tile.groupId?.let { g -> { nav.photo(userId, g, tile.postId) } },
                 tile.videoDurationMs,
+                batch = run.size > 1,
             )
             is WallTile.CollageTile -> StripPhoto(
                 tile.key,

@@ -12,12 +12,15 @@ struct WeekStripPhoto: Hashable {
     var source: PhotoSource?
     /// A video's length (ms): its tile carries the video marker (`layout.global.videoMarker`); nil for photos.
     var videoDurationMs: Int?
+    /// The photo leads photos posted together (`layout.global.batchMarker`): its tile carries the batch marker.
+    var isBatch: Bool
 
-    init(id: String, date: Date, source: PhotoSource?, videoDurationMs: Int? = nil) {
+    init(id: String, date: Date, source: PhotoSource?, videoDurationMs: Int? = nil, isBatch: Bool = false) {
         self.id = id
         self.date = date
         self.source = source
         self.videoDurationMs = videoDurationMs
+        self.isBatch = isBatch
     }
 }
 
@@ -40,6 +43,8 @@ struct WeekStripTile: Identifiable, Hashable {
     let date: Date?
     /// A video tile: its length (ms), shown by the video marker (`layout.global.videoMarker`).
     var videoDurationMs: Int? = nil
+    /// The tile stands for photos posted together (`layout.global.batchMarker`, one tile for the batch).
+    var isBatch: Bool = false
 }
 
 /// Which tiles a week shows (C-17): one tile per photo in chronological order (two photos of one day → two tiles);
@@ -59,7 +64,10 @@ enum WeekStripLayout {
             lhs.date == rhs.date ? lhs.id < rhs.id : lhs.date < rhs.date
         }
         let tiles = ordered.map { photo in
-            WeekStripTile(id: "photo-\(photo.id)", kind: .photo(photo.source), date: photo.date, videoDurationMs: photo.videoDurationMs)
+            WeekStripTile(
+                id: "photo-\(photo.id)", kind: .photo(photo.source), date: photo.date, videoDurationMs: photo.videoDurationMs,
+                isBatch: photo.isBatch
+            )
         }
         return tiles + (canAdd ? [add] : [])
     }
@@ -84,7 +92,8 @@ enum WeekStripLayout {
 ///
 /// - Photo: aspect-fill; bottom scrim `layout.global.photoScrim`; weekday (text role `tileLabel`,
 ///   `color.global.textOnMedia`) centred, its baseline `size.global.tileLabelBaseline` above the bottom; a video carries
-///   the video marker at the top-trailing corner (`layout.global.videoMarker`; glyph only at this width).
+///   the video marker at the top-trailing corner (`layout.global.videoMarker`; glyph only at this width); the first of
+///   photos posted together carries the batch marker there (`layout.global.batchMarker`).
 /// - Empty day: fill `color.global.control`; three centred lines in `color.global.emptyTileText` — month (text role
 ///   `tileMonth`), day number (text role `tileDay`, tabular digits), weekday (`tileMonth`). Retro's 27 pt line pitch has
 ///   no token (Gap) — the lines stack at the fonts' own line heights.
@@ -118,6 +127,9 @@ struct DayTile: View {
                 }
                 .overlay(alignment: .topTrailing) {
                     if let durationMs = tile.videoDurationMs { VideoTileMarker(durationMs: durationMs) }
+                }
+                .overlay(alignment: .topTrailing) {
+                    if tile.isBatch { BatchTileMarker(belowVideoMarker: tile.videoDurationMs != nil) }
                 }
         case .emptyDay:
             ZStack {

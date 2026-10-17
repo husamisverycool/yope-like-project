@@ -59,6 +59,7 @@ import androidx.compose.material.icons.rounded.Download as RoundedDownload
 import androidx.compose.material.icons.rounded.ExpandMore as RoundedExpandMore
 import androidx.compose.material.icons.rounded.Favorite as RoundedFavorite
 import androidx.compose.material.icons.rounded.FavoriteBorder as RoundedFavoriteBorder
+import androidx.compose.material.icons.rounded.FilterNone as RoundedFilterNone
 import androidx.compose.material.icons.rounded.IosShare as RoundedIosShare
 import androidx.compose.material.icons.rounded.Link as RoundedLink
 import androidx.compose.material.icons.rounded.Lock as RoundedLock
@@ -497,6 +498,8 @@ object Tokens {
         val globalAlbums: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Outlined.AutoMirroredOutlinedMenuBook
         /** Retro · global · back (chevron before the serif title on pushed screens) · PLATFORM — token `icon.global.back` */
         val globalBack: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedArrowBackIos
+        /** Instagram · global · batch marker glyph: photos posted together (layout.global.batchMarker) · PLATFORM — token `icon.global.batch` */
+        val globalBatch: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFilterNone
         /** Retro · global · week / calendar (empty-week glyph, 'Weeks' info row) · PLATFORM — token `icon.global.calendar` */
         val globalCalendar: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedCalendarMonth
         /** Retro · global · camera (composer header, capture entry) — outline per the icon style · PLATFORM — token `icon.global.camera` */
@@ -886,6 +889,14 @@ object Tokens {
             const val sheet: String = "tap your own row in the Reactions sheet → unreact(post, emoji)"
             const val picker: String = "tap an emoji highlighted as yours → unreact"
             const val menu: String = "a quick reaction you already used shows selected in the palette row; tapping it unreacts"
+        }
+        /** Instagram · chat.thread · photos posted together in the thread · SOURCED — token `chat.thread.layout.batch` */
+        object ChatThreadLayoutBatch {
+            const val item: String = "a run of photos posted together (layout.global.photoBatch) is one photo message of the thread: the first photo's C-18 card with layout.global.batchMarker, then the first photo's reaction chip, caption and voice note as for any photo message; the run's other photos are not drawn in the thread"
+            const val tap: String = "opens photo.viewer at the first photo with the thread's photos, the batch side by side in posted order (photo.viewer.layout.batchDots)"
+            const val menu: String = "the long-press menu (quick reactions, Reply, Save, Report Message / Delete) acts on the first photo; the others are reacted to, replied to, saved or deleted in the viewer"
+            const val runs: String = "the item sits in its sender's run as one photo message (chat.thread.layout.runs); a reply quote, a day divider or another message between photos of the batch splits it into two items"
+            const val accessibility: String = "one element: the first photo's label (chat.thread.a11y.photo / .photoMine, + chat.thread.a11y.video), then chat.thread.a11y.batch, then the caption"
         }
         /** Apple Messages + Retro · chat.thread · editing a sent text message · SOURCED — token `chat.thread.layout.editMessage` */
         object ChatThreadLayoutEditMessage {
@@ -1382,6 +1393,14 @@ object Tokens {
             const val android: String = "DsTheme(dark = isSystemInDarkTheme()) wraps the app and every test host; colour getters read LocalDsDarkTheme"
             const val media: String = "photo / story viewer, camera, postcard-style composer, recap preview and full-bleed media stay dark (color.global.backgroundDeep) in both appearances; sheets over them follow the appearance"
         }
+        /** Instagram + Retro · global · how a photo that leads a batch is marked among photos · SOURCED — token `layout.global.batchMarker` */
+        object GlobalBatchMarker {
+            const val marker: String = "C-25 glyph-only pill (the video marker's form without digits): capsule color.global.surfaceLight, size.global.videoPillHeight tall, size.global.videoPillPadding each side, icon.global.batch (size.global.iconSmall) in color.global.onSurfaceLight"
+            const val placement: String = "top-trailing corner of the photo or tile, size.global.videoPillInset from both edges (Instagram: the carousel icon in the top right of the first photo)"
+            const val withVideo: String = "when the first photo is a video, the batch marker sits under the video marker, size.global.pillGap below it"
+            const val where: String = "the chat thread's batch item (its photo card), groups.screen's week strip, walls.mine / walls.member week strips"
+            const val accessibility: String = "hidden itself; the item's or tile's label adds chat.thread.a11y.batch (\"Photos posted together\")"
+        }
         /** Retro · global · colour-field backdrop: the photo aspect-filled, extended 3σ past its frame, Gaussian-blurred at σ = 0.08 × the frame width, under color.global.backdropDim · SOURCED — token `layout.global.colourFieldBackdrop` */
         object GlobalColourFieldBackdrop {
             const val blurSigmaToWidth: Float = 0.08f
@@ -1432,6 +1451,14 @@ object Tokens {
             const val glass: String = "only over photos or colour (color.global.glass)"
             const val backdrop: String = "full-screen blurred, colour-rich version of the photo behind a card (recap preview, paywall)"
             const val native: String = "menus, share sheet, sheets: system materials"
+        }
+        /** Instagram + Apple Shared Albums · global · how several photos posted together show · SOURCED — token `layout.global.photoBatch` */
+        object GlobalPhotoBatch {
+            const val group: String = "photos with the same author and the same non-null posts.batch_id that follow one another in created_at order are one batch run (PhotoBatches.runs on both apps); anything between two of them (another message, someone else's photo, a collage) splits the batch into two runs; a photo deleted from a batch leaves the rest together; a run of one photo is an ordinary photo"
+            const val show: String = "a run is drawn once, as its first photo — one chat item (chat.thread.layout.batch), one strip tile — carrying layout.global.batchMarker; the viewer pages through the batch's photos side by side in the order they were posted, with page dots for the batch only (photo.viewer.layout.batchDots)"
+            const val perPhoto: String = "each photo stays its own post: reactions, replies, tags, favorites, save, delete and report act on one photo (the drawn first photo in the thread and on tiles; the photo on screen in the viewer)"
+            const val where: String = "chat.thread, photo.viewer, groups.screen (this week's strip), walls.mine / walls.member (week strips); other grids and lists show each photo"
+            const val never: String = "a number of photos (no \"+3\", no \"5 photos\"; tenet 2) — the marker is a glyph, the dots are positions"
         }
         /** Retro · global · bottom gradient on photo tiles and full-bleed photos under white text (end colour color.global.scrim) · SOURCED — token `layout.global.photoScrim` */
         object GlobalPhotoScrim {
@@ -1708,6 +1735,14 @@ object Tokens {
             const val edge: String = "leading"
             const val of: String = "the photo's width (full screen width), measured from the leading edge"
             const val rest: String = "a tap anywhere else on the photo advances (photo.viewer.layout.advance)"
+        }
+        /** Instagram + Retro · photo.viewer · page dots of the photos posted together · SOURCED — token `photo.viewer.layout.batchDots` */
+        object PhotoViewerLayoutBatchDots {
+            const val order: String = "the photos of a batch sit side by side in the viewer's list in the order they were posted, where the first of them stood (PhotoBatches.gather); opened on one photo (a link, a push, groups.screen's strip and cards) the list is that photo's batch, read by group, author and batch_id in created_at order"
+            const val dots: String = "while the photo on screen belongs to a batch with at least two photos in the list: C-31 page dots on media (size.global.pageDot, size.global.pageDotPitch; active color.global.textOnMedia, inactive color.global.pageDotInactive's dark value), one per photo of the batch — never the whole list — the one on screen active; tap to advance and the position pill work as before"
+            const val placement: String = "centred under the photo, their centre dimension.year.story.dots.offset below its bottom edge; the footer then starts twice that offset below the photo (its photo.viewer.dimension.footerFirstBaseline measured from there)"
+            const val accessibility: String = "one adjustable element valued photo.viewer.position (\"2 of 3\") within the batch; swiping up / down moves within the batch"
+            const val none: String = "a photo posted alone, or the one photo left of a batch: no dots, the footer where it was"
         }
         /** Retro · photo.viewer · replies listed under the photo · SOURCED — token `photo.viewer.layout.comments` */
         object PhotoViewerLayoutComments {

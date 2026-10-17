@@ -85,6 +85,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.data.model.Media
 import app.data.model.Message
+import app.data.model.PhotoBatchPosition
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.albums.AlbumPickerSheet
@@ -121,6 +122,7 @@ import app.feature.social.reactions.ReactionsSheet
 import app.ui.components.EmptyState
 import app.ui.components.EmptyStateFill
 import app.ui.components.Hairline
+import app.ui.components.PageDots
 import app.ui.components.PlatformToast
 import app.ui.components.PositionPill
 import app.ui.components.ViewerTaps
@@ -373,6 +375,7 @@ fun PhotoViewerContent(
                             else -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                                 Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionHeaderToPhoto))
                                 PhotoArea(photo, state, ui, nav, area, selfieAllowed, onNext, onPrevious, onRetry, onReact, onUnreact, onSave)
+                                state.batchPosition(photo.postId)?.let { BatchDots(it) }
                                 Footer(photo, state, ui, voice, selfieAllowed, onPhotoGone)
                                 Comments(photo, state, ui, voice, onUnsendComment)
                                 Spacer(Modifier.height(Tokens.Sizes.photoViewerDimensionCommentsToField))
@@ -700,6 +703,19 @@ private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNa
             add(DsMenuItem(report, { nav.report(post.groupId, post.id) }, icon = Tokens.Icons.globalReport, destructive = true))
             add(DsMenuItem(block, { nav.block(post.authorId) }))
         }
+    }
+}
+
+/**
+ * `photo.viewer.layout.batchDots`: C-31 dots on media, one per photo of the batch (never the whole list), centred under the
+ * photo in a band twice `dimension.year.story.dots.offset` high (their centre one offset below the photo); the footer follows
+ * the band. TalkBack reads the position within the batch (`photo.viewer.position`, "2 of 3").
+ */
+@Composable
+private fun BatchDots(position: PhotoBatchPosition) {
+    val description = stringRes(R.string.photo_viewer_position, position.index, position.total)
+    Box(Modifier.fillMaxWidth().height(Tokens.Sizes.yearStoryDotsOffset * 2), contentAlignment = Alignment.Center) {
+        PageDots(position.total, position.index - 1, description, Modifier.testTag("photo.viewer.batchDots"), onMedia = true)
     }
 }
 
