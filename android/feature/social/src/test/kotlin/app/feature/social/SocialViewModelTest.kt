@@ -598,6 +598,14 @@ class SocialViewModelTest {
         assertEquals(listOf("new"), vm.state.value.weeks.first().photos.map { it.post.id })
         data.emit(GroupEvent.PostDeleted(GROUP, "w-1", null))
         assertEquals(6, vm.state.value.weeks[1].photos.size)
+
+        // an overnight photo taken on Sunday night (last week) joins the week it developed in (docs/API.md §5.8 visible_at)
+        val sundayNight = LocalDate.parse("2026-10-18").atTime(23, 0).toInstant(ZoneOffset.UTC)
+        val overnight = data.addPhoto("night", ANA, sundayNight).copy(revealedAt = LocalDate.parse("2026-10-19").atTime(9, 0).toInstant(ZoneOffset.UTC))
+        data.posts["night"] = overnight
+        data.emit(GroupEvent.PostInserted(GROUP, overnight))
+        assertEquals(listOf("new", "night"), vm.state.value.weeks.first().photos.map { it.post.id }.sorted())
+        assertTrue(vm.state.value.weeks[1].photos.none { it.post.id == "night" })
     }
 
     @Test fun historyPaginatesByWeek() {

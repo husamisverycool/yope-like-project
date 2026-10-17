@@ -253,7 +253,7 @@ class WeekEditViewModel(
                 val recapItems = recap?.items.orEmpty().filter { it in posts }
                 val others = p.weekPostIds.filter { it !in recapItems && it in posts }
                 // The grid: every visible post of the week in time order (the strip keeps the recap's order).
-                val photos = (recapItems + others).mapNotNull(::photo).sortedBy { it.post.createdAt }
+                val photos = (recapItems + others).mapNotNull(::photo).sortedBy { it.post.visibleAt }
                 // The album sheet alone: a recap's items (from week.recap) or the whole week (from week.history).
                 val initial = if (albumOnly && recap == null) photos.map { ph -> ph.post.id } else recapItems
                 _state.update {
@@ -492,7 +492,7 @@ class HistoryViewModel(private val data: SocialData, private val groupId: String
                 posts[post.id] = post
                 if (post.mediaId !in media) runCatching { data.media(listOf(post.mediaId)) }.getOrNull()?.forEach { media[it.id] = it }
                 if (post.authorId !in names) runCatching { data.profiles(listOf(post.authorId)) }.getOrNull()?.forEach { names[it.id] = it.firstName }
-                val start = Formats.weekStartOf(post.createdAt.atZone(_state.value.zone).toLocalDate())
+                val start = Formats.weekStartOf(post.visibleAt.atZone(_state.value.zone).toLocalDate())
                 weeks = if (weeks.any { it.weekStart == start }) weeks.map { w -> if (w.weekStart == start && post.id !in w.postIds) w.copy(postIds = w.postIds + post.id) else w }
                 else (listOf(app.data.model.HistoryWeek(start, listOf(post.id))) + weeks).sortedByDescending { it.weekStart }
                 publish()

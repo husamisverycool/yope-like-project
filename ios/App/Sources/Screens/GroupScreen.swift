@@ -343,7 +343,7 @@ struct GroupFeedView: View {
             tiles = WeekStripLayout.placeholders(count: WeekStripLayout.days(ofWeekContaining: Date(), calendar: model.calendar).count)
         } else {
             let photos = model.thisWeekPosts.map { post in
-                WeekStripPhoto(id: post.id.rawValue, date: post.post.createdAt, source: post.media?.imagePath(for: .thumb).map { PhotoSource.storage($0) })
+                WeekStripPhoto(id: post.id.rawValue, date: post.post.visibleAt, source: post.media?.imagePath(for: .thumb).map { PhotoSource.storage($0) })
             }
             tiles = WeekStripLayout.tiles(days: model.remainingDaysOfWeek, photos: photos, canAdd: true)
         }
@@ -532,7 +532,7 @@ struct GroupFeedView: View {
     /// `groups.screen.photo.accessibilityLabel`: "{date}, photo by {first_name}" (the weekday, month and day).
     private func photoLabel(_ post: PostWithMedia) -> String {
         Copy.groupsScreenPhotoAccessibilityLabel(
-            date: GroupDates.weekdayMonthDay(post.post.createdAt, calendar: model.calendar),
+            date: GroupDates.weekdayMonthDay(post.post.visibleAt, calendar: model.calendar),
             firstName: model.profile(of: post.post.authorID)?.firstName ?? ""
         )
     }

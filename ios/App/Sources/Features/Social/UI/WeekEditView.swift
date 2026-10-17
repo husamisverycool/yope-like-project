@@ -149,11 +149,11 @@ struct WeekEditView: View {
                         .accessibilityHidden(true)
                 }
                 ForEach(posts) { post in
-                    let label = SocialA11y.tile(date: post.post.createdAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: .current)
-                    DayTile(tile: WeekStripTile(id: post.id.rawValue, kind: .photo(SocialImages.source(post.media?.gridPath)), date: post.post.createdAt))
+                    let label = SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: .current)
+                    DayTile(tile: WeekStripTile(id: post.id.rawValue, kind: .photo(SocialImages.source(post.media?.gridPath)), date: post.post.visibleAt))
                         .contentShape(Rectangle())
                         .draggable(post.id.rawValue) {
-                            DayTile(tile: WeekStripTile(id: post.id.rawValue, kind: .photo(SocialImages.source(post.media?.gridPath)), date: post.post.createdAt))
+                            DayTile(tile: WeekStripTile(id: post.id.rawValue, kind: .photo(SocialImages.source(post.media?.gridPath)), date: post.post.visibleAt))
                                 .onAppear { dragged = post.id }
                         }
                         .dropDestination(for: String.self) { items, _ in
@@ -230,7 +230,7 @@ struct WeekEditView: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(Text(SocialA11y.tile(date: post.post.createdAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: .current)))
+                    .accessibilityLabel(Text(SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: .current)))
                     .accessibilityValue(Text(checked ? Copy.weekEditA11yInRecap : Copy.weekEditA11yNotInRecap))
                     .accessibilityAddTraits(.isToggle)
                 }

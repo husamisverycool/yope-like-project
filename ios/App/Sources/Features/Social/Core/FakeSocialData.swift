@@ -438,7 +438,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
             let posts = state.posts.filter { $0.post.groupID == groupID }.sorted { $0.post.createdAt < $1.post.createdAt }
             var weeks: [LocalDate: [PostID]] = [:]
             for post in posts {
-                weeks[SocialCalendar.weekStart(containing: post.post.createdAt, in: zone), default: []].append(post.id)
+                weeks[SocialCalendar.weekStart(containing: post.post.visibleAt, in: zone), default: []].append(post.id)
             }
             return weeks
                 .filter { beforeWeek == nil || $0.key < beforeWeek! }

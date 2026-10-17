@@ -123,11 +123,15 @@ public struct Post: Codable, Hashable, Sendable, Identifiable {
     public var inWindow: Bool
     /// A photo replying to a photo; nil if the original was deleted.
     public var replyToPostID: PostID?
-    /// When taken (for an overnight photo too: it is placed by capture time once revealed).
+    /// When taken (an overnight photo keeps it; the day it was taken shows in the viewer and On This Day).
     public var createdAt: Date
     /// When an overnight photo developed and joined the group (`revealed_at`, docs/API.md §14.3); nil for a post shared
     /// at once. Photos revealed together share it.
     public var revealedAt: Date?
+
+    /// When the group could first see the photo (`posts.visible_at` = `revealed_at ?? created_at`, migration 0027): the
+    /// week and the week-strip day a photo belongs to. An overnight photo taken on Sunday night is in Monday's week.
+    public var visibleAt: Date { revealedAt ?? createdAt }
 
     public init(
         id: PostID, mediaID: MediaID, groupID: GroupID, authorID: UserID, caption: String? = nil,

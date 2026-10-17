@@ -521,8 +521,11 @@ private fun LazyListScope.loaded(
     developing: DayTile?,
 ) {
     val weekStart = GroupWeek.start(today)
-    val thisWeek = photos.filter { !it.post.createdAt.atZone(zone).toLocalDate().isBefore(weekStart) }
-    val earlier = photos.filter { it.post.createdAt.atZone(zone).toLocalDate().isBefore(weekStart) }
+    // A photo is in the week (and on the day) it became visible: an overnight photo taken on Sunday night is in
+    // Monday's week (`visibleAt`, docs/API.md §5.8).
+    val byVisible = photos.sortedByDescending { it.post.visibleAt }
+    val thisWeek = byVisible.filter { !it.post.visibleAt.atZone(zone).toLocalDate().isBefore(weekStart) }
+    val earlier = byVisible.filter { it.post.visibleAt.atZone(zone).toLocalDate().isBefore(weekStart) }
     item(key = "members") { Members(state.memberAvatars, actions.onMembers) }
     item(key = "actions") { ActionRow(actions) }
     item(key = "birthday") { Column { birthdayRows() } }
@@ -554,7 +557,7 @@ private fun LazyListScope.loaded(
         }
     }
     item(key = "pager") { CardPager(friendWeeks(thisWeek), zone, actions, feedCards) }
-    earlier.groupBy { it.post.createdAt.atZone(zone).toLocalDate() }.forEach { (day, dayPhotos) ->
+    earlier.groupBy { it.post.visibleAt.atZone(zone).toLocalDate() }.forEach { (day, dayPhotos) ->
         item(key = "day:$day", contentType = "day") {
             Column(Modifier.fillMaxWidth()) {
                 SectionHeader(Formats.longDate(day), afterContent = true)
@@ -696,7 +699,7 @@ private fun stripTiles(thisWeek: List<GroupPhoto>, today: LocalDate, zone: ZoneI
     val add = DayTile.Add(stringResource(R.string.groups_screen_week_add_accessibilitylabel), actions.onCamera)
     val days: List<DayTile> = if (thisWeek.isNotEmpty()) {
         thisWeek.reversed().map { photo ->
-            val day = photo.post.createdAt.atZone(zone).toLocalDate()
+            val day = photo.post.visibleAt.atZone(zone).toLocalDate()
             DayTile.Photo(
                 key = photo.post.id,
                 image = photo.url,
@@ -738,7 +741,7 @@ private fun photoMenu(photo: GroupPhoto, actions: GroupScreenActions): List<DsMe
 
 @Composable
 private fun gridCell(photo: GroupPhoto, zone: ZoneId, actions: GroupScreenActions): GridCell {
-    val day = photo.post.createdAt.atZone(zone).toLocalDate()
+    val day = photo.post.visibleAt.atZone(zone).toLocalDate()
     return GridCell(photo.post.id, photo.url, photoLabel(day, photo.authorFirstName), { actions.onPhoto(photo.post) }, photoMenu(photo, actions))
 }
 

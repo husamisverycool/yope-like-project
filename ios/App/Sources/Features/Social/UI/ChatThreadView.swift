@@ -581,7 +581,7 @@ struct ChatMessageRow: View {
     /// it cannot sit in the text column — reported as a component gap.)
     private func postQuote(_ quoted: PostWithMedia) -> some View {
         let name = model.profile(quoted.post.authorID)?.socialFirstName ?? ""
-        let week = SocialCalendar.weekNumber(containing: quoted.post.createdAt, in: model.timeZone)
+        let week = SocialCalendar.weekNumber(containing: quoted.post.visibleAt, in: model.timeZone)
         return Button { actions.openPhoto(quoted.id) } label: {
             HStack(alignment: .top, spacing: Tokens.Sizes.globalRowThumbGap) {
                 PhotoView(source: SocialImages.source(quoted.media?.gridPath))

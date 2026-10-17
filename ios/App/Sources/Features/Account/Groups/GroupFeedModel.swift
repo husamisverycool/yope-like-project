@@ -96,10 +96,11 @@ final class GroupFeedModel {
         calendar.component(.weekOfYear, from: now())
     }
 
-    /// This week's photos, oldest → newest (the strip's order).
+    /// This week's photos, oldest → newest (the strip's order). A photo is in the week it became visible in
+    /// (`visibleAt`: an overnight photo taken on Sunday night is in Monday's week, docs/API.md §5.8).
     var thisWeekPosts: [PostWithMedia] {
         guard let week = currentWeek else { return [] }
-        return posts.filter { week.contains($0.post.createdAt) }.sorted { $0.post.createdAt < $1.post.createdAt }
+        return posts.filter { week.contains($0.post.visibleAt) }.sorted { $0.post.visibleAt < $1.post.visibleAt }
     }
 
     /// The days of this week from today to its end (start of day, group time zone): the empty-day tiles of a week
@@ -122,14 +123,14 @@ final class GroupFeedModel {
     var memberWeeks: [MemberWeek] {
         var newestByAuthor: [UserID: PostWithMedia] = [:]
         for post in thisWeekPosts {
-            if let current = newestByAuthor[post.post.authorID], current.post.createdAt >= post.post.createdAt { continue }
+            if let current = newestByAuthor[post.post.authorID], current.post.visibleAt >= post.post.visibleAt { continue }
             newestByAuthor[post.post.authorID] = post
         }
         return newestByAuthor.compactMap { userID, post -> MemberWeek? in
             guard let member = members.first(where: { $0.member.userID == userID }) else { return nil }
             return MemberWeek(member: member, newest: post)
         }
-        .sorted { $0.newest.post.createdAt > $1.newest.post.createdAt }
+        .sorted { $0.newest.post.visibleAt > $1.newest.post.visibleAt }
     }
 
     /// The photos from before this week by day (group time zone), newest first.
@@ -137,8 +138,8 @@ final class GroupFeedModel {
         let calendar = calendar
         let weekStart = currentWeek?.start ?? .distantFuture
         var sections: [DaySection] = []
-        for post in posts where post.post.createdAt < weekStart {
-            let day = calendar.startOfDay(for: post.post.createdAt)
+        for post in posts.sorted(by: { $0.post.visibleAt > $1.post.visibleAt }) where post.post.visibleAt < weekStart {
+            let day = calendar.startOfDay(for: post.post.visibleAt)
             if let last = sections.last, last.day == day {
                 sections[sections.count - 1] = DaySection(day: day, posts: last.posts + [post])
             } else {

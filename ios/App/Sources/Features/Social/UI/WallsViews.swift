@@ -123,8 +123,8 @@ struct WallWeekList: View {
             case let .collage(collage)?:
                 return Copy.wallsBrowseA11yCollage(date: SocialFormat.spokenDate(collage.createdAt, timeZone: model.timeZone))
             case let .post(post)?:
-                if model.owner == .me { return Copy.photoViewerA11yPhotoMine(date: SocialFormat.spokenDate(post.post.createdAt, timeZone: model.timeZone)) }
-                return SocialA11y.tile(date: post.post.createdAt, name: model.profile?.socialFirstName ?? "", timeZone: model.timeZone)
+                if model.owner == .me { return Copy.photoViewerA11yPhotoMine(date: SocialFormat.spokenDate(post.post.visibleAt, timeZone: model.timeZone)) }
+                return SocialA11y.tile(date: post.post.visibleAt, name: model.profile?.socialFirstName ?? "", timeZone: model.timeZone)
             case nil:
                 return ""
             }

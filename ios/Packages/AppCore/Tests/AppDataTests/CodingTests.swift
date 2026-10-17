@@ -67,6 +67,14 @@ final class CodingTests: XCTestCase {
         let post = try DataCoding.makeDecoder().decode(Post.self, from: Data(json.utf8))
         XCTAssertEqual(post.id.rawValue, "0f8fad5b-d9cb-469f-a165-70867728950e")
         XCTAssertFalse(post.inWindow)
+        XCTAssertEqual(post.visibleAt, post.createdAt, "a post shared at once is visible when it was taken")
+
+        // an overnight photo (with the server's generated visible_at): its week is the week it developed in
+        let overnightJSON = json.replacingOccurrences(of: "\"created_at\":\"2026-10-15T13:35:09.329469+00:00\"",
+            with: "\"created_at\":\"2026-10-11T21:30:00+00:00\",\"revealed_at\":\"2026-10-12T07:00:00+00:00\",\"visible_at\":\"2026-10-12T07:00:00+00:00\"")
+        let overnight = try DataCoding.makeDecoder().decode(Post.self, from: Data(overnightJSON.utf8))
+        XCTAssertEqual(overnight.visibleAt, overnight.revealedAt)
+        XCTAssertNotEqual(overnight.visibleAt, overnight.createdAt)
 
         let group = """
         {"id":"9f1c1d2e-0000-4000-8000-000000000001","name":"Lima","kind":"family","cover_path":null,
@@ -142,7 +150,7 @@ final class CodingTests: XCTestCase {
         // docs/API.md §3 table (keep in sync).
         let documented = """
         not_authenticated not_group_member not_group_admin not_album_owner post_not_eligible under_minimum_age
-        premium_required post_not_found media_not_found message_not_found member_not_found user_not_found
+        premium_required video_too_long post_not_found media_not_found message_not_found member_not_found user_not_found
         invite_not_found recap_not_found album_not_found request_not_found target_not_found invite_revoked
         invite_expired group_full already_posted recap_not_ready tribute_closed age_gate_not_configured
         invalid_name invalid_kind invalid_time_zone invalid_waking_window invalid_path invalid_caption invalid_voice

@@ -202,7 +202,7 @@ struct WeekHistorySection: View {
     /// `week.history.layout.currentWeek` (add tile → camera for this group).
     private var tiles: [WeekStripTile] {
         let photos = posts.map { post in
-            WeekStripPhoto(id: post.id.rawValue, date: post.post.createdAt, source: SocialImages.source(post.media?.gridPath))
+            WeekStripPhoto(id: post.id.rawValue, date: post.post.visibleAt, source: SocialImages.source(post.media?.gridPath))
         }
         let days = SocialCalendar.days(of: week.weekStart).map { SocialCalendar.start(of: $0, in: model.timeZone) }
         let emptyDays = (model.emptyDays(of: week) ?? []).map { SocialCalendar.start(of: $0, in: model.timeZone) }
@@ -217,7 +217,7 @@ struct WeekHistorySection: View {
             return tile.date.map { SocialA11y.emptyDay($0, timeZone: model.timeZone) } ?? ""
         case .photo:
             guard let post = post(for: tile) else { return "" }
-            return SocialA11y.tile(date: post.post.createdAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: model.timeZone)
+            return SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: model.timeZone)
         }
     }
 

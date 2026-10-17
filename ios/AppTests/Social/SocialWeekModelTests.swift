@@ -353,6 +353,24 @@ final class SocialWeekModelTests: XCTestCase {
                      "no empty-day tiles before the week's photos are known")
     }
 
+    func testAnOvernightPhotoBelongsToTheWeekAndDayItDevelopedIn() async {
+        // taken on Thursday night, developed on Friday at 9 AM: Friday is no longer an empty day (docs/API.md §5.8 visible_at)
+        let data = SocialDemo.makeData()
+        var overnight = SocialDemo.post(PostID("00000000-0000-4000-8000-00000000c0a1"), by: SocialDemo.ben,
+                                        at: SocialDemo.monday.addingTimeInterval(3 * SocialDemo.day + 23 * 3600))
+        overnight.post.revealedAt = SocialDemo.monday.addingTimeInterval(4 * SocialDemo.day + 9 * 3600)
+        // taken on the Sunday before this week, developed on Monday: in this week, not last week
+        var sunday = SocialDemo.post(PostID("00000000-0000-4000-8000-00000000c0a2"), by: SocialDemo.ana,
+                                     at: SocialDemo.monday.addingTimeInterval(-3600))
+        sunday.post.revealedAt = SocialDemo.monday.addingTimeInterval(9 * 3600)
+        data.update { $0.posts.append(contentsOf: [overnight, sunday]) }
+        let model = historyModel(data)
+        await model.load()
+        XCTAssertTrue(model.weeks[0].postIDs.contains(sunday.id))
+        XCTAssertFalse(model.weeks[1].postIDs.contains(sunday.id))
+        XCTAssertEqual(model.emptyDays(of: model.weeks[0]), [LocalDate(year: 2026, month: 10, day: 17)!, LocalDate(year: 2026, month: 10, day: 18)!])
+    }
+
     func testEmptyGroupSynthesisesTheCurrentWeek() async {
         let model = historyModel(SocialDemo.makeEmptyData())
         await model.load()

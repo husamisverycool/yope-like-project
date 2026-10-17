@@ -215,7 +215,7 @@ final class WeekRecapModel {
         let weekIDs = await data.cachedHistoryWeeks(groupID: groupID)?.first { $0.weekStart == cached.weekStart }?.postIDs
         var weekPosts: [PostWithMedia] = []
         if let weekIDs { weekPosts = await data.cachedPosts(ids: weekIDs, groupID: groupID) }
-        if weekPosts.isEmpty { weekPosts = card.sorted { $0.post.createdAt < $1.post.createdAt } }
+        if weekPosts.isEmpty { weekPosts = card.sorted { $0.post.visibleAt < $1.post.visibleAt } }
         if group == nil { group = await data.cachedGroup(id: groupID) }
         recap = cached
         cardPosts = card
@@ -364,7 +364,7 @@ final class WeekEditModel {
         self.recap = recap
         text = recap.text ?? ""
         for post in items + week { postsByID[post.id] = post }
-        gridPosts = week.sorted { $0.post.createdAt < $1.post.createdAt }
+        gridPosts = week.sorted { $0.post.visibleAt < $1.post.visibleAt }
         chosen = recap.items.filter { postsByID[$0] != nil }
         initialChosen = chosen
         initialText = text
@@ -398,7 +398,7 @@ final class WeekEditModel {
                 let weekIDs = try await WeekPosts.ids(of: weekStart, groupID: groupID, data: data)
                 let week = try await data.posts(ids: weekIDs)
                 for post in week { postsByID[post.id] = post }
-                gridPosts = week.sorted { $0.post.createdAt < $1.post.createdAt }
+                gridPosts = week.sorted { $0.post.visibleAt < $1.post.visibleAt }
                 chosen = gridPosts.map(\.id)
                 initialChosen = chosen
             }
@@ -578,7 +578,7 @@ final class WeekHistoryModel {
         guard week.isCurrent else { return [] }
         let loaded = week.postIDs.compactMap { posts[$0] }
         guard loaded.count == week.postIDs.count else { return nil }
-        let photoDays = Set(loaded.map { LocalDate($0.post.createdAt, in: timeZone) })
+        let photoDays = Set(loaded.map { LocalDate($0.post.visibleAt, in: timeZone) })
         return SocialCalendar.days(of: week.weekStart).filter { !photoDays.contains($0) }
     }
 
@@ -683,7 +683,7 @@ final class WeekHistoryModel {
             if weeks.allSatisfy({ $0.postIDs.isEmpty }) { line = .empty }
         case let .postInserted(post):
             guard post.groupID == groupID,
-                  let index = weeks.firstIndex(where: { $0.weekStart == SocialCalendar.weekStart(containing: post.createdAt, in: timeZone) }),
+                  let index = weeks.firstIndex(where: { $0.weekStart == SocialCalendar.weekStart(containing: post.visibleAt, in: timeZone) }),
                   !weeks[index].postIDs.contains(post.id) else { return }
             weeks[index].postIDs.append(post.id)
             if let found = try? await data.posts(ids: [post.id]) {

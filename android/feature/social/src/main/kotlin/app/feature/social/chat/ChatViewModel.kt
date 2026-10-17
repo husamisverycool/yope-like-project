@@ -555,7 +555,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         val repliedPost = if (m.kind == MessageKind.Photo) post?.replyToPostId else m.replyToPostId
         if (repliedPost != null) {
             val p = posts[repliedPost] ?: return null
-            val week = app.feature.social.common.Formats.isoWeek(p.createdAt.atZone(_state.value.zone).toLocalDate())
+            val week = app.feature.social.common.Formats.isoWeek(p.visibleAt.atZone(_state.value.zone).toLocalDate())
             return Quote.Photo(p.id, profiles[p.authorId]?.firstName, media[p.mediaId]?.imagePath(Media.Rendition.Thumb), week)
         }
         val id = m.replyToMessageId ?: return null

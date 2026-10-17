@@ -126,7 +126,7 @@ final class PhotoViewerModel {
     /// The ISO week of the post in its group's time zone (`photo.viewer.header.week`).
     func weekNumber(of post: PostWithMedia) -> Int {
         let zone = group(of: post)?.resolvedTimeZone ?? .current
-        return SocialCalendar.weekNumber(containing: post.post.createdAt, in: zone)
+        return SocialCalendar.weekNumber(containing: post.post.visibleAt, in: zone)
     }
 
     /// 1-based position of the photo on screen and the context's size (`photo.viewer.position`, shown when > 1).

@@ -29,7 +29,7 @@ final class WallModel {
 
         var createdAt: Date {
             switch self {
-            case let .post(post): return post.post.createdAt
+            case let .post(post): return post.post.visibleAt
             case let .collage(collage): return collage.createdAt
             }
         }

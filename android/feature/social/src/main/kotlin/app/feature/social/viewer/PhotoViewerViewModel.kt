@@ -54,8 +54,8 @@ data class ViewerPhoto(
     /** Selfie reactions (`viewer.selfiereaction`), oldest first, one per person; yours while sending has no id yet. */
     val selfies: List<SelfieEntry> = emptyList(),
 ) {
-    /** ISO week of the photo in its group's time zone. */
-    val weekNumber: Int? get() = post?.let { Formats.isoWeek(it.createdAt.atZone(zone ?: ZoneId.systemDefault()).toLocalDate()) }
+    /** ISO week of the photo in its group's time zone: the week it became visible in (`visibleAt`, docs/API.md §5.8). */
+    val weekNumber: Int? get() = post?.let { Formats.isoWeek(it.visibleAt.atZone(zone ?: ZoneId.systemDefault()).toLocalDate()) }
 }
 
 data class ViewerState(

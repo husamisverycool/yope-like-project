@@ -133,11 +133,12 @@ private fun HistorySection(week: HistoryWeekUi, state: HistoryState, nav: Histor
     val spoken = if (range == null) title else "$title, ${Formats.spokenWeekRange(context, week.weekStart, zone)}"
     val start = week.weekStart.toString()
     val photos = week.photos.map { p ->
-        val day = p.post.createdAt.atZone(zone).toLocalDate()
+        // the week and the day a photo belongs to: when it became visible (an overnight photo: its reveal)
+        val day = p.post.visibleAt.atZone(zone).toLocalDate()
         StripPhoto(
             p.post.id,
             p.thumbPath,
-            p.post.createdAt,
+            p.post.visibleAt,
             stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()),
         ) { nav.photo(start, p.post.id) }
     }

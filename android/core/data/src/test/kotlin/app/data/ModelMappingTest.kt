@@ -172,4 +172,17 @@ class ModelMappingTest {
         val message = Message("x", "g", "u", MessageKind.Photo, null, "p", null, null, null, null, Instant.EPOCH)
         assertEquals(message, DataJson.decodeFromString(Message.serializer(), DataJson.encodeToString(Message.serializer(), message)))
     }
+
+    @Test fun anOvernightPhotoIsVisibleFromItsRevealOthersFromWhenTaken() {
+        val taken = Instant.parse("2026-10-11T21:30:00Z")
+        val shared = Post("p", "m", "g", "u", null, null, null, null, false, null, taken)
+        assertEquals(taken, shared.visibleAt)
+        // the server's generated visible_at column is ignored (computed the same way on the client)
+        val row = """{"id":"p","media_id":"m","group_id":"g","author_id":"u","caption":null,"voice_path":null,"voice_duration_ms":null,
+            "invitation_id":null,"in_window":false,"reply_to_post_id":null,"created_at":"2026-10-11T21:30:00Z",
+            "revealed_at":"2026-10-12T07:00:00Z","visible_at":"2026-10-12T07:00:00Z"}"""
+        val overnight = DataJson.decodeFromString(Post.serializer(), row)
+        assertEquals(Instant.parse("2026-10-12T07:00:00Z"), overnight.visibleAt)
+        assertEquals(taken, overnight.createdAt)
+    }
 }

@@ -153,7 +153,13 @@ data class Post(
     @SerialName("revealed_at") val revealedAt: Instant? = null,
     /** §14.4: the group week's question this post answers (`answer_question`); null for every other post. */
     @SerialName("question_id") val questionId: String? = null,
-)
+) {
+    /**
+     * When the group could first see the photo (`posts.visible_at` = `revealed_at ?: created_at`, migration 0027): the week
+     * and the week-strip day a photo belongs to. An overnight photo taken on Sunday night is in Monday's week.
+     */
+    val visibleAt: Instant get() = revealedAt ?: createdAt
+}
 
 /** §5.9 `messages` (group chat). */
 @Serializable

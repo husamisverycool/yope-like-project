@@ -267,7 +267,7 @@ private val PLACEHOLDER_CELLS: Int get() = Tokens.Counts.weekEditCountGridColumn
 @Composable
 private fun GridCell(photo: WeekPhoto, checked: Boolean, state: EditState, onToggle: () -> Unit) {
     val zone = ZoneId.systemDefault()
-    val day = photo.post.createdAt.atZone(zone).toLocalDate()
+    val day = photo.post.visibleAt.atZone(zone).toLocalDate()
     val label = stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), photo.authorName.orEmpty())
     val value = stringRes(if (checked) R.string.week_edit_a11y_inrecap else R.string.week_edit_a11y_notinrecap)
     val mark = Tokens.Layouts.WeekEditLayoutSelectionMark
@@ -333,7 +333,7 @@ private fun ChosenStrip(state: EditState, onMove: (String, Int) -> Unit, modifie
     val tiles: List<DayTile> = if (state.phase == EditState.Phase.Loading) List(Tokens.Counts.weekEditCountGridColumns) { DayTile.Placeholder("loading-$it") }
     else if (strip.isEmpty()) listOf(DayTile.Placeholder("empty"))
     else strip.map { p ->
-        val day = p.post.createdAt.atZone(zone).toLocalDate()
+        val day = p.post.visibleAt.atZone(zone).toLocalDate()
         DayTile.Photo(p.post.id, photoModel(p.thumbPath), Formats.weekdayShort(day), stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()))
     }
     fun itemAt(x: Float) = listState.layoutInfo.visibleItemsInfo.firstOrNull { x >= it.offset && x < it.offset + it.size }
