@@ -41,6 +41,16 @@ is a palette of 🔥, 💖 and the add-reaction glyph `chat.reactions.icon.add`.
 used shows selected and unreacts); the glyph opens the picker (3). The menu's other items are the surface's own
 (`chat.thread.md`, `photo.viewer.md`).
 
+### 2a. Text and voice messages — `chat.reactions.layout.messageReactions` (owner decision 34)
+
+The same quick-reaction row starts the context menu of a text or voice message, and the same chip sits under it
+(`chat.reactions.dimension.chipTop` below the text or capsule). **One reaction per person per message** (Apple Messages:
+"You can only add one Tapback per message"): another emoji replaces yours (`react_to_message`), yours again — in the row,
+the picker or your row in the Reactions sheet — removes it (`unreact_to_message`). The chip's value lists who reacted with
+what (`chat.reactions.activity.row` / `.rowMine`); tap → the Reactions sheet. Live: `message_reactions` inserts and updates
+replace that person's row; `message_reactions_changed` refetches the message's rows. No push. Photo messages keep their
+post's reactions (several emoji per person).
+
 ### 3. Picker — `chat.reactions.layout.picker`
 
 Native sheet with a grabber (C-29, `radius.global.sheet`), content on `color.global.background`:
@@ -144,6 +154,9 @@ No emoji rain and no fly-to-cluster: both were Locket's visual effects (RS-8).
 - **RPCs**: `react(p_post_id, p_emoji)` (idempotent; several emoji per person allowed); `unreact(p_post_id, p_emoji)`. Errors
   `post_not_found`, `invalid_emoji`. Job `push.reaction` → `notifications.push.reaction.*` (capture group).
 - **Realtime**: `reactions` INSERT on the group channel; `reactions_changed` broadcast → refetch that post's reactions (§8).
+- **Messages** (`chat.reactions.layout.messageReactions`): `message_reactions` (§5.10a) rows; `react_to_message(p_message_id,
+  p_emoji)` sets or replaces yours, `unreact_to_message(p_message_id)` removes it (`message_not_found`, `invalid_kind`,
+  `invalid_emoji`); Realtime inserts / updates and the `message_reactions_changed` broadcast.
 - **Navigation**: lives inside `chat.thread` and `photo.viewer`; a reaction push opens `DeepLink.post(groupID:postID:)` →
   `photo.viewer`.
 

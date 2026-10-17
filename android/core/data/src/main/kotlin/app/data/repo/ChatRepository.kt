@@ -2,6 +2,7 @@ package app.data.repo
 
 import app.data.media.MediaStorage
 import app.data.media.StoragePaths
+import app.data.model.ChatTyping
 import app.data.model.InstantSerializer
 import app.data.model.Message
 import app.data.model.MessageKind
@@ -89,6 +90,29 @@ class ChatRepository(
 
     /** Your own text / voice message (a photo message goes with `delete_post`). */
     suspend fun deleteMessage(messageId: String) = api.rpcUnit(Rpc.DeleteMessage) { put("p_message_id", messageId) }
+
+    /**
+     * `edit_message` (migration 0047): your own text message inside `message_edit_window_s`; the row with `edited_at` set.
+     * `edit_window_closed` once the window passed (or the edits ran out).
+     */
+    suspend fun editMessage(messageId: String, body: String): Message = api.rpc(Rpc.EditMessage, Message.serializer()) {
+        put("p_message_id", messageId)
+        put("p_body", body)
+    }
+
+    /** `set_typing` (migration 0048): true while typing (again every `typing_ttl_s / 2`), false when stopped or sent. */
+    suspend fun setTyping(groupId: String, typing: Boolean) = api.rpcUnit(Rpc.SetTyping) {
+        put("p_group_id", groupId)
+        put("p_typing", typing)
+    }
+
+    /** The group's `chat_typing` rows whose `until` is still ahead (§5.10b): who is typing now. Never a count. */
+    suspend fun typing(groupId: String): List<ChatTyping> = api.select(Tables.CHAT_TYPING, ChatTyping.serializer()) {
+        filter {
+            eq("group_id", groupId)
+            gt("until", InstantSerializer.format(clock.instant()))
+        }
+    }
 
     companion object {
         const val PAGE = 50

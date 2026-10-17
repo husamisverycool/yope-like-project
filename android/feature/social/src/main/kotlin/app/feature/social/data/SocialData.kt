@@ -6,6 +6,7 @@ import app.data.error.DataError
 import app.data.error.DataException
 import app.data.model.Album
 import app.data.model.AlbumItem
+import app.data.model.ChatTyping
 import app.data.model.Collage
 import app.data.model.Group
 import app.data.model.HistoryWeek
@@ -14,6 +15,7 @@ import app.data.model.Message
 import app.data.model.Post
 import app.data.model.PostTag
 import app.data.model.Profile
+import app.data.model.PublicAppConfig
 import app.data.model.SelfieReaction
 import app.data.model.WallItem
 import app.data.model.WeeklyRecap
@@ -62,6 +64,22 @@ interface SocialData {
     /** A voice message with its waveform ([levels]: 100 values of 0…31, `p_voice_levels`; null sends none). */
     suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>? = null): Message
     suspend fun deleteMessage(messageId: String)
+    /** `edit_message` (`chat.thread.layout.editMessage`): your own text message inside the edit window; the row with `edited_at`. */
+    suspend fun editMessage(messageId: String, body: String): Message
+    /** `public_app_config` (§11): `message_edit_window_s` (Edit is offered only inside it) and `typing_ttl_s`. */
+    suspend fun publicConfig(): PublicAppConfig
+
+    /** Reactions on text / voice messages (§5.10a), per message id, oldest first: one row per person. Never a count. */
+    suspend fun messageReactions(messageIds: Collection<String>): Map<String, List<ReactionEntry>>
+    /** `react_to_message`: sets or replaces your one reaction on a text or voice message. */
+    suspend fun reactToMessage(messageId: String, emoji: String)
+    /** `unreact_to_message`: takes yours back. */
+    suspend fun unreactToMessage(messageId: String)
+
+    /** The group's `chat_typing` rows whose `until` is still ahead (`chat.thread.layout.typingLine`). */
+    suspend fun typing(groupId: String): List<ChatTyping>
+    /** `set_typing`. */
+    suspend fun setTyping(groupId: String, typing: Boolean)
 
     /** Replies to a photo in its group's chat (`messages` with `reply_to_post_id`), oldest first (`photo.viewer.layout.comments`). */
     suspend fun replies(groupId: String, postId: String): List<Message>
@@ -142,6 +160,15 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?) = graph.chat.sendText(groupId, body, replyToPostId, replyToMessageId)
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>?) = graph.chat.sendVoice(groupId, audio, durationMs, levels)
     override suspend fun deleteMessage(messageId: String) = graph.chat.deleteMessage(messageId)
+    override suspend fun editMessage(messageId: String, body: String) = graph.chat.editMessage(messageId, body)
+    override suspend fun publicConfig(): PublicAppConfig = graph.appConfig.publicConfig()
+    override suspend fun messageReactions(messageIds: Collection<String>) = graph.reactions.messageReactionsFor(messageIds)
+    override suspend fun reactToMessage(messageId: String, emoji: String) {
+        graph.reactions.reactToMessage(messageId, emoji)
+    }
+    override suspend fun unreactToMessage(messageId: String) = graph.reactions.unreactToMessage(messageId)
+    override suspend fun typing(groupId: String) = graph.chat.typing(groupId)
+    override suspend fun setTyping(groupId: String, typing: Boolean) = graph.chat.setTyping(groupId, typing)
     override suspend fun replies(groupId: String, postId: String): List<Message> =
         graph.api.select(Tables.MESSAGES, Message.serializer()) {
             filter {
@@ -221,6 +248,13 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?): Message = fail()
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>?): Message = fail()
     override suspend fun deleteMessage(messageId: String) = fail()
+    override suspend fun editMessage(messageId: String, body: String): Message = fail()
+    override suspend fun publicConfig(): PublicAppConfig = fail()
+    override suspend fun messageReactions(messageIds: Collection<String>): Map<String, List<ReactionEntry>> = fail()
+    override suspend fun reactToMessage(messageId: String, emoji: String) = fail()
+    override suspend fun unreactToMessage(messageId: String) = fail()
+    override suspend fun typing(groupId: String): List<ChatTyping> = fail()
+    override suspend fun setTyping(groupId: String, typing: Boolean) = fail()
     override suspend fun replies(groupId: String, postId: String): List<Message> = fail()
     override suspend fun feed(groupId: String, before: Instant?): List<Post> = fail()
     override suspend fun posts(ids: Collection<String>): List<Post> = fail()

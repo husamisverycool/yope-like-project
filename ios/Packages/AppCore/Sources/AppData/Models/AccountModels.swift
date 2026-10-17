@@ -148,16 +148,25 @@ public struct PublicAppConfig: Codable, Hashable, Sendable {
     public var freeHistoryDays: Int?
     /// Nil = the age gate is not configured (`confirm_age` fails closed).
     public var minAgeYears: Int?
+    /// How long after sending a text message it can be edited (`message_edit_window_s`, migration 0047). Nil = not
+    /// set: `edit_message` fails closed, so the chat offers no Edit.
+    public var messageEditWindowSeconds: Int?
+    /// How long one `set_typing(true)` shows the typing line (`typing_ttl_s`, migration 0048); the apps call it again
+    /// every half of it while typing. Nil = not set: no typing calls.
+    public var typingTTLSeconds: Int?
 
     public init(
         invitationWindowSeconds: Int? = nil, maxGroupMembers: Int? = nil, weekStartISODay: Int? = nil,
-        freeHistoryDays: Int? = nil, minAgeYears: Int? = nil
+        freeHistoryDays: Int? = nil, minAgeYears: Int? = nil, messageEditWindowSeconds: Int? = nil,
+        typingTTLSeconds: Int? = nil
     ) {
         self.invitationWindowSeconds = invitationWindowSeconds
         self.maxGroupMembers = maxGroupMembers
         self.weekStartISODay = weekStartISODay
         self.freeHistoryDays = freeHistoryDays
         self.minAgeYears = minAgeYears
+        self.messageEditWindowSeconds = messageEditWindowSeconds
+        self.typingTTLSeconds = typingTTLSeconds
     }
 
     struct Row: Decodable {
@@ -175,7 +184,9 @@ public struct PublicAppConfig: Codable, Hashable, Sendable {
             maxGroupMembers: values["max_group_members"],
             weekStartISODay: values["week_start_isodow"],
             freeHistoryDays: values["free_history_days"],
-            minAgeYears: values["min_age_years"]
+            minAgeYears: values["min_age_years"],
+            messageEditWindowSeconds: values["message_edit_window_s"],
+            typingTTLSeconds: values["typing_ttl_s"]
         )
     }
 }

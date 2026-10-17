@@ -12,6 +12,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.SystemClock
 import android.provider.Settings
+import android.text.SpannableString
+import android.text.style.URLSpan
+import android.text.util.Linkify
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -71,10 +74,16 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -155,6 +164,8 @@ class ChatUiState(
     micDenied: Boolean = false,
     recording: Recording? = null,
     draft: TextFieldValue? = null,
+    messagePickerFor: String? = null,
+    messageReactionsFor: String? = null,
 ) {
     /** The message whose context menu is open. */
     var menuFor by mutableStateOf(menuFor)
@@ -162,6 +173,9 @@ class ChatUiState(
     var reactionsFor by mutableStateOf(reactionsFor)
     var confirmUnsend by mutableStateOf(confirmUnsend)
     var confirmDeletePhoto by mutableStateOf(confirmDeletePhoto)
+    /** The text / voice message whose picker or Reactions sheet is open (`chat.reactions.layout.messageReactions`). */
+    var messagePickerFor by mutableStateOf(messagePickerFor)
+    var messageReactionsFor by mutableStateOf(messageReactionsFor)
     var micDenied by mutableStateOf(micDenied)
     /** Voice recording in progress (`chat.voice.layout.recording`), null when idle. */
     var recording by mutableStateOf(recording)
@@ -190,12 +204,16 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
     val recordFailed = stringRes(R.string.chat_voice_error_record)
     val deleted = stringRes(R.string.photo_viewer_toast_deleted)
     val deleteFailed = stringRes(R.string.photo_viewer_error_delete)
+    val editFailed = stringRes(R.string.chat_thread_edit_error)
+    // `chat.thread.layout.typingLine`: leaving the thread ends my typing line.
+    DisposableEffect(vm) { onDispose { vm.stopTyping() } }
     LaunchedEffect(vm) {
         vm.effects.collect { effect ->
             when (effect) {
                 ChatEffect.Sent -> haptics.perform(Tokens.Haptics.globalSend)
                 ChatEffect.SendFailed -> { haptics.perform(Tokens.Haptics.globalError); announce(view, sendFailed) }
                 ChatEffect.ReactionFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, reactionFailed) }
+                ChatEffect.EditFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, editFailed) }
                 ChatEffect.DeleteFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, deleteFailed) }
                 ChatEffect.PhotoDeleted -> PlatformToast.show(context, deleted)
                 ChatEffect.RecordFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, recordFailed) }
@@ -323,6 +341,10 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
             ui.micDenied = false
             context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)))
         },
+        onReactToMessage = vm::reactToMessage,
+        onUnreactToMessage = vm::unreactToMessage,
+        onEdit = vm::startEdit,
+        onCancelEdit = vm::cancelEdit,
     )
 }
 
@@ -507,6 +529,12 @@ fun ChatContent(
     onUnsend: (messageId: String) -> Unit,
     onDeletePhoto: (postId: String) -> Unit,
     onOpenMicSettings: () -> Unit,
+    /** `chat.reactions.layout.messageReactions`: an emoji on a text / voice message (mine again takes it back). */
+    onReactToMessage: (messageId: String, emoji: String) -> Unit = { _, _ -> },
+    onUnreactToMessage: (messageId: String) -> Unit = {},
+    /** `chat.thread.layout.editMessage`: "Edit" on my own text message, and the edit bar's close glyph. */
+    onEdit: (ChatRow) -> Unit = {},
+    onCancelEdit: () -> Unit = {},
     listState: LazyListState = rememberLazyListState(),
     zone: ZoneId = ZoneId.systemDefault(),
     today: LocalDate = LocalDate.now(zone),
@@ -543,35 +571,78 @@ fun ChatContent(
                         icon = Tokens.Icons.globalChats,
                     )
                 }
-                else -> MessageList(state, ui, nav, focusMessageId, voice, onLoadOlder, onReact, onUnreact, onRetrySend, onReply, onCopy, onSave, listState, zone, today)
+                else -> MessageList(state, ui, nav, focusMessageId, voice, onLoadOlder, onReact, onUnreact, onRetrySend, onReply, onCopy, onSave, listState, zone, today, MessageActions(onReactToMessage, onEdit))
             }
         }
-        ReplyBarLine(state.replyTo, onCancelReply)
+        TypingLine(state.typing)
+        ReplyBarLine(state.replyTo, state.editing != null, onCancelReply, onCancelEdit)
         ComposerArea(state, ui, nav, recorder, onDraft, onSend)
     }
 
-    ThreadDialogs(state, ui, onReact, onUnreact, onUnsend, onDeletePhoto, onOpenMicSettings)
+    ThreadDialogs(state, ui, onReact, onUnreact, onUnsend, onDeletePhoto, onOpenMicSettings, onReactToMessage, onUnreactToMessage)
 }
 
-/** The bar above the field while replying: "Replying to {name}" and a bare close glyph at the trailing margin. */
+/** What a text / voice message's menu adds (`chat.reactions.layout.messageReactions`, `chat.thread.layout.editMessage`). */
+class MessageActions(val react: (messageId: String, emoji: String) -> Unit = { _, _ -> }, val edit: (ChatRow) -> Unit = {})
+
+/**
+ * `chat.thread.layout.typingLine`: "{name} is typing…" / "{names} and {name} are typing…" — names only, never a number —
+ * one line above the reply / edit bar inside `size.global.screenMargin` (text role `caption`, secondary text, tail
+ * truncation), `chat.thread.dimension.itemGap` above the bar or the field. Not a live region (it would interrupt every
+ * few seconds).
+ */
 @Composable
-private fun ReplyBarLine(target: ReplyTarget?, onCancel: () -> Unit) {
-    AnimatedVisibility(target != null, enter = DsMotion.fadeIn, exit = DsMotion.fadeOut) {
-        val t = target ?: return@AnimatedVisibility
-        val text = if (t.self) stringRes(R.string.chat_thread_reply_barself) else stringRes(R.string.chat_thread_reply_bar, t.name)
+private fun TypingLine(names: List<String>) {
+    val text = when (names.size) {
+        0 -> null
+        1 -> stringRes(R.string.chat_thread_typing_one, names[0])
+        else -> stringRes(R.string.chat_thread_typing_several, names.dropLast(1).joinToString(", "), names.last()) // provenance-ok: list separator
+    }
+    AnimatedVisibility(text != null, enter = DsMotion.fadeIn, exit = DsMotion.fadeOut) {
+        val t = text ?: return@AnimatedVisibility
+        Text(
+            t,
+            style = TextRoles.caption,
+            color = PageRoles.secondaryText(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("chat.typing")
+                .padding(horizontal = Tokens.Sizes.globalScreenMargin)
+                .padding(bottom = Tokens.Sizes.chatThreadDimensionItemGap),
+        )
+    }
+}
+
+/**
+ * The bar above the field while replying ("Replying to {name}") or editing a sent message ("Edit message",
+ * `chat.thread.layout.editMessage`), and a bare close glyph at the trailing margin.
+ */
+@Composable
+private fun ReplyBarLine(target: ReplyTarget?, editing: Boolean, onCancel: () -> Unit, onCancelEdit: () -> Unit) {
+    val text = when {
+        editing -> stringRes(R.string.chat_thread_edit_bar)
+        target == null -> null
+        target.self -> stringRes(R.string.chat_thread_reply_barself)
+        else -> stringRes(R.string.chat_thread_reply_bar, target.name)
+    }
+    val cancelLabel = if (editing) stringRes(R.string.chat_thread_a11y_canceledit) else stringRes(R.string.chat_thread_a11y_cancelreply)
+    AnimatedVisibility(text != null, enter = DsMotion.fadeIn, exit = DsMotion.fadeOut) {
+        val t = text ?: return@AnimatedVisibility
         val box = Tokens.Sizes.globalIcon
         val close = Tokens.Icons.globalClose
         val end = Tokens.Sizes.globalScreenMargin - GlyphInk.trailing(close, box) - (glyphHit - box) / 2
         Row(Modifier.fillMaxWidth().padding(start = Tokens.Sizes.globalScreenMargin), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text,
+                t,
                 style = TextRoles.listSubtitle,
                 color = PageRoles.secondaryText(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f).paddingFrom(LastBaseline, after = Tokens.Sizes.globalSectionHeaderToContent),
             )
-            BareGlyph(close, stringRes(R.string.chat_thread_a11y_cancelreply), PageRoles.secondaryText(), onCancel, Modifier.endInset(end))
+            BareGlyph(close, cancelLabel, PageRoles.secondaryText(), if (editing) onCancelEdit else onCancel, Modifier.endInset(end))
         }
     }
 }
@@ -580,7 +651,8 @@ private fun ReplyBarLine(target: ReplyTarget?, onCancel: () -> Unit) {
 @Composable
 private fun ComposerArea(state: ChatState, ui: ChatUiState, nav: ChatNav, recorder: RecorderControls, onDraft: (String) -> Unit, onSend: () -> Unit) {
     var field by remember { mutableStateOf(ui.fixedDraft ?: TextFieldValue(state.draft)) }
-    LaunchedEffect(state.draft) { if (ui.fixedDraft == null && state.draft != field.text) field = TextFieldValue(state.draft) }
+    // A draft set by the view model (an edit starting, a draft put back) lands with the cursor at its end.
+    LaunchedEffect(state.draft) { if (ui.fixedDraft == null && state.draft != field.text) field = TextFieldValue(state.draft, TextRange(state.draft.length)) }
     val me = state.me
     val myAvatar = state.rows.firstOrNull { it.message.authorId == me }?.author?.avatarPath ?: state.meAvatar
     val recording = ui.recording
@@ -663,8 +735,29 @@ private fun ThreadDialogs(
     onUnsend: (String) -> Unit,
     onDeletePhoto: (String) -> Unit,
     onOpenMicSettings: () -> Unit,
+    onReactToMessage: (String, String) -> Unit,
+    onUnreactToMessage: (String) -> Unit,
 ) {
     val me = state.me
+    // A text / voice message's picker and Reactions sheet (`chat.reactions.layout.messageReactions`): one emoji per person.
+    ui.messagePickerFor?.let { messageId ->
+        val mine = state.rows.firstOrNull { it.id == messageId }?.reactions.orEmpty().filter { it.userId == me }.map { it.emoji }.toSet()
+        ReactionPickerSheet(
+            mine,
+            onPick = { e -> ui.messagePickerFor = null; onReactToMessage(messageId, e) },
+            onUnreact = { _ -> ui.messagePickerFor = null; onUnreactToMessage(messageId) },
+            onDismiss = { ui.messagePickerFor = null },
+        )
+    }
+    ui.messageReactionsFor?.let { messageId ->
+        ReactionsSheet(
+            entries = state.rows.firstOrNull { it.id == messageId }?.reactions.orEmpty(),
+            me = me,
+            person = { id -> reactor(state, id) },
+            onUnreact = { _ -> onUnreactToMessage(messageId) },
+            onDismiss = { ui.messageReactionsFor = null },
+        )
+    }
     ui.pickerFor?.let { postId ->
         val mine = state.rows.firstOrNull { it.message.postId == postId }?.reactions.orEmpty().filter { it.userId == me }.map { it.emoji }.toSet()
         ReactionPickerSheet(mine, onPick = { e -> ui.pickerFor = null; onReact(postId, e) }, onUnreact = { e -> ui.pickerFor = null; onUnreact(postId, e) }, onDismiss = { ui.pickerFor = null })
@@ -736,6 +829,7 @@ private fun MessageList(
     listState: LazyListState,
     zone: ZoneId,
     today: LocalDate,
+    actions: MessageActions,
 ) {
     val items = remember(state.rows, zone) { threadItems(state.rows, zone).asReversed() }
     val scope = rememberCoroutineScope()
@@ -799,6 +893,7 @@ private fun MessageList(
                     onCopy,
                     onSave,
                     scrollTo,
+                    actions,
                     Modifier.animateItem(fadeInSpec = tween(Tokens.Durations.chatThreadDurationEntry, easing = Tokens.Easings.chatThreadEasingEntry), placementSpec = null, fadeOutSpec = DsMotion.fade()),
                 )
             }
@@ -828,6 +923,7 @@ private fun MessageItem(
     onCopy: (String) -> Unit,
     onSave: (ChatRow) -> Unit,
     scrollTo: (String) -> Unit,
+    actions: MessageActions,
     modifier: Modifier,
 ) {
     val row = item.row
@@ -858,7 +954,9 @@ private fun MessageItem(
             // Right under the name line the first text's baseline sits `chat.thread.dimension.rowLinePitch` below the
             // name's; after a quote the item follows at `chat.thread.dimension.itemGap` (the quote's own spacer).
             val afterName = item.startsRun && row.quote == null
-            MessageBody(row, afterName, state, ui, nav, voice, labels, onReact, onUnreact, onRetrySend, onReply, onCopy, onSave)
+            MessageBody(row, afterName, state, ui, nav, voice, labels, onReact, onUnreact, onRetrySend, onReply, onCopy, onSave, actions)
+            if (row.kind == MessageKind.Text || row.kind == MessageKind.Voice) MessageReactionChip(row, state.me, state, ui)
+            if (row.edited && !row.pending && !row.failed) EditedLine()
             if (row.mine && (row.pending || row.failed)) StatusLine(row, onRetrySend)
         }
     }
@@ -880,6 +978,64 @@ private fun SystemLineItem(item: ThreadItem.SystemLine, labels: RowLabels, modif
             .padding(top = if (item.afterDivider) 0.dp else Tokens.Sizes.globalListGap)
             .padding(horizontal = Tokens.Sizes.globalScreenMargin),
     )
+}
+
+/**
+ * The chip under a text or voice message (`chat.reactions.layout.messageReactions`): distinct emoji, newest first,
+ * `chat.reactions.dimension.chipTop` below the message; TalkBack reads who reacted with what — rows, never a count. Tap →
+ * the Reactions sheet.
+ */
+@Composable
+private fun MessageReactionChip(row: ChatRow, me: String?, state: ChatState, ui: ChatUiState) {
+    if (row.reactions.isEmpty()) return
+    val r = LocalContext.current.resources
+    val who = row.reactions.joinToString(", ") { e -> // provenance-ok: list separator
+        val name = app.feature.social.common.EmojiNames.name(e.emoji)
+        if (e.userId == me) r.getString(R.string.chat_reactions_activity_rowmine, name)
+        else r.getString(R.string.chat_reactions_activity_row, state.profileOf(e.userId)?.firstName.orEmpty(), name)
+    }
+    Spacer(Modifier.height(Tokens.Sizes.chatReactionsDimensionChipTop))
+    ReactionChip(row.reactions, onClick = { ui.messageReactionsFor = row.id }, whoReacted = who)
+}
+
+/** "Edited" one line under an edited message (`chat.thread.layout.editMessage`; text role `caption`, secondary text). */
+@Composable
+private fun EditedLine() {
+    Text(
+        stringRes(R.string.chat_thread_edited),
+        style = TextRoles.caption,
+        color = PageRoles.secondaryText(),
+        maxLines = 1,
+        modifier = Modifier.padding(top = Tokens.Sizes.chatThreadDimensionItemGap).clearAndSetSemantics { },
+    )
+}
+
+/**
+ * `chat.thread.layout.links`: the web addresses of a text message, found by the platform's own detector (Linkify
+ * WEB_URLS, which completes an address without a scheme), http and https only. No preview is fetched (privacy).
+ */
+object ChatLinks {
+    data class Link(val start: Int, val end: Int, val url: String)
+
+    fun find(text: String): List<Link> {
+        if (text.isEmpty()) return emptyList()
+        val spannable = SpannableString(text)
+        if (!Linkify.addLinks(spannable, Linkify.WEB_URLS)) return emptyList()
+        return spannable.getSpans(0, spannable.length, URLSpan::class.java)
+            .map { Link(spannable.getSpanStart(it), spannable.getSpanEnd(it), it.url) }
+            .filter { it.url.startsWith("http://", ignoreCase = true) || it.url.startsWith("https://", ignoreCase = true) }
+            .sortedBy { it.start }
+    }
+
+    /** The text with its links: the body's own colour, underlined (identifiable without colour, WCAG F73); a tap opens the browser. */
+    fun annotated(text: String, links: List<Link> = find(text)): AnnotatedString {
+        if (links.isEmpty()) return AnnotatedString(text)
+        val style = TextLinkStyles(SpanStyle(textDecoration = TextDecoration.Underline))
+        return buildAnnotatedString {
+            append(text)
+            links.forEach { addLink(LinkAnnotation.Url(it.url, style), it.start, it.end) }
+        }
+    }
 }
 
 /** The run's first line: the sender's name (`listTitle`) and, one space after it, the time (`caption`, secondary). */
@@ -980,11 +1136,20 @@ private fun MessageBody(
     onReply: (ChatRow) -> Unit,
     onCopy: (String) -> Unit,
     onSave: (ChatRow) -> Unit,
+    messageActions: MessageActions,
 ) {
-    val menu = menuItems(row, ui, nav, onRetrySend, onReply, onCopy, onSave)
+    val menu = menuItems(row, ui, nav, onRetrySend, onReply, onCopy, onSave, messageActions.edit)
     val label = labels.of(row)
-    val actions = menu.map { m -> CustomAccessibilityAction(m.text) { m.onClick(); true } }
+    val reactable = (row.kind == MessageKind.Text || row.kind == MessageKind.Voice) && !row.pending && !row.failed
+    val links = remember(row.message.body, row.kind) { if (row.kind == MessageKind.Text) ChatLinks.find(row.message.body.orEmpty()) else emptyList() }
+    val uriHandler = LocalUriHandler.current
+    val addReaction = stringRes(R.string.chat_reactions_a11y_add)
+    // The menu's items, "Add reaction" (the quick row's picker), and each link of the text by its address.
+    val actions = menu.map { m -> CustomAccessibilityAction(m.text) { m.onClick(); true } } +
+        (if (reactable) listOf(CustomAccessibilityAction(addReaction) { ui.messagePickerFor = row.id; true }) else emptyList()) +
+        links.map { l -> CustomAccessibilityAction(l.url) { runCatching { uriHandler.openUri(l.url) }; true } }
     val failedText = stringRes(R.string.chat_thread_sendfailed)
+    val editedText = stringRes(R.string.chat_thread_edited)
     val open = ui.menuFor == row.key
     val tap: () -> Unit = {
         when {
@@ -996,7 +1161,7 @@ private fun MessageBody(
     val semantics = Modifier.clearAndSetSemantics {
         contentDescription = label
         role = Role.Button
-        if (row.failed) stateDescription = failedText
+        if (row.failed) stateDescription = failedText else if (row.edited) stateDescription = editedText
         customActions = actions
     }
     Box {
@@ -1004,8 +1169,9 @@ private fun MessageBody(
             MessageKind.Text -> {
                 val body = row.message.body.orEmpty()
                 val big = isEmojiOnly(body)
+                val linked = remember(body, links) { ChatLinks.annotated(body, links) }
                 Text(
-                    body,
+                    linked,
                     style = if (big) TextRoles.body.copy(fontSize = Tokens.FontSizes.globalHeaderTitle, lineHeight = Tokens.LineHeights.globalHeaderTitle)
                     else TextRoles.body.copy(lineHeight = Tokens.Sizes.chatThreadDimensionRowLinePitch.value.sp),
                     color = Tokens.Colors.globalTextPrimary,
@@ -1041,6 +1207,17 @@ private fun MessageBody(
                 onAddReaction = { ui.pickerFor = postId },
                 items = menu,
             )
+        } else if (reactable) {
+            // The same quick-reaction row on text and voice messages; one emoji per person (mine again takes it back).
+            PhotoContextMenu(
+                expanded = open,
+                onDismiss = { ui.menuFor = null },
+                mine = row.reactions.filter { it.userId == state.me }.map { it.emoji }.toSet(),
+                onReact = { e -> messageActions.react(row.id, e) },
+                onUnreact = { e -> messageActions.react(row.id, e) },
+                onAddReaction = { ui.messagePickerFor = row.id },
+                items = menu,
+            )
         } else {
             DsDropdownMenu(open, { ui.menuFor = null }, menu)
         }
@@ -1052,7 +1229,16 @@ private fun MessageBody(
  * photo message (owner decision 28: any member saves any photo they can see).
  */
 @Composable
-private fun menuItems(row: ChatRow, ui: ChatUiState, nav: ChatNav, onRetrySend: (String) -> Unit, onReply: (ChatRow) -> Unit, onCopy: (String) -> Unit, onSave: (ChatRow) -> Unit): List<DsMenuItem> {
+private fun menuItems(
+    row: ChatRow,
+    ui: ChatUiState,
+    nav: ChatNav,
+    onRetrySend: (String) -> Unit,
+    onReply: (ChatRow) -> Unit,
+    onCopy: (String) -> Unit,
+    onSave: (ChatRow) -> Unit,
+    onEdit: (ChatRow) -> Unit,
+): List<DsMenuItem> {
     val reply = stringRes(R.string.chat_thread_menu_reply)
     val copy = stringRes(R.string.chat_thread_menu_copy)
     val save = stringRes(R.string.chat_thread_menu_save)
@@ -1060,6 +1246,7 @@ private fun menuItems(row: ChatRow, ui: ChatUiState, nav: ChatNav, onRetrySend: 
     val unsend = stringRes(R.string.chat_thread_menu_delete)
     val deletePhoto = stringRes(R.string.chat_thread_menu_deletephoto)
     val retry = stringRes(R.string.chat_thread_menu_retry)
+    val edit = stringRes(R.string.chat_thread_menu_edit)
     return buildList {
         if (row.failed) {
             add(DsMenuItem(retry, { onRetrySend(row.id) }))
@@ -1073,6 +1260,8 @@ private fun menuItems(row: ChatRow, ui: ChatUiState, nav: ChatNav, onRetrySend: 
             MessageKind.Voice, MessageKind.Joined, MessageKind.Left -> Unit
         }
         if (row.pending) return@buildList
+        // `chat.thread.layout.editMessage`: my own text inside the edit window.
+        if (row.kind == MessageKind.Text && row.canEdit) add(DsMenuItem(edit, { onEdit(row) }))
         when {
             row.kind == MessageKind.Photo && row.mine -> add(DsMenuItem(deletePhoto, { ui.confirmDeletePhoto = row.message.postId }, destructive = true))
             row.kind == MessageKind.Photo -> add(DsMenuItem(report, { row.message.postId?.let(nav.reportPost) }, destructive = true))

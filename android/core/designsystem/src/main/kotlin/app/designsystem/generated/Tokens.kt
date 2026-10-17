@@ -237,6 +237,8 @@ object Tokens {
         val chatReactionsCountClusterMaxVisible: Int = 3
         /** Locket · chat.reactions · columns of the emoji grid in the picker · SOURCED — token `chat.reactions.count.pickerColumns` */
         val chatReactionsCountPickerColumns: Int = 6
+        /** Apple Messages · chat.thread · how many times a sent text message can be edited (app_config message_edit_max) · SOURCED — token `chat.thread.count.editMax` */
+        val chatThreadCountEditMax: Int = 5
         /** Apple Messages + WhatsApp · chat.thread · a text message of only 1–3 emoji renders large (fontSize.global.headerTitle, 40 pt glyphs); 4 or more render as normal text · SOURCED — token `chat.thread.count.emojiOnlyMax` */
         val chatThreadCountEmojiOnlyMax: Int = 3
         /** Retro · onthisday · number of tick slots around the dial (long and short alternate) · SOURCED — token `count.onthisday.dial.ticks` */
@@ -251,6 +253,8 @@ object Tokens {
         val authCodeDurationResendLock: Int = 60000
         /** Locket · camera.capture · maximum length of a hold-to-record video (premium); the recording outline fills over this time · SOURCED — token `camera.capture.duration.videoMax` */
         val cameraCaptureDurationVideoMax: Int = 10000
+        /** Apple Messages · chat.thread · how long after sending a text message it can be edited (app_config message_edit_window_s = 900; the apps read the server's value) · SOURCED — token `chat.thread.duration.editWindow` */
+        val chatThreadDurationEditWindow: Int = 900000
         /** Retro · chat.thread · a new message row appearing at the bottom of the thread (fade in) · SOURCED — token `chat.thread.duration.entry` */
         val chatThreadDurationEntry: Int = 250
         /** Apple HIG · daily.liveactivity · longest allowed Live Activity animation · VERIFIED — token `daily.liveactivity.duration.animationMax` */
@@ -838,6 +842,15 @@ object Tokens {
             const val rows: String = "one row per person and emoji; a person with several emoji has one row per emoji, each at its own time"
             const val yourRows: String = "in their place by time (no pinning); they carry chat.reactions.list.removeHint"
         }
+        /** Apple Messages + Locket + WhatsApp · chat.reactions · reactions on a text or voice message · SOURCED — token `chat.reactions.layout.messageReactions` */
+        object ChatReactionsLayoutMessageReactions {
+            const val on: String = "text and voice messages (a photo message is reacted to through its post: chat.reactions.layout.quickReactions); joined / left lines take none"
+            const val menu: String = "the message's native context menu starts with the quick-reaction row (chat.reactions.layout.quickReactions: 🔥, 💖, the add-reaction glyph → chat.reactions.layout.picker), then the message's items (chat.thread.md Context menu)"
+            const val onePerPerson: String = "one reaction per person per message: another emoji replaces yours (react_to_message), your own emoji again removes it (unreact_to_message); the picker highlights yours"
+            const val summary: String = "under the text or the voice capsule, chat.reactions.dimension.chipTop below it, leading-aligned in the text column: the chip of chat.reactions.layout.chip (distinct emoji, newest first, never a number); hidden when nobody reacted"
+            const val who: String = "tap the chip → the Reactions sheet (chat.reactions.layout.list): one row per person with their emoji, yours removes it; the chip's accessibility label names the emoji (chat.reactions.a11y.cluster) and its value lists who reacted with what (chat.reactions.activity.row / .rowMine), rows only"
+            const val live: String = "Realtime inserts and updates of message_reactions replace that person's row; the message_reactions_changed broadcast (a removal) refetches that message's rows; optimistic, undone with chat.reactions.error on failure"
+        }
         /** Locket + WhatsApp · chat.reactions · full emoji picker · SOURCED — token `chat.reactions.layout.picker` */
         object ChatReactionsLayoutPicker {
             const val presentation: String = "native sheet (C-29) with grabber; content on color.global.background"
@@ -860,6 +873,16 @@ object Tokens {
             const val picker: String = "tap an emoji highlighted as yours → unreact"
             const val menu: String = "a quick reaction you already used shows selected in the palette row; tapping it unreacts"
         }
+        /** Apple Messages + Retro · chat.thread · editing a sent text message · SOURCED — token `chat.thread.layout.editMessage` */
+        object ChatThreadLayoutEditMessage {
+            const val offer: String = "context-menu item chat.thread.menu.edit on your own sent text message while now − created_at < public_app_config.message_edit_window_s; the window unknown (not read, or NULL) → no Edit item"
+            const val composer: String = "the composer holds the message's text with the edit bar above it in the reply bar's place and form (chat.thread.edit.bar + the bare icon.global.close glyph labelled chat.thread.a11y.cancelEdit); an unsent draft is put aside and comes back after; a reply in progress is dropped"
+            const val save: String = "the send glyph saves (edit_message): the message shows the new text at once; the same text again closes the bar without a call; blank text cannot be sent (the send glyph shows only for text)"
+            const val cancel: String = "the close glyph: the message keeps its text, the composer gets back what it held before"
+            const val edited: String = "a message whose edited_at is set shows chat.thread.edited one line under it (text role caption, color.global.textSecondary, the status line's place: chat.thread.layout.failedMessage); its accessibility value adds the same word"
+            const val failure: String = "edit_message fails (offline, edit_window_closed, …): the message gets its earlier text back, the composer holds the edited text with the edit bar again, Android Toast / iOS announcement chat.thread.edit.error, haptic.global.error"
+            const val live: String = "others' edits arrive as Realtime UPDATEs of messages and replace the row in place (no push, no announcement)"
+        }
         /** Retro + Apple Messages · chat.thread · own message whose send failed / is in flight · SOURCED — token `chat.thread.layout.failedMessage` */
         object ChatThreadLayoutFailedMessage {
             const val indicator: String = "one line under the failed message: chat.thread.sendFailed, text role caption, color.global.destructive; no glyph"
@@ -872,6 +895,14 @@ object Tokens {
             const val ownMessage: String = "a message I send — from the composer, or from the photo viewer's reply field — brings the thread to it (the list scrolls to the newest message), wherever the reader was; sent while the viewer covers the thread, the scroll happens when the thread shows again"
             const val othersMessage: String = "followed only while the newest message is showing (the reader is at the bottom); scrolled up, the list keeps its place (the arrival is announced to VoiceOver / TalkBack)"
             const val motion: String = "the list's own scroll (system)"
+        }
+        /** Apple Messages + WhatsApp + W3C WCAG 2.2 · chat.thread · tappable links in text messages · SOURCED — token `chat.thread.layout.links` */
+        object ChatThreadLayoutLinks {
+            const val detect: String = "web addresses in a text message's body, found by the platform's own detector (iOS NSDataDetector .link; Android Linkify WEB_URLS), http and https only; an address without a scheme opens as the detector completes it"
+            const val style: String = "the body's own text role and color.global.textPrimary, underlined"
+            const val tap: String = "opens the address in the browser (iOS openURL, Android the URI handler); a long press still opens the message's context menu"
+            const val accessibility: String = "each link is also an accessibility action of the message named by its address"
+            const val previews: String = "none: no server fetch of the page (privacy); previews built on the sender's device are a later pass"
         }
         /** Retro · chat.thread · photo message inside the thread · SOURCED — token `chat.thread.layout.photoFit` */
         object ChatThreadLayoutPhotoFit {
@@ -909,6 +940,15 @@ object Tokens {
             const val example: String = "10:00 PM"
             const val where: String = "after the sender's name on the first row of a run, one space apart, text role caption in color.global.textSecondary (C-16 'elton 2h' slot)"
             const val dayDividers: String = "a C-20 dated section header (no •••) before the first message of each day: chat.thread.divider.today, chat.thread.divider.yesterday, else the date as MMMM d, yyyy"
+        }
+        /** Stream Chat + WhatsApp · chat.thread · the typing line · SOURCED — token `chat.thread.layout.typingLine` */
+        object ChatThreadLayoutTypingLine {
+            const val content: String = "the first names of the people whose chat_typing.until is in the future, never yours: one → chat.thread.typing.one; two or more → chat.thread.typing.several ({names} = all but the last joined by ', ', {name} = the last), in the order they started typing; never a number of people"
+            const val placement: String = "one line at the bottom of the thread, right above the composer (above the reply / edit bar) inside size.global.screenMargin; text role caption, color.global.textSecondary, tail truncation; hidden when nobody types"
+            const val expiry: String = "a row stops counting when its until passes, without any event (the device clock)"
+            const val sending: String = "while the field holds text, set_typing(true) at most every public_app_config.typing_ttl_s / 2 seconds; set_typing(false) when the field empties, when the message is sent and when the thread closes; nothing is sent while editing a message or when typing_ttl_s is unknown"
+            const val announce: String = "not announced and not a live region (it would interrupt the reader every few seconds)"
+            const val receipts: String = "no read receipts, no 'seen', no online dot"
         }
         /** Retro · chat.voice · voice message in the thread, and a photo's voice note in the viewer · SOURCED — token `chat.voice.layout.capsule` */
         object ChatVoiceLayoutCapsule {

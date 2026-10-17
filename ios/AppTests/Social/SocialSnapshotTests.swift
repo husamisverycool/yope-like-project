@@ -364,6 +364,29 @@ final class SocialSnapshotTests: XCTestCase {
         await thread.load()
         record(ChatThreadView(model: thread), "chat.reactions", "cluster", both)
 
+        // Owner decision 34: reactions under text and voice messages (`chat.reactions.layout.messageReactions`), an edited
+        // message with a link (`chat.thread.layout.editMessage`, `.links`) and the typing line (`.typingLine`).
+        let moment = SocialDemo.at(4 * SocialDemo.day)
+        let chat = use(SocialDemo.makeData())
+        chat.update { state in
+            state.messageReactions = [
+                MessageReaction(messageID: SocialDemo.messageID(1), userID: SocialDemo.ben, emoji: "😂", groupID: SocialDemo.groupID, createdAt: SocialDemo.at(1800)),
+                MessageReaction(messageID: SocialDemo.messageID(1), userID: SocialDemo.me, emoji: "🔥", groupID: SocialDemo.groupID, createdAt: SocialDemo.at(1900)),
+                MessageReaction(messageID: SocialDemo.messageID(5), userID: SocialDemo.ana, emoji: "💖", groupID: SocialDemo.groupID, createdAt: SocialDemo.at(5000)),
+            ]
+            if let index = state.messages.firstIndex(where: { $0.id == SocialDemo.messageID(2) }) {
+                state.messages[index].body = "i can do pasta: https://example.com/pasta"
+                state.messages[index].editedAt = SocialDemo.at(0.35 * SocialDemo.hour)
+            }
+            state.typing = [
+                ChatTyping(groupID: SocialDemo.groupID, userID: SocialDemo.ana, until: moment.addingTimeInterval(6)),
+                ChatTyping(groupID: SocialDemo.groupID, userID: SocialDemo.ben, until: moment.addingTimeInterval(6)),
+            ]
+        }
+        let live = ChatThreadModel(groupID: SocialDemo.groupID, data: chat, now: { moment })
+        await live.load()
+        record(ChatThreadView(model: live), "chat.reactions", "messages", both)
+
         record(ReactionPicker(catalog: SocialEmojiCatalog.bundled, onPick: { _ in }), "chat.reactions", "picker", navigation: false)
         // `chat.reactions.layout.unreact`: my reactions selected in the picker.
         record(ReactionPicker(mine: ["💖", "🔥"], catalog: SocialEmojiCatalog.bundled, onPick: { _ in }, onRemove: { _ in }), "chat.reactions", "picker-mine", navigation: false)

@@ -28,6 +28,7 @@ extension SocialNotice {
         case .sendFailed, .messageNotSent: return Copy.chatThreadSendFailed
         case .copied: return Copy.chatThreadToastCopied
         case .reactionFailed: return Copy.chatReactionsError
+        case .editFailed: return Copy.chatThreadEditError
         case .photoSaved: return Copy.photoViewerToastSaved
         case .photoDeleted: return Copy.photoViewerToastDeleted
         case .saveFailed: return Copy.photoViewerErrorSave

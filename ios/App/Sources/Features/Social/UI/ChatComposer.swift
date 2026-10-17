@@ -437,6 +437,8 @@ struct ChatComposer: View {
 /// box at the trailing margin (hit area `size.global.minTouchTarget.ios`).
 struct ChatReplyBar: View {
     let label: String
+    /// The close glyph's label: `chat.thread.a11y.cancelReply`, or `chat.thread.a11y.cancelEdit` on the edit bar.
+    var cancelLabel: String = Copy.chatThreadA11yCancelReply
     let onCancel: () -> Void
 
     var body: some View {
@@ -454,8 +456,25 @@ struct ChatReplyBar: View {
             }
             .buttonStyle(.plain)
             .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + SocialMetrics.metrics(TextRole.listSubtitle).capHeight / 2 }
-            .accessibilityLabel(Text(Copy.chatThreadA11yCancelReply))
+            .accessibilityLabel(Text(cancelLabel))
         }
         .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+    }
+}
+
+/// `chat.thread.layout.typingLine`: one line above the composer — text role `caption`, `color.global.textSecondary`,
+/// inside `size.global.screenMargin`, tail truncation. Not a live region (it would interrupt every few seconds).
+struct ChatTypingLine: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .dsTextStyle(TextRole.caption)
+            .foregroundStyle(Tokens.Colors.globalTextSecondary)
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+            .accessibilityIdentifier("chat.typing") // provenance-ok: accessibility identifier for UI tests
     }
 }

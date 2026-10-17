@@ -1610,6 +1610,103 @@
       "method": "Yope's centred line between messages (its pill fill and type are the superseded Yope visuals, not drawn) in Retro's caption text, as Retro draws its thread's join / leave lines (text only; visuals not captured)",
       "level": "SOURCED",
       "notes": "Owner decision 34 (research #18). The leave line exists in Retro's threads (with an emoji, not copied — retro.voice.emoji); an admin's removal writes no line (no reference shows one)."
+    },
+    "chat.reactions.layout.messageReactions": {
+      "type": "layout",
+      "value": {
+        "on": "text and voice messages (a photo message is reacted to through its post: chat.reactions.layout.quickReactions); joined / left lines take none",
+        "menu": "the message's native context menu starts with the quick-reaction row (chat.reactions.layout.quickReactions: 🔥, 💖, the add-reaction glyph → chat.reactions.layout.picker), then the message's items (chat.thread.md Context menu)",
+        "onePerPerson": "one reaction per person per message: another emoji replaces yours (react_to_message), your own emoji again removes it (unreact_to_message); the picker highlights yours",
+        "summary": "under the text or the voice capsule, chat.reactions.dimension.chipTop below it, leading-aligned in the text column: the chip of chat.reactions.layout.chip (distinct emoji, newest first, never a number); hidden when nobody reacted",
+        "who": "tap the chip → the Reactions sheet (chat.reactions.layout.list): one row per person with their emoji, yours removes it; the chip's accessibility label names the emoji (chat.reactions.a11y.cluster) and its value lists who reacted with what (chat.reactions.activity.row / .rowMine), rows only",
+        "live": "Realtime inserts and updates of message_reactions replace that person's row; the message_reactions_changed broadcast (a removal) refetches that message's rows; optimistic, undone with chat.reactions.error on failure"
+      },
+      "source_app": "Apple Messages + Locket + WhatsApp",
+      "surface": "chat.reactions",
+      "element": "reactions on a text or voice message",
+      "evidence": "https://support.apple.com/guide/iphone/react-with-tapbacks-iph018d3c336/ios (accessed 2026-10-17) ('You can only add one Tapback per message', 'Use a different Tapback: Tap a different emoji', 'Remove the Tapback: Tap the same Tapback you used', 'Tap a stack of Tapbacks. Senders and their tapbacks appear'); docs/RESEARCH_FEATURES_2026-10-17.md #7 (Locket 2.68.0 'chat reactions'); references/auto/whatsapp/store/whatsapp-store-04.png (summary under the message); docs/API.md §5.10a, §6.2 react_to_message",
+      "method": "Messages' one-Tapback-per-person rule and who-reacted list on the photo messages' chip, menu row and sheet (chat.reactions.md), so every message reacts the same way",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (research #7). Tenet 2: no count on the chip, in the sheet or in labels."
+    },
+    "chat.thread.layout.editMessage": {
+      "type": "layout",
+      "value": {
+        "offer": "context-menu item chat.thread.menu.edit on your own sent text message while now − created_at < public_app_config.message_edit_window_s; the window unknown (not read, or NULL) → no Edit item",
+        "composer": "the composer holds the message's text with the edit bar above it in the reply bar's place and form (chat.thread.edit.bar + the bare icon.global.close glyph labelled chat.thread.a11y.cancelEdit); an unsent draft is put aside and comes back after; a reply in progress is dropped",
+        "save": "the send glyph saves (edit_message): the message shows the new text at once; the same text again closes the bar without a call; blank text cannot be sent (the send glyph shows only for text)",
+        "cancel": "the close glyph: the message keeps its text, the composer gets back what it held before",
+        "edited": "a message whose edited_at is set shows chat.thread.edited one line under it (text role caption, color.global.textSecondary, the status line's place: chat.thread.layout.failedMessage); its accessibility value adds the same word",
+        "failure": "edit_message fails (offline, edit_window_closed, …): the message gets its earlier text back, the composer holds the edited text with the edit bar again, Android Toast / iOS announcement chat.thread.edit.error, haptic.global.error",
+        "live": "others' edits arrive as Realtime UPDATEs of messages and replace the row in place (no push, no announcement)"
+      },
+      "source_app": "Apple Messages + Retro",
+      "surface": "chat.thread",
+      "element": "editing a sent text message",
+      "evidence": "https://support.apple.com/guide/iphone/unsend-or-edit-messages-iphe67195653/ios (accessed 2026-10-17) ('Touch and hold the message bubble, then tap Edit', 'Make any changes, then tap the Send Edit button to resend with edits or the Cancel Edit button to revert', 'The message is marked as Edited'); https://unpkg.com/stream-chat-react@12.0.0/dist/i18n/en.json (accessed 2026-10-17) ('Edit Message', 'Edited', 'Edit message request failed'); docs/API.md §6.2 edit_message, §11 message_edit_window_s",
+      "method": "Messages' edit flow on the composer we have (the reply bar's form for the edit bar, the status line's place for 'Edited')",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (research #8). Messages shows earlier versions on tapping 'Edited'; the server keeps none (migration 0047), so the line is text only. Caption editing (edit_caption) is not in this pass."
+    },
+    "chat.thread.duration.editWindow": {
+      "type": "duration",
+      "value": 900000,
+      "unit": "ms",
+      "source_app": "Apple Messages",
+      "surface": "chat.thread",
+      "element": "how long after sending a text message it can be edited (app_config message_edit_window_s = 900; the apps read the server's value)",
+      "evidence": "https://support.apple.com/guide/iphone/unsend-or-edit-messages-iphe67195653/ios (accessed 2026-10-17) ('You can edit a recently sent message up to five times within 15 minutes of sending it')",
+      "method": "15 minutes stated by the reference",
+      "level": "SOURCED",
+      "precision": "rule",
+      "notes": "Server value: migration 0047. The apps offer Edit only inside public_app_config.message_edit_window_s, never from this constant."
+    },
+    "chat.thread.count.editMax": {
+      "type": "count",
+      "value": 5,
+      "source_app": "Apple Messages",
+      "surface": "chat.thread",
+      "element": "how many times a sent text message can be edited (app_config message_edit_max)",
+      "evidence": "https://support.apple.com/guide/iphone/unsend-or-edit-messages-iphe67195653/ios (accessed 2026-10-17) ('up to five times within 15 minutes')",
+      "method": "rule stated by the reference",
+      "level": "SOURCED",
+      "precision": "rule",
+      "notes": "Enforced by edit_message (edit_window_closed); the apps do not count edits (the server keeps their times only)."
+    },
+    "chat.thread.layout.typingLine": {
+      "type": "layout",
+      "value": {
+        "content": "the first names of the people whose chat_typing.until is in the future, never yours: one → chat.thread.typing.one; two or more → chat.thread.typing.several ({names} = all but the last joined by ', ', {name} = the last), in the order they started typing; never a number of people",
+        "placement": "one line at the bottom of the thread, right above the composer (above the reply / edit bar) inside size.global.screenMargin; text role caption, color.global.textSecondary, tail truncation; hidden when nobody types",
+        "expiry": "a row stops counting when its until passes, without any event (the device clock)",
+        "sending": "while the field holds text, set_typing(true) at most every public_app_config.typing_ttl_s / 2 seconds; set_typing(false) when the field empties, when the message is sent and when the thread closes; nothing is sent while editing a message or when typing_ttl_s is unknown",
+        "announce": "not announced and not a live region (it would interrupt the reader every few seconds)",
+        "receipts": "no read receipts, no 'seen', no online dot"
+      },
+      "source_app": "Stream Chat + WhatsApp",
+      "surface": "chat.thread",
+      "element": "the typing line",
+      "evidence": "https://getstream.io/chat/docs/sdk/react/v12/components/utility-components/indicators/ (TypingIndicator 'lists users currently typing and rendered via the MessageList'); https://unpkg.com/stream-chat-react@12.0.0/dist/i18n/en.json (accessed 2026-10-17) ('{{ user }} is typing...', '{{ users }} and {{ user }} are typing...'); docs/RESEARCH_FEATURES_2026-10-17.md #20 (WhatsApp typing indicators, names; 'N typing' not built); docs/API.md §5.10b, §6.2 set_typing, §11 typing_ttl_s",
+      "method": "Stream Chat's names-only wording and its place at the end of the message list, fed by the server's chat_typing rows",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (research #20). Read receipts, 'N typing' and presence are do-not-build (tenet 2, tenet 5)."
+    },
+    "chat.thread.layout.links": {
+      "type": "layout",
+      "value": {
+        "detect": "web addresses in a text message's body, found by the platform's own detector (iOS NSDataDetector .link; Android Linkify WEB_URLS), http and https only; an address without a scheme opens as the detector completes it",
+        "style": "the body's own text role and color.global.textPrimary, underlined",
+        "tap": "opens the address in the browser (iOS openURL, Android the URI handler); a long press still opens the message's context menu",
+        "accessibility": "each link is also an accessibility action of the message named by its address",
+        "previews": "none: no server fetch of the page (privacy); previews built on the sender's device are a later pass"
+      },
+      "source_app": "Apple Messages + WhatsApp + W3C WCAG 2.2",
+      "surface": "chat.thread",
+      "element": "tappable links in text messages",
+      "evidence": "docs/RESEARCH_FEATURES_2026-10-17.md #16 (iMessage, WhatsApp; https://developer.apple.com/documentation/linkpresentation); https://www.w3.org/WAI/WCAG22/Techniques/failures/F73 (links must be visually evident without colour: the underline); https://developer.apple.com/documentation/foundation/nsdatadetector; https://developer.android.com/reference/android/text/util/Linkify",
+      "method": "the platforms' link detectors; WCAG's rule for telling links apart without colour (no colour of our own is added)",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (research #16)."
     }
   }
 }

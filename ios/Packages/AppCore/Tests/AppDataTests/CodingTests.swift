@@ -216,5 +216,45 @@ final class CodingTests: XCTestCase {
         XCTAssertEqual(config.maxGroupMembers, 30)
         XCTAssertNil(config.minAgeYears)
         XCTAssertNil(config.freeHistoryDays)
+        XCTAssertNil(config.messageEditWindowSeconds, "not set: the chat offers no Edit")
+        XCTAssertNil(config.typingTTLSeconds)
+    }
+
+    func testChatTunablesFromPublicConfig() throws {
+        let rows = try JSONDecoder().decode([PublicAppConfig.Row].self, from: Data("""
+        [{"key":"message_edit_window_s","value":900},{"key":"message_edit_max","value":5},{"key":"typing_ttl_s","value":6}]
+        """.utf8))
+        let config = PublicAppConfig(rows: rows)
+        XCTAssertEqual(config.messageEditWindowSeconds, 900)
+        XCTAssertEqual(config.typingTTLSeconds, 6)
+    }
+
+    /// Migration 0047 / 0048 rows: `messages.edited_at`, `message_reactions`, `chat_typing`.
+    func testEditedMessagesMessageReactionsAndTypingRowsDecode() throws {
+        let message = """
+        {"id":"0f8fad5b-d9cb-469f-a165-70867728950f","group_id":"9f1c1d2e-0000-4000-8000-000000000001",
+         "author_id":"9f1c1d2e-0000-4000-8000-000000000002","kind":"text","body":"see you at 8","post_id":null,
+         "voice_path":null,"voice_duration_ms":null,"reply_to_post_id":null,"reply_to_message_id":null,
+         "created_at":"2026-10-16T08:00:00+00:00","edited_at":"2026-10-16T08:03:00.250+00:00"}
+        """
+        let edited = try DataCoding.makeDecoder().decode(Message.self, from: Data(message.utf8))
+        XCTAssertEqual(edited.editedAt, Timestamp.parse("2026-10-16T08:03:00.250+00:00"))
+        let older = message.replacingOccurrences(of: #","edited_at":"2026-10-16T08:03:00.250+00:00""#, with: "")
+        XCTAssertNil(try DataCoding.makeDecoder().decode(Message.self, from: Data(older.utf8)).editedAt)
+
+        let reaction = """
+        {"message_id":"0f8fad5b-d9cb-469f-a165-70867728950f","user_id":"9f1c1d2e-0000-4000-8000-000000000003",
+         "emoji":"🔥","group_id":"9f1c1d2e-0000-4000-8000-000000000001","created_at":"2026-10-16T08:01:00+00:00"}
+        """
+        let row = try DataCoding.makeDecoder().decode(MessageReaction.self, from: Data(reaction.utf8))
+        XCTAssertEqual(row.messageID, MessageID("0f8fad5b-d9cb-469f-a165-70867728950f"))
+        XCTAssertEqual(row.emoji, "🔥")
+
+        let typing = """
+        {"group_id":"9f1c1d2e-0000-4000-8000-000000000001","user_id":"9f1c1d2e-0000-4000-8000-000000000003",
+         "until":"2026-10-16T08:01:06+00:00"}
+        """
+        let typist = try DataCoding.makeDecoder().decode(ChatTyping.self, from: Data(typing.utf8))
+        XCTAssertEqual(typist.until, Timestamp.parse("2026-10-16T08:01:06+00:00"))
     }
 }

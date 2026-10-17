@@ -603,6 +603,8 @@ public enum Copy {
     public static var chatReactionsPickerSearch: String { CopyLookup.string("chat.reactions.picker.search", default: "Search") }
     /// "Back" — Apple HIG / Material 3 · chat.thread · new · SOURCED
     public static var chatThreadA11yBack: String { CopyLookup.string("chat.thread.a11y.back", default: "Back") }
+    /// "Cancel edit" — Apple Messages · chat.thread · adapted · SOURCED
+    public static var chatThreadA11yCancelEdit: String { CopyLookup.string("chat.thread.a11y.cancelEdit", default: "Cancel edit") }
     /// "Cancel reply" — Retro · chat.thread · new · SOURCED
     public static var chatThreadA11yCancelReply: String { CopyLookup.string("chat.thread.a11y.cancelReply", default: "Cancel reply") }
     /// "Caption: {caption}" — Retro · chat.thread · new · SOURCED
@@ -629,6 +631,12 @@ public enum Copy {
     public static var chatThreadDividerToday: String { CopyLookup.string("chat.thread.divider.today", default: "Today") }
     /// "Yesterday" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadDividerYesterday: String { CopyLookup.string("chat.thread.divider.yesterday", default: "Yesterday") }
+    /// "Edit message" — Retro · chat.thread · verbatim · SOURCED
+    public static var chatThreadEditBar: String { CopyLookup.string("chat.thread.edit.bar", default: "Edit message") }
+    /// "Couldn't edit message" — Retro · chat.thread · adapted · SOURCED
+    public static var chatThreadEditError: String { CopyLookup.string("chat.thread.edit.error", default: "Couldn't edit message") }
+    /// "Edited" — Apple Messages · chat.thread · verbatim · SOURCED
+    public static var chatThreadEdited: String { CopyLookup.string("chat.thread.edited", default: "Edited") }
     /// "Be the first to say hi." — Retro · chat.thread · new · SOURCED
     public static var chatThreadEmptyDetail: String { CopyLookup.string("chat.thread.empty.detail", default: "Be the first to say hi.") }
     /// "Add members" — Retro · chat.thread · adapted · SOURCED
@@ -647,6 +655,8 @@ public enum Copy {
     public static var chatThreadMenuDelete: String { CopyLookup.string("chat.thread.menu.delete", default: "Unsend") }
     /// "Delete" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadMenuDeletePhoto: String { CopyLookup.string("chat.thread.menu.deletePhoto", default: "Delete") }
+    /// "Edit" — Apple Messages · chat.thread · verbatim · SOURCED
+    public static var chatThreadMenuEdit: String { CopyLookup.string("chat.thread.menu.edit", default: "Edit") }
     /// "Reply" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadMenuReply: String { CopyLookup.string("chat.thread.menu.reply", default: "Reply") }
     /// "Report Message" — Retro · chat.thread · adapted · SOURCED
@@ -681,6 +691,10 @@ public enum Copy {
     public static func chatThreadSystemLeft(name: String) -> String { CopyLookup.format("chat.thread.system.left", default: "{name} left the group", ["name": name]) }
     /// "Copied!" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadToastCopied: String { CopyLookup.string("chat.thread.toast.copied", default: "Copied!") }
+    /// "{name} is typing…" — Stream Chat + WhatsApp · chat.thread · adapted · SOURCED
+    public static func chatThreadTypingOne(name: String) -> String { CopyLookup.format("chat.thread.typing.one", default: "{name} is typing…", ["name": name]) }
+    /// "{names} and {name} are typing…" — Stream Chat · chat.thread · adapted · SOURCED
+    public static func chatThreadTypingSeveral(names: String, name: String) -> String { CopyLookup.format("chat.thread.typing.several", default: "{names} and {name} are typing…", ["names": names, "name": name]) }
     /// "Delete recording" — Retro · chat.voice · new · SOURCED
     public static var chatVoiceA11yDiscard: String { CopyLookup.string("chat.voice.a11y.discard", default: "Delete recording") }
     /// "Keep recording" — Retro · chat.voice · new · SOURCED

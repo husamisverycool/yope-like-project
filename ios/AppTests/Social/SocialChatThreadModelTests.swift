@@ -791,4 +791,302 @@ final class SocialChatThreadModelTests: XCTestCase {
         await model.savePhoto(photo, using: RecordingPhotoSaver(denied: true))
         XCTAssertTrue(model.saveDenied, "the permission alert shows")
     }
+
+    // MARK: Reactions on messages (`chat.reactions.layout.messageReactions`)
+
+    private var text4: Message { SocialDemo.messages[3] } // mine, "yes please"
+    private var text1: Message { SocialDemo.messages[0] } // Ana's, "who's cooking tonight?"
+    private var voice5: Message { SocialDemo.messages[4] } // mine, a voice message
+
+    private func messageReaction(_ message: Message, _ user: UserID, _ emoji: String, minutes: Double) -> MessageReaction {
+        MessageReaction(messageID: message.id, userID: user, emoji: emoji, groupID: SocialDemo.groupID, createdAt: SocialDemo.at(minutes * 60))
+    }
+
+    func testMessageReactionsLoadWithTheThreadAsRowsNeverACount() async {
+        let data = SocialDemo.makeData()
+        let rows = [
+            messageReaction(text1, SocialDemo.ben, "😂", minutes: 30),
+            messageReaction(text1, SocialDemo.cleo, "🔥", minutes: 40),
+            messageReaction(text1, SocialDemo.me, "😂", minutes: 50),
+        ]
+        data.update { $0.messageReactions = rows }
+        let model = makeModel(data)
+        await model.load()
+        XCTAssertEqual(model.messageReactionRows(text1.id).map(\.userID), [SocialDemo.ben, SocialDemo.cleo, SocialDemo.me])
+        XCTAssertEqual(model.reactionSummary(of: text1.id).distinctEmoji, ["😂", "🔥"], "distinct emoji, newest first")
+        XCTAssertEqual(model.reactionSummary(of: text1.id).listRows().map(\.userID), [SocialDemo.me, SocialDemo.cleo, SocialDemo.ben])
+        XCTAssertEqual(model.myEmoji(onMessage: text1.id), ["😂"])
+        XCTAssertNotNil(model.profile(SocialDemo.cleo), "the reactors' names are known for the sheet")
+        XCTAssertTrue(model.reactionSummary(of: text4.id).isEmpty, "no chip without reactions")
+    }
+
+    func testOneReactionPerPersonAnotherReplacesMineAndMineAgainTakesItBack() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        await model.toggleReaction(messageID: text1.id, emoji: "🔥")
+        XCTAssertEqual(model.myEmoji(onMessage: text1.id), ["🔥"])
+        await model.toggleReaction(messageID: text1.id, emoji: "💖")
+        XCTAssertEqual(model.myEmoji(onMessage: text1.id), ["💖"], "react_to_message replaces my reaction")
+        XCTAssertEqual(model.messageReactionRows(text1.id).count, 1, "one row per person")
+        XCTAssertEqual(data.read { $0.messageReactions.filter { $0.messageID == text1.id }.map(\.emoji) }, ["💖"])
+        await model.toggleReaction(messageID: text1.id, emoji: "💖")
+        XCTAssertTrue(model.myEmoji(onMessage: text1.id).isEmpty, "my own emoji again takes it back")
+        XCTAssertTrue(data.read { $0.calls }.contains("unreactToMessage"))
+        XCTAssertTrue(data.read { $0.messageReactions }.isEmpty)
+
+        await model.toggleReaction(messageID: voice5.id, emoji: "😂")
+        XCTAssertEqual(model.myEmoji(onMessage: voice5.id), ["😂"], "voice messages take reactions too")
+        let photoMessage = SocialDemo.messages[2]
+        await model.toggleReaction(messageID: photoMessage.id, emoji: "😂")
+        XCTAssertTrue(model.myEmoji(onMessage: photoMessage.id).isEmpty, "a photo message is reacted to through its post")
+    }
+
+    func testAFailedMessageReactionIsUndone() async {
+        let data = SocialDemo.makeData()
+        let mine = messageReaction(text1, SocialDemo.me, "🔥", minutes: 30)
+        data.update { $0.messageReactions = [mine] }
+        let model = makeModel(data)
+        await model.load()
+        data.update { $0.failOnce.insert("reactToMessage") }
+        await model.toggleReaction(messageID: text1.id, emoji: "💖")
+        XCTAssertEqual(model.myEmoji(onMessage: text1.id), ["🔥"], "the earlier emoji is back")
+        XCTAssertEqual(model.signals.notice?.notice, .reactionFailed)
+        XCTAssertEqual(model.signals.feedback?.kind, .failed)
+
+        data.update { $0.failOnce.insert("unreactToMessage") }
+        await model.unreact(messageID: text1.id)
+        XCTAssertEqual(model.myEmoji(onMessage: text1.id), ["🔥"], "put back when the call fails")
+    }
+
+    func testMessageReactionsStayLiveFromUpsertsAndTheChangedBroadcast() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        await model.handle(.messageReactionUpserted(messageReaction(text1, SocialDemo.ben, "😂", minutes: 30)))
+        XCTAssertEqual(model.reactionSummary(of: text1.id).distinctEmoji, ["😂"])
+        await model.handle(.messageReactionUpserted(messageReaction(text1, SocialDemo.ben, "🔥", minutes: 31)))
+        XCTAssertEqual(model.messageReactionRows(text1.id).map(\.emoji), ["🔥"], "an update replaces Ben's row")
+        await model.handle(.messageReactionUpserted(MessageReaction(
+            messageID: MessageID("00000000-0000-4000-8000-0000000ffff1"), userID: SocialDemo.ben, emoji: "🔥",
+            groupID: SocialDemo.groupID, createdAt: SocialDemo.at(60)
+        )))
+        XCTAssertNil(model.messageReactions[MessageID("00000000-0000-4000-8000-0000000ffff1")], "unknown messages are ignored")
+
+        // Ben took his back: the broadcast names only the message; the rows are read again.
+        data.update { $0.messageReactions = [] }
+        await model.handle(.messageReactionsChanged(text1.id))
+        XCTAssertTrue(model.reactionSummary(of: text1.id).isEmpty)
+    }
+
+    // MARK: Editing (`chat.thread.layout.editMessage`)
+
+    private func editableModel(_ data: FakeSocialData, window: Int? = 900, at offset: TimeInterval = 60) -> ChatThreadModel {
+        data.update { $0.config = PublicAppConfig(messageEditWindowSeconds: window, typingTTLSeconds: 6) }
+        let sent = SocialDemo.messages[3].createdAt
+        return ChatThreadModel(groupID: SocialDemo.groupID, data: data, now: { sent.addingTimeInterval(offset) })
+    }
+
+    func testEditIsOfferedOnMyTextInsideTheWindowOnly() async {
+        let data = SocialDemo.makeData()
+        let model = editableModel(data)
+        await model.load()
+        XCTAssertTrue(model.canEdit(text4))
+        XCTAssertFalse(model.canEdit(text1), "only my own messages")
+        XCTAssertFalse(model.canEdit(voice5), "only text")
+
+        let late = editableModel(SocialDemo.makeData(), at: 901)
+        await late.load()
+        XCTAssertFalse(late.canEdit(text4), "the window has passed")
+
+        let unknown = editableModel(SocialDemo.makeData(), window: nil)
+        await unknown.load()
+        XCTAssertFalse(unknown.canEdit(text4), "no window known → no Edit")
+
+        let failing = SocialDemo.makeData()
+        failing.update { $0.failOnce.insert("publicConfig") }
+        let unread = editableModel(failing)
+        await unread.load()
+        XCTAssertFalse(unread.canEdit(text4), "the config could not be read → no Edit")
+    }
+
+    func testEditingHoldsTheTextInTheComposerAndSavesWithEdited() async {
+        let data = SocialDemo.makeData()
+        let model = editableModel(data)
+        await model.load()
+        model.draft = "half a thought"
+        model.startReply(to: text1)
+        model.startEdit(text4)
+        XCTAssertTrue(model.isEditing)
+        XCTAssertNil(model.replyTarget, "the reply gives way to the edit")
+        XCTAssertEqual(model.draft, "yes please")
+
+        model.draft = "yes please!"
+        await model.sendDraft()
+        XCTAssertFalse(model.isEditing)
+        XCTAssertEqual(model.draft, "half a thought", "the unsent draft comes back")
+        let edited = try! XCTUnwrap(model.messages.first { $0.id == text4.id })
+        XCTAssertEqual(edited.body, "yes please!")
+        XCTAssertNotNil(edited.editedAt, "\"Edited\" shows under it")
+        XCTAssertEqual(model.messages.count, SocialDemo.messages.count, "an edit sends no new message")
+        XCTAssertTrue(data.read { $0.calls }.contains("editMessage"))
+        XCTAssertFalse(data.read { $0.calls }.contains("sendText"))
+    }
+
+    func testCancellingAnEditKeepsTheMessageAndTheSameTextMakesNoCall() async {
+        let data = SocialDemo.makeData()
+        let model = editableModel(data)
+        await model.load()
+        model.draft = "draft"
+        model.startEdit(text4)
+        model.draft = "something else"
+        model.cancelEdit()
+        XCTAssertFalse(model.isEditing)
+        XCTAssertEqual(model.draft, "draft")
+        XCTAssertEqual(model.messages.first { $0.id == text4.id }?.body, "yes please")
+
+        model.startEdit(text4)
+        await model.sendDraft()
+        XCTAssertFalse(model.isEditing)
+        XCTAssertFalse(data.read { $0.calls }.contains("editMessage"), "the same text closes the bar without a call")
+    }
+
+    func testAFailedEditPutsTheTextBackAndAnnouncesIt() async {
+        let data = SocialDemo.makeData()
+        let model = editableModel(data)
+        await model.load()
+        model.startEdit(text4)
+        model.draft = "yes pls"
+        data.update { $0.failOnce.insert("editMessage") }
+        await model.sendDraft()
+        XCTAssertEqual(model.messages.first { $0.id == text4.id }?.body, "yes please", "the message gets its text back")
+        XCTAssertNil(model.messages.first { $0.id == text4.id }?.editedAt)
+        XCTAssertEqual(model.editTarget, text4.id, "the composer holds the edit again")
+        XCTAssertEqual(model.draft, "yes pls")
+        XCTAssertEqual(model.signals.notice?.notice, .editFailed)
+        XCTAssertTrue(SocialNotice.editFailed.isAnnouncementOnly)
+        XCTAssertEqual(model.signals.feedback?.kind, .failed)
+    }
+
+    func testSomeoneElsesEditArrivesAsAnUpdateInPlace() async {
+        let model = makeModel()
+        await model.load()
+        var edited = text1
+        edited.body = "who's cooking tomorrow?"
+        edited.editedAt = SocialDemo.at(0.25 * SocialDemo.hour)
+        await model.handle(.messageUpdated(edited))
+        XCTAssertEqual(model.messages.first { $0.id == text1.id }?.body, "who's cooking tomorrow?")
+        XCTAssertEqual(model.messages.map(\.id), SocialDemo.messages.map(\.id), "in place")
+    }
+
+    func testEditingAMessageThatIsDeletedEndsTheEdit() async {
+        let model = editableModel(SocialDemo.makeData())
+        await model.load()
+        model.draft = "kept"
+        model.startEdit(text4)
+        await model.handle(.messageDeleted(text4.id))
+        XCTAssertFalse(model.isEditing)
+        XCTAssertEqual(model.draft, "kept")
+    }
+
+    // MARK: Typing (`chat.thread.layout.typingLine`)
+
+    func testTypingSendsAtMostEveryHalfTTLAndStopsWhenEmptiedOrSent() async {
+        let data = SocialDemo.makeData()
+        let clock = TestClock(SocialDemo.at(4 * SocialDemo.day))
+        data.update { $0.config = PublicAppConfig(typingTTLSeconds: 6) }
+        let model = ChatThreadModel(groupID: SocialDemo.groupID, data: data, now: { clock.now })
+        await model.load()
+        model.draft = "o"
+        await model.composerTextChanged()
+        model.draft = "on"
+        clock.advance(2)
+        await model.composerTextChanged()
+        XCTAssertEqual(data.read { $0.typingCalls }, [true], "not again before half the TTL")
+        clock.advance(1)
+        model.draft = "on my"
+        await model.composerTextChanged()
+        XCTAssertEqual(data.read { $0.typingCalls }, [true, true])
+        model.draft = ""
+        await model.composerTextChanged()
+        XCTAssertEqual(data.read { $0.typingCalls }, [true, true, false], "the field emptied")
+
+        model.draft = "on my way"
+        await model.composerTextChanged()
+        await model.sendDraft()
+        XCTAssertEqual(data.read { $0.typingCalls }.suffix(2), [true, false], "sent")
+        await model.stopTyping()
+        XCTAssertEqual(data.read { $0.typingCalls }.count, 5, "nothing more once stopped")
+    }
+
+    func testNoTypingCallsWithoutATTLOrWhileEditing() async {
+        let data = SocialDemo.makeData()
+        let model = makeModel(data)
+        await model.load()
+        model.draft = "hello"
+        await model.composerTextChanged()
+        XCTAssertTrue(data.read { $0.typingCalls }.isEmpty, "typing_ttl_s unknown")
+
+        let editing = SocialDemo.makeData()
+        let edit = editableModel(editing)
+        await edit.load()
+        edit.startEdit(text4)
+        await edit.composerTextChanged()
+        XCTAssertTrue(editing.read { $0.typingCalls }.isEmpty, "editing a sent message is not typing")
+    }
+
+    func testTheTypingLineNamesPeopleInTheOrderTheyStartedAndExpires() async {
+        let data = SocialDemo.makeData()
+        let clock = TestClock(SocialDemo.at(4 * SocialDemo.day))
+        data.update { state in
+            state.typing = [ChatTyping(groupID: SocialDemo.groupID, userID: SocialDemo.ana, until: clock.now.addingTimeInterval(4))]
+        }
+        let model = ChatThreadModel(groupID: SocialDemo.groupID, data: data, now: { clock.now })
+        await model.load()
+        XCTAssertEqual(model.typingNames(), ["Ana"], "read when the thread opens")
+        await model.handle(.typingChanged(ChatTyping(groupID: SocialDemo.groupID, userID: SocialDemo.ben, until: clock.now.addingTimeInterval(6))))
+        await model.handle(.typingChanged(ChatTyping(groupID: SocialDemo.groupID, userID: SocialDemo.me, until: clock.now.addingTimeInterval(6))))
+        await model.handle(.typingChanged(ChatTyping(groupID: SocialDemo.groupID, userID: SocialDemo.ana, until: clock.now.addingTimeInterval(6))))
+        XCTAssertEqual(model.typingNames(), ["Ana", "Ben"], "a renewal keeps its place; mine never shows")
+
+        await model.handle(.typingChanged(ChatTyping(groupID: SocialDemo.groupID, userID: SocialDemo.ana, until: clock.now)))
+        XCTAssertEqual(model.typingNames(), ["Ben"], "stopped")
+        clock.advance(7)
+        XCTAssertEqual(model.typingNames(), [], "until passed, with no event")
+        model.pruneTyping()
+        XCTAssertTrue(model.typists.isEmpty)
+        await model.handle(.typingChanged(ChatTyping(groupID: SocialDemo.otherGroupID, userID: SocialDemo.ben, until: clock.now.addingTimeInterval(6))))
+        XCTAssertEqual(model.typingNames(), [], "another group's row")
+    }
+
+    // MARK: Links (`chat.thread.layout.links`)
+
+    func testLinksAreFoundByThePlatformDetectorHttpOnly() {
+        let text = "menu at https://example.com/menu and www.example.org, mail me@example.com"
+        let links = ChatLinks.find(in: text)
+        XCTAssertEqual(links.map(\.url.absoluteString), ["https://example.com/menu", "http://www.example.org"])
+        XCTAssertEqual(links.map { String(text[$0.range]) }, ["https://example.com/menu", "www.example.org"])
+        XCTAssertTrue(ChatLinks.find(in: "yes please").isEmpty)
+        XCTAssertTrue(ChatLinks.find(in: "").isEmpty)
+    }
+}
+
+/// A clock the typing and edit tests move by hand.
+private final class TestClock: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Date
+
+    init(_ start: Date) { value = start }
+
+    var now: Date {
+        lock.lock()
+        defer { lock.unlock() }
+        return value
+    }
+
+    func advance(_ seconds: TimeInterval) {
+        lock.lock()
+        value = value.addingTimeInterval(seconds)
+        lock.unlock()
+    }
 }

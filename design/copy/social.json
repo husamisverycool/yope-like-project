@@ -355,6 +355,73 @@
       "level": "SOURCED",
       "notes": "Noun swap thread → group; the leading emoji dropped (retro.voice.emoji: '✌️%1$s left the thread' is listed as do-not-copy for its emoji). Written only by leave_group."
     },
+    "chat.thread.menu.edit": {
+      "text": "Edit",
+      "origin": "verbatim",
+      "source_app": "Apple Messages",
+      "surface": "chat.thread",
+      "evidence": "https://support.apple.com/guide/iphone/unsend-or-edit-messages-iphe67195653/ios (accessed 2026-10-17): 'Touch and hold the message bubble, then tap Edit.'",
+      "level": "SOURCED",
+      "notes": "Context-menu item on your own text message while it is younger than public_app_config.message_edit_window_s (chat.thread.layout.editMessage). Fits retro.voice.menu-labels (Sentence case, verb first, no period)."
+    },
+    "chat.thread.edited": {
+      "text": "Edited",
+      "origin": "verbatim",
+      "source_app": "Apple Messages",
+      "surface": "chat.thread",
+      "evidence": "https://support.apple.com/guide/iphone/unsend-or-edit-messages-iphe67195653/ios (accessed 2026-10-17): 'The message is marked as Edited in the conversation transcript.'; https://unpkg.com/stream-chat-react@12.0.0/dist/i18n/en.json (Stream Chat React SDK v12 default strings, accessed 2026-10-17) ('Edited')",
+      "level": "SOURCED",
+      "notes": "Status line under a message whose edited_at is set (chat.thread.layout.editMessage); also its accessibility value. Earlier versions are not kept, so the line opens nothing."
+    },
+    "chat.thread.edit.bar": {
+      "text": "Edit message",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `postcard_composer_message_cta_edit` ('Edit message', as camera.sendto.message.edit); https://unpkg.com/stream-chat-react@12.0.0/dist/i18n/en.json (Stream Chat React SDK v12 default strings, accessed 2026-10-17) ('Edit Message', the editing state of the message input)",
+      "level": "SOURCED",
+      "notes": "The bar above the composer while it holds a sent message being edited (the reply bar's place and form, chat.thread.layout.editMessage)."
+    },
+    "chat.thread.a11y.cancelEdit": {
+      "text": "Cancel edit",
+      "origin": "adapted",
+      "source_app": "Apple Messages",
+      "surface": "chat.thread",
+      "evidence": "https://support.apple.com/guide/iphone/unsend-or-edit-messages-iphe67195653/ios (accessed 2026-10-17) ('tap the Cancel Edit button to revert')",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix); Sentence case as chat.thread.a11y.cancelReply ('Cancel reply')",
+      "level": "SOURCED",
+      "notes": "Label of the edit bar's close glyph: the message keeps its text and the composer gets back what it held before."
+    },
+    "chat.thread.edit.error": {
+      "text": "Couldn't edit message",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_comment_send_failed_title) (\"Couldn't send comment\")",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Android Toast / iOS announcement when edit_message fails (offline, edit_window_closed, …); the edited text returns to the composer. Verb swap: send comment → edit message."
+    },
+    "chat.thread.typing.one": {
+      "text": "{name} is typing…",
+      "origin": "adapted",
+      "source_app": "Stream Chat + WhatsApp",
+      "surface": "chat.thread",
+      "evidence": "https://unpkg.com/stream-chat-react@12.0.0/dist/i18n/en.json (Stream Chat React SDK v12 default strings, accessed 2026-10-17) ('{{ user }} is typing...'); https://www.digit.in/news/apps/whatsapp-launches-typing-indicators-feature-to-enhance-real-time-engagement.html (WhatsApp typing indicators, docs/RESEARCH_FEATURES_2026-10-17.md #20)",
+      "pattern": "retro.voice.progress (gerund + '…' — 'Updating…', 'Downloading…')",
+      "level": "SOURCED",
+      "notes": "The typing line (chat.thread.layout.typingLine) for one person; {name} = first name. Three dots → the ellipsis character (retro.voice.punctuation). Never a number of people."
+    },
+    "chat.thread.typing.several": {
+      "text": "{names} and {name} are typing…",
+      "origin": "adapted",
+      "source_app": "Stream Chat",
+      "surface": "chat.thread",
+      "evidence": "https://unpkg.com/stream-chat-react@12.0.0/dist/i18n/en.json (Stream Chat React SDK v12 default strings, accessed 2026-10-17) ('{{ users }} and {{ user }} are typing...', '{{ firstUser }} and {{ secondUser }}', '{{ commaSeparatedUsers }}, and {{ lastUser }}')",
+      "pattern": "retro.voice.progress (gerund + '…')",
+      "level": "SOURCED",
+      "notes": "Two or more people: {names} = every first name but the last, joined by ', '; {name} = the last ('Ana and Ben are typing…', 'Ana, Ben and Cleo are typing…'). Names only — Stream's '{{ users }} and more' and any count are not used (tenet 2); a long line truncates at its end."
+    },
     "chat.composer.placeholder": {
       "text": "Send a message…",
       "origin": "verbatim",

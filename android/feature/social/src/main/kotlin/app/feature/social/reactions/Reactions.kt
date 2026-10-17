@@ -59,6 +59,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
@@ -116,7 +117,7 @@ internal object ChipPadding {
  * Changes cross-fade (`duration.global.crossfade`). One button: opens the Reactions sheet.
  */
 @Composable
-fun ReactionChip(entries: List<ReactionEntry>, onClick: () -> Unit, modifier: Modifier = Modifier, onMedia: Boolean = false) {
+fun ReactionChip(entries: List<ReactionEntry>, onClick: () -> Unit, modifier: Modifier = Modifier, onMedia: Boolean = false, whoReacted: String? = null) {
     val emoji = clusterEmoji(entries).take(Tokens.Counts.chatReactionsCountClusterMaxVisible)
     if (emoji.isEmpty()) return
     val fill = if (onMedia) Tokens.Colors.globalControlOnDeep else PageRoles.secondarySurface
@@ -128,6 +129,8 @@ fun ReactionChip(entries: List<ReactionEntry>, onClick: () -> Unit, modifier: Mo
             .clearAndSetSemantics {
                 contentDescription = label
                 role = Role.Button
+                // A message's chip (`chat.reactions.layout.messageReactions`): who reacted with what, rows only.
+                if (whoReacted != null) stateDescription = whoReacted
             }
             .padding(horizontal = ChipPadding.horizontal, vertical = ChipPadding.vertical),
     ) {

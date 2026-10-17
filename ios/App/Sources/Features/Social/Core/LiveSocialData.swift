@@ -84,6 +84,34 @@ struct LiveSocialData: SocialDataSource {
         try await environment.chat.delete(messageID: id, groupID: groupID)
     }
 
+    func editMessage(id: MessageID, body: String) async throws -> Message {
+        try await environment.chat.edit(messageID: id, body: body)
+    }
+
+    func publicConfig() async throws -> PublicAppConfig {
+        try await environment.account.publicConfig()
+    }
+
+    func messageReactions(messageIDs: [MessageID]) async throws -> [MessageReaction] {
+        try await environment.reactions.messageReactions(messageIDs: messageIDs)
+    }
+
+    func reactToMessage(id: MessageID, emoji: String) async throws -> MessageReaction {
+        try await environment.reactions.react(messageID: id, emoji: emoji)
+    }
+
+    func unreactToMessage(id: MessageID) async throws {
+        try await environment.reactions.unreact(messageID: id)
+    }
+
+    func typing(groupID: GroupID) async throws -> [ChatTyping] {
+        try await environment.chat.typing(groupID: groupID)
+    }
+
+    func setTyping(_ typing: Bool, groupID: GroupID) async throws {
+        try await environment.chat.setTyping(groupID: groupID, typing: typing)
+    }
+
     // MARK: Posts
 
     func posts(ids: [PostID]) async throws -> [PostWithMedia] {
@@ -278,6 +306,13 @@ struct UnconfiguredSocialData: SocialDataSource {
     func replies(postID: PostID) async throws -> [Message] { try fail() }
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message { try fail() }
     func deleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
+    func editMessage(id: MessageID, body: String) async throws -> Message { try fail() }
+    func publicConfig() async throws -> PublicAppConfig { try fail() }
+    func messageReactions(messageIDs: [MessageID]) async throws -> [MessageReaction] { try fail() }
+    func reactToMessage(id: MessageID, emoji: String) async throws -> MessageReaction { try fail() }
+    func unreactToMessage(id: MessageID) async throws { try fail() as Void }
+    func typing(groupID: GroupID) async throws -> [ChatTyping] { try fail() }
+    func setTyping(_ typing: Bool, groupID: GroupID) async throws { try fail() as Void }
     func posts(ids: [PostID]) async throws -> [PostWithMedia] { try fail() }
     func revealedWith(_ post: Post) async throws -> [PostWithMedia] { try fail() }
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { [] }

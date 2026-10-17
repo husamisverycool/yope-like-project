@@ -38,6 +38,25 @@ protocol SocialDataSource: Sendable {
     /// `p_voice_levels`; nil sends none).
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message
     func deleteMessage(id: MessageID, groupID: GroupID) async throws
+    /// `edit_message` (`chat.thread.layout.editMessage`): my own text message inside the edit window; the row with
+    /// `edited_at` set. `edit_window_closed` once the window passed.
+    func editMessage(id: MessageID, body: String) async throws -> Message
+    /// `public_app_config` (§11): `message_edit_window_s` (Edit is offered only inside it) and `typing_ttl_s`.
+    func publicConfig() async throws -> PublicAppConfig
+
+    // MARK: Reactions on messages (§5.10a; `chat.reactions.layout.messageReactions`)
+    /// Rows `(message, user, emoji)`, oldest first: one per person and message. Never a count.
+    func messageReactions(messageIDs: [MessageID]) async throws -> [MessageReaction]
+    /// `react_to_message`: sets or replaces my one reaction on a text or voice message.
+    func reactToMessage(id: MessageID, emoji: String) async throws -> MessageReaction
+    /// `unreact_to_message`: takes mine back.
+    func unreactToMessage(id: MessageID) async throws
+
+    // MARK: Typing (§5.10b; `chat.thread.layout.typingLine`)
+    /// The group's `chat_typing` rows whose `until` is still ahead.
+    func typing(groupID: GroupID) async throws -> [ChatTyping]
+    /// `set_typing`.
+    func setTyping(_ typing: Bool, groupID: GroupID) async throws
 
     // MARK: Posts (§5.7, §5.8)
     /// Visible posts among `ids` with their media, in the order of `ids`.
