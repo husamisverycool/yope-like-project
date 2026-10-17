@@ -4,6 +4,8 @@
 // References: references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png (album rows),
 // references/auto/retro/press/tc-2025-12-rewind-panels.png (Rewind "Add to Album"); the pick grid is week.edit's
 // (design/surfaces/week.edit.md, `week.edit.layout.selectionMark`).
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package app.feature.social.albums
 
 import androidx.compose.animation.core.animateDpAsState

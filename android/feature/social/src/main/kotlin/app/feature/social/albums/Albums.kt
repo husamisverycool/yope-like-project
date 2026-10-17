@@ -317,7 +317,7 @@ fun AlbumViewContent(
         verticalArrangement = Arrangement.spacedBy(gap),
     ) {
         item(key = "head", span = { GridItemSpan(maxLineSpan) }) {
-            AlbumHead(state, ui, onPhoto, onRename)
+            AlbumHead(state, ui, onPhoto, onRename, onDownload)
         }
         when {
             state.phase == AlbumViewState.Phase.Loading -> itemsIndexed(List(columns * 2) { it }, key = { _, i -> "loading-$i" }) { i, _ ->
@@ -375,7 +375,7 @@ fun AlbumViewContent(
 
 /** Cover, name, meta and capsules above the grid. */
 @Composable
-private fun AlbumHead(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String) -> Unit, onRename: () -> Unit) {
+private fun AlbumHead(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String) -> Unit, onRename: () -> Unit, onDownload: () -> Unit) {
     val album = state.album
     val first = state.photos.firstOrNull()
     val name = album?.name.orEmpty()

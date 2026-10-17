@@ -109,7 +109,8 @@ final class PhotoDownloadModel {
         phase = .running
         fraction = scope == .mine ? nil : (fraction ?? 0)
         let run = Task { [weak self] in
-            await self?.run()
+            guard let self else { return }
+            await self.run()
         }
         task = run
         return run

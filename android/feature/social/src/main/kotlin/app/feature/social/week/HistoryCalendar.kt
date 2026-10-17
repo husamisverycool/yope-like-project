@@ -2,6 +2,8 @@
 // (`week.history.layout.calendar`). Mechanics: BeReal's Memories calendar (https://help.bereal.com/hc/en-us/articles/7531349180829:
 // past posts reached from a month grid, only the days with one open); drawn with Retro's components (C-29 sheet, C-11
 // close circle, C-06 fill, text roles). Owner decision 34 (research #21). No count anywhere.
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package app.feature.social.week
 
 import androidx.compose.foundation.background
