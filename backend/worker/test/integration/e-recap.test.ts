@@ -94,6 +94,27 @@ describe("weeks follow when a photo became visible (migration 0027)", () => {
   });
 });
 
+describe("collages (migration 0033)", () => {
+  let w: World;
+  beforeAll(async () => {
+    w = await startWorld({ recapModel: null });
+  });
+  afterAll(async () => w.close({ keepData: true }));
+
+  it("the recap holds the week's ready same-moment collages", async () => {
+    const { g, moment } = await weekGroup("Recap collages");
+    const [inv] = await sql(`select id from public.daily_invitations where group_id = $1`, [g.id]);
+    const [c] = await sql(
+      `insert into public.collages (group_id, invitation_id, option, post_ids, status, composed_at) values ($1, $2, 'B', $3::uuid[], 'ready', now()) returning id`,
+      [g.id, inv.id, moment],
+    );
+    const recapId = await createRecap(g.id);
+    await w.runner.runUntilIdle({ kinds: ["recap.generate", "push.recap_ready"] });
+    const [r] = await sql(`select collage_ids from public.weekly_recaps where id = $1`, [recapId]);
+    expect(r.collage_ids).toEqual([c.id]);
+  });
+});
+
 describe("with a (mocked) model", () => {
   let calls: RecapInput[] = [];
   let next: (input: RecapInput) => RecapModelResult;

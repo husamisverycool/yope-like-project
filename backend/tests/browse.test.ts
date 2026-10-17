@@ -99,12 +99,12 @@ describe('group_history_weeks', () => {
   it('buckets posts into Monday-start weeks in the group time zone', async () => {
     const weeks = await rpc<any[]>(b.client, 'group_history_weeks', { p_group_id: g.id, p_limit: 10 });
     expect(weeks).toEqual([
-      { week_start: '2026-01-12', post_ids: [posts.monEarly, posts.wed] },
-      { week_start: '2026-01-05', post_ids: [posts.sunLate] },
-      { week_start: '2025-06-02', post_ids: [posts.old] },
+      { week_start: '2026-01-12', post_ids: [posts.monEarly, posts.wed], collages: [] },
+      { week_start: '2026-01-05', post_ids: [posts.sunLate], collages: [] },
+      { week_start: '2025-06-02', post_ids: [posts.old], collages: [] },
     ]);
     const older = await rpc<any[]>(b.client, 'group_history_weeks', { p_group_id: g.id, p_before_week: '2026-01-12', p_limit: 1 });
-    expect(older).toEqual([{ week_start: '2026-01-05', post_ids: [posts.sunLate] }]);
+    expect(older).toEqual([{ week_start: '2026-01-05', post_ids: [posts.sunLate], collages: [] }]);
     await expectRpcError(rpc(stranger.client, 'group_history_weeks', { p_group_id: g.id }), 'not_group_member', 403);
   });
 
@@ -112,7 +112,7 @@ describe('group_history_weeks', () => {
     try {
       await setConfig('week_start_isodow', 7); // Sunday
       const weeks = await rpc<any[]>(b.client, 'group_history_weeks', { p_group_id: g.id, p_limit: 1 });
-      expect(weeks[0]).toEqual({ week_start: '2026-01-11', post_ids: [posts.sunLate, posts.monEarly, posts.wed] });
+      expect(weeks[0]).toEqual({ week_start: '2026-01-11', post_ids: [posts.sunLate, posts.monEarly, posts.wed], collages: [] });
     } finally {
       await setConfig('week_start_isodow', 1);
     }
@@ -153,8 +153,8 @@ describe('weeks follow when a photo became visible (overnight photos, migration 
     const [row] = await sql(`select visible_at from public.posts where id = $1`, [overnight]);
     expect(new Date(row.visible_at).toISOString()).toBe(new Date(developedMonday).toISOString());
     expect(await rpc<any[]>(b.client, 'group_history_weeks', { p_group_id: g.id })).toEqual([
-      { week_start: '2026-01-12', post_ids: [overnight] },
-      { week_start: '2026-01-05', post_ids: [sunday] },
+      { week_start: '2026-01-12', post_ids: [overnight], collages: [] },
+      { week_start: '2026-01-05', post_ids: [sunday], collages: [] },
     ]);
     await expectRpcError(rpc(stranger.client, 'group_history_weeks', { p_group_id: g.id }), 'not_group_member', 403);
   });
@@ -187,6 +187,78 @@ describe('weeks follow when a photo became visible (overnight photos, migration 
       [overnight, new Date(developedMonday).toISOString()],
       [later, new Date('2026-01-12T12:00:00Z').toISOString()],
     ]);
+  });
+});
+
+describe('collages in the group history (migration 0033)', () => {
+  /** A closed invitation on a group-local day with a ready collage of the given posts. */
+  async function moment(groupId: string, localDate: string, firesAt: string, postIds: string[], status = 'ready') {
+    const [inv] = await sql(
+      `insert into public.daily_invitations (group_id, local_date, fires_at, closes_at, status)
+       values ($1, $2::date, $3::timestamptz, $3::timestamptz + interval '2 minutes', 'closed') returning id`,
+      [groupId, localDate, firesAt],
+    );
+    const [c] = await sql(
+      `insert into public.collages (group_id, invitation_id, option, post_ids, image_path, widget_path, status, composed_at)
+       values ($1::uuid, $2::uuid, 'B', $3::uuid[], 'g/' || $1::text || '/collages/' || $2::text || '/v1/display-1.jpg', 'g/' || $1::text || '/collages/' || $2::text || '/v1/widget.jpg', $4::public.render_status, now())
+       returning id`,
+      [groupId, inv.id, postIds, status],
+    );
+    return { invitationId: inv.id as string, collageId: c.id as string };
+  }
+
+  it('group_collages lists the ready collages by their day, members only; group_history_weeks carries each week\'s', async () => {
+    const g = await createGroup(a, [b], { tz: 'America/Los_Angeles' });
+    const tue = (await postPhoto(a, [g.id])).posts[0].id;
+    await setCreatedAt(tue, '2026-01-13T20:00:00Z');
+    const sat = (await postPhoto(b, [g.id])).posts[0].id;
+    await setCreatedAt(sat, '2026-01-17T20:00:00Z');
+    const m1 = await moment(g.id, '2026-01-13', '2026-01-13T19:59:00Z', [tue]);
+    const m2 = await moment(g.id, '2026-01-17', '2026-01-17T19:59:00Z', [sat]);
+    await moment(g.id, '2026-01-15', '2026-01-15T19:59:00Z', [tue], 'pending'); // not ready: not shown
+    const elsewhere = await createGroup(stranger, [], { tz: 'UTC' });
+    await moment(elsewhere.id, '2026-01-14', '2026-01-14T12:00:00Z', []);
+
+    const rows = await rpc<any[]>(b.client, 'group_collages', { p_group_id: g.id, p_from: '2026-01-12', p_to: '2026-01-18' });
+    expect(rows.map((r) => [r.collage_id, r.local_date])).toEqual([[m2.collageId, '2026-01-17'], [m1.collageId, '2026-01-13']]);
+    expect(rows[0].widget_path).toContain(`g/${g.id}/collages/`);
+    expect(await rpc<any[]>(b.client, 'group_collages', { p_group_id: g.id, p_from: '2026-01-14', p_to: '2026-01-16' })).toEqual([]);
+    await expectRpcError(rpc(stranger.client, 'group_collages', { p_group_id: g.id }), 'not_group_member', 403);
+
+    const [week] = await rpc<any[]>(b.client, 'group_history_weeks', { p_group_id: g.id, p_limit: 1 });
+    expect(week.week_start).toBe('2026-01-12');
+    expect(week.post_ids).toEqual([tue, sat]);
+    expect(week.collages.map((c: any) => [c.collage_id, c.local_date])).toEqual([[m1.collageId, '2026-01-13'], [m2.collageId, '2026-01-17']]);
+    await expectRpcError(rpc(stranger.client, 'group_history_weeks', { p_group_id: g.id }), 'not_group_member', 403);
+  });
+
+  it("update_recap reorders and removes the recap's collages (only the week's ready ones); a deleted collage leaves the recap", async () => {
+    const g = await createGroup(a, [b], { tz: 'UTC' });
+    const mon = (await postPhoto(a, [g.id])).posts[0].id;
+    await setCreatedAt(mon, '2026-09-14T12:00:00Z');
+    const wed = (await postPhoto(b, [g.id])).posts[0].id;
+    await setCreatedAt(wed, '2026-09-16T12:00:00Z');
+    const m1 = await moment(g.id, '2026-09-14', '2026-09-14T11:59:00Z', [mon]);
+    const m2 = await moment(g.id, '2026-09-16', '2026-09-16T11:59:00Z', [wed]);
+    const later = await moment(g.id, '2026-09-21', '2026-09-21T11:59:00Z', [wed]);
+    const [recap] = await sql<{ id: string }>(
+      `insert into public.weekly_recaps (group_id, week_start, items, collage_ids, status, generated_at)
+       values ($1, '2026-09-14', $2::uuid[], $3::uuid[], 'ready', now()) returning id`,
+      [g.id, [mon, wed], [m1.collageId, m2.collageId]],
+    );
+    let r = await rpc(b.client, 'update_recap', { p_recap_id: recap.id, p_collage_ids: [m2.collageId] });
+    expect(r.collage_ids).toEqual([m2.collageId]);
+    expect(r.items).toEqual([mon, wed]); // untouched
+    r = await rpc(b.client, 'update_recap', { p_recap_id: recap.id, p_collage_ids: [m2.collageId, m1.collageId] });
+    expect(r.collage_ids).toEqual([m2.collageId, m1.collageId]);
+    await expectRpcError(rpc(b.client, 'update_recap', { p_recap_id: recap.id, p_collage_ids: [later.collageId] }), 'invalid_items', 400);
+    await expectRpcError(rpc(b.client, 'update_recap', { p_recap_id: recap.id, p_collage_ids: [m1.collageId, m1.collageId] }), 'invalid_items', 400);
+    await expectRpcError(rpc(stranger.client, 'update_recap', { p_recap_id: recap.id, p_collage_ids: [] }), 'recap_not_found', 404);
+
+    // its only photo deleted → the collage goes → it leaves the recap
+    await rpc(a.client, 'delete_post', { p_post_id: mon });
+    const [after] = await sql(`select collage_ids from public.weekly_recaps where id = $1`, [recap.id]);
+    expect(after.collage_ids).toEqual([m2.collageId]);
   });
 });
 

@@ -10,6 +10,8 @@
 //      a client can read), then by time.
 // Text: the AI draft if it passes the copy rules (src/recap/validate.ts), else the template copy
 // key week.recap.template.
+// Collages: the week's ready same-moment collages, in day order (weekly_recaps.collage_ids,
+// migration 0033); members can reorder or remove them with update_recap.
 
 import { maybe, must, selectIn } from "../db.js";
 import { copyText } from "../copy.js";
@@ -34,6 +36,8 @@ export interface WeekMaterial {
   reactions: Map<string, number>;
   /** invitation id → moment info */
   moments: Array<{ invitation: InvitationRow; postIds: string[]; everyone: boolean }>;
+  /** the week's ready same-moment collages, in the order of their invitations */
+  collageIds: string[];
 }
 
 export function deterministicOrder(m: WeekMaterial): string[] {
@@ -76,7 +80,11 @@ export async function gatherWeek(ctx: JobContext, groupId: string, weekStart: st
       return { invitation: inv, postIds: answers.map((p) => p.id), everyone: expected.length > 0 && expected.every((u) => answered.has(u)) };
     })
     .filter((m) => m.postIds.length > 0);
-  return { posts, media, reactions, moments };
+  const collages = (await selectIn<{ id: string; invitation_id: string | null; status: string }>(ctx.db, "collages", "id, invitation_id, status", "invitation_id", invitations.map((i) => i.id)))
+    .filter((c) => c.status === "ready" && c.invitation_id);
+  const order = new Map(invitations.map((inv, i) => [inv.id, i]));
+  const collageIds = collages.sort((a, b) => (order.get(a.invitation_id as string) ?? 0) - (order.get(b.invitation_id as string) ?? 0)).map((c) => c.id);
+  return { posts, media, reactions, moments, collageIds };
 }
 
 export function recapInput(m: WeekMaterial, groupKind: string, weekStart: string, tz: string): { input: RecapInput; refToPost: Map<string, string> } {
@@ -167,10 +175,12 @@ export async function recapGenerate(ctx: JobContext): Promise<void> {
   // drop anything deleted meanwhile
   const existing = new Set((await selectIn<{ id: string }>(ctx.db, "posts", "id", "id", items)).map((p) => p.id));
   items = items.filter((p) => existing.has(p));
+  const liveCollages = new Set((await selectIn<{ id: string }>(ctx.db, "collages", "id", "id", week.collageIds)).map((c) => c.id));
+  const collageIds = week.collageIds.filter((c) => liveCollages.has(c));
   const done = must(
     await ctx.db
       .from("weekly_recaps")
-      .update({ items, text, status: "ready", generated_at: ctx.now().toISOString() })
+      .update({ items, collage_ids: collageIds, text, status: "ready", generated_at: ctx.now().toISOString() })
       .eq("id", id)
       .eq("status", "pending")
       .select("id"),

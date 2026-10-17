@@ -142,6 +142,7 @@ describe('group isolation: RPCs', () => {
     confirm_age: { args: () => ({}), expect: 'own-account' },
     wall: { args: () => ({ p_user_id: gUsers[0].id }), expect: 'empty' },
     group_history_weeks: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
+    group_collages: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
     on_this_day: { args: () => ({ p_group_id: seeded.group.id, p_local_date: '2027-01-01' }), expect: 'error' },
     update_recap: { args: () => ({ p_recap_id: seeded.recapId, p_text: 'x' }), expect: 'error' },
     save_album: {

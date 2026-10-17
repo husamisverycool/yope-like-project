@@ -391,6 +391,7 @@ Read: members. Edited with `update_recap`.
 | `group_id` | uuid | |
 | `week_start` | date | group-local first day of the week (`week_start_isodow`, Monday) |
 | `items` | uuid[] | ordered post ids. Fetch them from `posts`; RLS drops any you cannot see (blocks). |
+| `collage_ids` | uuid[] | the week's same-moment collages, in order (filled by `recap.generate` with the week's ready collages; reorder / remove with `update_recap`; a deleted collage leaves it). Fetch them from `collages` (§5.13) or `group_collages` (migration 0033) |
 | `text` | text? | ≤ 2000 chars |
 | `status` | render_status | `pending` while the worker generates it; editable only when `ready` |
 | `generated_at` | timestamptz? | |
@@ -833,13 +834,27 @@ block with you or who shares no group with you. Errors: `invalid_argument`.
 #### `group_history_weeks`
 ```
 group_history_weeks(p_group_id uuid, p_before_week date = null, p_limit int = 8)
-  → table(week_start date, post_ids uuid[])
+  → table(week_start date, post_ids uuid[], collages jsonb)
 ```
+`collages` (migration 0033): the week's ready same-moment collages, oldest first —
+`[{ "collage_id", "invitation_id", "local_date", "image_path", "widget_path" }]` (`local_date` = the invitation's
+group-local day, the day tile it belongs on); `[]` when none. A week with a collage is listed even when every photo
+of it is hidden from you by a block.
 Weeks (group time zone, starting on `week_start_isodow`, Monday) that have posts, newest
 first. A post belongs to the week of its `visible_at` (an overnight photo taken on Sunday night
 is in the week it developed in, migration 0027). `post_ids` are in `visible_at` order. Page with `p_before_week =` the last
 `week_start` (exclusive). `p_limit` is clamped to 1–52. If `free_history_days` is set
 and the caller has no premium, older posts are left out. Errors: `not_group_member`.
+
+#### `group_collages`
+```
+group_collages(p_group_id uuid, p_from date = null, p_to date = null)
+  → table(collage_id uuid, invitation_id uuid, local_date date, image_path text, widget_path text,
+          share_path text, page_count int, composed_at timestamptz)
+```
+The group's ready same-moment collages whose invitation day (group-local) is in `[p_from, p_to]` (a null bound is
+open), newest first — the group screen's week ("the group's photo of the day") and any day range. Open one with the
+collage view (`collages` row / `invitation_id`). Errors: `not_group_member`.
 
 #### `on_this_day`
 ```
@@ -852,8 +867,10 @@ limited by `free_history_days`. Errors: `not_group_member`, `invalid_argument`.
 
 #### `update_recap`
 ```
-update_recap(p_recap_id uuid, p_items uuid[] = null, p_text text = null) → weekly_recaps
+update_recap(p_recap_id uuid, p_items uuid[] = null, p_text text = null, p_collage_ids uuid[] = null) → weekly_recaps
 ```
+`p_collage_ids` (migration 0033): the new order of the recap's collages; drop ids to remove, re-add any ready collage
+of that group whose invitation day is in the recap's week (`invalid_items` otherwise, or for a duplicate).
 Any member, once `status = 'ready'`. `p_items` is the new order: drop ids to remove, and
 re-add any post of that group from that week. `null` = unchanged; `p_text = ""` clears
 the text. "That week" means the posts whose `visible_at` is in the recap's week. Posts hidden from you by a block are kept, after your order. Sets `edited_by`
