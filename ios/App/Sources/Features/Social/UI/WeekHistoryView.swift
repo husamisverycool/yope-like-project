@@ -15,6 +15,9 @@ struct WeekHistoryScreen: View {
     @State private var viewer: PhotoViewerContext?
     @State private var albumWeek: AlbumWeek?
     @State private var recapPreview: RecapPreviewTarget?
+    @State private var calendarOpen = false
+    /// The week the calendar jumped to, scrolled to the top once it is in the list.
+    @State private var scrollTarget: LocalDate?
     @State private var toasts = ToastCenter()
     @Environment(\.dismiss) private var dismiss
 
@@ -31,14 +34,21 @@ struct WeekHistoryScreen: View {
             if model.line == .empty, !model.isLoading {
                 emptyPage
             } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        header
-                        content
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+                            header
+                            content
+                        }
+                        .padding(.bottom, Tokens.Sizes.globalSectionGap)
                     }
-                    .padding(.bottom, Tokens.Sizes.globalSectionGap)
+                    .refreshable { await model.load() }
+                    .onChange(of: scrollTarget) { _, target in
+                        guard let target else { return }
+                        proxy.scrollTo(target, anchor: .top)
+                        scrollTarget = nil
+                    }
                 }
-                .refreshable { await model.load() }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -54,6 +64,16 @@ struct WeekHistoryScreen: View {
         .sheet(item: $albumWeek) { item in
             WeekEditView(groupID: model.groupID, mode: .album(weekStart: item.weekStart), toasts: toasts)
         }
+        .sheet(isPresented: $calendarOpen) {
+            HistoryCalendarSheet(months: model.months.map(HistoryCalendarMonth.init), timeZone: model.timeZone) { week in
+                calendarOpen = false
+                Task {
+                    if await model.jump(to: week) { scrollTarget = week }
+                }
+            } onClose: {
+                calendarOpen = false
+            }
+        }
         .fullScreenCover(item: $recapPreview) { target in
             // week.recap.md platform notes: the preview is a `.fullScreenCover`, dark in both appearances.
             WeekRecapPreviewScreen(groupID: model.groupID.rawValue, recapID: target.recapID.rawValue, isPresentedModally: true)
@@ -61,9 +81,16 @@ struct WeekHistoryScreen: View {
         .accessibilityIdentifier("week.history") // provenance-ok: accessibility identifier for UI tests
     }
 
-    /// C-02: back chevron + the group's name in the display serif, one line.
+    /// C-02: back chevron + the group's name in the display serif, one line; once the history's months are known, the
+    /// calendar glyph (`week.history.layout.calendar`).
     private var header: some View {
-        PushedScreenHeader(title: model.group?.name ?? "", backAccessibilityLabel: Copy.chatThreadA11yBack) { dismiss() }
+        PushedScreenHeader(
+            title: model.group?.name ?? "",
+            backAccessibilityLabel: Copy.chatThreadA11yBack,
+            actions: model.months.isEmpty ? [] : [
+                HeaderAction(icon: Tokens.Icons.globalCalendar, accessibilityLabel: Copy.weekHistoryCalendarOpen) { calendarOpen = true },
+            ]
+        ) { dismiss() }
             .lineLimit(1)
             .truncationMode(.tail)
     }
@@ -90,6 +117,7 @@ struct WeekHistoryScreen: View {
                         viewRecap: { recapPreview = RecapPreviewTarget(recapID: $0) },
                         saveAsAlbum: { albumWeek = AlbumWeek(weekStart: week.weekStart) }
                     )
+                        .id(week.id)
                         .onAppear {
                             if week.id == model.weeks.last?.id { Task { await model.loadMore() } }
                         }
@@ -259,5 +287,103 @@ struct WeekHistorySection: View {
 
     private func collage(for tile: WeekStripTile) -> GroupCollage? {
         week.collages.first { "photo-" + Self.collagePrefix + $0.collageID.rawValue == tile.id }
+    }
+}
+
+// MARK: - Calendar (jump to a date)
+
+/// `week.history.layout.calendar` — BeReal's Memories calendar mechanics (help.bereal.com 7531349180829: only the days
+/// with something open) in Retro's components: a page sheet (C-29) with the sheet header ("Memories", close circle),
+/// then the months newest first — the month title (`sectionLabel`, a button to the month's newest week) over a
+/// seven-column grid, Monday first; a day with something is its number (`pill`) on a `color.global.control` circle of
+/// `size.global.pillHeight` (C-06 fill) and opens its week; other days are tertiary numbers. No count anywhere.
+struct HistoryCalendarSheet: View {
+    let months: [HistoryCalendarMonth]
+    let timeZone: TimeZone
+    let onSelect: (LocalDate) -> Void
+    let onClose: () -> Void
+
+    /// Days in a week: the grid's columns.
+    private static let columns = 7 // provenance-ok: days in a week (calendar grid)
+
+    var body: some View {
+        VStack(spacing: 0) {
+            SheetHeader(title: Copy.weekHistoryCalendarTitle, closeAccessibilityLabel: Copy.weekHistoryCalendarA11yClose, onClose: onClose)
+            ScrollView {
+                VStack(alignment: .leading, spacing: Tokens.Sizes.globalSectionGap) {
+                    ForEach(months) { month in
+                        monthSection(month)
+                    }
+                }
+                .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
+                .padding(.vertical, Tokens.Sizes.globalSectionHeaderToContent)
+            }
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+        .dsSheetBackground()
+        .accessibilityIdentifier("week.history.calendar") // provenance-ok: accessibility identifier for UI tests
+    }
+
+    private var gridColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 0), count: Self.columns)
+    }
+
+    private func monthSection(_ month: HistoryCalendarMonth) -> some View {
+        VStack(alignment: .leading, spacing: Tokens.Sizes.globalSectionHeaderToContent) {
+            Button {
+                onSelect(month.newestWeek)
+            } label: {
+                Text(SocialFormat.monthTitle(month.month, timeZone: timeZone))
+                    .dsTextStyle(TextRole.sectionLabel)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(.isHeader)
+            LazyVGrid(columns: gridColumns, spacing: 0) {
+                ForEach(Array(SocialFormat.weekdayInitials().enumerated()), id: \.offset) { _, initial in
+                    Text(initial)
+                        .dsTextStyle(TextRole.meta)
+                        .foregroundStyle(Tokens.Colors.globalTextSecondary)
+                        .accessibilityHidden(true)
+                }
+                ForEach(0..<month.leadingBlanks, id: \.self) { _ in
+                    Color.clear
+                        .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+                        .accessibilityHidden(true)
+                }
+                ForEach(month.days, id: \.self) { day in
+                    dayCell(day, active: month.active.contains(day))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func dayCell(_ day: LocalDate, active: Bool) -> some View {
+        let number = Text(day.day.formatted())
+        if active {
+            Button {
+                onSelect(SocialCalendar.weekStart(containing: SocialCalendar.start(of: day, in: timeZone), in: timeZone))
+            } label: {
+                number
+                    .dsTextStyle(TextRole.pill)
+                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
+                    .frame(width: Tokens.Sizes.globalPillHeight, height: Tokens.Sizes.globalPillHeight)
+                    .background(Tokens.Colors.globalControl, in: Circle())
+                    .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(SocialFormat.spokenFullDate(day, timeZone: timeZone)))
+        } else {
+            number
+                .dsTextStyle(TextRole.listSubtitle)
+                .foregroundStyle(Tokens.Colors.globalTextTertiary)
+                .frame(maxWidth: .infinity, minHeight: Tokens.Sizes.globalMinTouchTargetIos)
+                .accessibilityLabel(Text(SocialA11y.emptyDay(SocialCalendar.start(of: day, in: timeZone), timeZone: timeZone)))
+        }
     }
 }

@@ -467,4 +467,87 @@ final class SocialWeekModelTests: XCTestCase {
         XCTAssertEqual(kept.line, .error)
         XCTAssertTrue(kept.weeks.contains { $0.weekStart == SocialDemo.lastWeek })
     }
+
+    // MARK: week.history calendar (jump to a date)
+
+    /// The demo plus a photo on the Wednesday of each week 2–10 weeks back and one on Tuesday 21 July (12 weeks back):
+    /// twelve weeks with photos, so the July week is beyond the first page of eight.
+    private func dataWithAnOldPhoto() -> (FakeSocialData, PostID) {
+        let data = SocialDemo.makeData()
+        let old = PostID("00000000-0000-4000-8000-00000000c0b1")
+        data.update { state in
+            for week in 2...10 {
+                let id = PostID("00000000-0000-4000-8000-0000004" + String(10_000 + week).suffix(5))
+                state.posts.append(SocialDemo.post(id, by: SocialDemo.ben, at: SocialDemo.monday.addingTimeInterval(-Double(week) * 7 * SocialDemo.day + 2 * SocialDemo.day)))
+            }
+            state.posts.append(SocialDemo.post(old, by: SocialDemo.ana, at: SocialDemo.monday.addingTimeInterval(-12 * 7 * SocialDemo.day + SocialDemo.day)))
+        }
+        return (data, old)
+    }
+
+    func testTheCalendarListsTheMonthsAndTheirDays() async {
+        let (data, _) = dataWithAnOldPhoto()
+        let model = historyModel(data)
+        XCTAssertTrue(model.months.isEmpty, "no glyph before the months are known")
+        await model.load()
+        XCTAssertEqual(model.months.map(\.month), [10, 9, 8, 7].map { LocalDate(year: 2026, month: $0, day: 1)! }, "newest month first")
+        let october = HistoryCalendarMonth(model.months[0])
+        XCTAssertEqual(october.leadingBlanks, 3, "1 October 2026 is a Thursday")
+        XCTAssertEqual(october.days.count, 31)
+        XCTAssertTrue(october.active.contains(SocialDemo.thisWeek), "Monday 12 has a photo")
+        XCTAssertFalse(october.active.contains(LocalDate(year: 2026, month: 10, day: 17)!))
+        XCTAssertEqual(october.newestWeek, SocialDemo.thisWeek)
+        let july = HistoryCalendarMonth(model.months[3])
+        XCTAssertEqual(july.leadingBlanks, 2, "1 July 2026 is a Wednesday")
+        XCTAssertEqual(july.active, [LocalDate(year: 2026, month: 7, day: 21)!])
+        XCTAssertEqual(july.newestWeek, LocalDate(year: 2026, month: 7, day: 20)!)
+        XCTAssertEqual(HistoryCalendarMonth(HistoryMonth(month: LocalDate(year: 2028, month: 2, day: 1)!, days: [], newestWeek: LocalDate(year: 2028, month: 2, day: 28)!)).days.count, 29)
+        XCTAssertEqual(HistoryCalendarMonth.mondayIndex(of: LocalDate(year: 2026, month: 10, day: 12)!), 0)
+        XCTAssertEqual(HistoryCalendarMonth.mondayIndex(of: LocalDate(year: 2026, month: 10, day: 18)!), 6)
+    }
+
+    func testJumpingToALoadedWeekLeavesTheList() async {
+        let model = historyModel()
+        await model.load()
+        let before = model.weeks
+        let found = await model.jump(to: SocialDemo.lastWeek)
+        XCTAssertTrue(found)
+        XCTAssertEqual(model.weeks, before)
+        XCTAssertNil(model.startsAt)
+    }
+
+    func testJumpingToAnOlderWeekStartsTheListThereAndRefreshReturns() async {
+        let (data, old) = dataWithAnOldPhoto()
+        let model = historyModel(data)
+        await model.load()
+        let target = model.week(containing: LocalDate(year: 2026, month: 7, day: 21)!)
+        XCTAssertEqual(target, LocalDate(year: 2026, month: 7, day: 20)!)
+        XCTAssertFalse(model.weeks.contains { $0.weekStart == target }, "twelve weeks back is beyond the first page")
+
+        let found = await model.jump(to: target)
+        XCTAssertTrue(found)
+        XCTAssertEqual(model.startsAt, target)
+        XCTAssertEqual(model.weeks.first?.weekStart, target, "the list starts at the chosen week")
+        XCTAssertFalse(model.weeks.contains(where: \.isCurrent), "no current week above it")
+        XCTAssertEqual(model.weeks.first?.postIDs, [old])
+        XCTAssertNotNil(model.posts[old])
+        XCTAssertFalse(model.hasMore, "nothing older than July")
+
+        await model.load()
+        XCTAssertNil(model.startsAt, "pull to refresh returns to the newest week")
+        XCTAssertEqual(model.weeks.first?.weekStart, SocialDemo.thisWeek)
+    }
+
+    func testAFailedJumpKeepsTheList() async {
+        let (data, _) = dataWithAnOldPhoto()
+        let model = historyModel(data)
+        await model.load()
+        let before = model.weeks
+        data.update { $0.mode = .offline }
+        let found = await model.jump(to: SocialDemo.thisWeek.adding(days: -84))
+        XCTAssertFalse(found)
+        XCTAssertEqual(model.weeks, before)
+        XCTAssertEqual(model.line, .offline)
+        XCTAssertNil(model.startsAt)
+    }
 }

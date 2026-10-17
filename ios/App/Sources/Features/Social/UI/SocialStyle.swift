@@ -305,6 +305,38 @@ enum SocialFormat {
         style.timeZone = timeZone
         return date.formatted(style)
     }
+
+    /// `search.photos` date chip: the chosen days as the locale's interval ("Oct 3 – 9"; one day: "Oct 3"); a range
+    /// outside this year shows its year.
+    static func dayRange(from start: LocalDate, to end: LocalDate, now: Date = Date(), timeZone: TimeZone = .current) -> String {
+        let formatter = DateIntervalFormatter()
+        formatter.timeZone = timeZone
+        let thisYear = LocalDate(now, in: timeZone).year
+        formatter.dateTemplate = start.year == thisYear && end.year == thisYear ? "MMMd" : "yMMMd" // provenance-ok: date templates (locale interval, search.photos spec)
+        return formatter.string(from: SocialCalendar.start(of: start, in: timeZone), to: SocialCalendar.start(of: end, in: timeZone))
+    }
+
+    /// `week.history.layout.calendar`: a month's title in the locale's format ("October 2026").
+    static func monthTitle(_ month: LocalDate, timeZone: TimeZone) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = timeZone
+        formatter.setLocalizedDateFormatFromTemplate("yMMMM") // provenance-ok: date template (locale month and year, spec)
+        return formatter.string(from: SocialCalendar.start(of: month, in: timeZone))
+    }
+
+    /// A calendar day for VoiceOver ("Saturday, October 3, 2026").
+    static func spokenFullDate(_ day: LocalDate, timeZone: TimeZone) -> String {
+        var style = Date.FormatStyle.dateTime.weekday(.wide).month(.wide).day().year()
+        style.timeZone = timeZone
+        return SocialCalendar.start(of: day, in: timeZone).formatted(style)
+    }
+
+    /// The locale's weekday initials, Monday first (the calendar's header row).
+    static func weekdayInitials(calendar: Calendar = .current) -> [String] {
+        let symbols = calendar.veryShortStandaloneWeekdaySymbols // Sunday first
+        guard let sunday = symbols.first else { return symbols }
+        return Array(symbols.dropFirst()) + [sunday]
+    }
 }
 
 // MARK: - Accessibility labels

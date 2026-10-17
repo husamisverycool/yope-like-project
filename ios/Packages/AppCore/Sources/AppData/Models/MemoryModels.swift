@@ -686,3 +686,74 @@ public struct HiddenMemory: Codable, Hashable, Sendable, Identifiable {
         case takenAt = "taken_at"
     }
 }
+
+/// A row of `search_photos` (migration 0040): one photo you can see that matches every criterion given, newest first.
+public struct PhotoSearchHit: Codable, Hashable, Sendable {
+    public var postID: PostID
+    public var mediaID: MediaID
+    public var groupID: GroupID
+    public var authorID: UserID
+    public var createdAt: Date
+    /// Why it matched: `caption`, `chat`, `author`, `tag`, `date` (never shown; no count is derived from it).
+    public var matched: [String]
+
+    public init(postID: PostID, mediaID: MediaID, groupID: GroupID, authorID: UserID, createdAt: Date, matched: [String] = []) {
+        self.postID = postID
+        self.mediaID = mediaID
+        self.groupID = groupID
+        self.authorID = authorID
+        self.createdAt = createdAt
+        self.matched = matched
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case postID = "post_id"
+        case mediaID = "media_id"
+        case groupID = "group_id"
+        case authorID = "author_id"
+        case createdAt = "created_at"
+        case matched
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        postID = try c.decode(PostID.self, forKey: .postID)
+        mediaID = try c.decode(MediaID.self, forKey: .mediaID)
+        groupID = try c.decode(GroupID.self, forKey: .groupID)
+        authorID = try c.decode(UserID.self, forKey: .authorID)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        matched = try c.decodeIfPresent([String].self, forKey: .matched) ?? []
+    }
+}
+
+/// A row of `group_history_months` (migration 0045): a month (group time zone) of the group's history, the days in it
+/// that have something, and the newest history week touching it (the week to jump to). Newest month first.
+public struct HistoryMonth: Codable, Hashable, Sendable, Identifiable {
+    /// The first day of the month.
+    public var month: LocalDate
+    /// Days with a photo or a ready collage, oldest first.
+    public var days: [LocalDate]
+    /// `group_history_weeks(p_before_week => newestWeek + 7)` starts with this week.
+    public var newestWeek: LocalDate
+
+    public var id: LocalDate { month }
+
+    public init(month: LocalDate, days: [LocalDate], newestWeek: LocalDate) {
+        self.month = month
+        self.days = days
+        self.newestWeek = newestWeek
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case month
+        case days
+        case newestWeek = "newest_week"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        month = try c.decode(LocalDate.self, forKey: .month)
+        days = try c.decodeIfPresent([LocalDate].self, forKey: .days) ?? []
+        newestWeek = try c.decode(LocalDate.self, forKey: .newestWeek)
+    }
+}

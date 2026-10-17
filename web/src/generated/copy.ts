@@ -909,6 +909,21 @@ const table = {
   "safety.report.title.selfie": "Why are you reporting this selfie?", // Retro · safety.report · SOURCED
   "safety.report.title.user": "What's wrong with this profile?", // Retro · safety.report · SOURCED
   "safety.report.title.video": "Why are you reporting this video?", // Retro · safety.report · SOURCED
+  "search.photos.date": "Date", // Apple HIG / Material 3 · search.photos · SOURCED
+  "search.photos.date.cancel": "Cancel", // Retro · search.photos · SOURCED
+  "search.photos.date.done": "Done", // Retro · search.photos · SOURCED
+  "search.photos.date.end": "End", // Retro · search.photos · SOURCED
+  "search.photos.date.start": "Start", // Retro · search.photos · SOURCED
+  "search.photos.empty.title": "No matching photos", // Retro · search.photos · SOURCED
+  "search.photos.error": "Error loading photos. Tap here to try again.", // Retro · search.photos · SOURCED
+  "search.photos.field": "Search", // Retro · search.photos · SOURCED
+  "search.photos.field.a11y": "Search photos", // Retro · search.photos · SOURCED
+  "search.photos.idle.detail": "Search captions and comments, or choose who's in it or when it was taken.", // Retro · search.photos · SOURCED
+  "search.photos.idle.title": "Find a photo", // Retro · search.photos · SOURCED
+  "search.photos.member.you": "You", // Retro · search.photos · SOURCED
+  "search.photos.offline": "Couldn't search. Check your connection and try again.", // Retro · search.photos · SOURCED
+  "search.photos.open": "Search", // Yope · search.photos · SOURCED
+  "search.photos.title": "Search", // Retro · search.photos · SOURCED
   "settings.account.alert.cancel": "Cancel", // Apple HIG · settings.account · VERIFIED
   "settings.account.birthday": "Birthday", // Retro · settings.account · SOURCED
   "settings.account.delete": "Delete Account", // Retro · settings.account · SOURCED
@@ -1091,6 +1106,9 @@ const table = {
   "week.history.a11y.loading": "Loading", // Apple HIG / Material 3 · week.history · SOURCED
   "week.history.a11y.more": "More Options", // Retro · week.history · SOURCED
   "week.history.a11y.tile": "{weekday}, {date}, {name}'s photo", // Retro · week.history · SOURCED
+  "week.history.calendar.a11y.close": "Close", // Apple HIG / Material 3 · week.history · SOURCED
+  "week.history.calendar.open": "View all memories", // BeReal · week.history · SOURCED
+  "week.history.calendar.title": "Memories", // BeReal · week.history · SOURCED
   "week.history.empty.action": "Get this week started", // Retro · week.history · SOURCED
   "week.history.empty.title": "Welcome to Week {week_number}!", // Retro · week.history · SOURCED
   "week.history.error": "Error loading weeks. Tap here to try again.", // Retro · week.history · SOURCED

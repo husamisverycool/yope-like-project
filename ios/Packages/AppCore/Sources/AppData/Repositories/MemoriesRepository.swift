@@ -47,6 +47,34 @@ public struct MemoriesRepository: Sendable {
         await cache?.read([HistoryWeek].self, for: .history(groupID))
     }
 
+    /// `group_history_months` (migration 0045): the months of the group's history with the days that have something and
+    /// the week each one jumps to (`historyWeeks(beforeWeek: newestWeek + 7)` starts with it), newest month first.
+    public func historyMonths(groupID: GroupID) async throws -> [HistoryMonth] {
+        try await client.rpc("group_history_months", ["p_group_id": .id(groupID)])
+    }
+
+    // MARK: Search
+
+    /// `search_photos` (migration 0040): the photos you can see — in `groupID` or all your groups — matching every
+    /// criterion given: `text` (caption or chat about the photo; each word a prefix), `memberID` (posted it or tagged
+    /// themselves), the day taken in `from…to` (group-local, inclusive). Newest first; page with `before` = the last
+    /// `createdAt`. At least one criterion (`invalid_argument` otherwise). No face or AI search.
+    public func searchPhotos(
+        text: String?, groupID: GroupID? = nil, memberID: UserID? = nil, from: LocalDate? = nil, to: LocalDate? = nil,
+        before: Date? = nil, limit: Int = 60
+    ) async throws -> [PhotoSearchHit] {
+        let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return try await client.rpc("search_photos", [
+            "p_text": .text(trimmed?.isEmpty == false ? trimmed : nil),
+            "p_group_id": .id(groupID),
+            "p_member_id": .id(memberID),
+            "p_from": .date(from),
+            "p_to": .date(to),
+            "p_before": .timestamp(before),
+            "p_limit": .integer(limit),
+        ])
+    }
+
     /// `group_collages`: the group's ready same-moment collages whose day (group-local) is in `from…to`, newest first.
     public func groupCollages(groupID: GroupID, from: LocalDate? = nil, to: LocalDate? = nil) async throws -> [GroupCollage] {
         try await client.rpc("group_collages", [

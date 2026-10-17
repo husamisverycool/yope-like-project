@@ -24,7 +24,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +46,7 @@ import app.ui.components.DayTile
 import app.ui.components.EmptyState
 import app.ui.components.EmptyStateAction
 import app.ui.components.EmptyStateFill
+import app.ui.components.HeaderAction
 import app.ui.components.PushedHeader
 import app.ui.components.WeekSection
 import app.ui.foundation.PageRoles
@@ -67,7 +71,7 @@ data class HistoryNav(
 @Composable
 fun WeekHistoryScreen(vm: HistoryViewModel, nav: HistoryNav) {
     val state by vm.state.collectAsStateWithLifecycle()
-    WeekHistoryContent(state, nav, onRetry = vm::refresh, onLoadMore = vm::loadMore)
+    WeekHistoryContent(state, nav, onRetry = vm::refresh, onLoadMore = vm::loadMore, onJump = vm::jumpTo, onScrolled = vm::scrolled)
 }
 
 /**
@@ -76,10 +80,34 @@ fun WeekHistoryScreen(vm: HistoryViewModel, nav: HistoryNav) {
  * (`week.history.layout.currentWeek`).
  */
 @Composable
-fun WeekHistoryContent(state: HistoryState, nav: HistoryNav, onRetry: () -> Unit, onLoadMore: () -> Unit, listState: LazyListState = rememberLazyListState()) {
+fun WeekHistoryContent(
+    state: HistoryState,
+    nav: HistoryNav,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
+    listState: LazyListState = rememberLazyListState(),
+    onJump: (LocalDate) -> Unit = {},
+    onScrolled: () -> Unit = {},
+) {
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    var calendarOpen by rememberSaveable { mutableStateOf(false) }
+    // The calendar's jump: the chosen week at the top of the list once it is there.
+    LaunchedEffect(state.scrollTo, state.weeks) {
+        val target = state.scrollTo ?: return@LaunchedEffect
+        val index = state.weeks.indexOfFirst { it.weekStart == target }
+        if (index < 0) return@LaunchedEffect
+        listState.scrollToItem(index + if (state.offline) 1 else 0)
+        onScrolled()
+    }
     Column(Modifier.fillMaxSize().background(PageRoles.page).statusBarsPadding().testTag("week.history")) {
-        PushedHeader(state.group?.name.orEmpty(), nav.back, stringRes(R.string.chat_thread_a11y_back))
+        // C-02; once the history's months are known, the calendar glyph (`week.history.layout.calendar`).
+        val calendar = stringRes(R.string.week_history_calendar_open)
+        PushedHeader(
+            state.group?.name.orEmpty(),
+            nav.back,
+            stringRes(R.string.chat_thread_a11y_back),
+            actions = if (state.months.isEmpty()) emptyList() else listOf(HeaderAction(Tokens.Icons.globalCalendar, calendar) { calendarOpen = true }),
+        )
         when {
             state.phase == HistoryState.Phase.Loading -> {
                 val week = state.weeks.firstOrNull()?.weekStart ?: Formats.weekStartOf(LocalDate.now(state.zone))
@@ -119,6 +147,16 @@ fun WeekHistoryContent(state: HistoryState, nav: HistoryNav, onRetry: () -> Unit
                 }
             }
         }
+    }
+    if (calendarOpen) {
+        HistoryCalendarSheet(
+            months = state.months,
+            onSelect = { week ->
+                calendarOpen = false
+                onJump(week)
+            },
+            onClose = { calendarOpen = false },
+        )
     }
 }
 

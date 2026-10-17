@@ -9,8 +9,10 @@ import app.data.model.AlbumItem
 import app.data.model.Collage
 import app.data.model.FavoritePhoto
 import app.data.model.Group
+import app.data.model.HistoryMonth
 import app.data.model.HistoryWeek
 import app.data.model.Media
+import app.data.model.PhotoSearchHit
 import app.data.model.Message
 import app.data.model.Post
 import app.data.model.PostTag
@@ -101,6 +103,14 @@ interface SocialData {
 
     fun observeHistory(groupId: String): Flow<DataState<List<HistoryWeek>>>
     suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek>
+    /** `group_history_months` (migration 0045): the history calendar's months, their days and the week each jumps to, newest first. */
+    suspend fun historyMonths(groupId: String): List<HistoryMonth>
+
+    /**
+     * `search_photos` (migration 0040, `search.photos`): newest first, at most [limit]; [before] pages back (the last
+     * hit's `created_at`). Never called with an empty [query] (the RPC refuses it). No face or AI search.
+     */
+    suspend fun searchPhotos(query: PhotoSearchQuery, before: Instant?, limit: Int): List<PhotoSearchHit>
 
     suspend fun recaps(groupId: String): List<WeeklyRecap>
     suspend fun recap(recapId: String): WeeklyRecap?
@@ -137,6 +147,22 @@ interface SocialData {
     /** The offline page cache for what the screens compose themselves (posts and profiles of a page). */
     suspend fun <T> cacheGet(key: String, serializer: KSerializer<T>): T?
     suspend fun <T> cachePut(key: String, serializer: KSerializer<T>, value: T)
+}
+
+/** What `search.photos` asks `search_photos` (migration 0040): every criterion given must match. No face or AI search. */
+data class PhotoSearchQuery(
+    /** Words of a caption or of the chat about a photo (each a prefix). */
+    val text: String = "",
+    /** One group (opened from `groups.screen`); null: all your groups. */
+    val groupId: String? = null,
+    /** Posted it, or tagged themselves "I'm in this". */
+    val memberId: String? = null,
+    /** The days it was taken, group-local, inclusive (either open). */
+    val from: LocalDate? = null,
+    val to: LocalDate? = null,
+) {
+    /** No criterion: the page stays idle and nothing is asked (`invalid_argument` otherwise). */
+    val isEmpty: Boolean get() = text.isBlank() && memberId == null && from == null && to == null
 }
 
 /** [SocialData] over the app's [DataGraph]. */
@@ -198,6 +224,9 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
 
     override fun observeHistory(groupId: String) = graph.browse.observeHistory(groupId)
     override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int) = graph.browse.historyWeeks(groupId, beforeWeek, limit)
+    override suspend fun historyMonths(groupId: String) = graph.browse.historyMonths(groupId)
+    override suspend fun searchPhotos(query: PhotoSearchQuery, before: Instant?, limit: Int) =
+        graph.browse.searchPhotos(query.text, query.groupId, query.memberId, query.from, query.to, before, limit)
 
     override suspend fun recaps(groupId: String) = graph.recaps.recaps(groupId)
     override suspend fun recap(recapId: String) = graph.recaps.recap(recapId)
@@ -263,6 +292,8 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun collages(ids: Collection<String>): List<Collage> = fail()
     override fun observeHistory(groupId: String): Flow<DataState<List<HistoryWeek>>> = failing()
     override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek> = fail()
+    override suspend fun historyMonths(groupId: String): List<HistoryMonth> = fail()
+    override suspend fun searchPhotos(query: PhotoSearchQuery, before: Instant?, limit: Int): List<PhotoSearchHit> = fail()
     override suspend fun recaps(groupId: String): List<WeeklyRecap> = fail()
     override suspend fun recap(recapId: String): WeeklyRecap? = fail()
     override suspend fun updateRecap(recapId: String, items: List<String>, text: String): WeeklyRecap = fail()

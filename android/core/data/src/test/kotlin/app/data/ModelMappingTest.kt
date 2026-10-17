@@ -4,6 +4,7 @@ import app.data.model.Collage
 import app.data.model.DataJson
 import app.data.model.Entitlement
 import app.data.model.Group
+import app.data.model.HistoryMonth
 import app.data.model.GroupKind
 import app.data.model.InstantSerializer
 import app.data.model.InvitePreview
@@ -12,6 +13,7 @@ import app.data.model.MediaKind
 import app.data.model.Message
 import app.data.model.MessageKind
 import app.data.model.NewMedia
+import app.data.model.PhotoSearchHit
 import app.data.model.Post
 import app.data.model.Profile
 import app.data.model.PublicAppConfig
@@ -35,6 +37,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
 
 /** JSON ↔ models exactly as PostgREST and Realtime send them; RPC argument building. */
@@ -81,6 +84,33 @@ class ModelMappingTest {
         assertEquals(120, config.invitationWindowSeconds)
         assertNull(config.minAgeYears)
         assertNull(config.freeHistoryDays)
+    }
+
+    @Test fun searchHitsAndHistoryMonthsDecodeAndSearchArgumentsAreOptional() {
+        val hits = DataJson.decodeFromString(ListSerializer(PhotoSearchHit.serializer()), """
+            [{"post_id":"p1","media_id":"m1","group_id":"g1","author_id":"u1","created_at":"2026-10-15T13:35:09.329469+00:00","matched":["caption","tag"]},
+             {"post_id":"p2","media_id":"m2","group_id":"g1","author_id":"u2","created_at":"2026-10-14T13:35:09+00:00","matched":null}]
+        """)
+        assertEquals(listOf(listOf("caption", "tag"), null), hits.map { it.matched })
+        assertTrue(hits[0].createdAt.isAfter(hits[1].createdAt))
+        val months = DataJson.decodeFromString(ListSerializer(HistoryMonth.serializer()), """
+            [{"month":"2026-10-01","days":["2026-10-03","2026-10-15"],"newest_week":"2026-10-12"},
+             {"month":"2026-09-01","days":["2026-09-30"],"newest_week":"2026-09-28"}]
+        """)
+        assertEquals(listOf(LocalDate.parse("2026-10-01"), LocalDate.parse("2026-09-01")), months.map { it.month })
+        assertEquals(listOf(LocalDate.parse("2026-10-03"), LocalDate.parse("2026-10-15")), months[0].days)
+        assertEquals(LocalDate.parse("2026-09-28"), months[1].newestWeek)
+        // Every search argument is optional (the server asks for at least one criterion); an unknown key is refused.
+        val search = rpcArgs(Rpc.SearchPhotos) {
+            put("p_text", "snow")
+            opt("p_member_id", null as String?)
+            put("p_from", LocalDate.parse("2026-10-01"))
+            put("p_limit", 60)
+        }
+        assertEquals(setOf("p_text", "p_from", "p_limit"), search.keys)
+        assertEquals(JsonPrimitive("2026-10-01"), search["p_from"])
+        assertThrows(IllegalArgumentException::class.java) { rpcArgs(Rpc.SearchPhotos) { put("p_query", "x") } }
+        assertEquals(setOf("p_group_id"), rpcArgs(Rpc.GroupHistoryMonths) { put("p_group_id", "g") }.keys)
     }
 
     @Test fun mediaPicksRenditionsOnlyOnceReady() {

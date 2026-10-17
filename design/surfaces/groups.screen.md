@@ -20,8 +20,10 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
 
 1. **Header row (C-02 without a title)**: back chevron `icon.global.back` at `size.global.backInset`; trailing glyphs
    (C-01 metrics: `size.global.icon` box, `size.global.headerIconPitch` 48 apart, last ink at `size.global.headerInset`):
-   `icon.global.albums` → `albums.list`, then `icon.global.chats` → `chat.thread` — Retro's 2026 home header pair (book +
-   chat, H22). The row sits where C-01 centres its glyphs (on the cap middle of a title at `size.global.titleTop`).
+   `icon.global.search` → `search.photos` in this group (owner decision 34, research #6; the row has no title, so a
+   third glyph keeps clear of the back chevron), `icon.global.albums` → `albums.list`, then `icon.global.chats` →
+   `chat.thread` — Retro's 2026 home header pair (book + chat, H22) after the search glyph Yope's header carries
+   (design/research/yope-a.md §2.9). The row sits where C-01 centres its glyphs (on the cap middle of a title at `size.global.titleTop`).
 2. **Cover** (C-24): `size.global.titleToContent` below the title baseline line, centred, `groups.screen.size.coverWidth` ×
    `.coverHeight`, `radius.global.thumbnail`, shadow `groups.screen.shadow.cover`; aspect-fill; no cover →
    `color.global.control` fill with `icon.global.group` centred in `color.global.textSecondary`.
@@ -85,6 +87,7 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
 | back | C-02 | `groups.screen.back.accessibilityLabel` | pop |
+| search glyph | C-01 glyph `icon.global.search` | `search.photos.open` | → `search.photos` (this group) |
 | albums glyph | C-01 glyph `icon.global.albums` | `groups.screen.albums.accessibilityLabel` | → `albums.list` |
 | chat glyph | C-01 glyph `icon.global.chats` | `groups.screen.chat` | → `chat.thread` |
 | cover | `groups.screen.size.coverWidth` / `.coverHeight`, `radius.global.thumbnail`, `groups.screen.shadow.cover` | `groups.screen.cover.accessibilityLabel` | decorative (no action) |
@@ -138,7 +141,7 @@ Presses (glyphs, capsules, tiles, cards, cells) → `haptic.global.tap` (Android
 - Dynamic Type: name `largeTitle`; capsules `subheadline`; section headers `subheadline`; tile labels `footnote`;
   empty-day day number `title`; card names `subheadline`.
 - Feed cards: one button each (title + line + action).
-- Focus order: back → albums → chat → name → members → Recaps → Invite → settings → birthday row → week header →
+- Focus order: back → search → albums → chat → name → members → Recaps → Invite → settings → birthday row → week header →
   strip tiles → friend and feed cards → dated sections (header, cells).
 - Contrast (`design/CONTRAST.md`):
 

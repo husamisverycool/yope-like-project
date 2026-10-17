@@ -212,6 +212,9 @@ public enum Tokens {
         /// Spotify Wrapped · year.story · most cards one list shows (most-reacted photos, everyone-answered days) · SOURCED
         /// token: `count.year.story.listLength`
         public static let yearStoryListLength: CGFloat = 5
+        /// Retro · search.photos · columns of the results grid (the album photo grid, C-21) · SOURCED
+        /// token: `search.photos.count.gridColumns`
+        public static let searchPhotosCountGridColumns: CGFloat = 3
         /// Retro · week.edit · columns of the photo grid in the recap editor · SOURCED
         /// token: `week.edit.count.gridColumns`
         public static let weekEditCountGridColumns: CGFloat = 4
@@ -2081,6 +2084,17 @@ public enum Tokens {
             public static let recap: String = "I don't like it · Nudity or sexual activity · Other"
             public static let sent: String = "the reason's English text is sent as p_reason (docs/API.md report)"
         }
+        /// Retro + Yope + Apple Photos · search.photos · the search page: field, filter chips, results grid · SOURCED
+        /// token: `search.photos.layout.composition`
+        public enum SearchPhotosLayoutComposition {
+            public static let header: String = "C-02 pushed header: back + search.photos.title in the display serif; the C-12 search field under it (size.global.titleToContent below the title baseline, inside size.global.screenMargin), placeholder search.photos.field"
+            public static let filters: String = "one horizontal row size.global.sectionHeaderToContent below the field, starting at size.global.screenMargin, scrolling sideways: the date chip first, then one chip per member (you first as search.photos.member.you, then joining order); chips are the C-06 toggle (outline off, primary on), size.global.pillGap apart; one member at a time"
+            public static let results: String = "C-21 photo grid of search.photos.count.gridColumns square cells, size.global.stripGap apart, size.global.titleToContent below the chips, newest first (search_photos order), paged on reaching the end (p_before = the last created_at); no count anywhere"
+            public static let search: String = "runs on the keyboard's search key and on every chip or date change, with all criteria the screen holds; the field cleared and no chip on → idle"
+            public static let scope: String = "from groups.list: all your groups (the members of all of them, once each); from groups.screen: that group (p_group_id) and its members"
+            public static let date: String = "the date chip opens the native date picker (iOS: a sheet with Start / End date pickers and the Cancel / Done toolbar; Android: the M3 date range picker dialog); a chosen range shows as the chip's label (locale interval) in the on state; tapping it again clears it"
+            public static let `open`: String = "a cell opens photo.viewer with the results in this order (from all groups: the group's name in the header's second line)"
+        }
         /// Apple HIG · settings.account · confirmation alerts / dialogs (delete account, sign out, leave group, remove member, turn off link) · VERIFIED
         /// token: `settings.account.layout.alert`
         public enum SettingsAccountLayoutAlert {
@@ -2223,6 +2237,15 @@ public enum Tokens {
             public static let markCentreRatio: CGFloat = 0.148
             public static let markOutline: CGFloat = 1.5
             public static let motion: String = "the inset and the mark change with the state cross-fade (duration.global.crossfade)"
+        }
+        /// BeReal + Retro · week.history · jump to a date in the group's history (the calendar) · SOURCED
+        /// token: `week.history.layout.calendar`
+        public enum WeekHistoryLayoutCalendar {
+            public static let trigger: String = "icon.global.calendar as the C-02 header's trailing glyph (label week.history.calendar.open), shown once group_history_months returned at least one month"
+            public static let presentation: String = "page sheet (C-29): C-11 close circle at the leading margin and the centred title week.history.calendar.title (text role sheetTitle)"
+            public static let months: String = "newest month first: the month and year (locale format, text role sectionLabel, color.global.textPrimary), size.global.sectionHeaderToContent above a seven-column grid Monday first (weekday initials, text role meta, color.global.textSecondary), months size.global.sectionGap apart, inside size.global.screenMargin"
+            public static let days: String = "each cell at least size.global.minTouchTarget high; a day with something (group_history_months.days) is a button: its number in text role pill, color.global.textPrimary, on a color.global.control circle of size.global.pillHeight (Android: color.global.surfaceSecondary.android, the C-06 fill there); any other day its number in text role listSubtitle, color.global.textTertiary, not interactive"
+            public static let jump: String = "a day → the week containing it; the month title → group_history_months.newest_week; the sheet closes and the list shows that week at its top: already loaded → scrolled to; otherwise the list starts at that week (group_history_weeks p_before_week = week + 7) and pages older from there; pull to refresh returns to the newest week"
         }
         /// Retro · week.history · the current week's strip (empty-day, add and placeholder tiles) · SOURCED
         /// token: `week.history.layout.currentWeek`

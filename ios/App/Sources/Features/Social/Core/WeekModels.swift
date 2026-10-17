@@ -579,6 +579,11 @@ final class WeekHistoryModel {
     private(set) var isOffline = false
     private(set) var hasMore = false
     private(set) var isLoadingMore = false
+    /// The history's months for the calendar (`group_history_months`), newest first; empty: no calendar glyph.
+    private(set) var months: [HistoryMonth] = []
+    /// After a jump from the calendar: the list starts at this week (no current week above it) and pages older from
+    /// there; nil: the list starts at the newest week. A reload returns to the newest week.
+    private(set) var startsAt: LocalDate?
 
     init(groupID: GroupID, data: any SocialDataSource, now: @escaping @Sendable () -> Date = { Date() }) {
         self.groupID = groupID
@@ -587,6 +592,11 @@ final class WeekHistoryModel {
     }
 
     var timeZone: TimeZone { group?.resolvedTimeZone ?? .current }
+
+    /// The history week a calendar day belongs to (Monday start, group-local).
+    func week(containing day: LocalDate) -> LocalDate {
+        SocialCalendar.weekStart(containing: SocialCalendar.start(of: day, in: timeZone), in: timeZone)
+    }
 
     var currentWeekStart: LocalDate { SocialCalendar.weekStart(containing: now(), in: timeZone) }
 
@@ -619,6 +629,7 @@ final class WeekHistoryModel {
         do {
             let fetched = try await data.historyWeeks(groupID: groupID, beforeWeek: nil)
             isOffline = false
+            startsAt = nil
             apply(fetched, replacing: true)
             hasMore = fetched.count == SocialPaging.historyWeeks
             line = fetched.isEmpty ? .empty : nil
@@ -627,6 +638,7 @@ final class WeekHistoryModel {
             let failure = SocialFailure(error)
             if failure == .offline, let cached = await data.cachedHistoryWeeks(groupID: groupID) {
                 isOffline = true
+                startsAt = nil
                 apply(cached, replacing: true)
                 line = .offline
                 await loadDetails()
@@ -638,6 +650,37 @@ final class WeekHistoryModel {
             }
         }
         isLoading = false
+        await loadMonths()
+    }
+
+    /// `group_history_months` for the calendar; a failure keeps what is known (the glyph shows once months are known).
+    func loadMonths() async {
+        if let found = try? await data.historyMonths(groupID: groupID) { months = found }
+    }
+
+    /// The calendar's jump (`week.history.layout.calendar`): a week already in the list stays as it is (the screen scrolls
+    /// to it); otherwise the list starts at that week (`group_history_weeks(p_before_week: week + 7)`, whose first week is
+    /// that one) and pages older from there. True when the week is in the list afterwards.
+    @discardableResult
+    func jump(to week: LocalDate) async -> Bool {
+        if weeks.contains(where: { $0.weekStart == week }) { return true }
+        do {
+            let fetched = try await data.historyWeeks(groupID: groupID, beforeWeek: week.adding(days: 7))
+            guard fetched.contains(where: { $0.weekStart <= week }) else { return false }
+            startsAt = week
+            isOffline = false
+            if line == .offline { line = nil }
+            apply(fetched.filter { $0.weekStart <= week }, replacing: true)
+            hasMore = fetched.count == SocialPaging.historyWeeks
+            await loadDetails()
+            return weeks.contains { $0.weekStart == week }
+        } catch {
+            if SocialFailure(error) == .offline {
+                isOffline = true
+                line = .offline
+            }
+            return false
+        }
     }
 
     /// Next 8 weeks when the list reaches its end.
@@ -662,8 +705,9 @@ final class WeekHistoryModel {
         for week in fetched where !known.contains(week.weekStart) {
             result.append(Week(weekStart: week.weekStart, postIDs: week.postIDs, isCurrent: week.weekStart == current, collages: week.collages))
         }
-        // The current week is synthesised when it has no posts (docs/API.md §6.4 note in the spec).
-        if !result.contains(where: { $0.weekStart == current }) {
+        // The current week is synthesised when it has no posts (docs/API.md §6.4 note in the spec) — not above a week the
+        // calendar jumped to.
+        if startsAt == nil, !result.contains(where: { $0.weekStart == current }) {
             result.append(Week(weekStart: current, postIDs: [], isCurrent: true))
         }
         weeks = result.sorted { $0.weekStart > $1.weekStart }
@@ -702,7 +746,7 @@ final class WeekHistoryModel {
             for index in weeks.indices { weeks[index].postIDs.removeAll { $0 == postID } }
             weeks.removeAll { $0.isBlank && !$0.isCurrent }
             posts[postID] = nil
-            if weeks.allSatisfy(\.isBlank) { line = .empty }
+            if startsAt == nil, weeks.allSatisfy(\.isBlank) { line = .empty }
         case let .postInserted(post):
             guard post.groupID == groupID,
                   let index = weeks.firstIndex(where: { $0.weekStart == SocialCalendar.weekStart(containing: post.visibleAt, in: timeZone) }),
@@ -715,5 +759,40 @@ final class WeekHistoryModel {
         default:
             break
         }
+    }
+}
+
+/// One month of the history calendar (`week.history.layout.calendar`): a seven-column grid, Monday first, with the days
+/// that have something (`group_history_months.days`) — the only ones that open a week.
+struct HistoryCalendarMonth: Identifiable, Equatable {
+    /// The first day of the month.
+    let month: LocalDate
+    /// Empty cells before the 1st (0 when the month starts on a Monday).
+    let leadingBlanks: Int
+    /// The month's days in order.
+    let days: [LocalDate]
+    /// The days that open a week.
+    let active: Set<LocalDate>
+    /// The week the month title jumps to (`newest_week`).
+    let newestWeek: LocalDate
+
+    var id: LocalDate { month }
+
+    init(_ row: HistoryMonth) {
+        let first = LocalDate(year: row.month.year, month: row.month.month, day: 1) ?? row.month
+        let next = first.month == 12
+            ? LocalDate(year: first.year + 1, month: 1, day: 1)
+            : LocalDate(year: first.year, month: first.month + 1, day: 1)
+        let count = max(0, (next?.dayNumber ?? first.dayNumber) - first.dayNumber)
+        month = first
+        leadingBlanks = Self.mondayIndex(of: first)
+        days = (0..<count).map { first.adding(days: $0) }
+        active = Set(row.days)
+        newestWeek = row.newestWeek
+    }
+
+    /// 0 for Monday … 6 for Sunday (1970-01-01, day 0, was a Thursday).
+    static func mondayIndex(of day: LocalDate) -> Int {
+        ((day.dayNumber + 3) % 7 + 7) % 7 // provenance-ok: calendar arithmetic (days in a week)
     }
 }

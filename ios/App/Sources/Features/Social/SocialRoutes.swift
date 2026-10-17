@@ -10,6 +10,7 @@
 //   walls.member  .social(.wallMember(userID:))              (groups.settings member row)
 //   week.history  .social(.weekHistory(groupID:))            (groups.screen: the group's weeks)
 //   albums.list   .social(.albums(groupID:))                 (groups.screen albums entry)
+//   search.photos .social(.search(groupID:))                 (groups.list search glyph: nil = all groups; groups.screen: that group)
 //   week.recap    AppModal.social(.recaps(groupID:))         (groups.screen recaps entry → the recap list, a page sheet;
 //                                                             label `week.recap.open`)
 //   week.edit     .social(.weekEdit(groupID:recapID:))       (modal; normally opened from week.recap's thumbnail)
@@ -34,6 +35,8 @@ enum SocialRoute: Hashable {
     case album(groupID: String, albumID: String)
     /// `favorites`: your private favorites (walls.mine's heart capsule).
     case favorites
+    /// `search.photos`: in one group (groups.screen) or, nil, all your groups (groups.list).
+    case search(groupID: String?)
     /// `collage.view` by the collage's id (a widget showing the group's collage of the day): resolves its invitation,
     /// then shows capture's collage screen.
     case collage(groupID: String, collageID: String)
@@ -74,6 +77,8 @@ struct SocialDestination: View {
             FavoritesScreen()
         case let .collage(groupID, collageID):
             CollageLinkScreen(groupID: groupID, collageID: CollageID(collageID))
+        case let .search(groupID):
+            SearchPhotosScreen(groupID: groupID)
         }
     }
 }

@@ -19,7 +19,8 @@ app: photos, add tile, blank placeholders). Here the weeks are the group's: ever
 
 ## Structure (top → bottom; one vertical scroll; page `color.global.background` / `.background.android`)
 
-1. **Header** (C-02 pushed): back chevron + the group's name in the display serif (`headerTitle`), one line, tail truncation.
+1. **Header** (C-02 pushed): back chevron + the group's name in the display serif (`headerTitle`), one line, tail truncation;
+   once `group_history_months` has returned a month, the trailing glyph `icon.global.calendar` → the calendar (below).
 2. **Week sections** (`week.history.layout.weeks`), newest first, the first section's header cap top
    `size.global.titleToContent` below the title baseline:
    - **header** (C-20): `week.history.header.title` ("Week 27", text role `sectionLabel`, `color.global.textPrimary`), one
@@ -49,6 +50,26 @@ app: photos, add tile, blank placeholders). Here the weeks are the group's: ever
 
 A week with neither shows no "•••".
 
+### Calendar — jump to a date (`week.history.layout.calendar`; owner decision 34, research #21)
+
+Mechanics: BeReal's Memories calendar — past posts are reached from a month grid where only the days that have one open
+(https://help.bereal.com/hc/en-us/articles/7531349180829, accessed 2026-10-17). Drawn with Retro's components.
+
+- **Presentation**: page sheet (C-29); C-11 close circle (`week.history.calendar.a11y.close`) at the leading margin, the
+  centred title `week.history.calendar.title` ("Memories", text role `sheetTitle`).
+- **Months**, newest first (`group_history_months`): the month and year (locale format, text role `sectionLabel`,
+  `color.global.textPrimary`), `size.global.sectionHeaderToContent` above a seven-column grid, Monday first (the locale's
+  weekday initials, text role `meta`, `color.global.textSecondary`), inside `size.global.screenMargin`; months
+  `size.global.sectionGap` apart.
+- **Days**: cells at least `size.global.minTouchTarget.ios` / `.android` high. A day in the month's `days` is a button:
+  its number (text role `pill`, `color.global.textPrimary`) on a `color.global.control` circle of `size.global.pillHeight`
+  (C-06 fill; Android `color.global.surfaceSecondary.android`, as the C-06 fill there); every other day shows its number in `listSubtitle`, `color.global.textTertiary`, and does nothing.
+- **Jump**: a day → the week containing it; the month title (a button) → that month's `newest_week`. The sheet closes and
+  the list shows that week at its top: a week already loaded is scrolled to; otherwise the list starts at that week
+  (`group_history_weeks(p_before_week => week + 7)`, whose first week is that one) and pages older from there as usual.
+  Pull to refresh returns to the newest week (the current week first again).
+- No count anywhere (tenet 2): the grid marks days, it never says how many photos a day or month holds.
+
 ## Elements
 
 | element | component · tokens | copy | behaviour |
@@ -60,6 +81,10 @@ A week with neither shows no "•••".
 | add tile | C-17 add tile | `week.history.a11y.add` | → `camera.capture` for this group (`DeepLink.camera(groupID:)`) |
 | empty-day tile | C-17 empty-day tile | `week.history.a11y.emptyDay` | not interactive |
 | placeholder tile | C-17 placeholder tile | `week.history.a11y.emptyDay` | not interactive |
+| calendar glyph | C-02 trailing glyph `icon.global.calendar` | `week.history.calendar.open` | → the calendar sheet (shown once the months are known) |
+| calendar day | C-06 fill circle (`size.global.pillHeight`, `color.global.control`), text role `pill` | the full date (locale, spoken) | → that day's week |
+| calendar month title | text role `sectionLabel` | month and year (locale) | → the month's `newest_week` |
+| other day | text role `listSubtitle`, `color.global.textTertiary` | `week.history.a11y.emptyDay` | not interactive |
 
 ## States
 
@@ -103,6 +128,8 @@ A week with neither shows no "•••".
 | `color.global.textSecondary.android` | `color.global.background.android` | text | **4.00:1 FAIL** | 6.85:1 pass | the same on Android |
 | `color.global.emptyTileText` | `color.global.control` | text | **1.25:1 FAIL** | **1.91:1 FAIL** | empty-day tile text (C-17 failure 3; the label carries the date) |
 | `color.global.textPrimary` | `color.global.control` | nontext | 18.59:1 pass | 15.13:1 pass | "+" on the add tile |
+| `color.global.textPrimary` | `color.global.control` | text | 18.59:1 pass | 15.13:1 pass | calendar day numbers that open a week |
+| `color.global.textTertiary` | `color.global.background` | text | **1.80:1 FAIL** | **2.48:1 FAIL** | calendar days without anything (inactive: WCAG exempts them; CONTRAST failure 7) |
 
   Weekday labels on photos: photo-dependent under the scrim (C-17 failure 8). Reported, not adjusted.
 
@@ -114,6 +141,8 @@ A week with neither shows no "•••".
   posts. Week number: ISO-8601 of `week_start` in `groups.time_zone` (`week_start_isodow` = Monday).
 - `posts` / `media` (`thumb_path`, `created_at` in the group's time zone for weekdays); `weekly_recaps` (`week_start`,
   `status = ready`) for "View recap".
+- `group_history_months(p_group_id)` (migration 0045): `month`, `days` (the days with something), `newest_week`, newest
+  month first; read with the screen, again on refresh; a failure leaves the glyph out (the list itself is unaffected).
 - Realtime: `post_deleted` → drop tiles; `posts` INSERT → add to the current week.
 - Navigation in: `groups.screen` (the group's weeks). Out: `photo.viewer`, `collage.view`, `week.recap`, `week.edit`
   (album sheet), `camera.capture`.
