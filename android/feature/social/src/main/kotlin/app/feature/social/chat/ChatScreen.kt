@@ -176,6 +176,10 @@ class ChatUiState(
     var reactionsFor by mutableStateOf(reactionsFor)
     var confirmUnsend by mutableStateOf(confirmUnsend)
     var confirmDeletePhoto by mutableStateOf(confirmDeletePhoto)
+    /** An admin's "Remove" on someone else's message waits for its confirmation (`chat.thread.adminRemove.*`). */
+    var confirmAdminRemove by mutableStateOf<String?>(null)
+    /** The view model's admin removal (migration 0054), set by [ChatScreen]. */
+    var onAdminRemove: (messageId: String) -> Unit = {}
     /** The text / voice message whose picker or Reactions sheet is open (`chat.reactions.layout.messageReactions`). */
     var messagePickerFor by mutableStateOf(messagePickerFor)
     var messageReactionsFor by mutableStateOf(messageReactionsFor)
@@ -315,6 +319,7 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
     }
     val clipboard = LocalClipboard.current
     val copied = stringRes(R.string.chat_thread_toast_copied)
+    ui.onAdminRemove = { id -> haptics.perform(Tokens.Haptics.globalWarning); vm.adminRemove(id) }
 
     ChatContent(
         state = state,
@@ -809,6 +814,17 @@ private fun ThreadDialogs(
             onConfirm = { ui.confirmUnsend = null; onUnsend(id) },
             dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
             onDismiss = { ui.confirmUnsend = null },
+            destructive = true,
+        )
+    }
+    ui.confirmAdminRemove?.let { id ->
+        SystemAlertDialog(
+            title = stringRes(R.string.chat_thread_adminremove_title),
+            text = stringRes(R.string.chat_thread_adminremove_message),
+            confirmLabel = stringRes(R.string.chat_thread_adminremove_confirm),
+            onConfirm = { ui.confirmAdminRemove = null; ui.onAdminRemove(id) },
+            dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
+            onDismiss = { ui.confirmAdminRemove = null },
             destructive = true,
         )
     }
@@ -1335,6 +1351,7 @@ private fun menuItems(
     val save = stringRes(R.string.chat_thread_menu_save)
     val report = stringRes(R.string.chat_thread_menu_report)
     val unsend = stringRes(R.string.chat_thread_menu_delete)
+    val adminRemove = stringRes(R.string.chat_thread_menu_adminremove)
     val deletePhoto = stringRes(R.string.chat_thread_menu_deletephoto)
     val retry = stringRes(R.string.chat_thread_menu_retry)
     val edit = stringRes(R.string.chat_thread_menu_edit)
@@ -1353,6 +1370,8 @@ private fun menuItems(
         if (row.pending) return@buildList
         // `chat.thread.layout.editMessage`: my own text inside the edit window.
         if (row.kind == MessageKind.Text && row.canEdit) add(DsMenuItem(edit, { onEdit(row) }))
+        // Group admins on someone else's message (migration 0054), before Report Message.
+        if (row.canAdminRemove) add(DsMenuItem(adminRemove, { ui.confirmAdminRemove = row.id }, destructive = true))
         when {
             row.kind == MessageKind.Photo && row.mine -> add(DsMenuItem(deletePhoto, { ui.confirmDeletePhoto = row.message.postId }, destructive = true))
             row.kind == MessageKind.Photo -> add(DsMenuItem(report, { row.message.postId?.let(nav.reportPost) }, destructive = true))

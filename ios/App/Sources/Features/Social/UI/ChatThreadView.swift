@@ -23,6 +23,8 @@ struct ChatThreadView: View {
     @State private var messagePickerTarget: MessageReactionTarget?
     @State private var messageReactionsTarget: MessageReactionTarget?
     @State private var unsendCandidate: Message?
+    /// An admin's "Remove" on someone else's message, waiting for its confirmation (`chat.thread.adminRemove.*`).
+    @State private var adminRemoveCandidate: Message?
     @State private var deletePhotoCandidate: Message?
     /// The bottom-most visible message (keeps the reading position when older pages load or messages arrive).
     @State private var anchor: String?
@@ -118,6 +120,18 @@ struct ChatThreadView: View {
             Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
         } message: { _ in
             Text(Copy.chatThreadDeleteMessageMessage)
+        }
+        .alert(
+            Copy.chatThreadAdminRemoveTitle,
+            isPresented: Binding(get: { adminRemoveCandidate != nil }, set: { if !$0 { adminRemoveCandidate = nil } }),
+            presenting: adminRemoveCandidate
+        ) { message in
+            Button(Copy.chatThreadAdminRemoveConfirm, role: .destructive) {
+                Task { await model.adminRemove(message) }
+            }
+            Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+        } message: { _ in
+            Text(Copy.chatThreadAdminRemoveMessage)
         }
         .confirmationDialog(
             Copy.photoViewerDeleteTitle,
@@ -292,6 +306,7 @@ struct ChatThreadView: View {
             report: report,
             unsend: { unsendCandidate = $0 },
             deletePhoto: { deletePhotoCandidate = $0 },
+            adminRemove: { adminRemoveCandidate = $0 },
             retry: { message in Task { await model.retry(message) } },
             react: { postID, emoji in Task { await model.toggleReaction(postID: postID, emoji: emoji) } },
             openPicker: { pickerTarget = ReactionPickerTarget(postID: $0) },
@@ -436,6 +451,8 @@ struct ChatMessageActions {
     let report: (Message) -> Void
     let unsend: (Message) -> Void
     let deletePhoto: (Message) -> Void
+    /// An admin's "Remove" on someone else's message (migration 0054), confirmed first.
+    let adminRemove: (Message) -> Void
     let retry: (Message) -> Void
     let react: (PostID, String) -> Void
     let openPicker: (PostID) -> Void
@@ -904,6 +921,7 @@ struct ChatLinkPreviewCard: View {
 ///   Unsend (mine); each link of the text is also an accessibility action (`chat.thread.layout.links`)
 /// - voice: the quick-reaction row · Reply · Report Message / Unsend
 /// - photo: the quick-reaction row · Reply · Save (any photo, owner decision 28) · Delete (mine) / Report Message (others')
+/// - others' messages, for group admins: Remove (migration 0054) before Report Message
 /// - my failed message: Retry · Unsend
 struct MessageMenu: ViewModifier {
     let row: ChatRow
@@ -963,6 +981,7 @@ struct MessageMenu: ViewModifier {
                 if row.isMine {
                     Button(Copy.chatThreadMenuDeletePhoto, role: .destructive) { actions.deletePhoto(message) }
                 } else {
+                    adminRemoveItem
                     Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }
                 }
             case .voice:
@@ -971,6 +990,7 @@ struct MessageMenu: ViewModifier {
                 if row.isMine {
                     Button(Copy.chatThreadMenuDelete, role: .destructive) { actions.unsend(message) }
                 } else {
+                    adminRemoveItem
                     Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }
                 }
             default:
@@ -983,9 +1003,18 @@ struct MessageMenu: ViewModifier {
                 if row.isMine {
                     Button(Copy.chatThreadMenuDelete, role: .destructive) { actions.unsend(message) }
                 } else {
+                    adminRemoveItem
                     Button(Copy.chatThreadMenuReport, role: .destructive) { actions.report(message) }
                 }
             }
+        }
+    }
+
+    /// "Remove" for group admins on someone else's message (migration 0054), before Report Message.
+    @ViewBuilder
+    private var adminRemoveItem: some View {
+        if model.canAdminRemove(message) {
+            Button(Copy.chatThreadMenuAdminRemove, role: .destructive) { actions.adminRemove(message) }
         }
     }
 }

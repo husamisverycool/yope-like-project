@@ -405,6 +405,28 @@ final class AccountGroupsTests: XCTestCase {
         XCTAssertEqual(model.members.count, 1)
     }
 
+    func testMakeAdminAndRemoveAsAdminAreOptimistic() async {
+        let fixture = AccountFixture()
+        let group = fixture.familyGroup()
+        let model = GroupSettingsModel(groupID: group.id, data: fixture.data, notifications: StaticNotificationAuthorizer(status: .granted))
+        await model.load()
+        XCTAssertTrue(model.isAdmin)
+        let rui = model.members.first { $0.member.userID == fixture.rui.id }!
+        XCTAssertEqual(rui.member.role, .member)
+        await model.setRole(.admin, of: rui)
+        XCTAssertEqual(model.members.first { $0.id == rui.id }?.member.role, .admin)
+        XCTAssertNil(model.memberError)
+
+        let ruiAdmin = model.members.first { $0.id == rui.id }!
+        fixture.data.failures["setMemberRole"] = .offline
+        await model.setRole(.member, of: ruiAdmin)
+        XCTAssertEqual(model.members.first { $0.id == rui.id }?.member.role, .admin, "restored")
+        XCTAssertNotNil(model.memberError)
+        fixture.data.failures = [:]
+        await model.setRole(.member, of: ruiAdmin)
+        XCTAssertEqual(model.members.first { $0.id == rui.id }?.member.role, .member)
+    }
+
     // MARK: invite (in the app)
 
     func testInviteJoinFallsBackToTheRPCPreviewWithoutADomain() async {

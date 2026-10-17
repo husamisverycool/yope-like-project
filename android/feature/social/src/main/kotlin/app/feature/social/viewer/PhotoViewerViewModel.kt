@@ -115,6 +115,9 @@ data class ViewerState(
     /** "Use as Cover": you are an admin of the photo's group and the photo is still there. */
     val canUseAsCover: Boolean get() = current?.gone != true && current?.post?.groupId?.let { it in adminGroups } == true
 
+    /** "Remove" (migration 0054): someone else's photo, still there, in a group where you are an admin. */
+    val canAdminRemove: Boolean get() = !mine && current?.post != null && current?.gone != true && current?.post?.groupId?.let { it in adminGroups } == true
+
     /** Your own photo that is still there: the menu's first item edits (or adds) its caption (owner decision 34). */
     val canEditCaption: Boolean get() = mine && current?.gone != true && current?.post != null
 
@@ -720,6 +723,40 @@ class PhotoViewerViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
+                _effects.emit(ViewerEffect.DeleteFailed)
+            }
+        }
+    }
+
+    /**
+     * `admin_delete_post` (group admins, after the confirmation `photo.viewer.adminRemove.*`): someone else's photo leaves
+     * this group only (the author's posts of it in other groups stay); the viewer moves on or closes.
+     */
+    fun adminRemove() {
+        val s = _state.value
+        if (!s.canAdminRemove) return
+        val post = s.current?.post ?: return
+        viewModelScope.launch {
+            try {
+                data.adminDeletePost(post.id)
+                _state.update { st ->
+                    val photos = st.photos.filterNot { it.postId == post.id }
+                    st.copy(photos = photos, index = st.index.coerceAtMost((photos.size - 1).coerceAtLeast(0)), closed = photos.isEmpty())
+                }
+                prefetch()
+                _effects.emit(ViewerEffect.Deleted)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                val error = e.dataError()
+                if (error is DataError.Api && error.code == ApiError.PostNotFound) {
+                    markGone(post.id)
+                    return@launch
+                }
+                if (error is DataError.Api && error.code == ApiError.NotGroupAdmin) {
+                    roles[post.groupId] = false
+                    _state.update { it.copy(adminGroups = it.adminGroups - post.groupId) }
+                }
                 _effects.emit(ViewerEffect.DeleteFailed)
             }
         }

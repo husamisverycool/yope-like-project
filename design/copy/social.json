@@ -346,6 +346,45 @@
       "level": "SOURCED",
       "notes": "Confirm button restates the action (retro.voice.confirm)."
     },
+    "chat.thread.menu.adminRemove": {
+      "text": "Remove",
+      "origin": "adapted",
+      "source_app": "WhatsApp",
+      "surface": "chat.thread",
+      "evidence": "https://faq.whatsapp.com/1370476507114859 (WhatsApp Help Center, 'How to delete messages', accessed 2026-10-17): 'Group admins have two days after someone else sends a message to request to Delete for Everyone.'",
+      "pattern": "retro.voice.menu-labels ('Reply', 'Copy', 'Unsend', 'Report Message' in the same menu)",
+      "level": "SOURCED",
+      "notes": "Group admins, on someone else's text or voice message (admin_delete_message, migration 0054). 'Delete for Everyone' → 'Remove' (groups.settings.members.menu.remove); 'Unsend' stays the author's own item. A photo message is removed from the photo viewer."
+    },
+    "chat.thread.adminRemove.title": {
+      "text": "Remove this message?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "design/copy/social.json chat.thread.deleteMessage.title ('Unsend message?'); Retro edit_address_delete_confirmation_title ('Delete address?')",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
+      "level": "SOURCED",
+      "notes": "Verb swap unsend → remove."
+    },
+    "chat.thread.adminRemove.message": {
+      "text": "It will be removed for everyone in the group. They will not be notified.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "design/copy/social.json chat.thread.deleteMessage.message ('It will be removed for everyone in the group.'); docs/API.md admin_delete_message (the author is not notified); Retro 'They will not be notified' (retro.voice.confirm)",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
+      "level": "SOURCED"
+    },
+    "chat.thread.adminRemove.confirm": {
+      "text": "Yes, remove",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "design/copy/account.json groups.settings.remove.confirm ('Yes, remove', from Retro edit_address_delete_confirmation_positive_cta 'Yes, delete')",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
+      "level": "SOURCED",
+      "notes": "Verb swap delete → remove."
+    },
     "chat.thread.system.joined": {
       "text": "{name} joined",
       "origin": "verbatim",
@@ -917,6 +956,45 @@
       "surface": "photo.viewer",
       "evidence": "design/research/platform.md (HIG Alerts: 'Cancel')",
       "level": "PLATFORM"
+    },
+    "photo.viewer.menu.adminRemove": {
+      "text": "Remove",
+      "origin": "adapted",
+      "source_app": "WhatsApp",
+      "surface": "photo.viewer",
+      "evidence": "https://faq.whatsapp.com/1370476507114859 (WhatsApp Help Center, 'How to delete messages', accessed 2026-10-17): 'Group admins have two days after someone else sends a message to request to Delete for Everyone.'",
+      "pattern": "retro.voice.menu-labels ('Share to my week', 'Add to Album', 'Hide photo', 'Delete from Photos', 'Copy Link')",
+      "level": "SOURCED",
+      "notes": "Group admins, on someone else's photo (admin_delete_post, migration 0054). 'Delete for Everyone' → 'Remove': the verb of admins' other removals here (groups.settings.members.menu.remove 'Remove from Group'); 'Delete' stays the author's own item."
+    },
+    "photo.viewer.adminRemove.title": {
+      "text": "Remove this photo?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "design/copy/social.json albums.view.delete.title ('Delete this album?', from Retro edit_address_delete_confirmation_title 'Delete address?')",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
+      "level": "SOURCED",
+      "notes": "Verb swap delete → remove; noun album → photo."
+    },
+    "photo.viewer.adminRemove.message": {
+      "text": "It will be removed from this group for everyone. They will not be notified.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "docs/API.md admin_delete_post (one group's copy, delete_post's cascade, the author is not notified); https://faq.whatsapp.com/1370476507114859 (WhatsApp Help Center, 'How to delete messages', accessed 2026-10-17) ('Delete for Everyone'); Retro 'They will not be notified' (retro.voice.confirm)",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
+      "level": "SOURCED"
+    },
+    "photo.viewer.adminRemove.confirm": {
+      "text": "Yes, remove",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "photo.viewer",
+      "evidence": "design/copy/account.json groups.settings.remove.confirm ('Yes, remove', from Retro edit_address_delete_confirmation_positive_cta 'Yes, delete')",
+      "pattern": "retro.voice.confirm ('Unfriend %1$s?' / 'They will not be notified', 'Block %1$s?', 'Delete address?' / 'Yes, delete')",
+      "level": "SOURCED",
+      "notes": "Verb swap delete → remove."
     },
     "photo.viewer.toast.saved": {
       "text": "Saved!",

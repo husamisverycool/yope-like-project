@@ -315,6 +315,24 @@ class GroupsViewModelsTest {
         assertTrue(vm.state.value.failed)
     }
 
+    @Test fun makeAdminAndRemoveAsAdminRollBackOnFailure() = runTest(main.dispatcher) {
+        val backend = world()
+        val vm = GroupSettingsViewModel(fakeEnvironment(backend), "g1")
+        val sam = vm.state.value.members!!.first { it.userId == "u-sam" }
+        assertTrue(!sam.admin)
+        vm.setAdmin(sam, true)
+        testScheduler.advanceUntilIdle()
+        assertTrue(vm.state.value.members!!.first { it.userId == "u-sam" }.admin)
+        assertEquals(MemberRole.Admin, backend.members.getValue("g1").first { it.userId == "u-sam" }.role)
+        assertTrue("setMemberRole" in backend.calls)
+
+        backend.failures["setMemberRole"] = DataError.Network
+        vm.setAdmin(vm.state.value.members!!.first { it.userId == "u-sam" }, false)
+        testScheduler.advanceUntilIdle()
+        assertTrue("restored", vm.state.value.members!!.first { it.userId == "u-sam" }.admin)
+        assertTrue(vm.state.value.failed)
+    }
+
     @Test fun leaveFromSettingsGoesHome() = runTest(main.dispatcher) {
         val backend = world()
         val env = fakeEnvironment(backend, scope = backgroundScope)

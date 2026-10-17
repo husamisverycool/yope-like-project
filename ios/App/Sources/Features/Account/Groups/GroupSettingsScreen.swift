@@ -162,7 +162,8 @@ struct GroupSettingsView: View {
     }
 
     /// C-16 in a C-14 row: avatar `size.global.avatarPicker`, first name (`listTitle`), "You" / "Admin" (`listSubtitle`,
-    /// grey); others' rows end with "•••" (native menu: Remove from Group for admins, Report Profile, Block Profile —
+    /// grey); others' rows end with "•••" (native menu: Make Admin / Remove as Admin and Remove from Group for admins,
+    /// Report Profile, Block Profile —
     /// destructive items red). The row opens that person's wall (walls.member) inside the sheet.
     private func memberRow(_ member: MemberProfile) -> some View {
         let isMe = member.member.userID == model.me
@@ -196,6 +197,11 @@ struct GroupSettingsView: View {
             if !isMe {
                 HeaderIconMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.groupsSettingsMembersMoreAccessibilityLabel) {
                     if model.isAdmin {
+                        if member.member.role == .admin {
+                            Button(Copy.groupsSettingsMembersMenuDismissAdmin) { Task { await model.setRole(.member, of: member) } }
+                        } else {
+                            Button(Copy.groupsSettingsMembersMenuMakeAdmin) { Task { await model.setRole(.admin, of: member) } }
+                        }
                         Button(Copy.groupsSettingsMembersMenuRemove, role: .destructive) { removing = member }
                     }
                     Button(Copy.groupsSettingsMembersMenuReport, role: .destructive) {

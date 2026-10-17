@@ -121,6 +121,20 @@ final class ChatThreadModel {
 
     func isMine(_ message: Message) -> Bool { message.authorID == me }
 
+    /// I am an admin of this group (`group_members.role`).
+    var isAdmin: Bool { members.contains { $0.member.userID == me && $0.member.role == .admin } }
+
+    /// "Remove" (migration 0054, admins): someone else's text, voice or photo message that reached the server. The
+    /// joined / left lines have no menu.
+    func canAdminRemove(_ message: Message) -> Bool {
+        guard isAdmin, !isMine(message), !pending.contains(message.id) else { return false }
+        switch message.kind {
+        case .text, .voice: return true
+        case .photo: return message.postID != nil
+        default: return false
+        }
+    }
+
     func profile(_ id: UserID) -> Profile? { profiles[id] }
 
     func post(of message: Message) -> PostWithMedia? { message.postID.flatMap { posts[$0] } }
@@ -727,6 +741,41 @@ final class ChatThreadModel {
             phase = messages.isEmpty ? .empty : .ready
             signals.emit(.failed)
             signals.post(.deleteFailed)
+        }
+    }
+
+    /// An admin's "Remove" after its confirmation (`chat.thread.adminRemove.*`): someone else's text / voice message
+    /// (`admin_delete_message`) or photo (`admin_delete_post`, this group's copy only). Gone at once, back on failure.
+    func adminRemove(_ message: Message) async {
+        guard canAdminRemove(message) else { return }
+        signals.emit(.warning)
+        if message.kind == .photo, let postID = message.postID {
+            let snapshot = (messages, posts, reactions)
+            removePost(postID)
+            do {
+                try await data.adminDeletePost(id: postID, groupID: groupID)
+                signals.post(.photoDeleted)
+            } catch {
+                if SocialFailure(error) == .notFound { return }
+                if SocialFailure(error) == .offline { isOffline = true }
+                (messages, posts, reactions) = snapshot
+                phase = messages.isEmpty ? .empty : .ready
+                signals.emit(.failed)
+                signals.post(.deleteFailed)
+            }
+            return
+        }
+        guard let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
+        messages.remove(at: index)
+        if messages.isEmpty { phase = .empty }
+        do {
+            try await data.adminDeleteMessage(id: message.id, groupID: groupID)
+        } catch {
+            if SocialFailure(error) == .notFound { return }
+            if SocialFailure(error) == .offline { isOffline = true }
+            insert(message)
+            phase = .ready
+            signals.emit(.failed)
         }
     }
 

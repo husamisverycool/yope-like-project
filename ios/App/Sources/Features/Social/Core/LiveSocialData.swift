@@ -84,6 +84,10 @@ struct LiveSocialData: SocialDataSource {
         try await environment.chat.delete(messageID: id, groupID: groupID)
     }
 
+    func adminDeleteMessage(id: MessageID, groupID: GroupID) async throws {
+        try await environment.chat.adminDelete(messageID: id, groupID: groupID)
+    }
+
     func editMessage(id: MessageID, body: String) async throws -> Message {
         try await environment.chat.edit(messageID: id, body: body)
     }
@@ -162,6 +166,11 @@ struct LiveSocialData: SocialDataSource {
         try await environment.posts.deleteMedia(id: id)
         memo.forget(mediaID: id)
         await environment.signedURLs.invalidate(mediaID: id)
+    }
+
+    func adminDeletePost(id: PostID, groupID: GroupID) async throws {
+        try await environment.posts.adminDeletePost(id: id)
+        memo.forget(postID: id)
     }
 
     func editCaption(postID: PostID, caption: String) async throws -> Post {
@@ -378,6 +387,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func replies(postID: PostID) async throws -> [Message] { try fail() }
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message { try fail() }
     func deleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
+    func adminDeleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
     func editMessage(id: MessageID, body: String) async throws -> Message { try fail() }
     func publicConfig() async throws -> PublicAppConfig { try fail() }
     func setLinkPreview(messageID: MessageID, preview: LinkPreviewDraft) async throws -> Message { try fail() }
@@ -391,6 +401,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func cachedPosts(groupID: GroupID) async -> [PostWithMedia] { [] }
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia] { [] }
     func deleteMedia(id: MediaID) async throws { try fail() as Void }
+    func adminDeletePost(id: PostID, groupID: GroupID) async throws { try fail() as Void }
     func editCaption(postID: PostID, caption: String) async throws -> Post { try fail() }
     func downloadItems(_ scope: DownloadScope, before: Date?) async throws -> [DownloadItem] { try fail() }
     func reactions(postIDs: [PostID]) async throws -> [Reaction] { try fail() }
@@ -466,6 +477,13 @@ final class SocialMemo: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         if let known = posts[post.id] { posts[post.id] = PostWithMedia(post: post, media: known.media) }
+    }
+
+    /// One group's copy of a photo removed by an admin (`admin_delete_post`); the photo's other posts stay.
+    func forget(postID: PostID) {
+        lock.lock()
+        defer { lock.unlock() }
+        posts[postID] = nil
     }
 
     func forget(mediaID: MediaID) {

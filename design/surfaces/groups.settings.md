@@ -30,7 +30,8 @@ between rows); sections `size.global.sectionGap` apart; footers under a group in
 1. **Members** (`groups.settings.members.header`): one people row per member (C-16 in a C-14 row): avatar
    `size.global.avatarPicker` (37), first name (`listTitle`), subtitle (`listSubtitle` `color.global.textSecondary`):
    `groups.settings.members.you` on your row, `groups.settings.members.admin` for admins; trailing `icon.global.more`
-   for admins on other members' rows (and for everyone on others' rows to report / block). Last row: outline capsule
+   for admins on other members' rows (and for everyone on others' rows to report / block); an admin's "•••" also makes
+   the member an admin or removes them as admin (migration 0054). Last row: outline capsule
    C-07 (`icon.global.add` + `groups.settings.members.invite.<kind>`) → `groups.invite`.
 2. **Notifications** (`groups.settings.notifications.header`): row `groups.settings.notifications.updates` with a native
    switch (on = not muted); row `groups.settings.notifications.quietHours` with `icon.global.chevron` →
@@ -47,7 +48,8 @@ between rows); sections `size.global.sectionGap` apart; footers under a group in
 
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
-| member row | C-16 in C-14 (`size.global.avatarPicker`, `listTitle`, `listSubtitle`) | first name (data), `groups.settings.members.you` / `.admin`; `groups.settings.members.more.accessibilityLabel` | tap → `walls.member` (that person's wall); "•••" → native menu (C-29, `groups.screen.layout.menu` look): `groups.settings.members.menu.remove` (admins, destructive), `.menu.report`, `.menu.block` (destructive) |
+| member row | C-16 in C-14 (`size.global.avatarPicker`, `listTitle`, `listSubtitle`) | first name (data), `groups.settings.members.you` / `.admin`; `groups.settings.members.more.accessibilityLabel` | tap → `walls.member` (that person's wall); "•••" → native menu (C-29, `groups.screen.layout.menu` look): `groups.settings.members.menu.makeAdmin` on a member / `.menu.dismissAdmin` on an admin (admins; not destructive), `groups.settings.members.menu.remove` (admins, destructive), `.menu.report`, `.menu.block` (destructive) |
+| Make Admin / Remove as Admin | menu items (WhatsApp "Make group admin" / "Dismiss as admin", faq.whatsapp.com/633713745095781) | `groups.settings.members.menu.makeAdmin`, `.menu.dismissAdmin` | `set_member_role(p_group_id, p_user_id, p_role)`; no confirmation (WhatsApp asks none); the row's `groups.settings.members.admin` line changes at once and comes back on failure (`last_admin`, offline) with the message-only alert `groups.settings.error.generic` |
 | remove alert | `settings.account.layout.alert` | `groups.settings.remove.title` ({first_name}), `.remove.message`, `.remove.confirm`, `groups.settings.alert.cancel` | `remove_member` |
 | invite capsule | C-07 | `groups.settings.members.invite.friends` / `.family` / `.roommates` / `.custom` | → `groups.invite` |
 | Group updates | C-14 row + native switch (`color.global.selection` / `color.global.system.primary`); `settings.root.layout.toggleHaptic` | `groups.settings.notifications.updates`, `.footer` | `set_group_muted(p_group_id, !on)` |
@@ -94,7 +96,9 @@ Row presses → `haptic.global.tap` (Android). Switches: `settings.root.layout.t
 
 ## Data & actions
 
-- Members: `group_members` + `profiles` (docs/API.md §5.4). Remove: `remove_member` (admins). Leave: `leave_group`.
+- Members: `group_members` + `profiles` (docs/API.md §5.4). Remove: `remove_member` (admins). Make Admin / Remove as Admin:
+  `set_member_role` (admins, migration 0054; the server never leaves the group without an admin, `last_admin`; the menu is
+  on other members' rows only, so you never dismiss yourself here). Leave: `leave_group`.
 - Mute: `set_group_muted`. Invitation: `set_group_invitation_hours` / `set_group_invitation_paused` (admins, §12 item 1).
 - Quiet hours are per person (`settings.notifications`, `set_quiet_hours`).
 - In: `groups.screen` (settings capsule, member stack). Out: `groups.invite`, `groups.create` (edit),

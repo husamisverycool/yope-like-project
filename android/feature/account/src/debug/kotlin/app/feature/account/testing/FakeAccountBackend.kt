@@ -228,6 +228,20 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
         members[groupId]?.removeAll { it.userId == userId }
     }
 
+    /** Like `set_member_role`: admins only; never leaves the group without an admin (`last_admin`). */
+    override suspend fun setMemberRole(groupId: String, userId: String, role: MemberRole) {
+        call("setMemberRole")
+        val rows = members[groupId] ?: throw DataException(DataError.Api(app.data.error.ApiError.NotGroupMember, "not_group_member", 403, null))
+        if (rows.none { it.userId == meId && it.role == MemberRole.Admin }) {
+            throw DataException(DataError.Api(app.data.error.ApiError.NotGroupAdmin, "not_group_admin", 403, null))
+        }
+        if (rows.none { it.userId == userId }) throw DataException(DataError.Api(app.data.error.ApiError.MemberNotFound, "member_not_found", 404, null))
+        if (role == MemberRole.Member && rows.none { it.userId != userId && it.role == MemberRole.Admin }) {
+            throw DataException(DataError.Api(app.data.error.ApiError.LastAdmin, "last_admin", 409, null))
+        }
+        rows.replaceAll { if (it.userId == userId) it.copy(role = role) else it }
+    }
+
     override suspend fun setMuted(groupId: String, muted: Boolean) {
         call("setMuted")
         members[groupId]?.replaceAll { if (it.userId == meId) it.copy(muted = muted) else it }

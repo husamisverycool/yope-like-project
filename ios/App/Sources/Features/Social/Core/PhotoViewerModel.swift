@@ -195,6 +195,12 @@ final class PhotoViewerModel {
     /// The photo on screen is one of my favorites (the menu offers Unfavorite).
     var isCurrentFavorite: Bool { current.map { favorites.contains($0.post.mediaID) } ?? false }
 
+    /// "Remove" (migration 0054): someone else's photo, still there, in a group where I am an admin.
+    var canAdminRemoveCurrent: Bool {
+        guard let post = current, !isCurrentGone, !isOwn(post) else { return false }
+        return adminGroups.contains(post.post.groupID)
+    }
+
     /// "Use as Cover": I am an admin of the photo's group and the photo is still there.
     var canUseCurrentAsCover: Bool {
         guard let post = current, !isCurrentGone else { return false }
@@ -584,6 +590,29 @@ final class PhotoViewerModel {
         } catch {
             if SocialFailure(error) != .notFound {
                 if SocialFailure(error) == .offline { isOffline = true }
+                (postIDs, selection, posts, reactions) = snapshot
+                isClosed = false
+                signals.emit(.failed)
+                signals.post(.deleteFailed)
+                return
+            }
+        }
+        signals.post(.photoDeleted)
+    }
+
+    /// `admin_delete_post` after the confirmation (`photo.viewer.adminRemove.*`): someone else's photo leaves this group
+    /// only (the author's posts of it in other groups stay). The viewer moves on at once and puts it back on failure.
+    func adminRemoveCurrent() async {
+        guard let post = current, canAdminRemoveCurrent else { return }
+        signals.emit(.warning)
+        let snapshot = (postIDs, selection, posts, reactions)
+        removeFromContext([post.id])
+        do {
+            try await data.adminDeletePost(id: post.id, groupID: post.post.groupID)
+        } catch {
+            if SocialFailure(error) != .notFound {
+                if SocialFailure(error) == .offline { isOffline = true }
+                if DataError.from(error).apiCode == .notGroupAdmin { adminGroups.remove(post.post.groupID) }
                 (postIDs, selection, posts, reactions) = snapshot
                 isClosed = false
                 signals.emit(.failed)

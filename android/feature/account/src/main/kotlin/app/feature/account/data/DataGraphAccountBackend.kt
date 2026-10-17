@@ -10,6 +10,7 @@ import app.data.model.GroupKind
 import app.data.model.GroupMember
 import app.data.model.HiddenMemory
 import app.data.model.Media
+import app.data.model.MemberRole
 import app.data.model.NotificationSettings
 import app.data.model.Post
 import app.data.model.Profile
@@ -105,6 +106,7 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
     override suspend fun joinGroup(token: String): Group = graph.groups.joinGroup(token)
     override suspend fun leaveGroup(groupId: String) = graph.groups.leaveGroup(groupId)
     override suspend fun removeMember(groupId: String, userId: String) = graph.groups.removeMember(groupId, userId)
+    override suspend fun setMemberRole(groupId: String, userId: String, role: MemberRole) = graph.groups.setMemberRole(groupId, userId, role)
     override suspend fun setMuted(groupId: String, muted: Boolean) = graph.groups.setMuted(groupId, muted)
     override suspend fun setInvitationHours(groupId: String, start: LocalTime?, end: LocalTime?): Group = graph.groups.setInvitationHours(groupId, start, end)
     override suspend fun setInvitationPaused(groupId: String, paused: Boolean): Group = graph.groups.setInvitationPaused(groupId, paused)
@@ -179,6 +181,7 @@ class UnconfiguredAccountBackend : AccountBackend {
     override suspend fun joinGroup(token: String): Group = fail()
     override suspend fun leaveGroup(groupId: String) = fail()
     override suspend fun removeMember(groupId: String, userId: String) = fail()
+    override suspend fun setMemberRole(groupId: String, userId: String, role: MemberRole) = fail()
     override suspend fun setMuted(groupId: String, muted: Boolean) = fail()
     override suspend fun setInvitationHours(groupId: String, start: LocalTime?, end: LocalTime?): Group = fail()
     override suspend fun setInvitationPaused(groupId: String, paused: Boolean): Group = fail()
