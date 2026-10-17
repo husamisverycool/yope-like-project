@@ -52,7 +52,11 @@ Page background #FFFFFF (`color.global.background` light value, both schemes —
    `invite.web.opacity.pillDisabled`, `aria-busy="true"`. `invite.web.size.pillToFooter` (20) below.
 5. **Footer**: `invite.web.footer.terms` & `invite.web.footer.privacy` links ("Terms & Privacy"),
    `invite.web.fontSize.footer` (8) #FFFFFF, margin `invite.web.size.footerMargin` (18), centred; each link padded to a
-   44 × 44 hit area.
+   44 × 44 hit area. On an **iPhone**, with `ios.appStoreId` set, the footer starts with `invite.web.getApp` ("Download
+   the app") → the App Store listing, joined to "Terms & Privacy" by Retro's footer separator `&nbsp;·&nbsp;` (its /u/
+   mobile footer, WEBX `mobileInviteFooter`); the same text and hit area. Retro's /j/ mobile footer offers the store
+   download above Terms & Privacy (WEBX `MobileFooter`, store badges — badges are not copied); "Let's go" stays the App
+   Clip, so this is the way to the full app without it.
 
 ## Structure — desktop (viewport > 840)
 
@@ -79,7 +83,7 @@ centred vertically between the page top and the footer.
 | members | C-23 stack | `invite.web.members.title` (aria-label), each avatar alt = first name | static |
 | Let's go | `invite.web.size.pill*`, `invite.web.color.pill*`, `invite.web.opacity.pillDisabled`, `invite.web.duration.pill`, `invite.web.easing.pill`, `invite.web.fontSize.pill`, `invite.web.fontWeight.pill` | `invite.web.cta`, busy `invite.web.opening` | iOS Safari: App Clip (`https://appclip.apple.com/id?p=<bundle id>.Clip&token=<token>`); Android: Play listing with `referrer=invite_token%3D<token>`; installed app: the universal link / App Link opens the app before this page loads |
 | QR (desktop) | `invite.web.size.qrDesktop` | `invite.web.desktop.scan` | encodes `https://<domain>/i/<token>` |
-| footer | `invite.web.fontSize.footer`, `invite.web.size.footerMargin` | `invite.web.footer.terms`, `.privacy` | legal URLs (`config/app.json`) in a new tab |
+| footer | `invite.web.fontSize.footer`, `invite.web.size.footerMargin` | `invite.web.footer.terms`, `.privacy`; iPhone: `invite.web.getApp` first | legal URLs (`config/app.json`) in a new tab; iPhone with `ios.appStoreId`: the App Store listing (same tab) |
 | link preview | `invite.web.layout.linkPreview`, `invite.web.layout.ogImage` | `invite.web.documentTitle`, `invite.web.og.title`, `invite.web.og.description` | server-rendered meta + `GET /i/:token/og.png` |
 
 ## States

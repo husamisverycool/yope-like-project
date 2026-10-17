@@ -29,6 +29,11 @@ export interface PageContext {
   letsGoUrl: string | null;
   /** "Download the app" (desktop) and the error state's store fallback; null while BLOCKED. */
   getAppUrl: string | null;
+  /**
+   * iPhone only: the App Store listing, in the mobile footer next to "Terms & Privacy" for people who want the full app
+   * rather than the App Clip "Let's go" opens; null elsewhere or while `ios.appStoreId` is not set.
+   */
+  mobileAppStoreUrl: string | null;
   /** apple-itunes-app content without app-argument, or null while its ids are BLOCKED. */
   smartBanner: string | null;
   termsUrl: string | null;
@@ -68,12 +73,17 @@ function link(url: string | null, attrs: string, inner: string, blockedKey: stri
 
 /**
  * "Terms & Privacy" (design/surfaces/invite.web.md "Footer"; Retro: Terms<span>&nbsp;&amp;&nbsp;</span>Privacy). The
- * joining ampersand is the spec's own text between the two copy strings.
+ * joining ampersand is the spec's own text between the two copy strings. On a valid invite seen on an iPhone with the
+ * App Store listing set ([withDownload]), "Download the app" comes first, joined by Retro's own footer separator
+ * (`&nbsp;·&nbsp;`, its /u/ mobile footer; its /j/ mobile footer puts the download buttons above Terms & Privacy).
  */
-function footer(ctx: PageContext): string {
+function footer(ctx: PageContext, withDownload = false): string {
   const terms = link(ctx.termsUrl, `class="hit"`, esc(text("invite.web.footer.terms")), "legal.termsUrl", true);
   const privacy = link(ctx.privacyUrl, `class="hit"`, esc(text("invite.web.footer.privacy")), "legal.privacyUrl", true);
-  return `<footer class="footer">${terms}&nbsp;&amp;&nbsp;${privacy}</footer>`;
+  const download = withDownload && ctx.mobileAppStoreUrl
+    ? `<span class="mobile-only">${link(ctx.mobileAppStoreUrl, `class="hit"`, esc(text("invite.web.getApp")), "ios.appStoreId")}&nbsp;·&nbsp;</span>`
+    : "";
+  return `<footer class="footer">${download}${terms}&nbsp;&amp;&nbsp;${privacy}</footer>`;
 }
 
 const BUSY_SCRIPT = `for(const a of document.querySelectorAll("a.pill[href][data-opens]"))a.addEventListener("click",()=>a.setAttribute("aria-busy","true"));addEventListener("pageshow",()=>{for(const a of document.querySelectorAll("a.pill[aria-busy]"))a.removeAttribute("aria-busy")});`;
@@ -144,7 +154,7 @@ ${backdrop}<div class="hero">${qrSvg(inviteUrl, "qr", num("invite.web.size.qrDes
 ${members}</div>
 ${link(ctx.letsGoUrl, `class="pill mobile-only" data-opens`, pillInner, "ios.appStoreId")}
 ${link(ctx.getAppUrl, `class="link hit desktop-only"`, esc(text("invite.web.getApp")), "ios.appStoreId")}
-${footer(ctx)}
+${footer(ctx, true)}
 </main>
 </div>
 <script nonce="${ctx.nonce}">${BUSY_SCRIPT}</script>

@@ -83,7 +83,8 @@ describe("GET /i/:token — valid invite", () => {
         c["invite.web.cta"],
         c["invite.web.opening"],
         c["invite.web.getApp"],
-        FOOTER,
+        // iPhone: the App Store listing first in the footer (Retro's separator)
+        `${c["invite.web.getApp"]} · ${FOOTER}`,
       ].join(" "),
     );
     expect(text).not.toMatch(/[0-9]/); // no member count, no number of anything
@@ -202,13 +203,22 @@ describe("GET /i/:token — valid invite", () => {
   });
 
   it("footer: Terms & Privacy open the owner's documents in a new tab", async () => {
-    const html = await page();
+    const html = await page(preview(), ANDROID);
     expect(html).toContain(
       `<footer class="footer"><a class="hit" href="https://legal.example.com/terms" target="_blank" rel="noopener noreferrer">${c["invite.web.footer.terms"]}</a>&nbsp;&amp;&nbsp;<a class="hit" href="https://legal.example.com/privacy" target="_blank" rel="noopener noreferrer">${c["invite.web.footer.privacy"]}</a></footer>`,
     );
     const blocked = await page(preview(), IPHONE, { ...FULL_APP_JSON, legal: { privacyUrl: null, termsUrl: null } });
     expect(blocked).toContain(`data-blocked="legal.termsUrl"`);
     expect(blocked).toContain(`data-blocked="legal.privacyUrl"`);
+  });
+
+  it("iPhone footer: the App Store listing next to Terms & Privacy (the App Clip is 'Let's go'); not on Android or desktop", async () => {
+    const download = `<span class="mobile-only"><a class="hit" href="https://apps.apple.com/app/id1234567890" rel="noreferrer">${c["invite.web.getApp"]}</a>&nbsp;·&nbsp;</span>`;
+    expect(await page()).toContain(`<footer class="footer">${download}<a class="hit" href="https://legal.example.com/terms"`);
+    expect(await page(preview(), ANDROID)).not.toContain("apps.apple.com");
+    expect(await page(preview(), DESKTOP)).not.toContain(download);
+    const noStore = await page(preview(), IPHONE, { ...FULL_APP_JSON, ios: { ...FULL_APP_JSON.ios, appStoreId: null } });
+    expect(noStore).not.toContain(`<span class="mobile-only">`);
   });
 
   it("draws the desktop QR code inline (decorative; the line next to it says what it is)", async () => {

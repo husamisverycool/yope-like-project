@@ -16,7 +16,7 @@ import { appClipBundleId, type Config } from "./config.js";
 import { cardPairs } from "./contrastReport.js";
 import { fontFile } from "./fonts.js";
 import type { InviteService, LoadedInvite } from "./inviteService.js";
-import { detectPlatform, getAppUrl, letsGoUrl } from "./platform.js";
+import { appStoreUrl, detectPlatform, getAppUrl, letsGoUrl } from "./platform.js";
 import { clientAddress, RateLimiter } from "./rateLimit.js";
 import { invitePage, statePage, type PageContext, type StateKind } from "./render/pages.js";
 import { UpstreamError } from "./supabase.js";
@@ -94,6 +94,7 @@ export function createApp(deps: AppDeps): Hono {
       appName: config.app.displayName,
       letsGoUrl: token ? letsGoUrl(config.app, platform, token) : null,
       getAppUrl: getAppUrl(config.app, platform, token),
+      mobileAppStoreUrl: platform === "ios" ? appStoreUrl(config.app) : null,
       smartBanner,
       termsUrl: config.app.legal.termsUrl,
       privacyUrl: config.app.legal.privacyUrl,

@@ -154,10 +154,16 @@ describe("mobile card (viewport ≤ invite.web.size.breakpoint)", () => {
       near(card.box.bottom - footer.box.bottom, t["invite.web.size.footerMargin"]);
       expect([footer.s["font-size"], footer.s.color]).toEqual([PX(t["invite.web.fontSize.footer"]), rgba(t["color.global.textOnMedia"])]);
       // each footer link answers taps across a 44 × 44 area (size.global.minTouchTarget.ios), though its text is 8 px
-      const terms = await measure(page, ".footer a:first-child");
+      const terms = await measure(page, ".footer > a:first-of-type");
       const half = t["size.global.minTouchTarget.ios"] / 2 - 1;
       const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x!, y!)?.textContent, [terms.box.x + terms.box.w / 2, terms.box.y + terms.box.h / 2 - half]);
       expect(hit).toBe(c["invite.web.footer.terms"]);
+      // iPhone: "Download the app" (the App Store listing) leads the footer, in the footer's style and hit area
+      const download = await measure(page, ".footer .mobile-only a", ["font-size", "color"]);
+      expect([download.s["font-size"], download.s.color]).toEqual([PX(t["invite.web.fontSize.footer"]), rgba(t["color.global.textOnMedia"])]);
+      expect(download.box.x).toBeLessThan(terms.box.x);
+      const downloadHit = await page.evaluate(([x, y]) => document.elementFromPoint(x!, y!)?.textContent, [download.box.x + download.box.w / 2, download.box.y + download.box.h / 2 - half]);
+      expect(downloadHit).toBe(c["invite.web.getApp"]);
     });
   });
 
