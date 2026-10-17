@@ -7,6 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import android.content.res.XmlResourceParser
 import org.xmlpull.v1.XmlPullParser
 
 /**
@@ -20,16 +21,16 @@ class WidgetProviderInfoTest {
     private val android = "http://schemas.android.com/apk/res/android"
     private val context get() = ApplicationProvider.getApplicationContext<android.content.Context>()
 
-    private fun provider(xml: Int): XmlPullParser {
+    private fun provider(xml: Int): XmlResourceParser {
         val parser = context.resources.getXml(xml)
         while (parser.next() != XmlPullParser.START_TAG || parser.name != "appwidget-provider") Unit
         return parser
     }
 
-    private fun assertWidgetAndroidRules(parser: XmlPullParser) {
+    private fun assertWidgetAndroidRules(parser: XmlResourceParser) {
         val category = parser.getAttributeIntValue(android, "widgetCategory", 0)
         assertEquals(AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN or AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD, category)
-        assertTrue(category and AppWidgetProviderInfo.WIDGET_CATEGORY_NOT_KEYGUARD == 0)
+        assertTrue((category and AppWidgetProviderInfo.WIDGET_CATEGORY_NOT_KEYGUARD) == 0)
         assertEquals(2, parser.getAttributeIntValue(android, "targetCellWidth", 0))
         assertEquals(2, parser.getAttributeIntValue(android, "targetCellHeight", 0))
         assertEquals(3_600_000, parser.getAttributeIntValue(android, "updatePeriodMillis", 0))
