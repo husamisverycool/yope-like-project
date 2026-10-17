@@ -315,7 +315,7 @@ jobs:
           script: bash ../.github/scripts/android-e2e.sh
       - name: commit the journey's screens
         if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.commit_screens }}
-        run: bash .github/scripts/commit-screens.sh android/build/e2e design/screens/android-journey
+        run: bash .github/scripts/commit-screens.sh android/build/e2e/screens design/screens/android-journey
       - name: upload screenshots, semantics dumps, logcat and the test report
         if: always()
         uses: actions/upload-artifact@v4
