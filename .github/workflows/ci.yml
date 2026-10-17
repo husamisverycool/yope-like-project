@@ -254,7 +254,12 @@ jobs:
           if git diff --cached --quiet; then echo "no baseline changed"; exit 0; fi
           git diff --cached --stat
           git commit -m "Android snapshot baselines re-recorded (CI, at ${GITHUB_SHA::7})"
-          git push origin "HEAD:${GITHUB_REF#refs/heads/}"
+          for i in 1 2 3 4; do
+            git push origin "HEAD:${GITHUB_REF#refs/heads/}" && exit 0
+            git pull --rebase origin "${GITHUB_REF#refs/heads/}"
+            sleep $((i * 5))
+          done
+          exit 1
 
   android-e2e:
     name: android e2e
