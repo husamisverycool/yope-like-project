@@ -14,6 +14,7 @@ import app.data.repo.AuthState
 import app.data.repo.DeviceRepository
 import app.data.repo.GroupRepository
 import app.data.repo.SettingsRepository
+import app.push.DeliveredAlerts
 import app.push.PushTokenSink
 import app.push.PushTokens
 import app.push.QuietHoursSource
@@ -43,6 +44,17 @@ interface PushTokenBridge {
 interface BillingBridge {
     suspend fun identify(userId: String)
     suspend fun reset()
+}
+
+/** Shown alerts of deleted posts and messages (core:push `DeliveredAlerts`). */
+interface AlertBridge {
+    fun withdraw(postIds: Set<String>, messageIds: Set<String>)
+}
+
+class ShadeAlertBridge(private val context: Context) : AlertBridge {
+    override fun withdraw(postIds: Set<String>, messageIds: Set<String>) {
+        DeliveredAlerts.withdraw(context, postIds, messageIds)
+    }
 }
 
 /** The widget store (core:widget `WidgetFileStore` + Glance refresh). */
@@ -83,9 +95,21 @@ class GlanceWidgetBridge(private val context: Context, private val store: Widget
 }
 
 /** The platform pieces the glue talks to; tests pass fakes. */
-data class GlueBridges(val push: PushTokenBridge, val billing: BillingBridge, val widgets: WidgetBridge) {
+data class GlueBridges(
+    val push: PushTokenBridge,
+    val billing: BillingBridge,
+    val widgets: WidgetBridge,
+    val alerts: AlertBridge = object : AlertBridge {
+        override fun withdraw(postIds: Set<String>, messageIds: Set<String>) = Unit
+    },
+) {
     companion object {
-        fun default(context: Context) = GlueBridges(FcmPushTokenBridge(context.applicationContext), RevenueCatBillingBridge, GlanceWidgetBridge(context.applicationContext))
+        fun default(context: Context) = GlueBridges(
+            FcmPushTokenBridge(context.applicationContext),
+            RevenueCatBillingBridge,
+            GlanceWidgetBridge(context.applicationContext),
+            ShadeAlertBridge(context.applicationContext),
+        )
     }
 }
 
@@ -94,7 +118,8 @@ data class GlueBridges(val push: PushTokenBridge, val billing: BillingBridge, va
  * - signed in → `Billing.identify(userId)`, FCM token → `register_device` (and on every new token),
  *   quiet hours loaded for the push layer, offline cache switched to that user;
  * - group list changes → `WidgetFileStore.retainGroups`;
- * - `post_deleted` broadcasts (all your groups) → the widget showing that post is cleared;
+ * - `post_deleted` / `message_deleted` broadcasts (all your groups) → the widget showing that post is cleared and the
+ *   shown alerts of that post or message are withdrawn (`DeliveredAlerts`);
  * - signing out → `unregister_device` first, then billing reset, token deleted, caches, widgets and the outbox cleared.
  */
 class SessionGlue(
@@ -143,7 +168,14 @@ class SessionGlue(
             groups.myGroupIds.map { it.orEmpty() }.distinctUntilChanged().collectLatest { ids ->
                 if (ids.isEmpty()) return@collectLatest
                 merge(*ids.map(realtime::deletions).toTypedArray()).collect { event ->
-                    if (event is GroupEvent.PostDeleted) quietly { bridges.widgets.removeIfShowing(event.groupId, event.postId) }
+                    when (event) {
+                        is GroupEvent.PostDeleted -> {
+                            quietly { bridges.widgets.removeIfShowing(event.groupId, event.postId) }
+                            quietly { bridges.alerts.withdraw(setOf(event.postId), emptySet()) }
+                        }
+                        is GroupEvent.MessageDeleted -> quietly { bridges.alerts.withdraw(emptySet(), setOf(event.messageId)) }
+                        else -> Unit
+                    }
                 }
             }
         }

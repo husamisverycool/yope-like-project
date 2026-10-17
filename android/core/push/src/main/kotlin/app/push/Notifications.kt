@@ -229,7 +229,8 @@ object PromotedNotifications {
 object AlertNotifier {
     private const val ID_BASE = 100
 
-    fun show(context: Context, alert: PushMessage.Alert, now: Instant = Instant.now()): Boolean {
+    /** [payload]: the FCM data, for the post / message the alert shows ([DeliveredAlerts]: withdrawn when deleted). */
+    fun show(context: Context, alert: PushMessage.Alert, now: Instant = Instant.now(), payload: Map<String, String> = emptyMap()): Boolean {
         val channel = AppChannel.forAlert(alert.kind)
         if (!Posting.canPost(context, channel)) return false
         val icon = Posting.smallIcon(context) ?: return false
@@ -244,6 +245,7 @@ object AlertNotifier {
             .setContentIntent(intent)
             // During quiet hours the alert still arrives (nothing gets lost), just silently.
             .setSilent(quiet)
+            .addExtras(DeliveredAlerts.extras(alert, payload))
             .applyAppearance()
         alert.groupId?.let { builder.setGroup("group:$it") }
         val tag = alert.collapseKey ?: alert.link?.let(AppLinkConfig.codec::format) ?: "alert:${alert.kind}:${now.toEpochMilli()}"

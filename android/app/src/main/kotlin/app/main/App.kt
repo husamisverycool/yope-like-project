@@ -24,6 +24,7 @@ import app.feature.account.invite.InstallReferrerReader
 import app.links.AppLinks
 import app.links.DeepLinkIntents
 import app.model.DeepLink
+import app.push.DeliveredAlerts
 import app.push.NotificationAppearance
 import app.ui.startup.AppStartupHook
 import app.ui.theme.AppTheme
@@ -31,6 +32,7 @@ import app.ui.theme.AppearanceSettings
 import app.ui.theme.LocalAppearanceSettings
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
 /**
  * Process start: data layer, billing, notification channels (names from `R.string`,
@@ -108,6 +110,12 @@ class MainActivity : ComponentActivity() {
         val dark = (if (trueBlack) Tokens.ColorsDark.globalBackgroundAndroidTrueBlack else Tokens.ColorsDark.globalBackgroundAndroid).toArgb()
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(light, dark), navigationBarStyle = SystemBarStyle.auto(light, dark))
         window.setBackgroundDrawable(ColorDrawable(DsAppearance.pick(this, light, dark)))
+    }
+
+    /** Alerts of photos deleted while the app was in the background leave the shade (core:push `DeliveredAlerts`). */
+    override fun onStart() {
+        super.onStart()
+        DataGraph.get(this)?.let { graph -> graph.scope.launch { DeliveredAlerts.reconcile(applicationContext) } }
     }
 
     override fun onNewIntent(intent: Intent) {

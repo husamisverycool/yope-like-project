@@ -83,6 +83,15 @@ Worker payload keys: `type` (`daily_invitation`, `new_post`, `reaction`, `reply`
 (`ios/Packages/AppCore/Sources/AppModels/PushPayload.swift`, DeepLinkParser). `widget` and `daily_invitation_ended`
 are silent.
 
+**Deleted content is withdrawn** (directive Part 6, "Deleting a photo removes it everywhere"): an alert that shows a post
+or a chat message (its `post_id` / `message_id` / link) leaves Notification Center / the shade once the app learns of the
+deletion — the group's Realtime deletion broadcast while the app runs, the check of every shown alert's post against
+the server at launch and on each return to the foreground, and the background push (iOS) / FCM widget message
+(Android) the worker sends when the deletion changes the widget (`AppModels/NotificationWithdrawal.swift`,
+`AppServices/DeliveredNotifications.swift`; Android `core/push` `DeliveredAlerts`). Platform limit: neither APNs nor FCM
+can remove a delivered notification from the server, so with the app not running and no background push let through
+(force-quit iPhone app, Doze), the alert stays until the app next runs.
+
 ## Platform notes
 
 - iOS: `UNNotificationContent` from APNs; Live Activity start alert for the invitation (`daily.liveactivity`).

@@ -41,6 +41,8 @@ final class AppEnvironment {
     let deviceTokens = DeviceTokens()
     /// The APNs token kept across launches (registered at sign-in, unregistered at sign-out before this launch's arrives).
     let pushTokenRecord: PushTokenRecord
+    /// Notification Center's notifications of deleted photos and messages (withdrawn: NotificationWithdrawal).
+    let deliveredNotifications: DeliveredNotifications
     /// The backend (AppData). Nil while config/app.json has no Supabase URL / anon key (BLOCKED).
     let data: DataEnvironment?
     /// Session flow, account screens' data and platform seams (`RootView` injects them).
@@ -70,6 +72,8 @@ final class AppEnvironment {
         self.widgetStore = widgetStore
         let pushTokenRecord = PushTokenRecord()
         self.pushTokenRecord = pushTokenRecord
+        let deliveredNotifications = DeliveredNotifications(parser: parser)
+        self.deliveredNotifications = deliveredNotifications
         // Session glue: RevenueCat follows the signed-in user; widget reloads after the group
         // list or a deleted post changed the widget store; the person's temporary files go when the session ends; the
         // stored APNs token is unregistered at sign-out.
@@ -87,7 +91,10 @@ final class AppEnvironment {
             removeSessionFiles: {
                 SessionFiles.removeAll()
             },
-            storedPushToken: { pushTokenRecord.token }
+            storedPushToken: { pushTokenRecord.token },
+            withdrawNotifications: { posts, messages in
+                await deliveredNotifications.withdraw(posts: posts, messages: messages)
+            }
         )
         let data = try? DataEnvironment.live(configuration: configuration, widgetStore: widgetStore, hooks: hooks)
         self.data = data
@@ -135,6 +142,8 @@ final class AppEnvironment {
         let pushService = self.push
         Task { await pushService.registerIfAuthorized() }
         syncDeviceTokens()
+        // Notifications of photos deleted while the app was not running leave Notification Center.
+        Task { await self.withdrawDeletedNotifications() }
 
         liveActivities.onPushToStartToken = { [weak self] token in
             deviceTokens.pushToStartToken = token
@@ -199,6 +208,7 @@ final class AppEnvironment {
             // Notifications turned on in Settings while the app was away: register now.
             let pushService = self.push
             Task { await pushService.registerIfAuthorized() }
+            Task { await self.withdrawDeletedNotifications() }
             let liveActivities = self.liveActivities
             Task { await liveActivities.endClosedActivities() }
         case .background:
@@ -225,16 +235,30 @@ final class AppEnvironment {
     }
 
     /// Background (content-available) push carrying a `widget` payload: muted groups still get
-    /// their widget updated silently (docs/SPEC_FLAGS.md T6).
+    /// their widget updated silently (docs/SPEC_FLAGS.md T6). The worker also sends one when a deletion changes the
+    /// widget, so the delivered notifications are checked too.
     func deliverWidget(_ payload: WidgetPushPayload) async -> UIBackgroundFetchResult {
         let delivery = WidgetDelivery(store: widgetStore, downloader: NotificationWidgetDownload.downloader)
         do {
             try await delivery.deliver(payload, receivedAt: Date())
             WidgetReloader.reloadGroupWidgets()
+            await withdrawDeletedNotifications()
             return .newData
         } catch {
+            await withdrawDeletedNotifications()
             return .failed
         }
+    }
+
+    /// "Deleting a photo removes it everywhere": the posts the delivered notifications show are checked against the
+    /// server (`posts` by id, as this person can see them); notifications of the ones that are gone are withdrawn. Runs
+    /// at launch, on each return to the foreground and on background pushes; nothing happens signed out or offline.
+    func withdrawDeletedNotifications() async {
+        guard let data, data.auth.currentUserID != nil else { return }
+        let shown = await deliveredNotifications.shownPostIDs()
+        guard !shown.isEmpty, let existing = try? await data.posts.posts(ids: shown.map { PostID($0) }) else { return }
+        let gone = NotificationWithdrawal.gone(shown: shown, existing: Set(existing.map(\.id.rawValue)))
+        await deliveredNotifications.withdraw(posts: gone, messages: [])
     }
 }
 

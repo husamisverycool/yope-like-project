@@ -14,7 +14,9 @@ import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 import kotlin.coroutines.resume
 
@@ -37,7 +39,7 @@ class PushHandler(
             DailyInvitationNotifier.cancel(context, message.groupId)
             Outcome.CountdownEnded
         }
-        is PushMessage.Alert -> if (AlertNotifier.show(context, message, now())) Outcome.AlertShown else Outcome.NotShown
+        is PushMessage.Alert -> if (AlertNotifier.show(context, message, now(), data)) Outcome.AlertShown else Outcome.NotShown
         null -> Outcome.Ignored
     }
 }
@@ -50,7 +52,20 @@ class AppMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        PushHandler(applicationContext).handle(message.data)
+        val outcome = PushHandler(applicationContext).handle(message.data)
+        // The worker sends the widget message when a deletion changes the widget: alerts of photos that are gone leave
+        // the shade (DeliveredAlerts). Bounded: FCM gives onMessageReceived a short window.
+        if (outcome == PushHandler.Outcome.WidgetRefreshQueued) {
+            runBlocking { withTimeoutOrNull(RECONCILE_BUDGET_MS) { DeliveredAlerts.reconcile(applicationContext) } }
+        }
+    }
+
+    private companion object {
+        /**
+         * One server lookup, kept short: Firebase, "Receive messages in an Android app" — "For long-running tasks (10 seconds
+         * or more) use WorkManager".
+         */
+        const val RECONCILE_BUDGET_MS = 5_000L
     }
 
     // Token-based registration matches the worker's FCM HTTP v1 sends to `devices.push_token`

@@ -29,17 +29,21 @@ public struct SessionHooks: Sendable {
     /// The APNs token this device last received, kept across launches: sign-out unregisters it even when this launch has
     /// not received the token yet.
     public var storedPushToken: (@Sendable () -> String?)?
+    /// A post or chat message was deleted: withdraw the delivered notifications that show it (post ids, message ids).
+    public var withdrawNotifications: (@Sendable (Set<String>, Set<String>) async -> Void)?
 
     public init(
         linkPurchases: (@Sendable (UserID?) async -> Void)? = nil,
         reloadWidgets: (@Sendable () async -> Void)? = nil,
         removeSessionFiles: (@Sendable () async -> Void)? = nil,
-        storedPushToken: (@Sendable () -> String?)? = nil
+        storedPushToken: (@Sendable () -> String?)? = nil,
+        withdrawNotifications: (@Sendable (Set<String>, Set<String>) async -> Void)? = nil
     ) {
         self.linkPurchases = linkPurchases
         self.reloadWidgets = reloadWidgets
         self.removeSessionFiles = removeSessionFiles
         self.storedPushToken = storedPushToken
+        self.withdrawNotifications = withdrawNotifications
     }
 }
 
@@ -49,7 +53,8 @@ public struct SessionHooks: Sendable {
 ///   with the user id, syncs the widget's group list, resumes the post outbox;
 /// - whenever a token or the Live Activities state changes: registers again with all of it;
 /// - while running: listens to every group's private deletion topic and removes deleted posts
-///   from `WidgetStore` (widget snapshots), the offline cache and signed URLs (security invariant 2);
+///   from `WidgetStore` (widget snapshots), the offline cache, signed URLs (security invariant 2) and the delivered
+///   notifications that show them (`SessionHooks.withdrawNotifications`);
 /// - on sign-out / account deletion: unregisters the device first, then clears everything local.
 public actor SessionCoordinator {
     /// The services the coordinator drives.
@@ -216,8 +221,10 @@ public actor SessionCoordinator {
             await environment.cache.purgePost(postID)
             if let mediaID { await environment.signedURLs.invalidate(mediaID: mediaID) }
             await removeFromWidgets(postID: postID, groupID: groupID)
+            await hooks.withdrawNotifications?([postID.rawValue], [])
         case let .messageDeleted(messageID):
             await environment.cache.purgeMessage(messageID, groupID: groupID)
+            await hooks.withdrawNotifications?([], [messageID.rawValue])
         case .resubscribed:
             // Deletions may have been missed while disconnected: drop collage snapshots that may
             // show them; the next widget refresh push restores current ones.

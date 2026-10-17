@@ -46,6 +46,7 @@ import app.data.repo.SelfieReactionRepository
 import app.data.repo.SettingsRepository
 import app.data.repo.TagRepository
 import app.data.repo.YearStoryRepository
+import app.push.DeliveredAlerts
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CoroutineScope
@@ -141,12 +142,16 @@ class DataGraph(context: Context, val config: SupabaseConfig, val options: DataO
     /** Waits until the stored session has been loaded (and refreshed if needed). */
     suspend fun awaitSessionLoaded() = client.auth.awaitInitialization()
 
-    /** Starts the session glue once (push token, billing identity, widgets, cache upkeep). */
+    /** Starts the session glue once (push token, billing identity, widgets, cache upkeep, shown alerts' check). */
     @Synchronized
     fun startGlue(bridges: GlueBridges = GlueBridges.default(appContext)): SessionGlue =
         glue ?: SessionGlue(auth, groups, devices, settings, realtime, cache, signedUrls, bridges, scope, uploads::discardAll).also {
             it.start()
             glue = it
+            // Which shown alerts' posts still exist for the signed-in person (RLS drops deleted and hidden ones).
+            DeliveredAlerts.existingPosts = { ids ->
+                if (auth.currentUserId == null) null else runCatching { posts.posts(ids).map { post -> post.id }.toSet() }.getOrNull()
+            }
         }
 
     /** Stops everything (tests; the app's graph lives as long as the process). */
