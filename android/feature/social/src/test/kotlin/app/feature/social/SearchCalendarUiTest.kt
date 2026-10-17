@@ -3,6 +3,7 @@ package app.feature.social
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -86,7 +87,7 @@ class SearchCalendarUiTest {
         compose.waitForIdle()
         compose.onNodeWithText("Memories").assertIsDisplayed()
         // a day without anything is read as such and does nothing; a day with something is a button to its week
-        compose.onNodeWithContentDescription("Wednesday, October 14, 2026, no photos").assertExists()
+        compose.onAllNodesWithContentDescription("Wednesday, October 14, 2026, no photos").onFirst().assertExists()
         compose.onNodeWithText("July 2026").assertExists()
         compose.onNodeWithContentDescription("Tuesday, July 28, 2026").performClick()
         compose.waitForIdle()

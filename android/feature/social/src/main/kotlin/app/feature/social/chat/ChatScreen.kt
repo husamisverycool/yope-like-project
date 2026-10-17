@@ -70,6 +70,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.role
@@ -1066,8 +1067,8 @@ private fun LinkPreviewCard(preview: app.data.model.LinkPreview) {
             .clearAndSetSemantics {
                 contentDescription = label
                 role = Role.Button
-            }
-            .testTag("chat.linkPreview"),
+                testTag = "chat.linkPreview"
+            },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         preview.imagePath?.let { path ->

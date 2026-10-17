@@ -218,6 +218,6 @@ class ChatLinkPreviewTest {
         val vm = ChatViewModel(data, GROUP)
         compose.setContent { TestScreen(data) { ChatScreen(vm, null, ChatNav({}, {}, {}, {}, {}, { _, _ -> }, {})) } }
         compose.waitForIdle()
-        compose.onNodeWithTag("chat.linkPreview").assertContentDescriptionEquals("Friday menu, Example Eats")
+        compose.onNodeWithTag("chat.linkPreview", useUnmergedTree = true).assertContentDescriptionEquals("Friday menu, Example Eats")
     }
 }
