@@ -276,6 +276,8 @@ final class LiveCaptureGroups: CaptureGroupSource {
         let side = CaptureImageDecoder.pixels(Tokens.Sizes.globalAvatarSmall)
         guard let image = await CaptureImageDecoder.image(data: response.0, maxPixelSize: side) else { return nil }
         covers[path] = image
+        // The share sheet's group image (ShareTargetDonations) uses a cover already on the device.
+        ImagePipeline.shared.insert(image, path: path, pixels: Int(side.rounded(.up)))
         return image
     }
 }

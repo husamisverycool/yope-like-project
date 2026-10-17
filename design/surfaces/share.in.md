@@ -16,8 +16,8 @@ library selection — several photos in one post (`camera.sendto.md` "Several ph
   (https://developer.apple.com/documentation/foundation/app_extension_support/supporting_suggestions_in_your_app_s_share_extension)
   and **Android sharing shortcuts** (https://developer.android.com/training/sharing/receive#sharing-shortcuts-api): the
   share sheet's suggestion row offers the person's groups next to the app (PLATFORM: the row, its order and how many it
-  shows are the system's). Each target is the group's name (the person's data, not copy) and, on Android, its cover
-  photo or initials.
+  shows are the system's). Each target is the group's name (the person's data, not copy) and its cover photo or
+  initials.
 
 ## Flow
 
@@ -33,7 +33,7 @@ library selection — several photos in one post (`camera.sendto.md` "Several ph
 
 | | iOS | Android |
 |---|---|---|
-| what becomes a target | an outgoing `INSendMessageIntent` donation per group, the group as the conversation (`speakableGroupName` = its name, `conversationIdentifier` = its id, interaction `groupIdentifier` = its id) | a long-lived dynamic shortcut per group (`share-group-<id>`), category `app.sharetarget.category.GROUP` matching the `share-target` in `res/xml/shortcuts.xml` (image/\*, video/\*), short label its name, icon its cover photo (centre square) or its initials on `color.global.control` in `color.global.textSecondary` |
+| what becomes a target | an outgoing `INSendMessageIntent` donation per group, the group as the conversation (`speakableGroupName` = its name, `conversationIdentifier` = its id, interaction `groupIdentifier` = its id), image set with `setImage(_:forParameterNamed: \.speakableGroupName)`: the group's cover (centre square) when a decoded copy is already on the device (`ImagePipeline`'s memory cache — the groups list, the group screen or send-to drew it; no download at donation), else its initials drawn as Android's icon (108 pt canvas, initials in the 72 pt safe zone, system font, on `color.global.control` in `color.global.textSecondary`, the system appearance) | a long-lived dynamic shortcut per group (`share-group-<id>`), category `app.sharetarget.category.GROUP` matching the `share-target` in `res/xml/shortcuts.xml` (image/\*, video/\*), short label its name, icon its cover photo (centre square) or its initials on `color.global.control` in `color.global.textSecondary` |
 | when | the person posts to the group (send-to's send, every group chosen) or opens it (`groups.screen`) | same (`ShortcutManagerCompat.pushDynamicShortcut`) |
 | picked in the share sheet | the Share Extension opens with the intent (`extensionContext.intent`, Info.plist `IntentsSupported`); its conversation identifier goes into the inbox with the files (`ShareInbox` `group.txt`) | MainActivity receives SEND / SEND_MULTIPLE with `EXTRA_SHORTCUT_ID`; the group waits in `ShareInbox` with the items |
 | in send-to | that group alone is preselected (a group no longer the person's is not: camera.sendto's rule) | same |
@@ -60,7 +60,7 @@ library selection — several photos in one post (`camera.sendto.md` "Several ph
 - Android takes only `content://` URIs of other apps: never a `file://` path and never one of the app's own providers
   (a crafted share must not make the app post its own private files).
 - iOS: the extension's privacy manifest declares nothing collected (`ios/ShareExtension/PrivacyInfo.xcprivacy`).
-- Per-group targets hold only a group's id, name and (Android) cover image, on this device; they go when the person leaves
+- Per-group targets hold only a group's id, name and cover image (or initials), on this device; they go when the person leaves
   the group or signs out. A shortcut id that is not the app's own `share-group-` form, or an id that is not a plain id, is
   no group (the share then preselects as any share).
 
@@ -90,4 +90,3 @@ System share sheet; then `camera.sendto`'s.
 |---|---|
 | a mixed photo + video share whose sender types it `*/*` (Android) | not matched by the `image/*` / `video/*` filters (a `*/*` filter would offer the app for every file) |
 | per-group targets before Android 10 | not offered: the `share-target` element needs API 29 (the `androidx.sharetarget` backport is not included) |
-| iOS target image | none donated: the share sheet shows the system's placeholder with the group's name (the cover would need a download at donation) |

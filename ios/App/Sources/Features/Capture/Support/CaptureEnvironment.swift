@@ -89,7 +89,7 @@ final class CaptureEnvironment {
         environment.batchLimit = { await limit.value() }
         environment.sharedItems = { max in await ShareInImport.take(limit: max) }
         environment.donateShareTargets = { groups in
-            let targets = groups.map { ShareTargetDonations.Group(id: $0.id, name: $0.name) }
+            let targets = groups.map { ShareTargetDonations.Group(id: $0.id, name: $0.name, coverPath: $0.coverPath) }
             Task { await ShareTargetDonations.donate(targets) }
         }
         return environment
