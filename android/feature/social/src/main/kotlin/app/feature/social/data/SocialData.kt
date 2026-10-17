@@ -68,6 +68,11 @@ interface SocialData {
 
     suspend fun feed(groupId: String, before: Instant?): List<Post>
     suspend fun posts(ids: Collection<String>): List<Post>
+    /**
+     * Post ids of the photos revealed together with [post] in one overnight reveal (`revealed_at`, camera.overnight C),
+     * oldest first; none for a photo shared at once.
+     */
+    suspend fun revealedWith(post: Post): List<String> = emptyList()
     suspend fun media(ids: Collection<String>): List<Media>
     suspend fun deleteMedia(mediaId: String)
 
@@ -148,6 +153,8 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
 
     override suspend fun feed(groupId: String, before: Instant?) = graph.posts.feed(groupId, before)
     override suspend fun posts(ids: Collection<String>) = graph.posts.posts(ids)
+    override suspend fun revealedWith(post: Post): List<String> =
+        post.revealedAt?.let { graph.posts.revealed(post.groupId, it).map(Post::id) }.orEmpty()
     override suspend fun media(ids: Collection<String>) = graph.posts.media(ids)
     override suspend fun deleteMedia(mediaId: String) = graph.posts.deleteMedia(mediaId)
 

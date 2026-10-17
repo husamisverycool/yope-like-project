@@ -88,7 +88,8 @@ fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
     composable<AppRoute.PhotoViewer> { entry ->
         val route = entry.toRoute<AppRoute.PhotoViewer>()
         SocialHost { data ->
-            val vm = viewModel(key = "viewer:${route.postId}") { PhotoViewerViewModel(data, route.groupId, route.postId, PhotoContext.Single, route.postId, null) }
+            // A link names one photo; an overnight photo opens with the photos revealed with it (the reveal push names the first).
+            val vm = viewModel(key = "viewer:${route.postId}") { PhotoViewerViewModel(data, route.groupId, route.postId, PhotoContext.Reveal, route.postId, null) }
             PhotoViewerScreen(vm, nav.viewer(data))
         }
     }

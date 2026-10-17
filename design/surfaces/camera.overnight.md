@@ -188,8 +188,10 @@ a capture haptic has no reference (BLOCKED, Gaps). Reveal: none (system notifica
 - Reads: `my_developing()` (boolean + earliest reveal, for the stack); `group_developing(p_group_id)` (boolean +
   `reveal_at`, for the tile) — never a number.
 - Realtime: broadcast `developing_changed` (no payload) on create and reveal → refetch posts and the developing state.
-- In: `camera.capture` (the control), push tap (`app://group/<id>?revealed=<reveal_at>` → `DeepLink.group`, then the
-  viewer). Out: destination sheet, `groups.screen`, `photo.viewer`.
+- In: `camera.capture` (the control), push tap (type `new_post` with the first revealed photo's `post_id` and
+  `revealed_at` → the post link: `groups.screen` of the group, then `photo.viewer` on the photos with the same
+  `revealed_at` in that group, oldest first — iOS `PhotoViewerContext.opensReveal`, Android `PhotoContext.Reveal`). Out:
+  destination sheet, `groups.screen`, `photo.viewer`.
 
 ## Platform notes
 

@@ -177,6 +177,11 @@ class PhotoViewerViewModel(
         PhotoContext.Recap -> data.recap(contextId)?.items.orEmpty()
         PhotoContext.Album -> data.albumItems(contextId).sortedBy { it.position }.map { it.postId }
         PhotoContext.Question -> data.questionAnswers(contextId)
+        PhotoContext.Reveal -> {
+            // camera.overnight C: the photos revealed together, oldest first; a photo shared at once stays alone.
+            val post = data.posts(listOf(postId)).firstOrNull()
+            if (post?.revealedAt == null) listOf(postId) else data.revealedWith(post)
+        }
     }
 
     /** Moves to [index] and loads that photo and its neighbours. */

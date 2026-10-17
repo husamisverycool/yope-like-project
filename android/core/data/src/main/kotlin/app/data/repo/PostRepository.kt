@@ -72,6 +72,19 @@ class PostRepository(private val api: Api, private val cache: OfflineCache, priv
         return postIds.mapNotNull(byId::get)
     }
 
+    /**
+     * §14.3 a group's photos revealed together at [revealedAt] (one overnight reveal, `posts.revealed_at`), oldest first —
+     * the time each was taken; RLS drops hidden ones.
+     */
+    suspend fun revealed(groupId: String, revealedAt: Instant): List<Post> = api.select(Tables.POSTS, Post.serializer()) {
+        filter {
+            eq("group_id", groupId)
+            eq("revealed_at", app.data.model.InstantSerializer.format(revealedAt))
+        }
+        order("created_at", Order.ASCENDING)
+        order("id", Order.ASCENDING)
+    }
+
     /** The posts of one media (one per group it was sent to that you can see). */
     suspend fun postsOfMedia(mediaId: String): List<Post> = api.select(Tables.POSTS, Post.serializer()) {
         filter { eq("media_id", mediaId) }

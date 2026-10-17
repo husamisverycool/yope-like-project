@@ -156,6 +156,8 @@ class PlanQuestionIntegrationTest {
         val files = tmp.newFolder("files")
         val draft = maya.uploads.enqueue(NewPost(kind = MediaKind.Photo, original = tinyJpegFile(files, "night.jpg"), width = 1, height = 1, groupIds = listOf(group.id), overnight = true))
         assertEquals(androidx.work.WorkInfo.State.SUCCEEDED, runUploadWork(context, draft).state)
+        val second = maya.uploads.enqueue(NewPost(kind = MediaKind.Photo, original = tinyJpegFile(files, "later.jpg"), width = 1, height = 1, groupIds = listOf(group.id), overnight = true))
+        assertEquals(androidx.work.WorkInfo.State.SUCCEEDED, runUploadWork(context, second).state)
         val developing = theo.developing.group(group.id)
         assertTrue(developing.developing)
         val reveal = developing.revealAt!!
@@ -165,9 +167,13 @@ class PlanQuestionIntegrationTest {
         val (status, body) = admin.call(HttpMethod.Post, "/rest/v1/rpc/due_developed_posts", JsonObject(mapOf("p_now" to JsonPrimitive(reveal.toString()))))
         assertTrue("due_developed_posts: $status $body", status in 200..299)
 
-        val revealed = theo.posts.feed(group.id).single { it.authorId == maya.auth.currentUserId }
-        assertEquals(reveal, revealed.revealedAt)
-        assertTrue("it keeps the time it was taken", revealed.createdAt < reveal)
+        val revealed = theo.posts.feed(group.id).filter { it.authorId == maya.auth.currentUserId }.sortedBy { it.createdAt }
+        assertEquals(2, revealed.size)
+        assertTrue(revealed.all { it.revealedAt == reveal })
+        assertTrue("they keep the time they were taken", revealed.all { it.createdAt < reveal })
+        // The reveal push opens the photos revealed together, oldest first (camera.overnight C).
+        assertEquals(revealed.map { it.id }, theo.posts.revealed(group.id, reveal).map { it.id })
+        assertTrue(theo.posts.revealed(group.id, reveal.plusSeconds(1)).isEmpty())
         assertFalse(theo.developing.group(group.id).developing)
         assertFalse(maya.posts.myDeveloping().developing)
     }

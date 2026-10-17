@@ -146,6 +146,11 @@ class FakeSocialData(var me: String = ME) : SocialData {
     }
 
     override suspend fun posts(ids: Collection<String>): List<Post> { net("posts"); return ids.mapNotNull(posts::get) }
+    override suspend fun revealedWith(post: Post): List<String> {
+        net("revealedWith")
+        val at = post.revealedAt ?: return emptyList()
+        return posts.values.filter { it.groupId == post.groupId && it.revealedAt == at }.sortedWith(compareBy({ it.createdAt }, { it.id })).map { it.id }
+    }
     override suspend fun media(ids: Collection<String>): List<Media> { net("media"); return ids.mapNotNull(media::get) }
 
     override suspend fun deleteMedia(mediaId: String) {

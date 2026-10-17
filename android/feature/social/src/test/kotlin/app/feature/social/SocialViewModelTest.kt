@@ -462,6 +462,34 @@ class SocialViewModelTest {
         assertTrue(vm.state.value.closed)
     }
 
+    /**
+     * camera.overnight C: a link to an overnight photo (the reveal push names the first) opens on every photo of its group
+     * revealed with it, oldest first, on the linked photo; a photo shared at once stays alone.
+     */
+    @Test fun aLinkToARevealedPhotoOpensThePhotosRevealedWithIt() {
+        val data = viewerData()
+        val reveal = BASE.minusSeconds(600)
+        // v-2 and v-3 developed together; v-4, taken first, too; v-1 was shared at once; another group revealed at the same time.
+        data.posts["v-2"] = data.posts["v-2"]!!.copy(revealedAt = reveal)
+        data.posts["v-3"] = data.posts["v-3"]!!.copy(revealedAt = reveal)
+        data.posts["v-4"] = data.addPhoto("v-4", ANA, BASE.minusSeconds(86_400 * 3)).copy(revealedAt = reveal)
+        data.posts["x-1"] = data.addPhoto("x-1", ANA, BASE.minusSeconds(86_400 * 4), groupId = "g-other").copy(revealedAt = reveal)
+
+        val first = PhotoViewerViewModel(data, GROUP, "v-4", PhotoContext.Reveal, "v-4", null)
+        assertEquals(listOf("v-4", "v-2", "v-3"), first.state.value.photos.map { it.postId })
+        assertEquals(0, first.state.value.index)
+        val later = PhotoViewerViewModel(data, GROUP, "v-3", PhotoContext.Reveal, "v-3", null)
+        assertEquals(2, later.state.value.index)
+
+        val alone = PhotoViewerViewModel(data, GROUP, "v-1", PhotoContext.Reveal, "v-1", null)
+        assertEquals(listOf("v-1"), alone.state.value.photos.map { it.postId })
+
+        // The reveal's photos cannot be read: the linked photo stays alone.
+        data.failNext += "revealedWith"
+        val offline = PhotoViewerViewModel(data, GROUP, "v-2", PhotoContext.Reveal, "v-2", null)
+        assertEquals(listOf("v-2"), offline.state.value.photos.map { it.postId })
+    }
+
     /** The recap list: ready and pending recaps newest first, each with its cover. */
     @Test fun recapListShowsReadyAndPendingNewestFirst() {
         val data = FakeSocialData().apply { seedRecaps() }

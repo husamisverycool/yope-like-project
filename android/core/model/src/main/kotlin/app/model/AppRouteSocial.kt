@@ -26,7 +26,7 @@ enum class PhotoContext {
     /** An album's items in album order; `contextId` = album id. */
     Album,
 
-    /** Only the opened photo (deep links). */
+    /** Only the opened photo. */
     Single,
 
     /**
@@ -34,9 +34,19 @@ enum class PhotoContext {
      * question id (`question_answers`, docs/API.md §14.4).
      */
     Question,
+
+    /**
+     * A link to one photo (deep links, pushes, `groups.screen`'s strip, `plans.page`): the photo alone, or — when it
+     * developed overnight — every photo of its group revealed with it, oldest first (`revealed_at`, camera.overnight C:
+     * the reveal push names the first); `contextId` = the post id.
+     */
+    Reveal,
 }
 
-/** `photo.viewer` opened with the opener's photo list. [AppRoute.PhotoViewer] (deep links) shows the single photo. */
+/**
+ * `photo.viewer` opened with the opener's photo list. [AppRoute.PhotoViewer] (links) shows the linked photo with the
+ * photos revealed with it ([PhotoContext.Reveal]).
+ */
 @Serializable
 data class PhotoViewerIn(
     val groupId: String,
