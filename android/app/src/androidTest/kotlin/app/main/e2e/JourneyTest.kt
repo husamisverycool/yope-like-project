@@ -48,6 +48,7 @@ import app.main.MainActivity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
@@ -56,11 +57,14 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runner.RunWith
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.chrono.IsoChronology
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.FormatStyle
 import java.util.Locale
+import java.util.TimeZone
 
 /**
  * The app end to end on a device against a real Supabase stack (CI job "android e2e": the emulator reaches the job's
@@ -116,8 +120,23 @@ class JourneyTest {
 
     private val context: Context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
+    private val deviceZone: TimeZone = TimeZone.getDefault()
+
     @Before fun requireStack() {
         assumeTrue("no supabaseUrl / supabaseAnonKey instrumentation arguments: nothing to run against", E2eRunner.configured)
+    }
+
+    /**
+     * The app (this process) runs in the zone where it is about noon, which the new group takes: the plan is made for
+     * "today" and must still be ahead when Theo reads it, whatever the hour of the CI run (a plan is over at the end of its
+     * day in the group's zone) — as the iOS journey does.
+     */
+    @Before fun middayZone() {
+        TimeZone.setDefault(TimeZone.getTimeZone(middayTimeZone()))
+    }
+
+    @After fun deviceZoneBack() {
+        TimeZone.setDefault(deviceZone)
     }
 
     @Test fun signUpPostChatReactAndAFriendJoinsByInvite() {
@@ -782,6 +801,16 @@ class JourneyTest {
     }
 
     /** [date] as the age gate's field takes it: the digits in the device locale's short-date order. */
+    /** The fixed-offset zone where it is now 12:xx (`Etc/GMT-N` is UTC+N: POSIX signs; accepted by the server's zone check). */
+    private fun middayTimeZone(now: Instant = Instant.now()): String {
+        val offset = 12 - now.atZone(ZoneOffset.UTC).hour // -11 … +12
+        return when {
+            offset == 0 -> "Etc/GMT"
+            offset > 0 -> "Etc/GMT-$offset"
+            else -> "Etc/GMT+${-offset}"
+        }
+    }
+
     private fun birthdayDigits(date: LocalDate): String {
         val pattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, Locale.getDefault())
         val order = pattern.filter { it == 'y' || it == 'M' || it == 'd' }.toList().distinct().takeIf { it.size == 3 } ?: listOf('M', 'd', 'y')
