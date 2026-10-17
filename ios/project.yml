@@ -51,9 +51,8 @@ targets:
         buildPhase: resources
     settings:
       base:
-        # The catalog holds no app icon or accent colour yet (the icon is the owner's, docs/OWNER_SETUP.md): no names to
-        # look up, so actool does not fail on a missing "AppIcon" set.
-        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        # The app icon of owner decision 32 (tools/appicon.py); no accent colour set in the catalog.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: ""
     dependencies:
       - target: Widgets
@@ -108,6 +107,8 @@ targets:
       Release: Config/AppClip.xcconfig
     sources:
       - path: AppClip/Sources
+      # The App Clip's own icon set (the app icon, owner decision 32; App Store Connect requires one per target).
+      - path: AppClip/Resources
       # Shared with the app: components (buttons, fields, HUD, toast…) and the account group's invite preview,
       # SMS code step and data seam (ios/App/Sources/Features/Account/Shared).
       - path: App/Sources/Components

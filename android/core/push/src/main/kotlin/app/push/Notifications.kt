@@ -122,8 +122,9 @@ internal object Posting {
         return NotificationChannels.isRegistered(context, channel)
     }
 
-    fun smallIcon(context: Context): Int? =
-        NotificationAppearance.current.smallIcon ?: context.applicationInfo.icon.takeIf { it != 0 }
+    /** The appearance's icon, else the app's status-bar icon (owner decision 32: the monochrome "J"). */
+    @Suppress("UNUSED_PARAMETER")
+    fun smallIcon(context: Context): Int? = NotificationAppearance.current.smallIcon ?: R.drawable.ic_stat_jolt
 }
 
 internal fun NotificationCompat.Builder.applyAppearance(): NotificationCompat.Builder = apply {

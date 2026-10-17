@@ -20,11 +20,10 @@ Placeholders used below:
 
 1. **App name** (`APP_DISPLAY_NAME`). Every string that names the app uses `{app_name}`; the app
    cannot ship until this is set (it is the one BLOCKED copy value by design).
-2. **App icon.** The directive forbids us from inventing imagery; provide a 1024×1024 PNG
-   (no transparency) at `config/AppIcon-1024.png`, or ask for one to be commissioned. When it is added to iOS as an
-   `AppIcon.appiconset` in `ios/App/Resources/Assets.xcassets`, set `ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon` in
-   `ios/project.yml` (App target → `settings.base`; it is `""` until then so the catalog of template covers builds without
-   an icon set).
+2. **App icon** — made by the lead (docs/OWNER_DECISIONS.md #32): the title serif's "J" in white on black, on iOS
+   (app and App Clip), Android (adaptive, themed and status-bar icons) and the Play listing (`design/icon/play-icon-512.png`).
+   Options B (black on white) and C (white on the premium purple) are in `design/icon/options.png`: switch with
+   `python3 tools/appicon.py B` (or `C`), or replace the generated files with your own 1024 × 1024 PNG (no transparency).
 3. **Same-moment collage option** — pick one of the options in `design/collage-options/`.
 4. **Premium price** — decided by the lead (docs/OWNER_DECISIONS.md #7): **$3.99/month, $35.99/year,
    with a 1-week free trial on the yearly plan** on both stores (`config/app.json` `premium`). The app

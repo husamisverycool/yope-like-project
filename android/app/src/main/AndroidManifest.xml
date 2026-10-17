@@ -11,10 +11,12 @@
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" tools:node="remove" />
 
     <!-- android:label is config/app.json displayName (owner decision 0.1, via the appLabel placeholder);
-         android:icon is still the owner's to provide (owner decision 0.2). -->
+         android:icon is the app icon of owner decision 32 (tools/appicon.py). -->
     <application
         android:name="app.main.App"
         android:label="${appLabel}"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:supportsRtl="true"

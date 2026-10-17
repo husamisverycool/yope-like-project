@@ -47,7 +47,7 @@ class NotificationSnapshotTest {
         DeepLinkIntents.targetActivity = Host::class.java
         shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
         NotificationAppearance.current = object : NotificationAppearance {
-            override val smallIcon = android.R.drawable.ic_dialog_info // test-only stand-in: the owner's icon is BLOCKED
+            override val smallIcon = android.R.drawable.ic_dialog_info // test-only stand-in for the app icon
         }
         ChannelCopy.registerAll(app)
         // The shade's clock: the chronometer and timestamps read the device time.

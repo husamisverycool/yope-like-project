@@ -89,12 +89,10 @@ object InvitationAppearance {
 }
 
 /**
- * The capture group's [NotificationAppearance]. The monochrome small icon is an owner asset
- * (BLOCKED, design/surfaces/daily.ongoing.md → Gaps): until it exists [smallIcon] is null, so
- * [Posting.smallIcon] falls back to the app's launcher icon, and nothing is posted while the app
- * has none either.
+ * The capture group's [NotificationAppearance]: the monochrome status-bar "J" of the app icon
+ * (owner decision 32, tools/appicon.py; Material 3: white on transparent).
  */
 object CaptureNotificationAppearance : NotificationAppearance {
-    override val smallIcon: Int? get() = null
+    override val smallIcon: Int get() = app.push.R.drawable.ic_stat_jolt
     override val accentColor: Int? get() = null
 }

@@ -55,6 +55,7 @@ fun installCapture(application: Application) {
     PhotoWidgetSlots.current = TokenPhotoWidgetSlots
     WidgetConfigureUi.current = CaptureWidgetConfigureUi
     NotificationAppearance.current = CaptureNotificationAppearance
+    WidgetRefreshNotification.smallIcon = app.push.R.drawable.ic_stat_jolt
     runCatching { ChannelCopy.registerAll(application) }
     runCatching { WidgetRefreshNotification.registerChannel(application) }
     runCatching { ProcessCameraProvider.getInstance(application) }

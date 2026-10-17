@@ -19,7 +19,7 @@ chronometer). **Mechanics: BeReal** (window countdown; BeReal itself has no ongo
 
 A standard notification in channel `daily_invitation` (`daily.ongoing.layout.notification`):
 
-1. Header (system): small icon (monochrome app glyph — owner asset, BLOCKED), app name, **chronometer counting down
+1. Header (system): small icon (the monochrome "J" of the app icon, `ic_stat_jolt`, owner decision 32), app name, **chronometer counting down
    to `closes_at`** (`setUsesChronometer(true)`, `setChronometerCountDown(true)`, `setWhen(closesAt)`), MM:SS.
 2. Title `notifications.push.dailyInvitation.title` ({group}).
 3. Text `notifications.push.dailyInvitation.body`.
@@ -81,5 +81,5 @@ notification (`DailyInvitationNotifier`) with device-clock correction; `invitati
 
 | item | status | capture |
 |---|---|---|
-| monochrome notification small icon | BLOCKED (owner app icon) | owner asset |
+| monochrome notification small icon | closed: `ic_stat_jolt` (owner decision 32, tools/appicon.py) | — |
 | Retro's notification tint | not captured → system default | one screenshot of a Retro notification on Android |
