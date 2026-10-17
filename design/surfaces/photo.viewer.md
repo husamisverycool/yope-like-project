@@ -92,6 +92,7 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 | Add to Album | every photo | `icon.global.albums` | `photo.viewer.menu.addToAlbum` | the album picker (below) |
 | Use as Cover | group admins (update_group's rule) | `icon.global.cover` | `photo.viewer.menu.useAsCover` | `set_group_cover_from_post(p_group_id, p_post_id)` → `haptic.global.success`, Android Toast / iOS announcement `week.edit.toast.saved` ("Saved!"); `media_not_ready` → `photo.viewer.error.coverNotReady`; other failures → `photo.viewer.error.cover`; both `haptic.global.error` |
 | Delete | your photo | `icon.global.trash`, destructive | `photo.viewer.menu.delete` | confirmation → `delete_media` |
+| Remove | someone else's, in a group where you are an admin (migration 0054) | `icon.global.trash`, destructive | `photo.viewer.menu.adminRemove` | admin remove confirmation (below) → `admin_delete_post` |
 | Report Post | someone else's | `icon.global.report`, destructive | `photo.viewer.menu.report` | `safety.report` (kind `post`) |
 | Block {name} | someone else's | none | `photo.viewer.menu.block` | `safety.block` for the author |
 
@@ -142,6 +143,14 @@ rows (adding fails with `week.edit.error.save`).
 `photo.viewer.delete.title`, message `photo.viewer.delete.message` (removed everywhere), destructive
 `photo.viewer.delete.confirm` ("Yes, delete"), cancel `photo.viewer.delete.cancel`. Confirmed → `haptic.global.warning`,
 `delete_media`, the viewer moves to the next photo (or closes), Android Toast `photo.viewer.toast.deleted`.
+
+**Admin remove confirmation** (the same component; group admins on someone else's photo, migration 0054; WhatsApp's admin
+"Delete for Everyone", faq.whatsapp.com/1370476507114859): title `photo.viewer.adminRemove.title`, message
+`photo.viewer.adminRemove.message` (removed from this group for everyone; the author is not notified), destructive
+`photo.viewer.adminRemove.confirm` ("Yes, remove"), cancel `photo.viewer.delete.cancel`. Confirmed →
+`haptic.global.warning`, `admin_delete_post` (this group's copy only: the author's posts of the photo in other groups stay),
+the viewer moves on (or closes), Android Toast `photo.viewer.toast.deleted`; failed → the photo comes back,
+`haptic.global.error`, `photo.viewer.error.delete`; `not_group_admin` (no longer an admin) also hides the item.
 
 ### Video (`photo.viewer.layout.video`; WEB-JS, HIG-A)
 
@@ -273,7 +282,8 @@ rows (adding fails with `week.edit.error.save`).
   (`photo.viewer.layout.batchDots`).
 - **RPCs**: `send_message(p_kind: text, p_reply_to_post_id)`; `create_post(…, p_reply_to_post_id)` (exactly this group);
   `react` / `unreact`; `tag_self` / `untag_self`; `delete_media` (owner: removes it from every group, chats, reactions, tags,
-  albums, recaps, tribute contributions); `report(post)`, `block_user` via `safety.report` / `safety.block`;
+  albums, recaps, tribute contributions); `admin_delete_post` (migration 0054: group admins, someone else's photo, this group
+  only; `post_not_found`, `not_group_admin`; `group_members.role` decides whether Remove shows); `report(post)`, `block_user` via `safety.report` / `safety.block`;
   `set_favorite(p_media_id, p_on)` (your own `favorites` rows say which photos are yours); `set_group_cover_from_post`
   (admins; `not_group_admin`, `media_not_ready`; `group_members.role` decides whether the item shows); `albums` +
   `album_items` of the photo's group, `add_to_album(p_album_id, p_post_ids)`, `save_album` (the album picker).

@@ -136,13 +136,20 @@ appearance (it is not a media surface).
 
 | target | items (in order) | copy | action |
 |---|---|---|---|
-| any text message | quick-reaction row (`chat.reactions.layout.messageReactions`) · Reply · Copy · (yours, younger than `message_edit_window_s`) Edit · (others') Report Message · (yours) Unsend | + `chat.thread.menu.edit` | Reply → reply bar + `chat.composer.placeholderReply`; Copy → clipboard + Android Toast `chat.thread.toast.copied`; Edit → the edit bar (`chat.thread.layout.editMessage`); Report → `safety.report` (kind `message`); Unsend → confirmation below → `delete_message` |
-| voice message | quick-reaction row · Reply · (others') Report Message · (yours) Unsend | as above | as above |
-| photo message | quick-reaction row (`chat.reactions.layout.quickReactions`) · Reply · Save · (others') Report Message · (yours) Delete | + `chat.thread.menu.save`, `.menu.deletePhoto` | Save → as `photo.viewer` save, on any photo (owner decision 28); Delete → `photo.viewer` delete confirmation → `delete_media` |
+| any text message | quick-reaction row (`chat.reactions.layout.messageReactions`) · Reply · Copy · (yours, younger than `message_edit_window_s`) Edit · (others', group admins) Remove · (others') Report Message · (yours) Unsend | + `chat.thread.menu.edit`, `.menu.adminRemove` | Reply → reply bar + `chat.composer.placeholderReply`; Copy → clipboard + Android Toast `chat.thread.toast.copied`; Edit → the edit bar (`chat.thread.layout.editMessage`); Remove → admin remove confirmation below → `admin_delete_message`; Report → `safety.report` (kind `message`); Unsend → confirmation below → `delete_message` |
+| voice message | quick-reaction row · Reply · (others', group admins) Remove · (others') Report Message · (yours) Unsend | as above | as above |
+| photo message | quick-reaction row (`chat.reactions.layout.quickReactions`) · Reply · Save · (others', group admins) Remove · (others') Report Message · (yours) Delete | + `chat.thread.menu.save`, `.menu.deletePhoto`, `.menu.adminRemove` | Save → as `photo.viewer` save, on any photo (owner decision 28); Remove → admin remove confirmation → `admin_delete_post` (this group's copy); Delete → `photo.viewer` delete confirmation → `delete_media` |
 | your failed message | Retry · Unsend | `chat.thread.menu.retry`, `.menu.delete` | send again / remove locally |
 
 **Unsend confirmation** (C-29 alert; `photo.viewer.layout.deleteConfirm` component): title `chat.thread.deleteMessage.title`,
 message `chat.thread.deleteMessage.message`, destructive `chat.thread.deleteMessage.confirm`, cancel `photo.viewer.delete.cancel`.
+
+**Admin remove confirmation** (the same component; group admins on someone else's message, migration 0054; WhatsApp's admin
+"Delete for Everyone", faq.whatsapp.com/1370476507114859): title `chat.thread.adminRemove.title`, message
+`chat.thread.adminRemove.message` (the author is not notified), destructive `chat.thread.adminRemove.confirm`, cancel
+`photo.viewer.delete.cancel`. Confirmed → `haptic.global.warning`, the message leaves the thread at once
+(`admin_delete_message`; a photo message `admin_delete_post`); failed → it comes back, `haptic.global.error`. The joined /
+left lines have no menu and are never removed.
 
 **Reply bar** (above the composer while replying): one line `chat.thread.reply.bar` ("Replying to {name}", or
 `chat.thread.reply.barSelf`) in text role `listSubtitle`, `color.global.textSecondary`, at `size.global.screenMargin`, and a
@@ -237,6 +244,8 @@ the edited text with the bar again, and `chat.thread.edit.error` shows (Android 
   `profiles` (§5.1); `groups` (§5.3) for the title. Signed URLs (§7, 1 h). Week number of a quoted post: ISO week of its
   `created_at` in `groups.time_zone`.
 - **RPCs**: `send_message` (text; `p_reply_to_post_id` / `p_reply_to_message_id` when replying); `delete_message`;
+  `admin_delete_message` / `admin_delete_post` (migration 0054: group admins on others' messages; `not_group_admin`;
+  `group_members.role` decides whether Remove shows);
   `delete_media` (own photo, via the viewer's confirmation); `report` (`message`) via `safety.report`; `react` / `unreact` via
   `chat.reactions`; `create_post` (photo) via `chat.composer` → `camera.capture`; `react_to_message` / `unreact_to_message`
   (text and voice); `edit_message` (`edit_window_closed`); `set_link_preview` (migration 0053: after `send_message` of my

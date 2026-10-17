@@ -288,6 +288,22 @@ final class InMemoryAccountData: AccountDataSource {
         membersByGroup[groupID]?.removeAll { $0.member.userID == userID }
     }
 
+    /// Like `set_member_role`: admins only; never leaves the group without an admin (`last_admin`).
+    func setMemberRole(groupID: GroupID, userID: UserID, role: MemberRole) async throws {
+        try await record("setMemberRole")
+        guard var members = membersByGroup[groupID] else { throw DataError.api(.notGroupMember) }
+        let me = currentUserID
+        guard members.contains(where: { $0.member.userID == me && $0.member.role == .admin }) else {
+            throw DataError.api(.notGroupAdmin)
+        }
+        guard let index = members.firstIndex(where: { $0.member.userID == userID }) else { throw DataError.api(.memberNotFound) }
+        if role == .member, !members.contains(where: { $0.member.userID != userID && $0.member.role == .admin }) {
+            throw DataError.api(.lastAdmin)
+        }
+        members[index].member.role = role
+        membersByGroup[groupID] = members
+    }
+
     func activeInvites(groupID: GroupID) async throws -> [GroupInvite] {
         try await record("activeInvites")
         return invites.filter { $0.groupID == groupID && $0.isUsable(at: now) }

@@ -218,6 +218,15 @@ public struct GroupRepository: Sendable {
         await cache?.remove(.members(groupID))
     }
 
+    /// `set_member_role` (migration 0054, admins): makes a member an admin or removes them as admin. Errors:
+    /// `notGroupAdmin`, `memberNotFound`, `lastAdmin` (the group would have no admin left).
+    public func setMemberRole(groupID: GroupID, userID: UserID, role: MemberRole) async throws {
+        try await client.rpcVoid("set_member_role", [
+            "p_group_id": .id(groupID), "p_user_id": .id(userID), "p_role": .string(role.rawValue),
+        ])
+        await cache?.remove(.members(groupID))
+    }
+
     /// `leave_group`. The last member leaving deletes the group and all its content.
     public func leave(groupID: GroupID) async throws {
         try await client.rpcVoid("leave_group", ["p_group_id": .id(groupID)])

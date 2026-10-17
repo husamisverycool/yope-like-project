@@ -7,6 +7,7 @@ import app.data.model.ChatTyping
 import app.data.model.Group
 import app.data.model.LinkPreview
 import app.data.model.Media
+import app.data.model.MemberRole
 import app.feature.social.common.videoDurationMs
 import app.data.model.Message
 import app.data.model.MessageKind
@@ -73,6 +74,8 @@ data class ChatRow(
     val edited: Boolean = false,
     /** My own sent text message inside `message_edit_window_s`: the menu offers Edit. */
     val canEdit: Boolean = false,
+    /** Someone else's sent text, voice or photo message and I am a group admin: the menu offers Remove (migration 0054). */
+    val canAdminRemove: Boolean = false,
     /**
      * `chat.thread.layout.batch`: the post ids of the other photos of the batch run this photo leads (posted together, in
      * `created_at` order; set by [app.feature.social.chat.threadItems]), not drawn themselves; empty for every other row.
@@ -180,6 +183,9 @@ class ChatViewModel(
     private val messageReactions = LinkedHashMap<String, List<ReactionEntry>>()
     /** `message_edit_window_s` and `typing_ttl_s`; null until read (no Edit, no typing calls). */
     private var config: PublicAppConfig? = null
+
+    /** I am an admin of this group (`group_members.role`): others' messages offer Remove (migration 0054). */
+    private var isAdmin = false
     /** The composer's unsent text, put aside while a message is edited. */
     private var draftBeforeEdit = ""
     /** When `set_typing(true)` was last sent; null = not typing as far as the server knows. */
@@ -229,6 +235,8 @@ class ChatViewModel(
         val group = runCatching { data.group(groupId) }.getOrNull()
         val members = runCatching { data.members(groupId) }.getOrDefault(emptyList())
         members.mapNotNull { it.profile }.forEach { profiles[it.id] = it }
+        val me = data.currentUserId()
+        if (members.isNotEmpty()) isAdmin = members.any { it.member.userId == me && it.member.role == MemberRole.Admin }
         if (config == null) config = runCatching { data.publicConfig() }.getOrNull()
         val zone = group?.timeZone?.let { runCatching { java.time.ZoneId.of(it) }.getOrNull() } ?: java.time.ZoneId.systemDefault()
         _state.update { it.copy(group = group, zone = zone) }
@@ -797,6 +805,50 @@ class ChatViewModel(
         publish()
     }
 
+    private fun canAdminRemove(m: Message, me: String?): Boolean =
+        isAdmin && me != null && m.authorId != me && m.id !in pending &&
+            (m.kind == MessageKind.Text || m.kind == MessageKind.Voice || (m.kind == MessageKind.Photo && m.postId != null))
+
+    /**
+     * An admin's "Remove" (after the confirmation `chat.thread.adminRemove.*`, migration 0054): someone else's text / voice
+     * message (`admin_delete_message`) or photo (`admin_delete_post`, this group's copy only). Gone at once, back on failure.
+     */
+    fun adminRemove(messageId: String) {
+        val message = messages.firstOrNull { it.id == messageId } ?: return
+        if (!canAdminRemove(message, data.currentUserId())) return
+        val postId = message.postId
+        if (message.kind == MessageKind.Photo && postId != null) {
+            val removed = messages.filter { it.postId == postId && it.kind == MessageKind.Photo }
+            messages = messages.filterNot { it.postId == postId && it.kind == MessageKind.Photo }
+            publish()
+            viewModelScope.launch {
+                try {
+                    data.adminDeletePost(postId)
+                    _effects.emit(ChatEffect.PhotoDeleted)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Throwable) {
+                    merge(removed, replaceNewest = false)
+                    publish()
+                    _effects.emit(ChatEffect.DeleteFailed)
+                }
+            }
+            return
+        }
+        remove(messageId)
+        viewModelScope.launch {
+            try {
+                data.adminDeleteMessage(messageId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                merge(listOf(message), replaceNewest = false)
+                publish()
+                _effects.emit(ChatEffect.DeleteFailed)
+            }
+        }
+    }
+
     private fun remove(messageId: String) {
         messages = messages.filterNot { it.id == messageId }
         messageReactions.remove(messageId)
@@ -898,6 +950,7 @@ class ChatViewModel(
                 quote = quoteFor(m, post),
                 edited = m.editedAt != null,
                 canEdit = canEdit(m),
+                canAdminRemove = canAdminRemove(m, me),
                 linkPreview = if (m.kind == MessageKind.Text && m.id !in pending) ChatLinkPreviews.keeps(m.linkPreview, m.body) else null,
             )
         }

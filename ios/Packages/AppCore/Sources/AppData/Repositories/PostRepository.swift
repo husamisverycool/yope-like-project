@@ -269,6 +269,13 @@ public struct PostRepository: Sendable {
         await cache?.purgePost(id)
     }
 
+    /// `admin_delete_post` (migration 0054, group admins): removes anyone's photo from this group with `delete_post`'s
+    /// cascade. Errors: `postNotFound`, `notGroupAdmin`.
+    public func adminDeletePost(id: PostID) async throws {
+        try await client.rpcVoid("admin_delete_post", ["p_post_id": .id(id)])
+        await cache?.purgePost(id)
+    }
+
     /// `delete_media` (owner): removes the photo from every group, chat, album, recap, tribute,
     /// collage, year story, widget and storage.
     public func deleteMedia(id: MediaID) async throws {

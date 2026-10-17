@@ -643,6 +643,12 @@ public enum Copy {
     public static func chatThreadA11yReplyQuote(name: String) -> String { CopyLookup.format("chat.thread.a11y.replyQuote", default: "Reply to {name}'s post", ["name": name]) }
     /// "Video, {duration}" — Retro · chat.thread · new · SOURCED
     public static func chatThreadA11yVideo(duration: String) -> String { CopyLookup.format("chat.thread.a11y.video", default: "Video, {duration}", ["duration": duration]) }
+    /// "Yes, remove" — Retro · chat.thread · adapted · SOURCED
+    public static var chatThreadAdminRemoveConfirm: String { CopyLookup.string("chat.thread.adminRemove.confirm", default: "Yes, remove") }
+    /// "It will be removed for everyone in the group. They will not be notified." — Retro · chat.thread · new · SOURCED
+    public static var chatThreadAdminRemoveMessage: String { CopyLookup.string("chat.thread.adminRemove.message", default: "It will be removed for everyone in the group. They will not be notified.") }
+    /// "Remove this message?" — Retro · chat.thread · adapted · SOURCED
+    public static var chatThreadAdminRemoveTitle: String { CopyLookup.string("chat.thread.adminRemove.title", default: "Remove this message?") }
     /// "Unsend" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadDeleteMessageConfirm: String { CopyLookup.string("chat.thread.deleteMessage.confirm", default: "Unsend") }
     /// "It will be removed for everyone in the group." — Retro · chat.thread · new · SOURCED
@@ -671,6 +677,8 @@ public enum Copy {
     public static var chatThreadErrorRetry: String { CopyLookup.string("chat.thread.error.retry", default: "Try Again") }
     /// "Error loading your messages" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadErrorTitle: String { CopyLookup.string("chat.thread.error.title", default: "Error loading your messages") }
+    /// "Remove" — WhatsApp · chat.thread · adapted · SOURCED
+    public static var chatThreadMenuAdminRemove: String { CopyLookup.string("chat.thread.menu.adminRemove", default: "Remove") }
     /// "Copy" — Retro · chat.thread · verbatim · SOURCED
     public static var chatThreadMenuCopy: String { CopyLookup.string("chat.thread.menu.copy", default: "Copy") }
     /// "Unsend" — Retro · chat.thread · verbatim · SOURCED
@@ -1089,6 +1097,10 @@ public enum Copy {
     public static var groupsSettingsMembersInviteRoommates: String { CopyLookup.string("groups.settings.members.invite.roommates", default: "Invite Roommates") }
     /// "Block Profile" — Retro · groups.settings · verbatim · SOURCED
     public static var groupsSettingsMembersMenuBlock: String { CopyLookup.string("groups.settings.members.menu.block", default: "Block Profile") }
+    /// "Remove as Admin" — WhatsApp · groups.settings · adapted · SOURCED
+    public static var groupsSettingsMembersMenuDismissAdmin: String { CopyLookup.string("groups.settings.members.menu.dismissAdmin", default: "Remove as Admin") }
+    /// "Make Admin" — WhatsApp · groups.settings · adapted · SOURCED
+    public static var groupsSettingsMembersMenuMakeAdmin: String { CopyLookup.string("groups.settings.members.menu.makeAdmin", default: "Make Admin") }
     /// "Remove from Group" — Retro · groups.settings · adapted · SOURCED
     public static var groupsSettingsMembersMenuRemove: String { CopyLookup.string("groups.settings.members.menu.remove", default: "Remove from Group") }
     /// "Report Profile" — Retro · groups.settings · verbatim · SOURCED
@@ -1555,6 +1567,12 @@ public enum Copy {
     public static var photoViewerA11yPrevious: String { CopyLookup.string("photo.viewer.a11y.previous", default: "Previous photo") }
     /// "Unmute" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerA11yUnmute: String { CopyLookup.string("photo.viewer.a11y.unmute", default: "Unmute") }
+    /// "Yes, remove" — Retro · photo.viewer · adapted · SOURCED
+    public static var photoViewerAdminRemoveConfirm: String { CopyLookup.string("photo.viewer.adminRemove.confirm", default: "Yes, remove") }
+    /// "It will be removed from this group for everyone. They will not be notified." — Retro · photo.viewer · new · SOURCED
+    public static var photoViewerAdminRemoveMessage: String { CopyLookup.string("photo.viewer.adminRemove.message", default: "It will be removed from this group for everyone. They will not be notified.") }
+    /// "Remove this photo?" — Retro · photo.viewer · adapted · SOURCED
+    public static var photoViewerAdminRemoveTitle: String { CopyLookup.string("photo.viewer.adminRemove.title", default: "Remove this photo?") }
     /// "Add a caption…" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerCaptionPlaceholder: String { CopyLookup.string("photo.viewer.caption.placeholder", default: "Add a caption…") }
     /// "Save" — Retro · photo.viewer · verbatim · SOURCED
@@ -1593,6 +1611,8 @@ public enum Copy {
     public static var photoViewerMenuAddCaption: String { CopyLookup.string("photo.viewer.menu.addCaption", default: "Add a Caption") }
     /// "Add to Album" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuAddToAlbum: String { CopyLookup.string("photo.viewer.menu.addToAlbum", default: "Add to Album") }
+    /// "Remove" — WhatsApp · photo.viewer · adapted · SOURCED
+    public static var photoViewerMenuAdminRemove: String { CopyLookup.string("photo.viewer.menu.adminRemove", default: "Remove") }
     /// "Block {name}" — Retro · photo.viewer · new · SOURCED
     public static func photoViewerMenuBlock(name: String) -> String { CopyLookup.format("photo.viewer.menu.block", default: "Block {name}", ["name": name]) }
     /// "Delete" — Retro · photo.viewer · verbatim · SOURCED

@@ -231,6 +231,26 @@ class GroupSettingsViewModel(
         }
     }
 
+    /**
+     * "Make Admin" / "Remove as Admin" (`set_member_role`, migration 0054, admins), optimistic: the row's "Admin" line
+     * changes at once and comes back with the error alert if the call fails (e.g. `last_admin`).
+     */
+    fun setAdmin(member: MemberRow, admin: Boolean) {
+        val s = mutable.value
+        if (!s.isAdmin || member.you || member.admin == admin) return
+        val before = s.members
+        mutable.update { it.copy(members = before?.map { m -> if (m.userId == member.userId) m.copy(admin = admin) else m }) }
+        viewModelScope.launch {
+            try {
+                env.backend.setMemberRole(groupId, member.userId, if (admin) MemberRole.Admin else MemberRole.Member)
+            } catch (t: Throwable) {
+                t.dataError()
+                mutable.update { it.copy(members = before, failed = true) }
+                haptic(Tokens.Haptics.globalError)
+            }
+        }
+    }
+
     fun dismissAlert() = mutable.update { it.copy(failed = false, invalidWindow = false) }
 
     /** Offline: the control does not change; the error alert explains (spec: controls disabled, the alert on tap). */
@@ -267,6 +287,8 @@ class GroupSettingsActions(
     val onReportGroup: () -> Unit = {},
     val onLeave: () -> Unit = {},
     val onRemove: (MemberRow) -> Unit = {},
+    /** Make Admin (true) / Remove as Admin (false), migration 0054. */
+    val onSetAdmin: (MemberRow, Boolean) -> Unit = { _, _ -> },
     val onReportMember: (MemberRow) -> Unit = {},
     val onBlockMember: (MemberRow) -> Unit = {},
     val onOffline: () -> Unit = {},
@@ -295,6 +317,7 @@ fun GroupSettingsRoute(nav: NavController, groupId: String) {
             onReportGroup = { nav.navigate(AppRoute.SafetyReport(groupId = groupId)) },
             onLeave = vm::leave,
             onRemove = vm::remove,
+            onSetAdmin = vm::setAdmin,
             onReportMember = { nav.navigate(AppRoute.SafetyReport(groupId = groupId, userId = it.userId)) },
             onBlockMember = { nav.navigate(AppRoute.SafetyBlock(it.userId)) },
             onOffline = vm::offlineTap,
@@ -496,6 +519,10 @@ private fun MemberRowItem(member: MemberRow, position: GroupedPosition, viewerIs
                         expanded = open,
                         onDismissRequest = { open = false },
                         items = listOfNotNull(
+                            if (viewerIsAdmin) {
+                                if (member.admin) DsMenuItem(stringResource(R.string.groups_settings_members_menu_dismissadmin), { actions.onSetAdmin(member, false) })
+                                else DsMenuItem(stringResource(R.string.groups_settings_members_menu_makeadmin), { actions.onSetAdmin(member, true) })
+                            } else null,
                             if (viewerIsAdmin) DsMenuItem(stringResource(R.string.groups_settings_members_menu_remove), { onRemove(member) }, destructive = true) else null,
                             DsMenuItem(stringResource(R.string.groups_settings_members_menu_report), { actions.onReportMember(member) }, icon = Tokens.Icons.globalReport, destructive = true),
                             DsMenuItem(stringResource(R.string.groups_settings_members_menu_block), { actions.onBlockMember(member) }, destructive = true),

@@ -127,6 +127,23 @@ final class GroupSettingsModel {
         }
     }
 
+    /// "Make Admin" / "Remove as Admin" (`set_member_role`, migration 0054, admins). Optimistic: the row's "Admin" line
+    /// changes at once and comes back with the error alert if the call fails (e.g. `last_admin`).
+    func setRole(_ role: MemberRole, of member: MemberProfile) async {
+        guard isAdmin, member.member.userID != me, member.member.role != role,
+              let index = members.firstIndex(where: { $0.id == member.id }) else { return }
+        let previous = members
+        members[index].member.role = role
+        memberError = nil
+        do {
+            try await data.setMemberRole(groupID: groupID, userID: member.member.userID, role: role)
+        } catch {
+            members = previous
+            memberError = Copy.groupsSettingsErrorGeneric
+            fail(Copy.groupsSettingsErrorGeneric)
+        }
+    }
+
     /// Left the group (`haptic.global.warning`).
     func didLeave() {
         warningCount += 1

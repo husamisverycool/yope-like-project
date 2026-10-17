@@ -7,6 +7,7 @@ import app.data.model.GroupKind
 import app.data.model.GroupMember
 import app.data.model.HiddenMemory
 import app.data.model.Media
+import app.data.model.MemberRole
 import app.data.model.NotificationSettings
 import app.data.model.Post
 import app.data.model.Profile
@@ -85,6 +86,8 @@ interface AccountBackend {
     suspend fun joinGroup(token: String): Group
     suspend fun leaveGroup(groupId: String)
     suspend fun removeMember(groupId: String, userId: String)
+    /** `set_member_role` (migration 0054, admins): Make Admin / Remove as Admin. */
+    suspend fun setMemberRole(groupId: String, userId: String, role: MemberRole)
     suspend fun setMuted(groupId: String, muted: Boolean)
     suspend fun setInvitationHours(groupId: String, start: LocalTime?, end: LocalTime?): Group
     suspend fun setInvitationPaused(groupId: String, paused: Boolean): Group

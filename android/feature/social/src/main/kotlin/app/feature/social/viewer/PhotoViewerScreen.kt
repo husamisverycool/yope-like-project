@@ -156,6 +156,8 @@ data class ViewerNav(
 class ViewerMenuActions(
     val toggleFavorite: () -> Unit = {},
     val useAsCover: () -> Unit = {},
+    /** An admin's "Remove" after its confirmation (`admin_delete_post`, migration 0054). */
+    val adminRemove: () -> Unit = {},
     val addedToAlbum: () -> Unit = {},
     /** The caption dialog's Save (`edit_caption`). */
     val saveCaption: (String) -> Unit = {},
@@ -190,6 +192,9 @@ class ViewerUiState(
     var menuActions = ViewerMenuActions()
     var photoMenu by mutableStateOf(photoMenu)
     var confirmDelete by mutableStateOf(confirmDelete)
+
+    /** An admin's "Remove" on someone else's photo waits for its confirmation (`photo.viewer.adminRemove.*`). */
+    var confirmAdminRemove by mutableStateOf(false)
     var picker by mutableStateOf(picker)
     var reactions by mutableStateOf(reactions)
     var commentMenu by mutableStateOf<String?>(null)
@@ -249,6 +254,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         ViewerMenuActions(
             toggleFavorite = vm::toggleFavorite,
             useAsCover = vm::useAsCover,
+            adminRemove = vm::adminRemove,
             addedToAlbum = vm::addedToAlbum,
             saveCaption = { text -> vm.saveCaption(text) },
         )
@@ -694,8 +700,8 @@ private val DEFAULT_ASPECT: Float get() = Tokens.Sizes.globalStripTileWidth / To
 /**
  * The viewer's menu (`photo.viewer.layout.menu`): on your own photo first Edit Caption (Add a Caption without one; owner
  * decision 34), then save on every photo (owner decision 28: any member saves any photo they can see), Favorite /
- * Unfavorite (private, Apple Photos), Add to Album, Use as Cover (group admins), then delete (yours) or report + block
- * {name} (others').
+ * Unfavorite (private, Apple Photos), Add to Album, Use as Cover (group admins), then delete (yours) or Remove (group
+ * admins, migration 0054) + report + block {name} (others').
  */
 @Composable
 private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, onSave: () -> Unit): List<DsMenuItem> {
@@ -706,6 +712,7 @@ private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNa
     val addToAlbum = stringRes(R.string.photo_viewer_menu_addtoalbum)
     val useAsCover = stringRes(R.string.photo_viewer_menu_useascover)
     val delete = stringRes(R.string.photo_viewer_menu_delete)
+    val adminRemove = stringRes(R.string.photo_viewer_menu_adminremove)
     val report = stringRes(R.string.photo_viewer_menu_report)
     val block = stringRes(R.string.photo_viewer_menu_block, state.current?.author?.firstName.orEmpty())
     val actions = ui.menuActions
@@ -721,6 +728,7 @@ private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNa
         if (state.mine) {
             add(DsMenuItem(delete, { ui.confirmDelete = true }, icon = Tokens.Icons.globalTrash, destructive = true))
         } else state.current?.post?.let { post ->
+            if (state.canAdminRemove) add(DsMenuItem(adminRemove, { ui.confirmAdminRemove = true }, icon = Tokens.Icons.globalTrash, destructive = true))
             add(DsMenuItem(report, { nav.report(post.groupId, post.id) }, icon = Tokens.Icons.globalReport, destructive = true))
             add(DsMenuItem(block, { nav.block(post.authorId) }))
         }
@@ -1079,6 +1087,21 @@ private fun ViewerDialogs(
                 onConfirm = { ui.confirmDelete = false; onDelete() },
                 dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
                 onDismiss = { ui.confirmDelete = false },
+                destructive = true,
+            )
+        }
+        if (ui.confirmAdminRemove) {
+            SystemAlertDialog(
+                title = stringRes(R.string.photo_viewer_adminremove_title),
+                text = stringRes(R.string.photo_viewer_adminremove_message),
+                confirmLabel = stringRes(R.string.photo_viewer_adminremove_confirm),
+                onConfirm = {
+                    ui.confirmAdminRemove = false
+                    haptics.perform(Tokens.Haptics.globalWarning)
+                    ui.menuActions.adminRemove()
+                },
+                dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
+                onDismiss = { ui.confirmAdminRemove = false },
                 destructive = true,
             )
         }

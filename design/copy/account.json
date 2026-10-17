@@ -2078,6 +2078,26 @@
       "level": "SOURCED",
       "notes": "Noun swap album → group."
     },
+    "groups.settings.members.menu.makeAdmin": {
+      "text": "Make Admin",
+      "origin": "adapted",
+      "source_app": "WhatsApp",
+      "surface": "groups.settings",
+      "evidence": "https://faq.whatsapp.com/633713745095781 (WhatsApp Help Center, 'How to manage group admins', accessed 2026-10-17): 'Tap Make group admin.'",
+      "pattern": "retro.voice.menu-labels; retro.voice.title-case ('Remove from Group', 'Report Profile', 'Block Profile' in the same menu)",
+      "level": "SOURCED",
+      "notes": "Admins, on a member's row (set_member_role 'admin', migration 0054). 'group' dropped: the menu is in the group's own settings, beside 'Remove from Group'. No confirmation (WhatsApp asks none)."
+    },
+    "groups.settings.members.menu.dismissAdmin": {
+      "text": "Remove as Admin",
+      "origin": "adapted",
+      "source_app": "WhatsApp",
+      "surface": "groups.settings",
+      "evidence": "https://faq.whatsapp.com/633713745095781 (WhatsApp Help Center, 'How to manage group admins', accessed 2026-10-17): 'Tap the admin you want to dismiss > Dismiss as admin.'",
+      "pattern": "retro.voice.menu-labels; retro.voice.title-case ('Remove from Group')",
+      "level": "SOURCED",
+      "notes": "Admins, on another admin's row (set_member_role 'member', migration 0054). Verb swap dismiss → remove, the verb of 'Remove from Group' in the same menu. The server never removes the last admin (last_admin)."
+    },
     "groups.settings.members.menu.report": {
       "text": "Report Profile",
       "origin": "verbatim",

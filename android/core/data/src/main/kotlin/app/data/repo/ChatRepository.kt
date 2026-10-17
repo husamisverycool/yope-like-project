@@ -91,6 +91,9 @@ class ChatRepository(
     /** Your own text / voice message (a photo message goes with `delete_post`). */
     suspend fun deleteMessage(messageId: String) = api.rpcUnit(Rpc.DeleteMessage) { put("p_message_id", messageId) }
 
+    /** `admin_delete_message` (migration 0054, group admins): anyone's text / voice message; a photo goes with `admin_delete_post`. */
+    suspend fun adminDeleteMessage(messageId: String) = api.rpcUnit(Rpc.AdminDeleteMessage) { put("p_message_id", messageId) }
+
     /**
      * `edit_message` (migration 0047): your own text message inside `message_edit_window_s`; the row with `edited_at` set.
      * `edit_window_closed` once the window passed (or the edits ran out).

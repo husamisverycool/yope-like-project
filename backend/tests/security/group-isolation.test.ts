@@ -215,6 +215,10 @@ describe('group isolation: RPCs', () => {
     set_memory_alerts: { args: () => ({ p_on: false }), expect: 'own-account' }, // memory notification (0049): the caller's own row
     download_items: { args: () => ({ p_scope: 'album', p_album_id: seeded.albumId }), expect: 'error' }, // downloads (0052)
     set_link_preview: { args: () => ({ p_message_id: seeded.messageIds[0], p_url: 'https://example.com' }), expect: 'error' }, // 0053
+    // group admin powers (0054): G's photos, messages and roles are not the outsider's, admin of their own group or not
+    admin_delete_post: { args: () => ({ p_post_id: seeded.postIds[0] }), expect: 'error' },
+    admin_delete_message: { args: () => ({ p_message_id: seeded.messageIds[0] }), expect: 'error' },
+    set_member_role: { args: () => ({ p_group_id: seeded.group.id, p_user_id: gUsers[1].id, p_role: 'admin' }), expect: 'error' },
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {

@@ -641,6 +641,12 @@
     <string name="chat_thread_a11y_replyquote">Reply to %1$s\'s post</string>
     <!-- Retro · chat.thread · new · SOURCED · args: duration -->
     <string name="chat_thread_a11y_video">Video, %1$s</string>
+    <!-- Retro · chat.thread · adapted · SOURCED -->
+    <string name="chat_thread_adminremove_confirm" formatted="false">Yes, remove</string>
+    <!-- Retro · chat.thread · new · SOURCED -->
+    <string name="chat_thread_adminremove_message" formatted="false">It will be removed for everyone in the group. They will not be notified.</string>
+    <!-- Retro · chat.thread · adapted · SOURCED -->
+    <string name="chat_thread_adminremove_title" formatted="false">Remove this message?</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_deletemessage_confirm" formatted="false">Unsend</string>
     <!-- Retro · chat.thread · new · SOURCED -->
@@ -669,6 +675,8 @@
     <string name="chat_thread_error_retry" formatted="false">Try Again</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_error_title" formatted="false">Error loading your messages</string>
+    <!-- WhatsApp · chat.thread · adapted · SOURCED -->
+    <string name="chat_thread_menu_adminremove" formatted="false">Remove</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
     <string name="chat_thread_menu_copy" formatted="false">Copy</string>
     <!-- Retro · chat.thread · verbatim · SOURCED -->
@@ -1087,6 +1095,10 @@
     <string name="groups_settings_members_invite_roommates" formatted="false">Invite Roommates</string>
     <!-- Retro · groups.settings · verbatim · SOURCED -->
     <string name="groups_settings_members_menu_block" formatted="false">Block Profile</string>
+    <!-- WhatsApp · groups.settings · adapted · SOURCED -->
+    <string name="groups_settings_members_menu_dismissadmin" formatted="false">Remove as Admin</string>
+    <!-- WhatsApp · groups.settings · adapted · SOURCED -->
+    <string name="groups_settings_members_menu_makeadmin" formatted="false">Make Admin</string>
     <!-- Retro · groups.settings · adapted · SOURCED -->
     <string name="groups_settings_members_menu_remove" formatted="false">Remove from Group</string>
     <!-- Retro · groups.settings · verbatim · SOURCED -->
@@ -1553,6 +1565,12 @@
     <string name="photo_viewer_a11y_previous" formatted="false">Previous photo</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_a11y_unmute" formatted="false">Unmute</string>
+    <!-- Retro · photo.viewer · adapted · SOURCED -->
+    <string name="photo_viewer_adminremove_confirm" formatted="false">Yes, remove</string>
+    <!-- Retro · photo.viewer · new · SOURCED -->
+    <string name="photo_viewer_adminremove_message" formatted="false">It will be removed from this group for everyone. They will not be notified.</string>
+    <!-- Retro · photo.viewer · adapted · SOURCED -->
+    <string name="photo_viewer_adminremove_title" formatted="false">Remove this photo?</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_caption_placeholder" formatted="false">Add a caption…</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
@@ -1591,6 +1609,8 @@
     <string name="photo_viewer_menu_addcaption" formatted="false">Add a Caption</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_addtoalbum" formatted="false">Add to Album</string>
+    <!-- WhatsApp · photo.viewer · adapted · SOURCED -->
+    <string name="photo_viewer_menu_adminremove" formatted="false">Remove</string>
     <!-- Retro · photo.viewer · new · SOURCED · args: name -->
     <string name="photo_viewer_menu_block">Block %1$s</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->

@@ -281,6 +281,21 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         }
     }
 
+    /// Like `admin_delete_message`: admins of the group remove anyone's text or voice message (`not_group_admin`).
+    func adminDeleteMessage(id: MessageID, groupID: GroupID) async throws {
+        try call("adminDeleteMessage")
+        guard isAdmin(of: groupID) else { throw DataError.api(.notGroupAdmin) }
+        update {
+            $0.messages.removeAll { $0.id == id }
+            $0.messageReactions.removeAll { $0.messageID == id }
+        }
+    }
+
+    private func isAdmin(of groupID: GroupID) -> Bool {
+        let me = read { $0.me }
+        return read { state in state.members[groupID]?.contains { $0.member.userID == me && $0.member.role == .admin } ?? false }
+    }
+
     /// Like `edit_message`: my own text message gets the new body and `edited_at`; `message_not_found` otherwise.
     func editMessage(id: MessageID, body: String) async throws -> Message {
         await hold("editMessage")
@@ -407,6 +422,18 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
             state.selfies.removeAll { gone.contains($0.postID) }
             state.favorites[id] = nil
             state.deletedMedia.append(id)
+        }
+    }
+
+    /// Like `admin_delete_post`: admins of the group remove anyone's photo from that group only (`not_group_admin`).
+    func adminDeletePost(id: PostID, groupID: GroupID) async throws {
+        try call("adminDeletePost")
+        guard isAdmin(of: groupID) else { throw DataError.api(.notGroupAdmin) }
+        update { state in
+            state.posts.removeAll { $0.id == id }
+            state.messages.removeAll { $0.postID == id }
+            state.reactions.removeAll { $0.postID == id }
+            state.selfies.removeAll { $0.postID == id }
         }
     }
 

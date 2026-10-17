@@ -199,6 +199,9 @@ class PostRepository(private val api: Api, private val cache: OfflineCache, priv
     /** Author only: removes the photo from one group (the media goes with its last post). */
     suspend fun deletePost(postId: String) = api.rpcUnit(Rpc.DeletePost) { put("p_post_id", postId) }
 
+    /** `admin_delete_post` (migration 0054, group admins): anyone's photo leaves this group; `post_not_found`, `not_group_admin`. */
+    suspend fun adminDeletePost(postId: String) = api.rpcUnit(Rpc.AdminDeletePost) { put("p_post_id", postId) }
+
     /** Owner only: deletes the photo everywhere (every group, chat, reactions, tags, albums, recaps…). */
     suspend fun deleteMedia(mediaId: String) = api.rpcUnit(Rpc.DeleteMedia) { put("p_media_id", mediaId) }
 

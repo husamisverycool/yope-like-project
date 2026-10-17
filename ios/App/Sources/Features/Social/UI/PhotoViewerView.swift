@@ -29,6 +29,8 @@ struct PhotoViewerView: View {
     @State private var reactionsOpen = false
     @State private var tagSheetOpen = false
     @State private var confirmingDelete = false
+    /// An admin's "Remove" on someone else's photo, waiting for its confirmation (`photo.viewer.adminRemove.*`).
+    @State private var confirmingAdminRemove = false
     /// "Add to Album": the album picker for this photo (`photo.viewer.layout.albumPicker`).
     @State private var albumPicker: AlbumPickerTarget?
     @State private var unsendCandidate: Message?
@@ -158,6 +160,14 @@ struct PhotoViewerView: View {
                 Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
             } message: {
                 Text(Copy.photoViewerDeleteMessage)
+            }
+            .confirmationDialog(Copy.photoViewerAdminRemoveTitle, isPresented: $confirmingAdminRemove, titleVisibility: .visible) {
+                Button(Copy.photoViewerAdminRemoveConfirm, role: .destructive) {
+                    Task { await model.adminRemoveCurrent() }
+                }
+                Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
+            } message: {
+                Text(Copy.photoViewerAdminRemoveMessage)
             }
             .alert(
                 Copy.chatThreadDeleteMessageTitle,
@@ -448,8 +458,8 @@ struct PhotoViewerView: View {
 
     /// On my own photo first Edit Caption (Add a Caption when it has none; owner decision 34); then Save to Camera Roll on
     /// every photo (owner decision 28: any member saves any photo they can see), Favorite / Unfavorite (private, Apple
-    /// Photos), Add to Album, Use as Cover (group admins), then mine: Delete (destructive); others': Report Post
-    /// (destructive) · Block {name}.
+    /// Photos), Add to Album, Use as Cover (group admins), then mine: Delete (destructive); others': Remove (group admins,
+    /// destructive, migration 0054) · Report Post (destructive) · Block {name}.
     @ViewBuilder
     private var menuItems: some View {
         if model.canEditCurrentCaption {
@@ -485,6 +495,11 @@ struct PhotoViewerView: View {
             }
         } else if let post = model.current {
             let firstName = model.author(of: post)?.socialFirstName ?? ""
+            if model.canAdminRemoveCurrent {
+                Button(role: .destructive) { confirmingAdminRemove = true } label: {
+                    Label(Copy.photoViewerMenuAdminRemove, systemImage: Tokens.Icons.globalTrash)
+                }
+            }
             if account != nil {
                 Button(role: .destructive) {
                     reportTarget = ReportTarget(

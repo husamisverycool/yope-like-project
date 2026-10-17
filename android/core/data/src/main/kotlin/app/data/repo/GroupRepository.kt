@@ -7,6 +7,7 @@ import app.data.model.GroupInvite
 import app.data.model.GroupKind
 import app.data.model.GroupMember
 import app.data.model.InvitePreview
+import app.data.model.MemberRole
 import app.data.model.Profile
 import app.data.offline.CacheKey
 import app.data.offline.DataState
@@ -159,6 +160,13 @@ class GroupRepository(
     suspend fun removeMember(groupId: String, userId: String) = api.rpcUnit(Rpc.RemoveMember) {
         put("p_group_id", groupId)
         put("p_user_id", userId)
+    }
+
+    /** `set_member_role` (migration 0054, admins). Errors: `not_group_admin`, `member_not_found`, `last_admin`. */
+    suspend fun setMemberRole(groupId: String, userId: String, role: MemberRole) = api.rpcUnit(Rpc.SetMemberRole) {
+        put("p_group_id", groupId)
+        put("p_user_id", userId)
+        put("p_role", role.wire)
     }
 
     /** The last member leaving deletes the group and all its content. */

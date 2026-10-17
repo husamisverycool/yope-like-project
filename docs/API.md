@@ -95,7 +95,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 |---|---|---|
 | `not_authenticated` | 401 | No session, or the account was deleted. |
 | `not_group_member` | 403 | Caller is not a member of that group. Also returned for group ids that do not exist. |
-| `not_group_admin` | 403 | Admin-only action. |
+| `not_group_admin` | 403 | Admin-only action (e.g. `admin_delete_post`, `set_member_role` by a member who is not an admin). |
 | `not_album_owner` | 403 | Only the album's creator or a group admin can delete it. |
 | `not_allowed` | 403 | The caller may not do this to someone else's row (e.g. `remove_from_album` of a photo another member added, when not the album's creator or an admin). |
 | `post_not_eligible` | 403 | Tribute photo is neither yours nor one you are self-tagged in. |
@@ -104,7 +104,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `video_too_long` | 400 | `create_post`: the video is longer than `app_config.video_max_ms` (`details` = `video_max_ms=…`). |
 | `post_not_found` | 404 | Post does not exist, or the caller cannot see it (not a member / block). |
 | `media_not_found` | 404 | Media does not exist or is not the caller's. |
-| `message_not_found` | 404 | Message does not exist, is not visible, or is not yours (`delete_message`). |
+| `message_not_found` | 404 | Message does not exist, is not visible, or is not yours (`delete_message`; `admin_delete_message`: not in a group of yours). |
 | `member_not_found` | 404 | Target user is not a member of the group. |
 | `user_not_found` | 404 | No such user. |
 | `invite_not_found` | 404 | Unknown invite token. |
@@ -119,10 +119,11 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `recap_not_ready` | 409 | The recap is still being generated (`status <> 'ready'`). |
 | `media_not_ready` | 409 | `set_group_cover_from_post`: the photo's display rendition is not made yet (seconds after posting). |
 | `tribute_closed` | 409 | The tribute request is past its due time. |
+| `last_admin` | 409 | `set_member_role`: the change would leave the group without an admin (migration 0054). Make another member an admin first. |
 | `edit_window_closed` | 409 | `edit_message`: the message is older than `message_edit_window_s` or was already edited `message_edit_max` times (migration 0047). |
 | `age_gate_not_configured` | 503 | Minimum age not configured yet; the age gate fails closed. |
 | `invalid_name` | 400 | Name empty or longer than 80 characters (groups, albums). |
-| `invalid_kind` | 400 | Wrong kind (e.g. `photo` in `send_message`, deleting a photo message with `delete_message`). |
+| `invalid_kind` | 400 | Wrong kind (e.g. `photo` in `send_message`, deleting a photo message with `delete_message` / `admin_delete_message`, a joined / left line). |
 | `invalid_time_zone` | 400 | Not an IANA time zone name. |
 | `invalid_waking_window` | 400 | Start/end must both be set (or both null), differ, and span at least `invitation_window_seconds`. |
 | `invalid_path` | 400 | A storage path outside `u/<your uid>/`. |
@@ -222,7 +223,7 @@ Read: members of the same group. Written by RPCs only.
 | Column | Type | Notes |
 |---|---|---|
 | `group_id`, `user_id` | uuid | primary key |
-| `role` | member_role | at least one admin while the group has members |
+| `role` | member_role | at least one admin while the group has members (`set_member_role`, migration 0054) |
 | `muted` | boolean | per-group mute (push); readable by co-members, see [12](#12-open-decisions) |
 | `joined_at` | timestamptz | order of joining (admin hand-off uses it) |
 
@@ -679,6 +680,17 @@ group. Their invites are revoked, and birthday requests about them in this group
 deleted. Errors: `not_group_member`, `not_group_admin`, `cannot_target_self`,
 `member_not_found`.
 
+#### `set_member_role` (migration 0054)
+```
+set_member_role(p_group_id uuid, p_user_id uuid, p_role member_role) → void
+```
+Admin only. `p_role` = `admin` makes a member an admin; `member` removes them as admin (yourself
+included, while another admin remains). Idempotent. A group never has zero admins: a change that
+would leave none fails with `last_admin` (the group row is locked, so two admins stepping down at
+once leave one). The role is read from `group_members.role`; there is no push or chat line.
+Errors: `not_group_member`, `not_group_admin`, `member_not_found`, `last_admin`,
+`invalid_argument` (`p_user_id` / `p_role` null).
+
 #### `leave_group`
 ```
 leave_group(p_group_id uuid) → void
@@ -791,6 +803,17 @@ Your own text/voice message. A photo message is removed with `delete_post`
 (`invalid_kind`). Errors: `message_not_found`. Members get a `message_deleted`
 broadcast.
 
+#### `admin_delete_message` (migration 0054)
+```
+admin_delete_message(p_message_id uuid) → void
+```
+A group admin removes anyone's text or voice message in their group, with the same cascade as
+`delete_message` (its reactions, link preview image, queued push; members get a
+`message_deleted` broadcast). A photo message is removed with `admin_delete_post`
+(`invalid_kind`); joined / left lines cannot be removed (`invalid_kind`). Errors:
+`message_not_found` (no such message, or not in a group of yours), `not_group_admin`,
+`invalid_kind`.
+
 #### `react_to_message` / `unreact_to_message`
 ```
 react_to_message(p_message_id uuid, p_emoji text) → message_reactions
@@ -889,6 +912,15 @@ delete_post(p_post_id uuid) → void
 ```
 Author only (`post_not_found`). Removes the photo from **one** group with the same
 cascade. When it was the photo's last post, the media and its files are deleted too.
+
+#### `admin_delete_post` (migration 0054)
+```
+admin_delete_post(p_post_id uuid) → void
+```
+A group admin removes anyone's photo from their group: exactly `delete_post`'s cascade (one group's
+copy; the author's posts of the same photo in other groups stay; the media and files go when it
+was the last post; members get `post_deleted`). The author is not notified. Errors:
+`post_not_found` (no such post, or not in a group of yours), `not_group_admin`.
 
 ### 6.3 Account and safety
 
@@ -1274,7 +1306,7 @@ Posts and chat from tables (5.8, 5.9), realtime (8), walls via `wall`, the week 
 ### 9.7 Settings
 Mute: `set_group_muted`. Quiet hours: `set_quiet_hours`. Invitation hours / pause:
 `set_group_invitation_hours` / `set_group_invitation_paused` (admins). Members list:
-`group_members` + `profiles`. Remove: `remove_member` (admins). Leave: `leave_group`.
+`group_members` + `profiles`. Remove: `remove_member` (admins). Make / remove admins: `set_member_role` (admins, never the last one). Leave: `leave_group`.
 Blocked people: `blocks` (+ `profiles` when you still share a group), `unblock_user`.
 Delete account: `delete_account`.
 

@@ -69,6 +69,8 @@ interface SocialData {
     /** A voice message with its waveform ([levels]: 100 values of 0…31, `p_voice_levels`; null sends none). */
     suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>? = null): Message
     suspend fun deleteMessage(messageId: String)
+    /** `admin_delete_message` (migration 0054): a group admin removes someone else's text or voice message. */
+    suspend fun adminDeleteMessage(messageId: String)
     /** `edit_message` (`chat.thread.layout.editMessage`): your own text message inside the edit window; the row with `edited_at`. */
     suspend fun editMessage(messageId: String, body: String): Message
     /** `public_app_config` (§11): `message_edit_window_s` (Edit is offered only inside it) and `typing_ttl_s`. */
@@ -104,6 +106,8 @@ interface SocialData {
     suspend fun revealedWith(post: Post): List<String> = emptyList()
     suspend fun media(ids: Collection<String>): List<Media>
     suspend fun deleteMedia(mediaId: String)
+    /** `admin_delete_post` (migration 0054): a group admin removes someone else's photo from that group only. */
+    suspend fun adminDeletePost(postId: String)
     /**
      * `edit_caption` (migration 0047): your own photo's caption in its group, any time; empty or blank removes it. The row
      * with `caption_edited_at` set.
@@ -228,6 +232,7 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?) = graph.chat.sendText(groupId, body, replyToPostId, replyToMessageId)
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>?) = graph.chat.sendVoice(groupId, audio, durationMs, levels)
     override suspend fun deleteMessage(messageId: String) = graph.chat.deleteMessage(messageId)
+    override suspend fun adminDeleteMessage(messageId: String) = graph.chat.adminDeleteMessage(messageId)
     override suspend fun editMessage(messageId: String, body: String) = graph.chat.editMessage(messageId, body)
     override suspend fun publicConfig(): PublicAppConfig = graph.appConfig.publicConfig()
     override suspend fun setLinkPreview(messageId: String, preview: LinkPreviewDraft) =
@@ -254,6 +259,7 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
         post.revealedAt?.let { graph.posts.revealed(post.groupId, it).map(Post::id) }.orEmpty()
     override suspend fun media(ids: Collection<String>) = graph.posts.media(ids)
     override suspend fun deleteMedia(mediaId: String) = graph.posts.deleteMedia(mediaId)
+    override suspend fun adminDeletePost(postId: String) = graph.posts.adminDeletePost(postId)
     override suspend fun editCaption(postId: String, caption: String): Post = graph.posts.editCaption(postId, caption)
     override suspend fun downloadItems(scope: DownloadScope, before: Instant?): List<DownloadItem> = graph.posts.downloadItems(scope, before)
     override suspend fun isPremium(): Boolean = runCatching { graph.entitlements.isPremium() }.getOrDefault(false)
@@ -334,6 +340,7 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun sendText(groupId: String, body: String, replyToPostId: String?, replyToMessageId: String?): Message = fail()
     override suspend fun sendVoice(groupId: String, audio: File, durationMs: Int, levels: List<Int>?): Message = fail()
     override suspend fun deleteMessage(messageId: String) = fail()
+    override suspend fun adminDeleteMessage(messageId: String) = fail()
     override suspend fun editMessage(messageId: String, body: String): Message = fail()
     override suspend fun publicConfig(): PublicAppConfig = fail()
     override suspend fun messageReactions(messageIds: Collection<String>): Map<String, List<ReactionEntry>> = fail()
@@ -346,6 +353,7 @@ object UnconfiguredSocialData : SocialData {
     override suspend fun posts(ids: Collection<String>): List<Post> = fail()
     override suspend fun media(ids: Collection<String>): List<Media> = fail()
     override suspend fun deleteMedia(mediaId: String) = fail()
+    override suspend fun adminDeletePost(postId: String) = fail()
     override suspend fun reactions(postIds: Collection<String>): Map<String, List<ReactionEntry>> = fail()
     override suspend fun react(postId: String, emoji: String) = fail()
     override suspend fun unreact(postId: String, emoji: String) = fail()

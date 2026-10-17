@@ -17,6 +17,8 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     InvitePreview("invite_preview", setOf("p_token"), anon = true),
     JoinGroup("join_group", setOf("p_token")),
     RemoveMember("remove_member", setOf("p_group_id", "p_user_id")),
+    /** Migration 0054: an admin makes a member an admin or removes them as admin (never the last one: `last_admin`). */
+    SetMemberRole("set_member_role", setOf("p_group_id", "p_user_id", "p_role")),
     LeaveGroup("leave_group", setOf("p_group_id")),
     SetGroupMuted("set_group_muted", setOf("p_group_id", "p_muted")),
     SetGroupInvitationHours("set_group_invitation_hours", setOf("p_group_id", "p_start", "p_end")),
@@ -32,6 +34,8 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
         setOf("p_body", "p_voice_path", "p_voice_duration_ms", "p_voice_levels", "p_reply_to_post_id", "p_reply_to_message_id"),
     ),
     DeleteMessage("delete_message", setOf("p_message_id")),
+    /** Migration 0054: a group admin removes anyone's text or voice message in the group. */
+    AdminDeleteMessage("admin_delete_message", setOf("p_message_id")),
     /** Migration 0047: one reaction per person on a text or voice message; editing a text message or a caption. */
     ReactToMessage("react_to_message", setOf("p_message_id", "p_emoji")),
     UnreactToMessage("unreact_to_message", setOf("p_message_id")),
@@ -47,6 +51,8 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     UntagSelf("untag_self", setOf("p_post_id")),
     DeleteMedia("delete_media", setOf("p_media_id")),
     DeletePost("delete_post", setOf("p_post_id")),
+    /** Migration 0054: a group admin removes anyone's photo from the group (`delete_post`'s cascade). */
+    AdminDeletePost("admin_delete_post", setOf("p_post_id")),
 
     // §6.3 Account and safety
     DeleteAccount("delete_account", emptySet()),

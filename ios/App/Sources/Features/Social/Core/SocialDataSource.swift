@@ -38,6 +38,8 @@ protocol SocialDataSource: Sendable {
     /// `p_voice_levels`; nil sends none).
     func sendVoice(groupID: GroupID, fileURL: URL, durationMs: Int, levels: [Int]?) async throws -> Message
     func deleteMessage(id: MessageID, groupID: GroupID) async throws
+    /// `admin_delete_message` (migration 0054): a group admin removes someone else's text or voice message.
+    func adminDeleteMessage(id: MessageID, groupID: GroupID) async throws
     /// `edit_message` (`chat.thread.layout.editMessage`): my own text message inside the edit window; the row with
     /// `edited_at` set. `edit_window_closed` once the window passed.
     func editMessage(id: MessageID, body: String) async throws -> Message
@@ -78,6 +80,8 @@ protocol SocialDataSource: Sendable {
     func cachedPosts(ids: [PostID], groupID: GroupID?) async -> [PostWithMedia]
     /// `delete_media`: removes the photo everywhere (owner only).
     func deleteMedia(id: MediaID) async throws
+    /// `admin_delete_post` (migration 0054): a group admin removes someone else's photo from that group only.
+    func adminDeletePost(id: PostID, groupID: GroupID) async throws
     /// `edit_caption` (migration 0047): my own photo's caption in its group, any time; empty or blank removes it. The row
     /// with `caption_edited_at` set.
     func editCaption(postID: PostID, caption: String) async throws -> Post

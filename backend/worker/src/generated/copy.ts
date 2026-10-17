@@ -322,6 +322,9 @@ const table = {
   "chat.thread.a11y.photoMine": "Your photo, {time}", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.replyQuote": "Reply to {name}'s post", // Retro · chat.thread · SOURCED
   "chat.thread.a11y.video": "Video, {duration}", // Retro · chat.thread · SOURCED
+  "chat.thread.adminRemove.confirm": "Yes, remove", // Retro · chat.thread · SOURCED
+  "chat.thread.adminRemove.message": "It will be removed for everyone in the group. They will not be notified.", // Retro · chat.thread · SOURCED
+  "chat.thread.adminRemove.title": "Remove this message?", // Retro · chat.thread · SOURCED
   "chat.thread.deleteMessage.confirm": "Unsend", // Retro · chat.thread · SOURCED
   "chat.thread.deleteMessage.message": "It will be removed for everyone in the group.", // Retro · chat.thread · SOURCED
   "chat.thread.deleteMessage.title": "Unsend message?", // Retro · chat.thread · SOURCED
@@ -336,6 +339,7 @@ const table = {
   "chat.thread.error.detail": "There was a problem. Please try again.", // Retro · chat.thread · SOURCED
   "chat.thread.error.retry": "Try Again", // Retro · chat.thread · SOURCED
   "chat.thread.error.title": "Error loading your messages", // Retro · chat.thread · SOURCED
+  "chat.thread.menu.adminRemove": "Remove", // WhatsApp · chat.thread · SOURCED
   "chat.thread.menu.copy": "Copy", // Retro · chat.thread · SOURCED
   "chat.thread.menu.delete": "Unsend", // Retro · chat.thread · SOURCED
   "chat.thread.menu.deletePhoto": "Delete", // Retro · chat.thread · SOURCED
@@ -545,6 +549,8 @@ const table = {
   "groups.settings.members.invite.friends": "Invite Friends", // Retro · groups.settings · SOURCED
   "groups.settings.members.invite.roommates": "Invite Roommates", // Retro · groups.settings · SOURCED
   "groups.settings.members.menu.block": "Block Profile", // Retro · groups.settings · SOURCED
+  "groups.settings.members.menu.dismissAdmin": "Remove as Admin", // WhatsApp · groups.settings · SOURCED
+  "groups.settings.members.menu.makeAdmin": "Make Admin", // WhatsApp · groups.settings · SOURCED
   "groups.settings.members.menu.remove": "Remove from Group", // Retro · groups.settings · SOURCED
   "groups.settings.members.menu.report": "Report Profile", // Retro · groups.settings · SOURCED
   "groups.settings.members.more.accessibilityLabel": "More Options", // Retro · groups.settings · SOURCED
@@ -778,6 +784,9 @@ const table = {
   "photo.viewer.a11y.play": "Play", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.previous": "Previous photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.unmute": "Unmute", // Retro · photo.viewer · SOURCED
+  "photo.viewer.adminRemove.confirm": "Yes, remove", // Retro · photo.viewer · SOURCED
+  "photo.viewer.adminRemove.message": "It will be removed from this group for everyone. They will not be notified.", // Retro · photo.viewer · SOURCED
+  "photo.viewer.adminRemove.title": "Remove this photo?", // Retro · photo.viewer · SOURCED
   "photo.viewer.caption.placeholder": "Add a caption…", // Retro · photo.viewer · SOURCED
   "photo.viewer.caption.save": "Save", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.cancel": "Cancel", // Apple HIG · photo.viewer · PLATFORM
@@ -797,6 +806,7 @@ const table = {
   "photo.viewer.header.week": "Week {week_number}", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.addCaption": "Add a Caption", // Apple Photos · photo.viewer · SOURCED
   "photo.viewer.menu.addToAlbum": "Add to Album", // Retro · photo.viewer · SOURCED
+  "photo.viewer.menu.adminRemove": "Remove", // WhatsApp · photo.viewer · SOURCED
   "photo.viewer.menu.block": "Block {name}", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.delete": "Delete", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.editCaption": "Edit Caption", // Retro · photo.viewer · SOURCED

@@ -171,6 +171,18 @@ class FakeSocialData(var me: String = ME) : SocialData {
         messageReactions.remove(messageId)
     }
 
+    private fun isAdmin(groupId: String) =
+        members[groupId].orEmpty().any { it.member.userId == me && it.member.role == MemberRole.Admin }
+
+    /** Like `admin_delete_message`: admins of the message's group remove anyone's text / voice message. */
+    override suspend fun adminDeleteMessage(messageId: String) {
+        write("adminDeleteMessage:$messageId")
+        val m = messages.firstOrNull { it.id == messageId } ?: throw DataException(DataError.Api(ApiError.MessageNotFound, "message_not_found", 404, null))
+        if (!isAdmin(m.groupId)) throw DataException(DataError.Api(ApiError.NotGroupAdmin, "not_group_admin", 403, null))
+        messages.removeAll { it.id == messageId }
+        messageReactions.remove(messageId)
+    }
+
     /** Like `edit_message`: your own text message gets the body and `edited_at`; `message_not_found` otherwise. */
     override suspend fun editMessage(messageId: String, body: String): Message {
         write("editMessage:$messageId:$body")
@@ -252,6 +264,15 @@ class FakeSocialData(var me: String = ME) : SocialData {
     override suspend fun deleteMedia(mediaId: String) {
         write("deleteMedia:$mediaId")
         posts.values.removeAll { it.mediaId == mediaId }
+    }
+
+    /** Like `admin_delete_post`: admins of the photo's group remove it from that group only. */
+    override suspend fun adminDeletePost(postId: String) {
+        write("adminDeletePost:$postId")
+        val post = posts[postId] ?: throw DataException(DataError.Api(ApiError.PostNotFound, "post_not_found", 404, null))
+        if (!isAdmin(post.groupId)) throw DataException(DataError.Api(ApiError.NotGroupAdmin, "not_group_admin", 403, null))
+        posts.remove(postId)
+        messages.removeAll { it.kind == MessageKind.Photo && it.postId == postId }
     }
 
     /** `edit_caption`: the author's own post; blank removes the caption; over 1000 characters → `invalid_caption`. */

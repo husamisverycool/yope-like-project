@@ -113,4 +113,11 @@ public struct ChatRepository: Sendable {
         try await client.rpcVoid("delete_message", ["p_message_id": .id(messageID)])
         await cache?.purgeMessage(messageID, groupID: groupID)
     }
+
+    /// `admin_delete_message` (migration 0054, group admins): removes anyone's text or voice message in the group.
+    /// Errors: `messageNotFound`, `notGroupAdmin`, `invalidKind` (a photo message goes with `adminDeletePost`).
+    public func adminDelete(messageID: MessageID, groupID: GroupID) async throws {
+        try await client.rpcVoid("admin_delete_message", ["p_message_id": .id(messageID)])
+        await cache?.purgeMessage(messageID, groupID: groupID)
+    }
 }

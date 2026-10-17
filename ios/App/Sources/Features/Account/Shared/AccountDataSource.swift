@@ -61,6 +61,8 @@ protocol AccountDataSource: AnyObject, Sendable {
     func setInvitationPaused(groupID: GroupID, paused: Bool) async throws -> PhotoGroup
     func leaveGroup(id: GroupID) async throws
     func removeMember(groupID: GroupID, userID: UserID) async throws
+    /// `set_member_role` (migration 0054, admins): Make Admin / Remove as Admin. `lastAdmin` when none would be left.
+    func setMemberRole(groupID: GroupID, userID: UserID, role: MemberRole) async throws
     func activeInvites(groupID: GroupID) async throws -> [GroupInvite]
     func createInvite(groupID: GroupID) async throws -> GroupInvite
     func revokeInvite(token: String) async throws
@@ -277,6 +279,11 @@ final class LiveAccountData: AccountDataSource {
     func removeMember(groupID: GroupID, userID: UserID) async throws {
         let groups = try env().groups
         try await groups.removeMember(groupID: groupID, userID: userID)
+    }
+
+    func setMemberRole(groupID: GroupID, userID: UserID, role: MemberRole) async throws {
+        let groups = try env().groups
+        try await groups.setMemberRole(groupID: groupID, userID: userID, role: role)
     }
 
     func activeInvites(groupID: GroupID) async throws -> [GroupInvite] {
