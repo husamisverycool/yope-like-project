@@ -72,7 +72,7 @@ Snapshots (real sample photos, `fixtures/photos/`): `year.story/card-01-intro-da
 | match (token) | year `font.global.display` text role `headerTitle`, `color.global.onSurfaceLight` |  | RecapFooter(TextRoles.headerTitle, onSurfaceLight) — the card stays white in dark (L-4) |  |  |
 | match | card `color.global.surfaceLight` in the dark appearance (L-4) | #FFFFFF | #FFFFFF |  | recap-card-dark.png, footer area |
 | match (token) | corners `cornerRadiusRatio` × width |  | RoundedCornerShape(RecapCardMetrics.corner(width)); the grid is clipped to corner − padding |  |  |
-| not matched | app line `year.story.card.app` | under the group name (BLOCKED copy) | left out | references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3; 1.695 px/pt, phone-2 sc… | BLOCKED until the owner names the app (spec) |
+| matched (2026-10-17) | app line `year.story.card.app` | under the group name | “Jolt” (`R.string.year_story_card_app`) on the card (`detail`) and the full-bleed footer | references/auto/retro/press/tc-2023-12-recaps.png (press render, phones 2-3) | the owner named the app (config/app.json displayName) |
 
 ## Summary — pager and dots
 

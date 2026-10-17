@@ -244,7 +244,8 @@ internal fun rememberReveal(card: StoryCard, animate: Boolean): Reveal {
 
 /**
  * The summary's styles (`layout.year.story.summary`): [SummaryStyle.Card] — the recap card on the blurred cover
- * ([RecapCardPage]; the year, the group name; the app line `year.story.card.app` is BLOCKED and left out);
+ * ([RecapCardPage]; the year, the group name and under it the app line `year.story.card.app`, where Retro prints its name —
+ * '2023 / nathan / retro.app', TC-REC);
  * [SummaryStyle.Cover] — the cover full bleed with the footer ([RecapCoverPage]). [backdropDrawn]: the frame already
  * shows the blurred cover.
  */
@@ -260,11 +261,12 @@ internal fun SummaryPage(style: SummaryStyle, recap: StoryRecap, backdropDrawn: 
                 photos,
                 year,
                 name = recap.groupName,
+                detail = stringResource(R.string.year_story_card_app),
                 backdrop = { if (!backdropDrawn) Backdrop(recap.coverUrl, software, onSettled) },
                 image = { photo, m -> MemoryImage(photo.image as String?, null, m, placeholder = Tokens.ColorsLight.globalControl, software = software, onSettled = onSettled) },
             )
         }
-        SummaryStyle.Cover -> RecapCoverPage(year, name = recap.groupName) {
+        SummaryStyle.Cover -> RecapCoverPage(year, name = recap.groupName, detail = stringResource(R.string.year_story_card_app)) {
             MemoryImage(recap.coverUrl, null, Modifier.fillMaxSize(), software = software, onSettled = onSettled)
         }
     }

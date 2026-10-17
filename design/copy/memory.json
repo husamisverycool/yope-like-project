@@ -556,13 +556,13 @@
     },
     "year.story.card.app": {
       "text": "{app_name}",
-      "origin": "new",
+      "origin": "adapted",
       "source_app": "Retro",
       "surface": "year.story",
-      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png phones 2-3 and references/auto/retro/press/tc-2023-12-retro-header.png ('retro.app' under the name on the recap card)",
-      "pattern": "retro.voice.share",
-      "level": "BLOCKED",
-      "notes": "App line under the group name on the recap card and the full-bleed footer (Retro prints its domain). BLOCKED until the owner names the app (and its domain); until then the line is left out."
+      "evidence": "references/auto/retro/press/tc-2023-12-recaps.png phones 2-3 and references/auto/retro/press/tc-2023-12-retro-header.png ('retro.app' under the name on the recap card and in the full-bleed footer); {app_name} = config/app.json displayName 'Jolt' (level OWNER, owner decision 0.1)",
+      "pattern": "retro.voice.share ('2023 / nathan / retro.app' — the year, the name, the app)",
+      "level": "SOURCED",
+      "notes": "App line under the group name on the recap card (text role meta, color.global.textSecondary) and in the full-bleed footer (meta, color.global.textOnMedia). Noun swap: Retro's own name ('retro.app', its domain) → {app_name}, the owner's display name (the temporary Fly address of decision 33 is not a name to print). Was BLOCKED until the owner named the app."
     },
     "year.story.loading": {
       "text": "Loading…",

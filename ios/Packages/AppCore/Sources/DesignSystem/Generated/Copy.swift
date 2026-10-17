@@ -391,6 +391,12 @@ public enum Copy {
     public static var cameraCaptureUnavailableDetail: String { CopyLookup.string("camera.capture.unavailable.detail", default: "The camera couldn't start. Please try again.") }
     /// "Camera Unavailable" — Retro · camera.capture · new · SOURCED
     public static var cameraCaptureUnavailableTitle: String { CopyLookup.string("camera.capture.unavailable.title", default: "Camera Unavailable") }
+    /// "OK" — Apple HIG · camera.trim · verbatim · VERIFIED
+    public static var cameraCaptureVideoTooLongDismiss: String { CopyLookup.string("camera.capture.videoTooLong.dismiss", default: "OK") }
+    /// "Please select a video under {duration}" — Retro · camera.trim · verbatim · SOURCED
+    public static func cameraCaptureVideoTooLongMessage(duration: String) -> String { CopyLookup.format("camera.capture.videoTooLong.message", default: "Please select a video under {duration}", ["duration": duration]) }
+    /// "Video too long" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraCaptureVideoTooLongTitle: String { CopyLookup.string("camera.capture.videoTooLong.title", default: "Video too long") }
     /// "Photo taken. It develops {reveal}." — Dispo · camera.overnight · new · SOURCED
     public static func cameraOvernightA11yCaptured(reveal: String) -> String { CopyLookup.format("camera.overnight.a11y.captured", default: "Photo taken. It develops {reveal}.", ["reveal": reveal]) }
     /// "Choose which groups these photos develop for" — Dispo · camera.overnight · new · SOURCED
@@ -483,6 +489,34 @@ public enum Copy {
     public static func cameraSendtoToastPostedOne(group: String) -> String { CopyLookup.format("camera.sendto.toast.postedOne", default: "Added to {group}!", ["group": group]) }
     /// "Saved" — Retro · camera.sendto · verbatim · SOURCED
     public static var cameraSendtoToastSaved: String { CopyLookup.string("camera.sendto.toast.saved", default: "Saved") }
+    /// "Trimming…" — Retro · camera.trim · new · SOURCED
+    public static var cameraTrimA11yBusy: String { CopyLookup.string("camera.trim.a11y.busy", default: "Trimming…") }
+    /// "End one second earlier" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimA11yEndEarlier: String { CopyLookup.string("camera.trim.a11y.endEarlier", default: "End one second earlier") }
+    /// "End one second later" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimA11yEndLater: String { CopyLookup.string("camera.trim.a11y.endLater", default: "End one second later") }
+    /// "Pause" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimA11yPause: String { CopyLookup.string("camera.trim.a11y.pause", default: "Pause") }
+    /// "Play" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimA11yPlay: String { CopyLookup.string("camera.trim.a11y.play", default: "Play") }
+    /// "Start one second earlier" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimA11yStartEarlier: String { CopyLookup.string("camera.trim.a11y.startEarlier", default: "Start one second earlier") }
+    /// "Start one second later" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimA11yStartLater: String { CopyLookup.string("camera.trim.a11y.startLater", default: "Start one second later") }
+    /// "Video trim timeline" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimA11yTimeline: String { CopyLookup.string("camera.trim.a11y.timeline", default: "Video trim timeline") }
+    /// "Cancel" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimCancel: String { CopyLookup.string("camera.trim.cancel", default: "Cancel") }
+    /// "Done" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimDone: String { CopyLookup.string("camera.trim.done", default: "Done") }
+    /// "Error loading video…" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimErrorLoad: String { CopyLookup.string("camera.trim.error.load", default: "Error loading video…") }
+    /// "Retry" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimErrorRetry: String { CopyLookup.string("camera.trim.error.retry", default: "Retry") }
+    /// "{start} – {end} ({length})" — Retro · camera.trim · verbatim · SOURCED
+    public static func cameraTrimRange(start: String, end: String, length: String) -> String { CopyLookup.format("camera.trim.range", default: "{start} – {end} ({length})", ["start": start, "end": end, "length": length]) }
+    /// "Trim Video" — Retro · camera.trim · verbatim · SOURCED
+    public static var cameraTrimTitle: String { CopyLookup.string("camera.trim.title", default: "Trim Video") }
     /// "Take photo" — Retro · chat.composer · verbatim · SOURCED
     public static var chatComposerA11yCamera: String { CopyLookup.string("chat.composer.a11y.camera", default: "Take photo") }
     /// "Message" — Retro · chat.composer · verbatim · SOURCED
@@ -1493,6 +1527,24 @@ public enum Copy {
     public static var plansCreateTitle: String { CopyLookup.string("plans.create.title", default: "New Plan") }
     /// "Edit Plan" — Retro · plans.create · adapted · SOURCED
     public static var plansCreateTitleEdit: String { CopyLookup.string("plans.create.titleEdit", default: "Edit Plan") }
+    /// "Back" — Retro · plans.list · new · VERIFIED
+    public static var plansListBackAccessibilityLabel: String { CopyLookup.string("plans.list.back.accessibilityLabel", default: "Back") }
+    /// "No plans yet" — Retro · plans.list · adapted · SOURCED
+    public static var plansListEmptyTitle: String { CopyLookup.string("plans.list.empty.title", default: "No plans yet") }
+    /// "All Plans" — Apple Invites · plans.list · adapted · SOURCED
+    public static var plansListEntryAccessibilityHint: String { CopyLookup.string("plans.list.entry.accessibilityHint", default: "All Plans") }
+    /// "Error retrieving your plans. Tap here to try again" — Retro · plans.list · adapted · SOURCED
+    public static var plansListErrorTitle: String { CopyLookup.string("plans.list.error.title", default: "Error retrieving your plans. Tap here to try again") }
+    /// "Could not connect. Check your connection and try again." — Retro · plans.list · verbatim · SOURCED
+    public static var plansListOffline: String { CopyLookup.string("plans.list.offline", default: "Could not connect. Check your connection and try again.") }
+    /// "Canceled" — Apple Invites · plans.list · adapted · SOURCED
+    public static var plansListSectionCanceled: String { CopyLookup.string("plans.list.section.canceled", default: "Canceled") }
+    /// "Past Plans" — Apple Invites · plans.list · adapted · SOURCED
+    public static var plansListSectionPast: String { CopyLookup.string("plans.list.section.past", default: "Past Plans") }
+    /// "Upcoming" — Apple Invites · plans.list · verbatim · SOURCED
+    public static var plansListSectionUpcoming: String { CopyLookup.string("plans.list.section.upcoming", default: "Upcoming") }
+    /// "Plans" — Retro · plans.list · adapted · SOURCED
+    public static var plansListTitle: String { CopyLookup.string("plans.list.title", default: "Plans") }
     /// "Photos" — Retro · plans.page · new · SOURCED
     public static var plansPageAlbum: String { CopyLookup.string("plans.page.album", default: "Photos") }
     /// "Can't go" — Partiful · plans.page · adapted · SOURCED
@@ -2097,6 +2149,8 @@ public enum Copy {
     public static var yearStoryA11yPrevious: String { CopyLookup.string("year.story.a11y.previous", default: "Previous") }
     /// "{month} was the most memorable" — Retro · year.story · adapted · SOURCED
     public static func yearStoryBusiestMonthTitle(month: String) -> String { CopyLookup.format("year.story.busiestMonth.title", default: "{month} was the most memorable", ["month": month]) }
+    /// "Jolt" — Retro · year.story · adapted · SOURCED
+    public static var yearStoryCardApp: String { CopyLookup.string("year.story.card.app", default: "Jolt") }
     /// "View memories" — Retro · year.story · verbatim · SOURCED
     public static var yearStoryEntryButton: String { CopyLookup.string("year.story.entry.button", default: "View memories") }
     /// "{year} Recap" — Retro · year.story · adapted · SOURCED

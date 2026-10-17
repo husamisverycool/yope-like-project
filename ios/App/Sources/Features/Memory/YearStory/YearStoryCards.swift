@@ -16,8 +16,8 @@ import UIKit
 ///   number, rank or reaction glyph (T2);
 /// - **collage** — the collage fitted whole (never cropped) on its own blurred backdrop, scrim, the date;
 /// - **summary** — the style in view: the recap card (`layout.year.story.recapCard`) on the blurred cover, or the cover
-///   full bleed with the year (`headerTitle`) and the group name (`listTitle`; the app line `year.story.card.app` is
-///   BLOCKED and left out).
+///   full bleed with the year (`headerTitle`), the group name (`listTitle`) and under it the app line
+///   `year.story.card.app` (`meta`): Retro prints its name in that place ('2023 / nathan / retro.app', TC-REC).
 ///
 /// Text is `color.global.textOnMedia`; footers sit at `dimension.year.story.frame.padding` from the sides with their
 /// baselines `dimension.year.story.footer.baseline` above the bottom (`RecapFooter`).
@@ -124,6 +124,7 @@ struct YearStoryCardContent: View {
                     },
                     title: year,
                     name: summary?.groupName,
+                    detail: Copy.yearStoryCardApp,
                     frameWidth: size.width
                 )
             }
@@ -138,11 +139,17 @@ struct YearStoryCardContent: View {
                         .foregroundStyle(Tokens.Colors.globalTextOnMedia)
                         .accessibilityAddTraits(.isHeader)
                 } trailing: {
-                    if let name = summary?.groupName {
-                        Text(name)
-                            .dsTextStyle(TextRole.listTitle)
+                    VStack(alignment: .trailing, spacing: 0) {
+                        if let name = summary?.groupName {
+                            Text(name)
+                                .dsTextStyle(TextRole.listTitle)
+                                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+                                .multilineTextAlignment(.trailing)
+                                .lineLimit(1)
+                        }
+                        Text(Copy.yearStoryCardApp)
+                            .dsTextStyle(TextRole.meta)
                             .foregroundStyle(Tokens.Colors.globalTextOnMedia)
-                            .multilineTextAlignment(.trailing)
                             .lineLimit(1)
                     }
                 }

@@ -115,9 +115,11 @@ below it, the leading circle = replay (`year.story.summary.replay` as its label;
    only when there are at least 4 photos); footer 21 % of the card width: the year (`font.global.display`, text role
    `headerTitle`, `color.global.textPrimary`) bottom-left at the card padding; the group name (text role `listTitle`,
    `color.global.textPrimary`) right-aligned; under it the app line `year.story.card.app` (text role `meta`,
-   `color.global.textSecondary`) — **BLOCKED** until the owner names the app: left out until then.
+   `color.global.textSecondary`): the owner's app name ("Jolt", `config/app.json` displayName) where Retro prints its
+   own ('retro.app').
 2. **Full-bleed cover**: the cover photo filling the frame, `layout.global.photoScrim`; footer as the photo card but
-   with the year (text role `headerTitle`) leading and the group name (`listTitle`) + app line trailing (TC-REC p3).
+   with the year (text role `headerTitle`) leading and the group name (`listTitle`) + app line (`meta`,
+   `color.global.textOnMedia`) trailing (TC-REC p3).
 
 **D. Share image** (`layout.year.story.shareCard`): the card in view without close, position pill or bar, rendered at
 1080 × 1920 px (scale = 1080 ÷ frame width), PNG, handed to the share sheet (`layout.year.story.shareSheet`) with
@@ -136,7 +138,7 @@ below it, the leading circle = replay (`year.story.summary.replay` as its label;
 | text card | `layout.global.materials.backdrop`, `layout.global.photoScrim`, `font.global.display` + text role `displayMedium`, text role `textButton`, `color.global.textOnMedia`, `dimension.year.story.frame.padding`, `dimension.birthday.request.headlineToMessage` | card keys above | reveal |
 | photo card | `layout.global.photoScrim`, text roles `displaySmall` / `listTitle`, `dimension.year.story.footer.baseline`, `layout.year.story.dateFormat` | `year.story.mostReacted.photo`, `year.story.a11y.photo` | display rendition |
 | collage card | `layout.global.materials.backdrop`, text role `displaySmall`, `layout.year.story.dateFormat` | `year.story.a11y.collage` | fitted, never cropped |
-| summary | `layout.year.story.summary`, `layout.year.story.recapCard`, C-31 dots (`size.global.pageDot`, `.pageDotPitch`, `color.global.pageDotInactive`), `dimension.year.story.dots.offset` | `year.story.card.app` (BLOCKED) | pager |
+| summary | `layout.year.story.summary`, `layout.year.story.recapCard`, C-31 dots (`size.global.pageDot`, `.pageDotPitch`, `color.global.pageDotInactive`), `dimension.year.story.dots.offset` | `year.story.card.app` | pager |
 | tap zones | `layout.year.story.navigation` | `year.story.a11y.next`, `.a11y.previous` | halves |
 
 ## States
@@ -233,7 +235,7 @@ numbered top-5 lists, sound toggle and progress-bar segments; any per-person cou
 |---|---|---|
 | Retro's "Year in Photos" pages themselves | not captured (strings only); composed from the recap preview + C-35 | one RAW screen recording of Retro's Year in Photos (December) |
 | backdrop blur radius | not measurable (C-34) | — (Retro's iOS app internals) |
-| app line on the recap card | **BLOCKED** (`year.story.card.app`) | owner names the app (and domain) |
+| app line on the recap card | closed 2026-10-17: the owner named the app (`config/app.json` displayName) | — |
 | recap-preview values are from App Store / press renders (±3 %) | SOURCED, render; shared with `collage.*` (RM-8) | one RAW screenshot of Retro's recap preview (Profile → Recaps → a year) |
 | auto-advance 4 s, tap halves, reveal curves | mechanics (VidDay / Wrapped) | Wrapped 30 s recording with touches (research capture 1) |
 | moments-shared number (T3), most-reacted order (T2), which five everyone-days | built as specified | owner decision (docs/SPEC_FLAGS.md) |

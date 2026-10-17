@@ -196,6 +196,9 @@ const table = {
   "camera.capture.unavailable.button": "Try Again", // Retro · camera.capture · SOURCED
   "camera.capture.unavailable.detail": "The camera couldn't start. Please try again.", // Retro · camera.capture · SOURCED
   "camera.capture.unavailable.title": "Camera Unavailable", // Retro · camera.capture · SOURCED
+  "camera.capture.videoTooLong.dismiss": "OK", // Apple HIG · camera.trim · VERIFIED
+  "camera.capture.videoTooLong.message": "Please select a video under {duration}", // Retro · camera.trim · SOURCED
+  "camera.capture.videoTooLong.title": "Video too long", // Retro · camera.trim · SOURCED
   "camera.overnight.a11y.captured": "Photo taken. It develops {reveal}.", // Dispo · camera.overnight · SOURCED
   "camera.overnight.a11y.destinationHint": "Choose which groups these photos develop for", // Dispo · camera.overnight · SOURCED
   "camera.overnight.a11y.mode": "Develop", // Dispo · camera.overnight · SOURCED
@@ -242,6 +245,20 @@ const table = {
   "camera.sendto.toast.postedMany": "Added to your groups!", // Retro · camera.sendto · SOURCED
   "camera.sendto.toast.postedOne": "Added to {group}!", // Retro · camera.sendto · SOURCED
   "camera.sendto.toast.saved": "Saved", // Retro · camera.sendto · SOURCED
+  "camera.trim.a11y.busy": "Trimming…", // Retro · camera.trim · SOURCED
+  "camera.trim.a11y.endEarlier": "End one second earlier", // Retro · camera.trim · SOURCED
+  "camera.trim.a11y.endLater": "End one second later", // Retro · camera.trim · SOURCED
+  "camera.trim.a11y.pause": "Pause", // Retro · camera.trim · SOURCED
+  "camera.trim.a11y.play": "Play", // Retro · camera.trim · SOURCED
+  "camera.trim.a11y.startEarlier": "Start one second earlier", // Retro · camera.trim · SOURCED
+  "camera.trim.a11y.startLater": "Start one second later", // Retro · camera.trim · SOURCED
+  "camera.trim.a11y.timeline": "Video trim timeline", // Retro · camera.trim · SOURCED
+  "camera.trim.cancel": "Cancel", // Retro · camera.trim · SOURCED
+  "camera.trim.done": "Done", // Retro · camera.trim · SOURCED
+  "camera.trim.error.load": "Error loading video…", // Retro · camera.trim · SOURCED
+  "camera.trim.error.retry": "Retry", // Retro · camera.trim · SOURCED
+  "camera.trim.range": "{start} – {end} ({length})", // Retro · camera.trim · SOURCED
+  "camera.trim.title": "Trim Video", // Retro · camera.trim · SOURCED
   "chat.composer.a11y.camera": "Take photo", // Retro · chat.composer · SOURCED
   "chat.composer.a11y.field": "Message", // Retro · chat.composer · SOURCED
   "chat.composer.a11y.mic": "Record a voice message", // Retro · chat.composer · SOURCED
@@ -747,6 +764,15 @@ const table = {
   "plans.create.time": "Time", // Apple Invites · plans.create · SOURCED
   "plans.create.title": "New Plan", // Retro · plans.create · SOURCED
   "plans.create.titleEdit": "Edit Plan", // Retro · plans.create · SOURCED
+  "plans.list.back.accessibilityLabel": "Back", // Retro · plans.list · VERIFIED
+  "plans.list.empty.title": "No plans yet", // Retro · plans.list · SOURCED
+  "plans.list.entry.accessibilityHint": "All Plans", // Apple Invites · plans.list · SOURCED
+  "plans.list.error.title": "Error retrieving your plans. Tap here to try again", // Retro · plans.list · SOURCED
+  "plans.list.offline": "Could not connect. Check your connection and try again.", // Retro · plans.list · SOURCED
+  "plans.list.section.canceled": "Canceled", // Apple Invites · plans.list · SOURCED
+  "plans.list.section.past": "Past Plans", // Apple Invites · plans.list · SOURCED
+  "plans.list.section.upcoming": "Upcoming", // Apple Invites · plans.list · SOURCED
+  "plans.list.title": "Plans", // Retro · plans.list · SOURCED
   "plans.page.album": "Photos", // Retro · plans.page · SOURCED
   "plans.page.answer.cantGo": "Can't go", // Partiful · plans.page · SOURCED
   "plans.page.answer.clear": "Clear answer", // Retro · plans.page · SOURCED
@@ -1049,6 +1075,7 @@ const table = {
   "year.story.a11y.play": "Play", // Apple HIG / Material 3 · year.story · PLATFORM
   "year.story.a11y.previous": "Previous", // Apple HIG / Material 3 · year.story · PLATFORM
   "year.story.busiestMonth.title": "{month} was the most memorable", // Retro · year.story · SOURCED
+  "year.story.card.app": "Jolt", // Retro · year.story · SOURCED
   "year.story.entry.button": "View memories", // Retro · year.story · SOURCED
   "year.story.entry.subtitle": "{year} Recap", // Retro · year.story · SOURCED
   "year.story.entry.title": "Year in Photos", // Retro · year.story · SOURCED

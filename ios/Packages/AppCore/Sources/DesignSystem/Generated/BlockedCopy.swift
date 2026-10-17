@@ -5,7 +5,5 @@ import Foundation
 
 /// BLOCKED strings: DEBUG builds only.
 public enum BlockedCopy {
-    /// "Jolt" — Retro · year.story · new · BLOCKED
-    public static var yearStoryCardApp: String { CopyLookup.string("year.story.card.app", default: "Jolt") }
 }
 #endif

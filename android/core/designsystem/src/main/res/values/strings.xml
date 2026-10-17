@@ -389,6 +389,12 @@
     <string name="camera_capture_unavailable_detail" formatted="false">The camera couldn\'t start. Please try again.</string>
     <!-- Retro · camera.capture · new · SOURCED -->
     <string name="camera_capture_unavailable_title" formatted="false">Camera Unavailable</string>
+    <!-- Apple HIG · camera.trim · verbatim · VERIFIED -->
+    <string name="camera_capture_videotoolong_dismiss" formatted="false">OK</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED · args: duration -->
+    <string name="camera_capture_videotoolong_message">Please select a video under %1$s</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_capture_videotoolong_title" formatted="false">Video too long</string>
     <!-- Dispo · camera.overnight · new · SOURCED · args: reveal -->
     <string name="camera_overnight_a11y_captured">Photo taken. It develops %1$s.</string>
     <!-- Dispo · camera.overnight · new · SOURCED -->
@@ -481,6 +487,34 @@
     <string name="camera_sendto_toast_postedone">Added to %1$s!</string>
     <!-- Retro · camera.sendto · verbatim · SOURCED -->
     <string name="camera_sendto_toast_saved" formatted="false">Saved</string>
+    <!-- Retro · camera.trim · new · SOURCED -->
+    <string name="camera_trim_a11y_busy" formatted="false">Trimming…</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_a11y_endearlier" formatted="false">End one second earlier</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_a11y_endlater" formatted="false">End one second later</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_a11y_pause" formatted="false">Pause</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_a11y_play" formatted="false">Play</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_a11y_startearlier" formatted="false">Start one second earlier</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_a11y_startlater" formatted="false">Start one second later</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_a11y_timeline" formatted="false">Video trim timeline</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_cancel" formatted="false">Cancel</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_done" formatted="false">Done</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_error_load" formatted="false">Error loading video…</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_error_retry" formatted="false">Retry</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED · args: start, end, length -->
+    <string name="camera_trim_range">%1$s – %2$s (%3$s)</string>
+    <!-- Retro · camera.trim · verbatim · SOURCED -->
+    <string name="camera_trim_title" formatted="false">Trim Video</string>
     <!-- Retro · chat.composer · verbatim · SOURCED -->
     <string name="chat_composer_a11y_camera" formatted="false">Take photo</string>
     <!-- Retro · chat.composer · verbatim · SOURCED -->
@@ -1491,6 +1525,24 @@
     <string name="plans_create_title" formatted="false">New Plan</string>
     <!-- Retro · plans.create · adapted · SOURCED -->
     <string name="plans_create_titleedit" formatted="false">Edit Plan</string>
+    <!-- Retro · plans.list · new · VERIFIED -->
+    <string name="plans_list_back_accessibilitylabel" formatted="false">Back</string>
+    <!-- Retro · plans.list · adapted · SOURCED -->
+    <string name="plans_list_empty_title" formatted="false">No plans yet</string>
+    <!-- Apple Invites · plans.list · adapted · SOURCED -->
+    <string name="plans_list_entry_accessibilityhint" formatted="false">All Plans</string>
+    <!-- Retro · plans.list · adapted · SOURCED -->
+    <string name="plans_list_error_title" formatted="false">Error retrieving your plans. Tap here to try again</string>
+    <!-- Retro · plans.list · verbatim · SOURCED -->
+    <string name="plans_list_offline" formatted="false">Could not connect. Check your connection and try again.</string>
+    <!-- Apple Invites · plans.list · adapted · SOURCED -->
+    <string name="plans_list_section_canceled" formatted="false">Canceled</string>
+    <!-- Apple Invites · plans.list · adapted · SOURCED -->
+    <string name="plans_list_section_past" formatted="false">Past Plans</string>
+    <!-- Apple Invites · plans.list · verbatim · SOURCED -->
+    <string name="plans_list_section_upcoming" formatted="false">Upcoming</string>
+    <!-- Retro · plans.list · adapted · SOURCED -->
+    <string name="plans_list_title" formatted="false">Plans</string>
     <!-- Retro · plans.page · new · SOURCED -->
     <string name="plans_page_album" formatted="false">Photos</string>
     <!-- Partiful · plans.page · adapted · SOURCED -->
@@ -2095,6 +2147,8 @@
     <string name="year_story_a11y_previous" formatted="false">Previous</string>
     <!-- Retro · year.story · adapted · SOURCED · args: month -->
     <string name="year_story_busiestmonth_title">%1$s was the most memorable</string>
+    <!-- Retro · year.story · adapted · SOURCED -->
+    <string name="year_story_card_app" formatted="false">Jolt</string>
     <!-- Retro · year.story · verbatim · SOURCED -->
     <string name="year_story_entry_button" formatted="false">View memories</string>
     <!-- Retro · year.story · adapted · SOURCED · args: year -->
