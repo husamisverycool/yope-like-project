@@ -312,7 +312,7 @@ struct SendToGroupRow: View {
         if let invitation {
             // The whole row follows the countdown, so its accessibility value is current too.
             TimelineView(.periodic(from: .now, by: 1)) { context in // provenance-ok: one tick per second (MM:SS countdown)
-                row(remaining: InvitationCountdown.remainingSeconds(invitation, at: context.date))
+                row(remaining: invitation.remainingSeconds(at: context.date))
             }
         } else {
             row(remaining: nil)
@@ -372,10 +372,10 @@ struct InvitationCountdownText: View {
 }
 
 /// The window of an open daily invitation at a device time.
-enum InvitationCountdown {
+extension DailyInvitation {
     /// Whole seconds left while the window is open at `date`; nil before it opens and after it closes.
-    static func remainingSeconds(_ invitation: DailyInvitation, at date: Date, clock: ServerClock = .device) -> Int? {
-        CountdownState(opensAt: invitation.firesAt, closesAt: invitation.closesAt, now: date, clock: clock).remainingWholeSeconds
+    func remainingSeconds(at date: Date, clock: ServerClock = .device) -> Int? {
+        CountdownState(opensAt: firesAt, closesAt: closesAt, now: date, clock: clock).remainingWholeSeconds
     }
 }
 

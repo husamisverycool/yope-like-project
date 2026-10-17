@@ -2,6 +2,7 @@
 @testable import App
 import AppData
 import AppModels
+import DesignSystem
 import Foundation
 import XCTest
 

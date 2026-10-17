@@ -27,7 +27,7 @@ final class CaptureOpenInvitationTests: XCTestCase {
         let model = rig.sendToModel()
         await model.load()
         XCTAssertEqual(model.shownInvitation(for: "fake-group-1")?.id, InvitationID("inv-1"), "the row counts down")
-        let seconds = InvitationCountdown.remainingSeconds(try! XCTUnwrap(model.shownInvitation(for: "fake-group-2")), at: Date())
+        let seconds = try! XCTUnwrap(model.shownInvitation(for: "fake-group-2")).remainingSeconds(at: Date())
         XCTAssertNotNil(seconds)
         XCTAssertLessThanOrEqual(seconds ?? 0, 110)
         await model.send()
@@ -44,7 +44,7 @@ final class CaptureOpenInvitationTests: XCTestCase {
         ]
         let model = rig.sendToModel(contextGroupID: "fake-group-1")
         await model.load()
-        XCTAssertNil(InvitationCountdown.remainingSeconds(try! XCTUnwrap(model.shownInvitation(for: "fake-group-1")), at: Date()),
+        XCTAssertNil(try! XCTUnwrap(model.shownInvitation(for: "fake-group-1")).remainingSeconds(at: Date()),
                      "closed: no countdown, nothing else shown")
         XCTAssertEqual(model.answeredInvitations(at: Date()), [], "group 2 is not chosen; group 1's window closed")
         await model.send()

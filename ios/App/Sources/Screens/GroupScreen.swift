@@ -310,7 +310,7 @@ struct GroupFeedView: View {
     private var openInvitationRow: some View {
         if let invitation = model.openInvitation {
             TimelineView(.periodic(from: .now, by: 1)) { context in // provenance-ok: one tick per second (MM:SS countdown)
-                if let seconds = InvitationCountdown.remainingSeconds(invitation, at: context.date) {
+                if let seconds = invitation.remainingSeconds(at: context.date) {
                     Button {
                         dependencies.router.modal = .camera(groupID: groupID, invitationID: invitation.id.rawValue)
                     } label: {
