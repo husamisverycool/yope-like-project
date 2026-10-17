@@ -199,6 +199,13 @@ describe('group isolation: RPCs', () => {
     my_hidden_memories: { args: () => ({}), expect: 'own-account' },
     set_favorite: { args: () => ({ p_media_id: seeded.mediaIds[0], p_on: true }), expect: 'error' },
     my_favorites: { args: () => ({}), expect: 'own-account' },
+    // albums anyone can add to and a photo as the cover (0039)
+    add_to_album: { args: () => ({ p_album_id: seeded.albumId, p_post_ids: [seeded.postIds[0]] }), expect: 'error' },
+    remove_from_album: { args: () => ({ p_album_id: seeded.albumId, p_post_ids: [seeded.postIds[0]] }), expect: 'error' },
+    set_group_cover_from_post: { args: () => ({ p_group_id: seeded.group.id, p_post_id: seeded.postIds[0] }), expect: 'error' },
+    // search (0040): G by id is refused; across the outsider's own groups G's caption finds nothing (tests/search.test.ts)
+    search_photos: { args: () => ({ p_text: 'seeded', p_group_id: seeded.group.id }), expect: 'error' },
+    group_history_months: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' }, // jump to a date (0045)
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {

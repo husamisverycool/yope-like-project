@@ -97,6 +97,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `not_group_member` | 403 | Caller is not a member of that group. Also returned for group ids that do not exist. |
 | `not_group_admin` | 403 | Admin-only action. |
 | `not_album_owner` | 403 | Only the album's creator or a group admin can delete it. |
+| `not_allowed` | 403 | The caller may not do this to someone else's row (e.g. `remove_from_album` of a photo another member added, when not the album's creator or an admin). |
 | `post_not_eligible` | 403 | Tribute photo is neither yours nor one you are self-tagged in. |
 | `under_minimum_age` | 403 | Age gate refused. |
 | `premium_required` | 402 | Video posts need an active premium entitlement. |
@@ -116,6 +117,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `group_full` | 409 | The group already has `max_group_members` (30) members. |
 | `already_posted` | 409 | This media is already posted in that group. |
 | `recap_not_ready` | 409 | The recap is still being generated (`status <> 'ready'`). |
+| `media_not_ready` | 409 | `set_group_cover_from_post`: the photo's display rendition is not made yet (seconds after posting). |
 | `tribute_closed` | 409 | The tribute request is past its due time. |
 | `age_gate_not_configured` | 503 | Minimum age not configured yet; the age gate fails closed. |
 | `invalid_name` | 400 | Name empty or longer than 80 characters (groups, albums). |
@@ -208,6 +210,7 @@ Read: members. Written by `create_group`, `update_group`, `set_group_invitation_
 | `time_zone` | text | IANA; daily invitations, weeks, on-this-day and birthdays use it |
 | `waking_start`, `waking_end` | time? | the group's invitation hours; both null = use the default (`app_config`); `end <= start` wraps past midnight |
 | `invitation_paused` | boolean | no daily invitations while true |
+| `cover_post_id` | uuid? | set when the cover is a photo of the group (`set_group_cover_from_post`, migration 0039): `cover_path` is then that photo's display rendition; deleting the photo clears both. Any other cover change clears it |
 | `created_by` | uuid? | null once that account is deleted |
 | `created_at`, `updated_at` | timestamptz | |
 
@@ -407,7 +410,9 @@ post to be visible to you).
 
 `albums`: `id` uuid, `group_id` uuid, `name` text (1–80), `created_by` uuid?,
 `created_at`, `updated_at`.
-`album_items`: `album_id` uuid, `post_id` uuid, `position` int (0-based order).
+`album_items`: `album_id` uuid, `post_id` uuid, `position` int (0-based order), `added_by` uuid? (who added the photo;
+items saved before migration 0039 count as added by the album's creator; null once that account is deleted),
+`added_at` timestamptz.
 
 ### 5.16 `tribute_requests`
 
@@ -556,10 +561,21 @@ update_group(p_group_id uuid, p_name text = null, p_kind group_kind = null,
              p_cover_path text = null, p_time_zone text = null) → groups
 ```
 Admin only. `null` = unchanged; `p_cover_path = ""` removes the cover. A replaced or removed
-cover object that no other group uses is deleted (worker). Changing the time
+cover object that no other group uses is deleted (worker) — never a photo's rendition used as the cover
+(`set_group_cover_from_post`); a new `p_cover_path` clears `cover_post_id`. Changing the time
 zone reschedules unfired invitations.
 Errors: `not_group_member`, `not_group_admin`, `invalid_name`, `invalid_time_zone`,
 `invalid_path`.
+
+#### `set_group_cover_from_post`
+```
+set_group_cover_from_post(p_group_id uuid, p_post_id uuid) → groups
+```
+"Use as cover" on any photo of the group (Google Photos "Use as → Album cover"; migration 0039). Who may: update_group's
+rule, **group admins** (§12.2; decision LM-3 in design/MERGE_DECISIONS.md). The photo must be a post of that group you
+can see; `cover_path` becomes its display rendition (no copy) and `cover_post_id` the post. Deleting that photo removes
+it as the cover (both columns null); a member with a block with its author cannot read the cover image (it is the
+photo's file). Errors: `not_group_member`, `not_group_admin` 403, `post_not_found` 404, `media_not_ready` 409.
 
 #### `create_invite`
 ```
@@ -914,10 +930,47 @@ save_album(p_group_id uuid, p_name text, p_post_ids uuid[]) → albums
 rename_album(p_album_id uuid, p_name text) → albums
 delete_album(p_album_id uuid) → void
 ```
-`save_album`: any member; posts must be distinct visible posts of that group, kept in
+`save_album`: any member; posts must be distinct visible posts of that group (from any weeks), kept in
 the given order. `rename_album`: any member. `delete_album`: the creator or a group
 admin. Errors: `not_group_member`, `invalid_name`, `invalid_items`, `album_not_found`,
 `not_album_owner`.
+
+#### `add_to_album` / `remove_from_album` (albums anyone can add to, migration 0039)
+```
+add_to_album(p_album_id uuid, p_post_ids uuid[]) → albums
+remove_from_album(p_album_id uuid, p_post_ids uuid[]) → void
+```
+Apple Shared Albums (support.apple.com/108314): any member adds photos of the album's group they can see, after the
+last item in the given order; photos already in it are skipped (`added_by` = you). Removing: "Other participants can
+delete anything that they personally added"; the album's creator and group admins remove any. A list holding someone
+else's photo, when you are neither, removes nothing (`not_allowed`). Removing never deletes the photo; deleting a photo
+removes it from every album. Both move `albums.updated_at`. Errors: `album_not_found` 404 (also non-members),
+`invalid_items` 400 (empty, null, duplicate, or not a visible post of that group), `not_allowed` 403.
+
+#### `search_photos` (search, migration 0040)
+```
+search_photos(p_text text = null, p_group_id uuid = null, p_member_id uuid = null, p_from date = null, p_to date = null,
+              p_before timestamptz = null, p_limit int = 60)
+  → table(post_id uuid, media_id uuid, group_id uuid, author_id uuid, created_at timestamptz, matched text[])
+```
+The photos you can see — in one group (`p_group_id`) or all your groups — that match **every** criterion given:
+`p_text` words in the caption or in a chat message replying to the photo (each word a prefix, case-insensitive, any
+language: Postgres full text, `simple` configuration), `p_member_id` (posted it or tagged themselves "I'm in this"),
+and the day it was taken in the group's time zone between `p_from` and `p_to` (inclusive, either open). At least one
+criterion (`invalid_argument`). Newest first by `created_at`; page with `p_before` = the last `created_at`; `p_limit`
+1–200. One row per photo (sent to several of your groups: the post in `p_group_id`, else the first). `matched` says why:
+`caption`, `chat`, `author`, `tag`, `date`. Never face or AI search. Blocks: nothing by, about or commented by a person
+you have a block with. Errors: `invalid_argument` 400, `not_group_member` 403.
+
+#### `group_history_months` (jump to a date, migration 0045)
+```
+group_history_months(p_group_id uuid) → table(month date, days date[], newest_week date)
+```
+BeReal's Memories calendar: the months of the group's history (group time zone) with the days that have something —
+photos by `visible_at` (blocked authors left out) and ready collages by their day, `free_history_days` as
+`group_history_weeks` — newest month first. Jump to a month with
+`group_history_weeks(p_before_week => newest_week + 7)`: the first week returned is `newest_week`. Errors:
+`not_group_member` 403.
 
 #### `contribute_tribute`
 ```
