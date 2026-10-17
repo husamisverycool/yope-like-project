@@ -64,6 +64,11 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
    - **page 2 — cover**: the cover photo fills the frame (aspect fill, frame corners) under `layout.global.photoScrim`; "Week {n}"
      (`headerTitle` serif, `color.global.textOnMedia`) and the name / range stack at `dimension.year.story.frame.padding`,
      baseline `dimension.year.story.footer.baseline` above the frame bottom.
+   - **pages 3 … — the week's collages** (`weekly_recaps.collage_ids`, migration 0033; recaps made before have none): one
+     page per same-moment collage of the week, in recap order — the year story's collage card (`year.story.md`): the
+     collage's page 1 fitted whole (never cropped) on its own blurred backdrop under `layout.global.photoScrim`, its day
+     (`layout.year.story.dateFormat`, `displaySmall`, `color.global.textOnMedia`) at the footer position; a tap opens it
+     (`collage.view`).
 3. **Page dots** (C-31 on media: active `color.global.textOnMedia`, inactive `color.global.pageDotInactive` dark) centred,
    `dimension.year.story.dots.offset` below the frame.
 4. **Bottom row** (centre `bottomRowCentreFromScreenBottom` of `collage.view.layout.screen`):
@@ -88,6 +93,7 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
 | card grid cell | `layout.year.story.recapCard` | `photo.viewer.a11y.photo` | → `photo.viewer` (context = recap items in order) |
 | card footer | `layout.year.story.recapCard` footer; text roles `headerTitle` / `meta` | "Week {n}", group name, range (data) | — |
 | note | `week.recap.layout.note`, `.radius.note`, `.dimension.notePaddingV` / `.notePaddingH` / `.noteGap` | recap text (data) | — |
+| collage page | the year story's collage card; `layout.global.photoScrim`, text role `displaySmall` | `collage.view.a11y.collage` ({group}, {date}) | → `collage.view` of that collage |
 | page dots | C-31 (on media); `dimension.year.story.dots.offset` | page position (platform) | swipe pages |
 | select-photos thumbnail | `week.recap.dimension.selectThumb`, `week.recap.radius.selectThumb`, `week.recap.dimension.selectThumbBorder`, `size.global.buttonMarginH` | `week.recap.a11y.edit` | → `week.edit` |
 | Save as Album pill | C-09; `collage.share.layout.pill`, text role `pill` | `week.recap.saveAsAlbum` | → album sheet (`week.edit.md`) |
@@ -143,13 +149,14 @@ chrome is the **same screen the capture group measured on Retro's 2026 recap pre
 ## Data & actions
 
 - **Reads**: `weekly_recaps` (§5.14) of the group: `id`, `week_start`, `items` (ordered post ids; fetch from `posts` — RLS
-  drops hidden ones), `text`, `status`, `edited_by`; `posts` / `media` (`thumb_path`, `display_path`); `profiles`
+  drops hidden ones), `collage_ids` (the week's ready collages in order; their files from that week's
+  `group_history_weeks.collages`), `text`, `status`, `edited_by`; `posts` / `media` (`thumb_path`, `display_path`); `profiles`
   (`edited_by`); `groups.name`, `groups.time_zone` (week number and range).
 - **Realtime**: `post_deleted` → drop the item (§8.2); recap rows are not published — refetch on appear / foreground.
 - **Push**: `notifications.push.recapReady.*` (capture group), push type `recap_ready`.
 - **Navigation in**: `groups.screen` (recaps entry → list; its label may use `week.recap.open`), `week.history` week menu
   (→ preview), `albums.list` empty action (→ list), `DeepLink.recap(groupID:recapID:)` (`app://recap?group=…&recap=…` → preview).
-- **Navigation out**: `photo.viewer`, `week.edit` (editor; album sheet).
+- **Navigation out**: `photo.viewer`, `collage.view` (a collage page), `week.edit` (editor; album sheet).
 
 ## Platform notes
 

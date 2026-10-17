@@ -145,6 +145,8 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
         return when {
             meta.isSignedOut() -> WidgetTap.App
             groupId == null -> WidgetTap.Configure
+            // the collage of the day opens that collage; a photo opens the camera (camera.fromwidget)
+            snapshot != null && snapshot.kind == WidgetSnapshot.Kind.Collage && snapshot.sourceId != null -> WidgetTap.Collage(groupId, snapshot.sourceId!!)
             snapshot != null -> WidgetTap.Camera(groupId)
             WidgetEmptyState.of(groupId, meta) == WidgetEmptyState.NotSetUp -> WidgetTap.Configure
             else -> WidgetTap.Camera(groupId)

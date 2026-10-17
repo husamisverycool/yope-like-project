@@ -307,7 +307,7 @@ struct GroupFeedView: View {
     /// `icon.global.chevron` in `color.global.textSecondary` at the right margin → week.history.
     private var weekHeader: some View {
         let title = Copy.groupsScreenWeekTitle(number: String(model.weekNumber))
-        let range = model.thisWeekPosts.isEmpty ? nil : GroupDates.weekRange(model.currentWeek, calendar: model.calendar)
+        let range = model.thisWeekPosts.isEmpty && model.thisWeekCollages.isEmpty ? nil : GroupDates.weekRange(model.currentWeek, calendar: model.calendar)
         return Button {
             if let route = CrossGroupRoutes.weekHistory(groupID: groupID) { push(route) }
         } label: {
@@ -352,6 +352,9 @@ struct GroupFeedView: View {
         } else {
             let photos = model.thisWeekPosts.map { post in
                 WeekStripPhoto(id: post.id.rawValue, date: post.post.visibleAt, source: post.media?.imagePath(for: .thumb).map { PhotoSource.storage($0) })
+            } + model.thisWeekCollages.map { collage in
+                // the day's same-moment collage once composed, on its day (migration 0033)
+                WeekStripPhoto(id: Self.collageTilePrefix + collage.collageID.rawValue, date: collageDay(collage), source: collage.tilePath.map { PhotoSource.storage($0) })
             }
             tiles = WeekStripLayout.tiles(days: model.remainingDaysOfWeek, photos: photos, canAdd: true)
         }
@@ -388,11 +391,26 @@ struct GroupFeedView: View {
             let date = tile.date ?? Date()
             return Copy.weekHistoryA11yEmptyDay(weekday: GroupDates.weekday(date, calendar: model.calendar), date: GroupDates.monthDay(date, calendar: model.calendar))
         case .photo:
+            if let collage = collage(for: tile) {
+                return Copy.wallsBrowseA11yCollage(date: GroupDates.monthDay(collageDay(collage), calendar: model.calendar))
+            }
             guard let post = post(for: tile) else { return "" }
             return photoLabel(post)
         case .placeholder:
             return ""
         }
+    }
+
+    private static let collageTilePrefix = "collage-" // provenance-ok: tile identity, not shown
+
+    /// The start of the collage's day in the group's time zone.
+    private func collageDay(_ collage: GroupCollage) -> Date {
+        SocialCalendar.start(of: collage.localDate, in: model.calendar.timeZone)
+    }
+
+    private func collage(for tile: WeekStripTile) -> GroupCollage? {
+        guard case .photo = tile.kind else { return nil }
+        return model.thisWeekCollages.first { "photo-" + Self.collageTilePrefix + $0.collageID.rawValue == tile.id }
     }
 
     private func post(for tile: WeekStripTile) -> PostWithMedia? {
@@ -405,7 +423,12 @@ struct GroupFeedView: View {
         case .add:
             dependencies.router.modal = .camera(groupID: groupID, invitationID: nil)
         case .photo:
-            if let post = post(for: tile) { open(post) }
+            if let collage = collage(for: tile) {
+                // collage.view (a full-screen cover, `PresentedRoute`)
+                push(.capture(.collage(groupID: groupID, invitationID: collage.invitationID.rawValue)))
+            } else if let post = post(for: tile) {
+                open(post)
+            }
         case .emptyDay, .placeholder:
             break
         }

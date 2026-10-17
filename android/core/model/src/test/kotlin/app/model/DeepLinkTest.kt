@@ -48,6 +48,8 @@ class DeepLinkTest {
         assertEquals(DeepLink.Tribute("g", "t"), codec.parse("app://tribute?group=g&tribute=t"))
         assertEquals(DeepLink.YearStory("g", 2026), codec.parse("app://year-story?group=g&year=2026"))
         assertNull(codec.parse("app://year-story?group=g&year=26"))
+        assertEquals(DeepLink.Collage("g", "c"), codec.parse("app://collage?group=g&collage=c"))
+        assertNull(codec.parse("app://collage?group=g"))
         assertNull(codec.parse("app://post?group=g"))
         assertNull(codec.parse("app://unknown?group=g"))
     }
@@ -82,6 +84,7 @@ class DeepLinkTest {
             DeepLink.BirthdayRequest("g", "r"),
             DeepLink.Tribute("g", "t"),
             DeepLink.YearStory("g", 2025),
+            DeepLink.Collage("g", "c"),
         )
         for (link in links) assertEquals(link, codec.parse(codec.format(link)))
         assertEquals("app://camera?group=g", codec.format(DeepLink.Camera("g")))
@@ -101,6 +104,12 @@ class DeepLinkTest {
         assertEquals(AppRoute.BirthdayContribute("g", "r"), DeepLinkRouting.destination(DeepLink.BirthdayRequest("g", "r")))
         assertEquals(AppRoute.Tribute("g", "t"), DeepLinkRouting.destination(DeepLink.Tribute("g", "t")))
         assertEquals(AppRoute.YearStory("g", 2026), DeepLinkRouting.destination(DeepLink.YearStory("g", 2026)))
+        // a widget showing the day's collage opens that collage over its group (collage.view)
+        assertEquals(
+            listOf(AppRoute.GroupsList, AppRoute.Group("g"), AppRoute.CollageById("g", "c")),
+            DeepLinkRouting.backStack(DeepLink.Collage("g", "c")),
+        )
+        assertEquals("app://collage?group=g&collage=c", codec.format(DeepLink.Collage("g", "c")))
     }
 
     @Test fun everyRouteNamesASurface() {

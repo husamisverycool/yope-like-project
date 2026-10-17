@@ -61,6 +61,9 @@ interface AccountBackend {
     suspend fun signedUrls(paths: Collection<String>): Map<String, String>
     suspend fun profiles(ids: Collection<String>): List<Profile>
 
+    /** The group's ready same-moment collages whose day (group-local) is in [from]…[to] (`group_collages`, migration 0033). */
+    suspend fun groupCollages(groupId: String, from: LocalDate, to: LocalDate): List<app.data.model.GroupCollage> = emptyList()
+
     // Groups (§5.3–§5.5, §6.1) ---------------------------------------------------------------------
     fun observeMyGroups(): Flow<DataState<List<Group>>>
     /** The newest post of [groupId]; the cached feed's first post when offline. */

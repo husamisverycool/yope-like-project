@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import app.feature.capture.camera.CameraQuestion
 import app.feature.capture.camera.CameraRoute
+import app.feature.capture.collage.CollageLinkRoute
 import app.feature.capture.collage.CollageRoute
 import app.feature.capture.daily.DailyCaptureRoute
 import app.designsystem.ReduceMotion
@@ -67,6 +68,16 @@ fun NavGraphBuilder.captureDestinations(navController: NavHostController) {
     composable<AppRoute.DailyCapture> { entry ->
         val route = entry.toRoute<AppRoute.DailyCapture>()
         DailyCaptureRoute(groupId = route.groupId, invitationId = route.invitationId, onDismiss = { navController.popBackStack() })
+    }
+    composable<AppRoute.CollageById> { entry ->
+        val route = entry.toRoute<AppRoute.CollageById>()
+        CollageLinkRoute(
+            groupId = route.groupId,
+            collageId = route.collageId,
+            onBack = { navController.popBackStack() },
+            onOpenCamera = { navController.navigate(AppRoute.Camera(route.groupId)) },
+            onReport = { collageId -> navController.navigate(app.model.SafetyReportContentRoute("collage", collageId, route.groupId)) },
+        )
     }
     composable<AppRoute.Collage> { entry ->
         val route = entry.toRoute<AppRoute.Collage>()

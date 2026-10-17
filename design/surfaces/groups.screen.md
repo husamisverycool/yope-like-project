@@ -44,7 +44,8 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
      place of C-20's "•••" (Retro's week menu was not captured), `icon.global.chevron` in `color.global.textSecondary` at
      the right margin → `week.history` (all of the group's weeks);
    - `size.global.sectionHeaderToContent` (11.7) below: **week strip (C-17)** at the margin: the group's photos posted
-     this week (group time zone, Monday start), oldest → newest, photo tiles 84 × 112 with the weekday label;
+     this week (group time zone, Monday start), oldest → newest, photo tiles 84 × 112 with the weekday label; each day's
+     same-moment collage, once composed, is one more photo tile on its day (before that day's photos; migration 0033);
      **add tile last** (→ `camera.capture` for this group); when the week has no photos yet: add tile **first**, then
      empty-day tiles for each remaining day of the week (Retro's empty week, H43 / H22) and the C-27 block below
      (see States).
@@ -86,7 +87,7 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
 | week header | C-20 + `icon.global.chevron` | `groups.screen.week.title` ({number} ISO week) + range; action label `groups.screen.weeks.accessibilityLabel` | → `week.history` |
 | birthday row | C-14 + C-16 | `birthday.request.title`, `birthday.request.due` | → `birthday.request` |
 | feed card | C-18 geometry + `layout.global.photoScrim` + `displaySmall` + C-09 | `onthisday.entry.*`, `year.story.entry.*` | → `onthisday` / `year.story` |
-| strip tiles | C-17 (`size.global.stripTileWidth` / `.stripTileHeight`, `size.global.stripGap`, `radius.global.card` outer, `layout.global.photoScrim`, `tileLabel`; empty-day `color.global.control` + `color.global.emptyTileText`) | photo tile `groups.screen.photo.accessibilityLabel` ({date}, {first_name}); add tile `groups.screen.week.add.accessibilityLabel` | photo → `photo.viewer` (this week, this group); add → `camera.capture` (`DeepLink.camera(groupID:)`); long press → `groups.screen.layout.menu` |
+| strip tiles | C-17 (`size.global.stripTileWidth` / `.stripTileHeight`, `size.global.stripGap`, `radius.global.card` outer, `layout.global.photoScrim`, `tileLabel`; empty-day `color.global.control` + `color.global.emptyTileText`) | photo tile `groups.screen.photo.accessibilityLabel` ({date}, {first_name}); add tile `groups.screen.week.add.accessibilityLabel` | photo → `photo.viewer` (this week, this group); collage tile (a11y `walls.browse.a11y.collage`) → `collage.view` of that collage, no menu; add → `camera.capture` (`DeepLink.camera(groupID:)`); long press → `groups.screen.layout.menu` |
 | friend card | C-18 | name (data); card label `groups.screen.photo.accessibilityLabel` | → `photo.viewer` on that member's photos of the week |
 | grid cell | C-21 dated grid | `groups.screen.photo.accessibilityLabel` | → `photo.viewer`; long press → menu (`groups.screen.photo.menu.report`, `.block`) |
 
@@ -146,11 +147,12 @@ Presses (glyphs, capsules, tiles, cards, cells) → `haptic.global.tap` (Android
 
 - Reads: `groups` (+ cover signed URL), `group_members` + `profiles` (avatars, first names), `posts` + `media`
   (`display_path` / `thumb_path` signed URLs) newest first and paged (docs/API.md §5.8, §7); the current week's range from
-  `groups.time_zone` and `app_config.week_start_isodow` (Monday); `group_history_weeks` for `week.history` (§6.4).
+  `groups.time_zone` and `app_config.week_start_isodow` (Monday); `group_collages(group, week's first day, last day)`
+  for the strip's collages (re-read with each refresh of the screen; §6.4); `group_history_weeks` for `week.history` (§6.4).
 - Realtime: channel `group-<id>` inserts (`posts`) and private broadcast `group:<id>` (`post_deleted`) (§8); refetch on
   foreground / reconnect.
 - In: `groups.list`, `groups.create`, invite join, deep links (`DeepLink.post`, `.chatMessage`, `.recap` put this screen
-  in the back stack). Out: `chat.thread`, `albums.list`, `week.history`, `week.recap`, `photo.viewer`, `groups.invite`,
+  in the back stack). Out: `chat.thread`, `albums.list`, `week.history`, `week.recap`, `photo.viewer`, `collage.view`, `groups.invite`,
   `groups.settings`, `camera.capture`, `onthisday`, `year.story`, `birthday.request`, `safety.report`, `safety.block`.
 - Entry conditions: `on_this_day(group, localDate)` returns rows (§6.4); `year_stories` row `status = 'ready'` for the
   current year (§5.19); an open `tribute_requests` row for you in this group (§5.16).

@@ -129,7 +129,7 @@ public struct DeepLinkParser: Sendable {
         case .tribute?: type = .tribute
         case .yearStory?: type = .yearStory
         case .plan?: type = .plan
-        case .camera?, nil: type = nil
+        case .camera?, .collage?, nil: type = nil
         }
         guard let type else {
             return url(for: link).map { [PushKey.link: $0.absoluteString] } ?? [:]
@@ -176,6 +176,9 @@ public struct DeepLinkParser: Sendable {
             // The group is optional: an unreadable one is dropped and the plan still opens.
             guard let plan = id(.plan) else { return nil }
             return .plan(planID: plan, groupID: id(.group))
+        case .collage:
+            guard let group = id(.group), let collage = id(.collage) else { return nil }
+            return .collage(groupID: group, collageID: collage)
         }
     }
 

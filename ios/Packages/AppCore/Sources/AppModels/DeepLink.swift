@@ -24,6 +24,8 @@ public enum DeepLink: Hashable, Sendable {
     /// A plan's page (`plans.page`): plan pushes (type `plan`) and the countdown widget. With the group, Back returns to
     /// that group's screen.
     case plan(planID: String, groupID: String?)
+    /// A same-moment collage (`collage.view`): the widget's tap while it shows the group's collage of the day.
+    case collage(groupID: String, collageID: String)
 }
 
 /// Hosts of custom-scheme links (`app://<route>?…`), shared with Android
@@ -38,6 +40,7 @@ public enum DeepLinkRoute: String, CaseIterable, Sendable {
     case tribute
     case yearStory = "year-story"
     case plan
+    case collage
 }
 
 /// The identifiers a deep link carries. URLs use `queryName` (`app://camera?group=<id>`);
@@ -52,6 +55,7 @@ public enum DeepLinkField: String, CaseIterable, Sendable {
     case tribute
     case year
     case plan
+    case collage
 
     public var queryName: String { rawValue }
 
@@ -73,6 +77,7 @@ extension DeepLink {
         case .tribute: return .tribute
         case .yearStory: return .yearStory
         case .plan: return .plan
+        case .collage: return .collage
         }
     }
 
@@ -99,6 +104,8 @@ extension DeepLink {
             return [(.group, groupID), (.year, String(year))]
         case .plan(let planID, let groupID):
             return [(.plan, planID)] + (groupID.map { [(.group, $0)] } ?? [])
+        case .collage(let groupID, let collageID):
+            return [(.group, groupID), (.collage, collageID)]
         }
     }
 
@@ -108,7 +115,7 @@ extension DeepLink {
         case .invite: return nil
         case .camera(let groupID): return groupID
         case .post(let groupID, _), .chatMessage(let groupID, _), .dailyInvitation(let groupID, _),
-             .recap(let groupID, _), .yearStory(let groupID, _):
+             .recap(let groupID, _), .yearStory(let groupID, _), .collage(let groupID, _):
             return groupID
         case .birthdayRequest(_, let groupID), .tribute(_, let groupID), .plan(_, let groupID):
             return groupID

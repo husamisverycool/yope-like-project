@@ -49,6 +49,9 @@ final class GroupFeedModel {
     private(set) var phase: Phase = .loading
     private(set) var isLoadingMore = false
     private(set) var latestRecapID: RecapID?
+    /// This week's ready same-moment collages (`group_collages`, migration 0033): each day's collage joins the strip on
+    /// its day once composed, the group's photo of that day.
+    private(set) var thisWeekCollages: [GroupCollage] = []
     /// Bumped when a realtime insert added photos (VoiceOver layout-changed announcement).
     private(set) var insertedCount = 0
 
@@ -179,6 +182,14 @@ final class GroupFeedModel {
             let page = try await data.feed(groupID: groupID, before: nil)
             mergeFirstPage(page)
             latestRecapID = (try? await data.latestRecap(groupID: groupID))?.id
+            if let week = currentWeek, let found = try? await data.groupCollages(
+                groupID: groupID,
+                from: LocalDate(week.start, in: calendar.timeZone),
+                // `DateInterval.end` is the next Monday's start: the week's last day is the one just before it.
+                to: LocalDate(week.end.addingTimeInterval(-1), in: calendar.timeZone)
+            ) {
+                thisWeekCollages = found.sorted { $0.localDate < $1.localDate }
+            }
             updatePhase()
         } catch {
             let failure = DataError.from(error)

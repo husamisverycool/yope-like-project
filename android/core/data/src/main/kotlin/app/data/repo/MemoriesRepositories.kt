@@ -5,6 +5,7 @@ import app.data.model.Album
 import app.data.model.AlbumItem
 import app.data.model.Collage
 import app.data.model.DailyInvitation
+import app.data.model.GroupCollage
 import app.data.model.GroupTribute
 import app.data.model.HistoryWeek
 import app.data.model.InstantSerializer
@@ -60,6 +61,14 @@ class BrowseRepository(private val api: Api, private val cache: OfflineCache, pr
     fun observeHistory(groupId: String): Flow<DataState<List<HistoryWeek>>> =
         cachedFlow(cache, CacheKey.history(groupId), ListSerializer(HistoryWeek.serializer()), clock) { historyWeeks(groupId) }
 
+    /** The group's ready same-moment collages whose day (group-local) is in [from]…[to], newest first (migration 0033). */
+    suspend fun groupCollages(groupId: String, from: LocalDate? = null, to: LocalDate? = null): List<GroupCollage> =
+        api.rpcList(Rpc.GroupCollages, GroupCollage.serializer()) {
+            put("p_group_id", groupId)
+            opt("p_from", from)
+            opt("p_to", to)
+        }
+
     /** Posts from the same month and day (group time zone) in earlier years, newest first. */
     suspend fun onThisDay(groupId: String, localDate: LocalDate): List<OnThisDayItem> =
         api.rpcList(Rpc.OnThisDay, OnThisDayItem.serializer()) {
@@ -101,11 +110,12 @@ class RecapRepository(private val api: Api, private val cache: OfflineCache, pri
      * Any member, once `ready`. [items] = the new order (null = unchanged); [text] null = unchanged,
      * `""` clears it.
      */
-    suspend fun updateRecap(recapId: String, items: List<String>? = null, text: String? = null): WeeklyRecap =
+    suspend fun updateRecap(recapId: String, items: List<String>? = null, text: String? = null, collageIds: List<String>? = null): WeeklyRecap =
         api.rpc(Rpc.UpdateRecap, WeeklyRecap.serializer()) {
             put("p_recap_id", recapId)
             opt("p_items", items)
             opt("p_text", text)
+            opt("p_collage_ids", collageIds)
         }
 }
 

@@ -69,6 +69,8 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
 
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = graph.signedUrls.urls(paths)
     override suspend fun profiles(ids: Collection<String>): List<Profile> = graph.profiles.profiles(ids)
+    override suspend fun groupCollages(groupId: String, from: java.time.LocalDate, to: java.time.LocalDate): List<app.data.model.GroupCollage> =
+        graph.browse.groupCollages(groupId, from, to)
 
     override fun observeMyGroups(): Flow<DataState<List<Group>>> = graph.groups.observeMyGroups()
 

@@ -63,6 +63,7 @@ final class DeepLinkTests: XCTestCase {
         .tribute(tributeID: "t", groupID: "g"),
         .tribute(tributeID: "t", groupID: nil),
         .yearStory(groupID: "g", year: 2026),
+        .collage(groupID: "g", collageID: "c"),
     ]
 
     func testURLRoundTrip() throws {
@@ -71,6 +72,8 @@ final class DeepLinkTests: XCTestCase {
             XCTAssertEqual(parser.parse(built), link, built.absoluteString)
         }
         XCTAssertEqual(parser.url(for: .camera(groupID: "g1"))?.absoluteString, "app://camera?group=g1")
+        XCTAssertEqual(parser.url(for: .collage(groupID: "g1", collageID: "c1"))?.absoluteString, "app://collage?group=g1&collage=c1")
+        XCTAssertNil(parser.parse(URL(string: "app://collage?group=g1")!), "a collage link needs the collage")
         // Same link format as Android (android/core/model/.../DeepLink.kt).
         XCTAssertEqual(parser.url(for: .chatMessage(groupID: "g", messageID: "m"))?.absoluteString, "app://chat?group=g&message=m")
         XCTAssertEqual(parser.url(for: .dailyInvitation(groupID: "g", invitationID: "i"))?.absoluteString, "app://daily?group=g&invitation=i")

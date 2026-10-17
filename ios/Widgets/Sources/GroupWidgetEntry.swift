@@ -34,9 +34,15 @@ struct GroupPhotoEntry: TimelineEntry {
         GroupPhotoEntry(date: date, groupID: groupID, state: state, snapshot: nil, photoURL: nil, avatarURL: nil)
     }
 
-    /// Tapping opens the camera for this group (`camera.fromwidget`: `app://camera?group=<id>`; no id → no preselection).
+    /// Tapping opens the camera for this group (`camera.fromwidget`: `app://camera?group=<id>`; no id → no preselection);
+    /// while the widget shows the group's same-moment collage (the photo of the day) it opens that collage instead
+    /// (`app://collage?group=<id>&collage=<id>`).
     var tapURL: URL? {
-        DeepLinkParser(universalLinkHosts: []).url(for: .camera(groupID: groupID))
+        let parser = DeepLinkParser(universalLinkHosts: [])
+        if let snapshot, snapshot.kind == .collage, let collageID = snapshot.sourceID {
+            return parser.url(for: .collage(groupID: snapshot.groupID, collageID: collageID))
+        }
+        return parser.url(for: .camera(groupID: groupID))
     }
 
     /// The view content; images are read from the App Group files (no network).

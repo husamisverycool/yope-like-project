@@ -213,6 +213,8 @@ struct WeekRecapPreviewScreen: View {
     @State private var savingAlbum = false
     @State private var toasts = ToastCenter()
     @State private var reportTarget: ReportTarget?
+    /// A collage page was tapped: `collage.view` of it over the recap.
+    @State private var openCollage: GroupCollage?
     @Environment(AccountDependencies.self) private var accountDependencies: AccountDependencies?
     @Environment(\.dismiss) private var dismiss
 
@@ -233,13 +235,15 @@ struct WeekRecapPreviewScreen: View {
     private enum Page: Equatable {
         case card([PostWithMedia])
         case cover
+        case collage(GroupCollage)
     }
 
-    /// Page 1 the card (`week.recap.layout.gridFill` decides its grid for any number of photos), page 2 the cover.
+    /// Page 1 the card (`week.recap.layout.gridFill` decides its grid for any number of photos), page 2 the cover, then
+    /// the week's same-moment collages, one page each (`weekly_recaps.collage_ids`, migration 0033).
     private var pages: [Page] {
         guard model.phase == .ready else { return [] }
         let shown = RecapGridFill.shown(count: model.cardPosts.count)
-        return (shown > 0 ? [Page.card(Array(model.cardPosts.prefix(shown)))] : []) + [.cover]
+        return (shown > 0 ? [Page.card(Array(model.cardPosts.prefix(shown)))] : []) + [.cover] + model.collages.map(Page.collage)
     }
 
     var body: some View {
@@ -289,6 +293,10 @@ struct WeekRecapPreviewScreen: View {
                 model: WeekEditModel(groupID: model.groupID, mode: .recap(model.recapID), data: SocialServices.shared.data, seed: model.editSeed),
                 toasts: toasts
             )
+        }
+        .fullScreenCover(item: $openCollage) { collage in
+            // collage.view.md: the collage screen is a full-screen cover, dark in both appearances.
+            CollageScreen(groupID: model.groupID.rawValue, invitationID: collage.invitationID.rawValue, isPresentedModally: true)
         }
         .sheet(isPresented: $savingAlbum) {
             WeekEditView(
@@ -343,6 +351,8 @@ struct WeekRecapPreviewScreen: View {
             cardPage(items)
         case .cover:
             coverPage
+        case let .collage(collage):
+            collagePage(collage)
         }
     }
 
@@ -421,6 +431,35 @@ struct WeekRecapPreviewScreen: View {
             .foregroundStyle(Tokens.Colors.globalTextOnMedia)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    /// Pages 3…: a same-moment collage of the week fitted whole (never cropped) on its own blurred backdrop, under
+    /// `layout.global.photoScrim`, its day in the footer (`displaySmall`) — the year story's collage card; a tap opens
+    /// it (`collage.view`).
+    private func collagePage(_ collage: GroupCollage) -> some View {
+        let source = SocialImages.source(collage.imagePath)
+        let day = MemoryFormat.weekdayMonthDay(collage.localDate)
+        return Button { openCollage = collage } label: {
+            ZStack {
+                BlurredBackdrop(source: source)
+                PhotoView(source: source, contentMode: .fit)
+                PhotoScrim()
+                RecapFooter {
+                    Text(day)
+                        .dsTextStyle(TextRole.displaySmall)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .foregroundStyle(Tokens.Colors.globalTextOnMedia)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(Copy.collageViewA11yCollage(
+            group: model.group?.name ?? "",
+            date: SocialFormat.spokenDate(SocialCalendar.start(of: collage.localDate, in: model.timeZone), timeZone: model.timeZone)
+        )))
+        .accessibilityAddTraits([.isImage, .isButton])
     }
 
     // MARK: Bottom row

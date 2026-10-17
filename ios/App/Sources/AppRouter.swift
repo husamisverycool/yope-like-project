@@ -124,6 +124,9 @@ final class AppRouter {
             // plans.page over its group's screen when the link names the group (Back returns there).
             let page = AppRoute.plans(.page(planID: planID, groupID: groupID))
             show(groupID.map { [.group(id: $0), page] } ?? [page])
+        case let .collage(groupID, collageID):
+            // A widget showing the group's collage of the day opens that collage over the group's screen.
+            show([.group(id: groupID), .social(.collage(groupID: groupID, collageID: collageID))])
         }
     }
 

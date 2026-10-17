@@ -220,6 +220,8 @@ final class CaptureWidgetEntryTests: XCTestCase {
         XCTAssertEqual(entry.state, .collage)
         XCTAssertEqual(entry.content.accessibilityLabel, Copy.widgetHomeSmallA11yCollage(group: "Family", date: entry.content.dateText))
         XCTAssertNil(entry.content.avatar, "a collage has no poster")
+        XCTAssertEqual(entry.tapURL?.absoluteString, "app://collage?group=g1&collage=p2000", "the widget's collage opens that collage")
+        XCTAssertEqual(DeepLinkParser(universalLinkHosts: []).parse(entry.tapURL!), .collage(groupID: "g1", collageID: "p2000"))
     }
 
     func testUnconfiguredUsesNewestAcrossGroups() throws {

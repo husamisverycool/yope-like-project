@@ -44,7 +44,31 @@ data class WallItem(
 data class HistoryWeek(
     @SerialName("week_start") val weekStart: LocalDate,
     @SerialName("post_ids") val postIds: List<String>,
+    /** The week's same-moment collages, oldest first (migration 0033). Last, so positional calls keep working. */
+    val collages: List<GroupCollage> = emptyList(),
 )
+
+/**
+ * A ready same-moment collage placed on its group-local day (`group_collages`, `group_history_weeks.collages`, migration
+ * 0033): the group's photo of the day in its history.
+ */
+@Serializable
+data class GroupCollage(
+    @SerialName("collage_id") val collageId: String,
+    @SerialName("invitation_id") val invitationId: String,
+    /** The invitation's group-local day: the day tile it belongs on. */
+    @SerialName("local_date") val localDate: LocalDate,
+    /** Page 1 (`display-1.jpg`). */
+    @SerialName("image_path") val imagePath: String? = null,
+    /** The widget image (smaller; day tiles). */
+    @SerialName("widget_path") val widgetPath: String? = null,
+    @SerialName("share_path") val sharePath: String? = null,
+    @SerialName("page_count") val pageCount: Int? = null,
+    @SerialName("composed_at") val composedAt: Instant? = null,
+) {
+    /** The tile image: the widget rendition, else page 1. */
+    val tilePath: String? get() = widgetPath ?: imagePath
+}
 
 /** One row of `on_this_day`. */
 @Serializable

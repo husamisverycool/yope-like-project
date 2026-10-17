@@ -56,6 +56,8 @@ internal data class WeekPayload(
     val posts: List<Post> = emptyList(),
     val media: List<Media> = emptyList(),
     val profiles: List<Profile> = emptyList(),
+    /** The week's same-moment collages (`group_history_weeks.collages`). */
+    val collages: List<app.data.model.GroupCollage> = emptyList(),
 )
 
 /** Loads a recap (or the newest ready one) with its week's posts, media and authors. */
@@ -72,7 +74,7 @@ internal suspend fun loadWeek(data: SocialData, groupId: String, recapId: String
     val posts = data.posts(ids)
     val media = data.media(posts.map { it.mediaId })
     val profiles = data.profiles((posts.map { it.authorId } + listOfNotNull(recap?.editedBy)).distinct())
-    return WeekPayload(group, recap, week?.postIds.orEmpty(), posts, media, profiles)
+    return WeekPayload(group, recap, week?.postIds.orEmpty(), posts, media, profiles, week?.collages.orEmpty())
 }
 
 data class RecapState(
@@ -86,6 +88,8 @@ data class RecapState(
     val offline: Boolean = false,
     /** Who last edited the recap's text (`weekly_recaps.edited_by`), for the note's attribution. */
     val editor: Profile? = null,
+    /** The recap's same-moment collages in recap order (`weekly_recaps.collage_ids`, migration 0033): one page each. */
+    val collages: List<app.data.model.GroupCollage> = emptyList(),
 ) {
     enum class Phase { Loading, Ready, Pending, Empty, Error, OfflineEmpty }
 
@@ -168,6 +172,7 @@ class RecapViewModel(private val data: SocialData, private val groupId: String, 
                 card = recap?.items.orEmpty().mapNotNull(::photo),
                 pics = p.weekPostIds.mapNotNull(::photo),
                 editor = recap?.editedBy?.let { id -> p.profiles.firstOrNull { it.id == id } },
+                collages = recap?.collageIds.orEmpty().mapNotNull { id -> p.collages.firstOrNull { it.collageId == id } },
             )
         }
     }
@@ -376,6 +381,8 @@ data class HistoryWeekUi(
     /** The ready recap of that week, for "View recap". */
     val recapId: String?,
     val isCurrent: Boolean,
+    /** The week's same-moment collages (the group's photo of each such day), oldest first (migration 0033). */
+    val collages: List<app.data.model.GroupCollage> = emptyList(),
 )
 
 data class HistoryState(
@@ -391,7 +398,7 @@ data class HistoryState(
 
     val zone: ZoneId get() = group?.timeZone?.let { runCatching { ZoneId.of(it) }.getOrNull() } ?: ZoneId.systemDefault()
     /** True when the group has no photos at all. */
-    val isEmpty: Boolean get() = phase == Phase.Ready && weeks.all { it.photos.isEmpty() }
+    val isEmpty: Boolean get() = phase == Phase.Ready && weeks.all { it.photos.isEmpty() && it.collages.isEmpty() }
 }
 
 /**
@@ -512,8 +519,9 @@ class HistoryViewModel(private val data: SocialData, private val groupId: String
                 photos = w.postIds.mapNotNull { id -> posts[id]?.let { p -> WeekPhoto(p, media[p.mediaId]?.imagePath(Media.Rendition.Thumb), names[p.authorId], media[p.mediaId]?.videoDurationMs) } },
                 recapId = recaps[w.weekStart],
                 isCurrent = w.weekStart == current,
+                collages = w.collages,
             )
-        }.filter { it.photos.isNotEmpty() || it.isCurrent }
+        }.filter { it.photos.isNotEmpty() || it.collages.isNotEmpty() || it.isCurrent }
         val withCurrent = if (list.none { it.isCurrent }) listOf(HistoryWeekUi(current, emptyList(), recaps[current], true)) + list else list
         _state.update { it.copy(group = group, weeks = withCurrent) }
     }

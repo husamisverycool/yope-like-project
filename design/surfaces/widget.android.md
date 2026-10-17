@@ -30,7 +30,7 @@ Root container edge to edge at every size, no outer padding, `cornerRadius(widge
 |---|---|---|---|
 | widget provider | `widget.android.layout.provider`, `widget.android.duration.updatePeriod`, `widget.android.layout.lockScreen` | label `widget.android.label`, description `widget.android.description` | default 2 × 2; resizable down to 100 dp; reconfigurable; home screen and lock-screen hub (`home_screen\|keyguard`); generated preview (Android 15+); static `previewImage` BLOCKED (owner asset) |
 | photo, scrim, text stack | as Structure | root `contentDescription` `widget.home.small.a11y.photo` / `.a11y.collage` | — |
-| tap | `camera.fromwidget.layout.target` (PendingIntent) | — | opens `camera.capture`, group preselected |
+| tap | `camera.fromwidget.layout.target` (PendingIntent) | — | opens `camera.capture`, group preselected; on the collage, opens that collage (`collage.view`) |
 | configure activity | page `color.global.background.android`; centred title (text role `sheetTitle`); C-16 rows: group cover (`size.global.avatarPicker`), name text role `listTitle` (`lineHeight.global.listTitle.android`, `letterSpacing.global.listTitle.android`) `color.global.textPrimary`, C-32 hairlines | title `widget.home.small.configuration.title`; empty `widget.android.configure.empty` | tapping a group finishes with RESULT_OK (single choice — no "Done") |
 
 ## States

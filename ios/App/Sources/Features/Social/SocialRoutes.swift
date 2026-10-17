@@ -31,6 +31,9 @@ enum SocialRoute: Hashable {
     case albums(groupID: String)
     /// `albums.view`
     case album(groupID: String, albumID: String)
+    /// `collage.view` by the collage's id (a widget showing the group's collage of the day): resolves its invitation,
+    /// then shows capture's collage screen.
+    case collage(groupID: String, collageID: String)
 }
 
 /// Screens of the social group presented over the navigation stack.
@@ -64,6 +67,8 @@ struct SocialDestination: View {
             AlbumsListScreen(groupID: groupID)
         case let .album(groupID, albumID):
             AlbumScreen(groupID: groupID, albumID: albumID)
+        case let .collage(groupID, collageID):
+            CollageLinkScreen(groupID: groupID, collageID: CollageID(collageID))
         }
     }
 }

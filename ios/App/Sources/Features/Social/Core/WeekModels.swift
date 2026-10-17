@@ -20,9 +20,14 @@ enum SocialPeople {
 /// Loads the posts of one group-local week (`group_history_weeks`, chronological).
 enum WeekPosts {
     static func ids(of weekStart: LocalDate, groupID: GroupID, data: any SocialDataSource) async throws -> [PostID] {
-        // `p_before_week` is exclusive: the first week returned is `weekStart` when it has posts.
+        try await week(of: weekStart, groupID: groupID, data: data)?.postIDs ?? []
+    }
+
+    /// The week's posts and its same-moment collages (`group_history_weeks`); nil when the week has neither.
+    static func week(of weekStart: LocalDate, groupID: GroupID, data: any SocialDataSource) async throws -> HistoryWeek? {
+        // `p_before_week` is exclusive: the first week returned is `weekStart` when it has posts or collages.
         let weeks = try await data.historyWeeks(groupID: groupID, beforeWeek: weekStart.adding(days: 1))
-        return weeks.first { $0.weekStart == weekStart }?.postIDs ?? []
+        return weeks.first { $0.weekStart == weekStart }
     }
 }
 
@@ -125,6 +130,9 @@ final class WeekRecapModel {
     private(set) var cardPosts: [PostWithMedia] = []
     /// Every visible post of the week, chronological (the editor's grid).
     private(set) var weekPosts: [PostWithMedia] = []
+    /// The recap's same-moment collages in `weekly_recaps.collage_ids` order (migration 0033): one page each after the
+    /// cover. Empty for recaps made before.
+    private(set) var collages: [GroupCollage] = []
     private(set) var signals = SocialSignals()
     /// Authors of the shown posts, and the recap's last editor (the note's attribution).
     private(set) var profiles: [UserID: Profile] = [:]
@@ -182,8 +190,8 @@ final class WeekRecapModel {
                 return
             }
             let card = try await data.posts(ids: recap.items)
-            let weekIDs = try await WeekPosts.ids(of: recap.weekStart, groupID: groupID, data: data)
-            let week = try await data.posts(ids: weekIDs)
+            let historyWeek = try await WeekPosts.week(of: recap.weekStart, groupID: groupID, data: data)
+            let week = try await data.posts(ids: historyWeek?.postIDs ?? [])
             me = await data.currentUserID()
             var people = await SocialPeople.profiles(of: card + week, known: profiles, data: data)
             if let editor = recap.editedBy, people[editor] == nil, let found = try? await data.profiles(ids: [editor]) {
@@ -192,6 +200,7 @@ final class WeekRecapModel {
             profiles = people
             cardPosts = card
             weekPosts = week
+            collages = Self.collages(of: recap, in: historyWeek)
             isOffline = false
             phase = .ready
         } catch {
@@ -212,16 +221,23 @@ final class WeekRecapModel {
         guard let cached = await data.cachedRecap(id: recapID), cached.status == .ready else { return }
         let card = await data.cachedPosts(ids: cached.items, groupID: groupID)
         guard !card.isEmpty else { return }
-        let weekIDs = await data.cachedHistoryWeeks(groupID: groupID)?.first { $0.weekStart == cached.weekStart }?.postIDs
+        let cachedWeek = await data.cachedHistoryWeeks(groupID: groupID)?.first { $0.weekStart == cached.weekStart }
         var weekPosts: [PostWithMedia] = []
-        if let weekIDs { weekPosts = await data.cachedPosts(ids: weekIDs, groupID: groupID) }
+        if let weekIDs = cachedWeek?.postIDs { weekPosts = await data.cachedPosts(ids: weekIDs, groupID: groupID) }
         if weekPosts.isEmpty { weekPosts = card.sorted { $0.post.visibleAt < $1.post.visibleAt } }
         if group == nil { group = await data.cachedGroup(id: groupID) }
         recap = cached
         cardPosts = card
         self.weekPosts = weekPosts
+        collages = Self.collages(of: cached, in: cachedWeek)
         me = await data.currentUserID()
         phase = .ready
+    }
+
+    /// The recap's collages, in recap order, from its week (a collage deleted since leaves the recap).
+    static func collages(of recap: WeeklyRecap, in week: HistoryWeek?) -> [GroupCollage] {
+        let byID = Dictionary((week?.collages ?? []).map { ($0.collageID, $0) }, uniquingKeysWith: { first, _ in first })
+        return recap.collageIDs.compactMap { byID[$0] }
     }
 
     func retry() async {
@@ -525,6 +541,12 @@ final class WeekHistoryModel {
         var postIDs: [PostID]
         /// The week containing today (group-local): it also shows the add tile and empty days.
         var isCurrent: Bool
+        /// The week's same-moment collages, oldest first (`group_history_weeks.collages`, migration 0033): each on its
+        /// day, the group's photo of that day.
+        var collages: [GroupCollage] = []
+
+        /// No photo and no collage.
+        var isBlank: Bool { postIDs.isEmpty && collages.isEmpty }
 
         var id: LocalDate { weekStart }
     }
@@ -578,7 +600,7 @@ final class WeekHistoryModel {
         guard week.isCurrent else { return [] }
         let loaded = week.postIDs.compactMap { posts[$0] }
         guard loaded.count == week.postIDs.count else { return nil }
-        let photoDays = Set(loaded.map { LocalDate($0.post.visibleAt, in: timeZone) })
+        let photoDays = Set(loaded.map { LocalDate($0.post.visibleAt, in: timeZone) } + week.collages.map(\.localDate))
         return SocialCalendar.days(of: week.weekStart).filter { !photoDays.contains($0) }
     }
 
@@ -638,7 +660,7 @@ final class WeekHistoryModel {
         var result = replacing ? [] : weeks
         let known = Set(result.map(\.weekStart))
         for week in fetched where !known.contains(week.weekStart) {
-            result.append(Week(weekStart: week.weekStart, postIDs: week.postIDs, isCurrent: week.weekStart == current))
+            result.append(Week(weekStart: week.weekStart, postIDs: week.postIDs, isCurrent: week.weekStart == current, collages: week.collages))
         }
         // The current week is synthesised when it has no posts (docs/API.md §6.4 note in the spec).
         if !result.contains(where: { $0.weekStart == current }) {
@@ -678,9 +700,9 @@ final class WeekHistoryModel {
         switch event {
         case let .postDeleted(postID, _):
             for index in weeks.indices { weeks[index].postIDs.removeAll { $0 == postID } }
-            weeks.removeAll { $0.postIDs.isEmpty && !$0.isCurrent }
+            weeks.removeAll { $0.isBlank && !$0.isCurrent }
             posts[postID] = nil
-            if weeks.allSatisfy({ $0.postIDs.isEmpty }) { line = .empty }
+            if weeks.allSatisfy(\.isBlank) { line = .empty }
         case let .postInserted(post):
             guard post.groupID == groupID,
                   let index = weeks.firstIndex(where: { $0.weekStart == SocialCalendar.weekStart(containing: post.visibleAt, in: timeZone) }),

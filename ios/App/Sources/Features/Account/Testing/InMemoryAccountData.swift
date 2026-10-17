@@ -24,6 +24,8 @@ final class InMemoryAccountData: AccountDataSource {
     var settings: NotificationSettings?
     var premium = false
     var recaps: [GroupID: WeeklyRecap] = [:]
+    /// Ready same-moment collages by group (`group_collages`).
+    var collagesByGroup: [GroupID: [GroupCollage]] = [:]
     /// Calls that throw: method name → error.
     var failures: [String: DataError] = [:]
     /// Every call, in order (method name).
@@ -344,6 +346,13 @@ final class InMemoryAccountData: AccountDataSource {
     func latestRecap(groupID: GroupID) async throws -> WeeklyRecap? {
         try await record("latestRecap")
         return recaps[groupID]
+    }
+
+    func groupCollages(groupID: GroupID, from: LocalDate, to: LocalDate) async throws -> [GroupCollage] {
+        try await record("groupCollages")
+        return (collagesByGroup[groupID] ?? [])
+            .filter { $0.localDate >= from && $0.localDate <= to }
+            .sorted { $0.localDate > $1.localDate }
     }
 
     func groupEvents(groupID: GroupID) -> AsyncStream<GroupEvent> {

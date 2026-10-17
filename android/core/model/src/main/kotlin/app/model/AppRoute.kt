@@ -49,6 +49,8 @@ sealed interface AppRoute {
     // Daily invitation
     @Serializable data class DailyCapture(val groupId: String, val invitationId: String) : AppRoute { override val surface get() = "daily.capture" }
     @Serializable data class Collage(val groupId: String, val invitationId: String) : AppRoute { override val surface get() = "collage.view" }
+    /** `collage.view` by the collage's id (a widget showing the group's collage of the day): its invitation is resolved first. */
+    @Serializable data class CollageById(val groupId: String, val collageId: String) : AppRoute { override val surface get() = "collage.view" }
 
     // The week
     @Serializable data class WeekRecap(val groupId: String, val recapId: String) : AppRoute { override val surface get() = "week.recap" }
@@ -90,6 +92,7 @@ object DeepLinkRouting {
         is DeepLink.YearStory -> listOf(home, AppRoute.YearStory(link.groupId, link.year))
         is DeepLink.Plan -> link.groupId?.let { group -> listOf(home, AppRoute.Group(group), PlanRoute(link.planId, group)) }
             ?: listOf(home, PlanRoute(link.planId))
+        is DeepLink.Collage -> listOf(home, AppRoute.Group(link.groupId), AppRoute.CollageById(link.groupId, link.collageId))
     }
 
     /** The destination itself (top of [backStack]). */

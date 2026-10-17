@@ -198,6 +198,16 @@ class WidgetSnapshotTest {
         assertEquals(WidgetTap.Camera("g2"), TokenPhotoWidgetSlots.tap(context, snapshot, "g2"))
     }
 
+    /** A widget showing the day's collage opens that collage (`app://collage`), not the camera; signed out → the app. */
+    @Test fun collageTapOpensThatCollage() {
+        writePhoto("g4", kind = WidgetSnapshot.Kind.Collage, seed = 3)
+        meta.prepare("g4")
+        val snapshot = store.read("g4")!!
+        assertEquals(WidgetTap.Collage("g4", "p1"), TokenPhotoWidgetSlots.tap(context, snapshot, "g4"))
+        meta.setSignedOut(true)
+        assertEquals(WidgetTap.App, TokenPhotoWidgetSlots.tap(context, snapshot, "g4"))
+    }
+
     /**
      * Pixel geometry of the drawn widget for design/verification/widget.android.md (dp): the text stack's trailing
      * inset, last baseline and line pitch (lines without descenders: "Ana" over "Book club"), the scrim, the state

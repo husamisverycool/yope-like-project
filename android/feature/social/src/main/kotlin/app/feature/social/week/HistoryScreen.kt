@@ -60,6 +60,8 @@ data class HistoryNav(
     val recap: (recapId: String) -> Unit,
     val saveAsAlbum: (weekStart: String) -> Unit,
     val camera: () -> Unit,
+    /** `collage.view` of a day's same-moment collage (by its invitation). */
+    val collage: (invitationId: String) -> Unit = {},
 )
 
 @Composable
@@ -85,7 +87,8 @@ fun WeekHistoryContent(state: HistoryState, nav: HistoryNav, onRetry: () -> Unit
                 WeekSection(stringRes(R.string.week_history_header_title, Formats.isoWeek(week.minusWeeks(1))), placeholderDays(week.minusWeeks(1)), afterContent = true)
                 Box(Modifier.weight(1f).fillMaxWidth()) { LoadingState() }
             }
-            state.phase == HistoryState.Phase.Error -> ErrorLine(stringRes(R.string.week_history_error), onRetry)
+            // Offline with nothing cached: the offline line, as iOS (week.history States), not the error copy.
+            state.phase == HistoryState.Phase.Error -> ErrorLine(stringRes(if (state.offline) R.string.week_history_offline else R.string.week_history_error), onRetry)
             state.isEmpty -> {
                 state.weeks.firstOrNull { it.isCurrent }?.let { HistorySection(it, state, nav, afterContent = false) }
                 EmptyStateFill(Modifier.weight(1f).padding(bottom = bottom)) {
@@ -129,7 +132,7 @@ private fun HistorySection(week: HistoryWeekUi, state: HistoryState, nav: Histor
     val context = LocalContext.current
     val zone = state.zone
     val title = stringRes(R.string.week_history_header_title, Formats.isoWeek(week.weekStart))
-    val range = if (week.isCurrent && week.photos.isEmpty()) null else Formats.weekRange(context, week.weekStart, zone)
+    val range = if (week.isCurrent && week.photos.isEmpty() && week.collages.isEmpty()) null else Formats.weekRange(context, week.weekStart, zone)
     val spoken = if (range == null) title else "$title, ${Formats.spokenWeekRange(context, week.weekStart, zone)}"
     val start = week.weekStart.toString()
     val photos = week.photos.map { p ->
@@ -142,6 +145,15 @@ private fun HistorySection(week: HistoryWeekUi, state: HistoryState, nav: Histor
             stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()),
             { nav.photo(start, p.post.id) },
             p.videoDurationMs,
+        )
+    } + week.collages.map { c ->
+        // the group's photo of the day (the same-moment collage) on its day, before that day's photos
+        StripPhoto(
+            "collage-" + c.collageId,
+            c.tilePath,
+            c.localDate.atStartOfDay(zone).toInstant(),
+            stringRes(R.string.walls_browse_a11y_collage, Formats.spokenDate(c.localDate)),
+            { nav.collage(c.invitationId) },
         )
     }
     val menu = buildList {

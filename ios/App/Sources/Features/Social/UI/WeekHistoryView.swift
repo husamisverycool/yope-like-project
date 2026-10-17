@@ -175,7 +175,7 @@ struct WeekHistorySection: View {
 
     private var posts: [PostWithMedia] { week.postIDs.compactMap { model.posts[$0] } }
 
-    private var showsRange: Bool { !(week.isCurrent && week.postIDs.isEmpty) }
+    private var showsRange: Bool { !(week.isCurrent && week.isBlank) }
 
     @ViewBuilder
     private var header: some View {
@@ -198,13 +198,20 @@ struct WeekHistorySection: View {
         }
     }
 
-    /// Photo tiles in time order (several on a day = several tiles); the current week per
+    /// Photo tiles in time order (several on a day = several tiles); each day's same-moment collage (the group's
+    /// photo of that day, migration 0033) on its day, before that day's photos; the current week per
     /// `week.history.layout.currentWeek` (add tile → camera for this group).
     private var tiles: [WeekStripTile] {
         let photos = posts.map { post in
             WeekStripPhoto(
                 id: post.id.rawValue, date: post.post.visibleAt, source: SocialImages.source(post.media?.gridPath),
                 videoDurationMs: post.media?.videoDurationMs
+            )
+        } + week.collages.map { collage in
+            WeekStripPhoto(
+                id: Self.collagePrefix + collage.collageID.rawValue,
+                date: SocialCalendar.start(of: collage.localDate, in: model.timeZone),
+                source: SocialImages.source(collage.tilePath)
             )
         }
         let days = SocialCalendar.days(of: week.weekStart).map { SocialCalendar.start(of: $0, in: model.timeZone) }
@@ -219,6 +226,9 @@ struct WeekHistorySection: View {
         case .emptyDay, .placeholder:
             return tile.date.map { SocialA11y.emptyDay($0, timeZone: model.timeZone) } ?? ""
         case .photo:
+            if let collage = collage(for: tile) {
+                return Copy.wallsBrowseA11yCollage(date: SocialFormat.spokenDate(SocialCalendar.start(of: collage.localDate, in: model.timeZone), timeZone: model.timeZone))
+            }
             guard let post = post(for: tile) else { return "" }
             let label = SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: model.timeZone)
             return SocialA11y.withVideo(label, media: post.media)
@@ -230,7 +240,12 @@ struct WeekHistorySection: View {
         case .add:
             SocialNav.openCamera(groupID: model.groupID.rawValue)
         case .photo:
-            if let post = post(for: tile) { open(week, post.id) }
+            if let collage = collage(for: tile) {
+                // collage.view of that day (Retro's recap preview), as from the walls.
+                SocialNav.presentRoute(.capture(.collage(groupID: model.groupID.rawValue, invitationID: collage.invitationID.rawValue)))
+            } else if let post = post(for: tile) {
+                open(week, post.id)
+            }
         case .emptyDay, .placeholder:
             break
         }
@@ -238,5 +253,11 @@ struct WeekHistorySection: View {
 
     private func post(for tile: WeekStripTile) -> PostWithMedia? {
         posts.first { "photo-" + $0.id.rawValue == tile.id }
+    }
+
+    private static let collagePrefix = "collage-" // provenance-ok: tile identity, not shown
+
+    private func collage(for tile: WeekStripTile) -> GroupCollage? {
+        week.collages.first { "photo-" + Self.collagePrefix + $0.collageID.rawValue == tile.id }
     }
 }

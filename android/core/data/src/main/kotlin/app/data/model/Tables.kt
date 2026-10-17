@@ -272,6 +272,8 @@ data class WeeklyRecap(
     @SerialName("edited_by") val editedBy: String?,
     @SerialName("created_at") val createdAt: Instant,
     @SerialName("updated_at") val updatedAt: Instant,
+    /** The week's same-moment collages, in order (migration 0033); empty for recaps made before. */
+    @SerialName("collage_ids") val collageIds: List<String> = emptyList(),
 )
 
 /** §5.15 `albums` */

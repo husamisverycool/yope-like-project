@@ -49,6 +49,12 @@ sealed interface DeepLink {
      * [groupId] is optional: with it, Back returns to that group's screen.
      */
     data class Plan(val planId: String, val groupId: String? = null) : DeepLink
+
+    /**
+     * `app://collage?group=<id>&collage=<id>` — a same-moment collage (`collage.view`): the widget's tap while it shows
+     * the group's collage of the day (iOS `DeepLink.collage(groupID:collageID:)`).
+     */
+    data class Collage(val groupId: String, val collageId: String) : DeepLink
 }
 
 /**
@@ -85,6 +91,7 @@ class DeepLinkCodec(private val domain: String?) {
         is DeepLink.Tribute -> app(HOST_TRIBUTE, P_GROUP to link.groupId, P_TRIBUTE to link.tributeId)
         is DeepLink.YearStory -> app(HOST_YEAR_STORY, P_GROUP to link.groupId, P_YEAR to link.year.toString())
         is DeepLink.Plan -> app(HOST_PLAN, *listOfNotNull(P_PLAN to link.planId, link.groupId?.let { P_GROUP to it }).toTypedArray())
+        is DeepLink.Collage -> app(HOST_COLLAGE, P_GROUP to link.groupId, P_COLLAGE to link.collageId)
     }
 
     private fun parseInvite(uri: URI): DeepLink? {
@@ -120,6 +127,7 @@ class DeepLinkCodec(private val domain: String?) {
             }
             // The group is optional (a malformed one is dropped, the plan still opens).
             HOST_PLAN -> id(P_PLAN)?.let { DeepLink.Plan(it, id(P_GROUP)) }
+            HOST_COLLAGE -> both(id(P_GROUP), id(P_COLLAGE), DeepLink::Collage)
             else -> null
         }
     }
@@ -158,6 +166,7 @@ class DeepLinkCodec(private val domain: String?) {
         const val HOST_TRIBUTE = "tribute"
         const val HOST_YEAR_STORY = "year-story"
         const val HOST_PLAN = "plan"
+        const val HOST_COLLAGE = "collage"
 
         const val P_GROUP = "group"
         const val P_POST = "post"
@@ -168,6 +177,7 @@ class DeepLinkCodec(private val domain: String?) {
         const val P_TRIBUTE = "tribute"
         const val P_YEAR = "year"
         const val P_PLAN = "plan"
+        const val P_COLLAGE = "collage"
 
         private const val HTTPS = "https"
         private const val HTTPS_PORT = 443

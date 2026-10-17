@@ -135,6 +135,8 @@ public struct WeeklyRecap: Codable, Hashable, Sendable, Identifiable {
     public var weekStart: LocalDate
     /// Ordered post ids; fetch them from `posts` (RLS drops any the caller cannot see).
     public var items: [PostID]
+    /// The week's same-moment collages, in order (`collage_ids`, migration 0033); empty for recaps made before.
+    public var collageIDs: [CollageID] = []
     public var text: String?
     /// Editable only when `.ready`.
     public var status: RenderStatus
@@ -164,11 +166,73 @@ public struct WeeklyRecap: Codable, Hashable, Sendable, Identifiable {
         case groupID = "group_id"
         case weekStart = "week_start"
         case items, text, status
+        case collageIDs = "collage_ids"
         case generatedAt = "generated_at"
         case editedBy = "edited_by"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(RecapID.self, forKey: .id)
+        groupID = try c.decode(GroupID.self, forKey: .groupID)
+        weekStart = try c.decode(LocalDate.self, forKey: .weekStart)
+        items = try c.decode([PostID].self, forKey: .items)
+        collageIDs = try c.decodeIfPresent([CollageID].self, forKey: .collageIDs) ?? []
+        text = try c.decodeIfPresent(String.self, forKey: .text)
+        status = try c.decode(RenderStatus.self, forKey: .status)
+        generatedAt = try c.decodeIfPresent(Date.self, forKey: .generatedAt)
+        editedBy = try c.decodeIfPresent(UserID.self, forKey: .editedBy)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        updatedAt = try c.decode(Date.self, forKey: .updatedAt)
+    }
+}
+
+/// A ready same-moment collage placed on its group-local day (`group_collages`, `group_history_weeks.collages`,
+/// migration 0033): the group's photo of the day in its history.
+public struct GroupCollage: Codable, Hashable, Sendable, Identifiable {
+    public var collageID: CollageID
+    public var invitationID: InvitationID
+    /// The invitation's group-local day: the day tile it belongs on.
+    public var localDate: LocalDate
+    /// Page 1 (`display-1.jpg`).
+    public var imagePath: String?
+    /// The widget image (smaller; for day tiles).
+    public var widgetPath: String?
+    public var sharePath: String?
+    public var pageCount: Int?
+    public var composedAt: Date?
+
+    public var id: CollageID { collageID }
+
+    public init(
+        collageID: CollageID, invitationID: InvitationID, localDate: LocalDate, imagePath: String?, widgetPath: String?,
+        sharePath: String? = nil, pageCount: Int? = nil, composedAt: Date? = nil
+    ) {
+        self.collageID = collageID
+        self.invitationID = invitationID
+        self.localDate = localDate
+        self.imagePath = imagePath
+        self.widgetPath = widgetPath
+        self.sharePath = sharePath
+        self.pageCount = pageCount
+        self.composedAt = composedAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case collageID = "collage_id"
+        case invitationID = "invitation_id"
+        case localDate = "local_date"
+        case imagePath = "image_path"
+        case widgetPath = "widget_path"
+        case sharePath = "share_path"
+        case pageCount = "page_count"
+        case composedAt = "composed_at"
+    }
+
+    /// The tile image: the widget rendition, else page 1.
+    public var tilePath: String? { widgetPath ?? imagePath }
 }
 
 /// `albums` (§5.15).
@@ -423,15 +487,26 @@ public struct HistoryWeek: Codable, Hashable, Sendable {
     public var weekStart: LocalDate
     /// Chronological.
     public var postIDs: [PostID]
+    /// The week's same-moment collages, oldest first (migration 0033).
+    public var collages: [GroupCollage]
 
-    public init(weekStart: LocalDate, postIDs: [PostID]) {
+    public init(weekStart: LocalDate, postIDs: [PostID], collages: [GroupCollage] = []) {
         self.weekStart = weekStart
         self.postIDs = postIDs
+        self.collages = collages
     }
 
     enum CodingKeys: String, CodingKey {
         case weekStart = "week_start"
         case postIDs = "post_ids"
+        case collages
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        weekStart = try c.decode(LocalDate.self, forKey: .weekStart)
+        postIDs = try c.decodeIfPresent([PostID].self, forKey: .postIDs) ?? []
+        collages = try c.decodeIfPresent([GroupCollage].self, forKey: .collages) ?? []
     }
 }
 

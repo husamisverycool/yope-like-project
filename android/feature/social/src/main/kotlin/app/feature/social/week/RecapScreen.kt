@@ -84,6 +84,8 @@ data class RecapNav(
     val camera: () -> Unit,
     /** "Report Recap" (safety.report, kind `recap`, MERGE FV-4). */
     val report: (recapId: String) -> Unit = {},
+    /** A collage page → `collage.view` (by its invitation). */
+    val collage: (invitationId: String) -> Unit = {},
 )
 
 @Composable
@@ -236,7 +238,7 @@ fun WeekRecapPreview(state: RecapState, nav: RecapNav, onRetry: () -> Unit, init
     MediaAppearance {
         RecapPreviewScreen(
             backdrop = if (ready) photoModel(cover) else null,
-            pageCount = if (ready) PAGES else 1,
+            pageCount = if (ready) PAGES + state.collages.size else 1,
             currentPage = page,
             onPageChange = { page = it },
             onClose = nav.back,
@@ -260,8 +262,23 @@ fun WeekRecapPreview(state: RecapState, nav: RecapNav, onRetry: () -> Unit, init
                     if (note != null) Box(labelled) { RecapCardWithNote(photos, title, groupName, range, shown, grid, note) }
                     else RecapCardPage(photos, title, labelled, name = groupName, detail = range, shown = shown, grid = grid)
                 }
-                else -> RecapCoverPage(title, Modifier.semantics { contentDescription = cardLabel }, name = groupName, detail = range) {
+                index == 1 -> RecapCoverPage(title, Modifier.semantics { contentDescription = cardLabel }, name = groupName, detail = range) {
                     RemotePhoto(cover, null, Modifier.fillMaxSize(), placeholder = Tokens.Colors.globalControlOnDeep)
+                }
+                // Pages 3…: the week's same-moment collages, each fitted whole (never cropped) on its own blurred page, its
+                // day in the footer (as the year story's collage card); a tap opens it (`collage.view`).
+                else -> state.collages.getOrNull(index - PAGES)?.let { c ->
+                    val label = stringRes(R.string.collage_view_a11y_collage, groupName, Formats.spokenDate(c.localDate))
+                    RecapCoverPage(
+                        app.feature.memory.common.MemoryFormats.storyDate(c.localDate),
+                        Modifier.semantics { contentDescription = label }.tapClickable { nav.collage(c.invitationId) },
+                        titleStyle = TextRoles.displaySmall,
+                    ) {
+                        Box(Modifier.fillMaxSize()) {
+                            app.ui.components.BlurredBackdrop(photoModel(c.imagePath), modifier = Modifier.fillMaxSize())
+                            RemotePhoto(c.imagePath, null, Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Fit, placeholder = androidx.compose.ui.graphics.Color.Transparent)
+                        }
+                    }
                 }
             }
         }
@@ -283,5 +300,5 @@ private fun androidx.compose.foundation.layout.BoxScope.FrameLine(text: String, 
     )
 }
 
-/** Page 1 the card, page 2 the cover (`week.recap.layout.pages`). */
+/** Page 1 the card, page 2 the cover (`week.recap.layout.pages`); the recap's collages follow, one page each. */
 private const val PAGES = 2

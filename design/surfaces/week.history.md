@@ -31,6 +31,9 @@ app: photos, add tile, blank placeholders). Here the weeks are the group's: ever
      `size.global.stripTileWidth` × `.stripTileHeight`, `size.global.stripGap` apart, outer corners `radius.global.card` (first
      tile's leading, last tile's trailing), inner corners `radius.global.photo`; photo aspect fill under
      `layout.global.photoScrim`, weekday label (`tileLabel`, `color.global.textOnMedia`, baseline `size.global.tileLabelBaseline`);
+     each day's same-moment collage (`group_history_weeks.collages`, migration 0033) is one more photo tile on its day,
+     before that day's photos (the collage's widget image, else its page 1) — the group's photo of that day; a week with
+     only a collage still shows, and a day with a collage is not an empty day;
    - **current week** (`week.history.layout.currentWeek`): no photos yet → add tile first, then seven dated empty-day tiles
      (month `tileMonth` / day `tileDay` / weekday `tileMonth` in `color.global.emptyTileText` on `color.global.control`);
      with photos → photo tiles, the add tile, then one blank placeholder tile per remaining day;
@@ -53,6 +56,7 @@ A week with neither shows no "•••".
 | back + title | C-02; `icon.global.back`, `size.global.backInset`, `size.global.headerGap`, text role `headerTitle` | `chat.thread.a11y.back`; group name (data) | pops to `groups.screen` |
 | section header | C-20; text roles `sectionLabel` + `listSubtitle`, `icon.global.more`; `size.global.sectionHeaderToContent`, `size.global.sectionGap` | `week.history.header.title`; range (data); `week.history.a11y.more` | "•••" → week menu |
 | photo tile | C-17 photo tile | `week.history.a11y.tile` | → `photo.viewer` (context = that week's posts, time order) with `duration.global.photoOpen` |
+| collage tile | C-17 photo tile | `walls.browse.a11y.collage` ({date} = the collage's day) | → `collage.view` of that collage (by its invitation) |
 | add tile | C-17 add tile | `week.history.a11y.add` | → `camera.capture` for this group (`DeepLink.camera(groupID:)`) |
 | empty-day tile | C-17 empty-day tile | `week.history.a11y.emptyDay` | not interactive |
 | placeholder tile | C-17 placeholder tile | `week.history.a11y.emptyDay` | not interactive |
@@ -104,14 +108,15 @@ A week with neither shows no "•••".
 
 ## Data & actions
 
-- `group_history_weeks(p_group_id, p_before_week, p_limit: 8)` (docs/API.md §6.4): weeks with posts, newest first, `post_ids`
-  in time order; page with `p_before_week` = last `week_start`. The current week is added by the client when it has no
+- `group_history_weeks(p_group_id, p_before_week, p_limit: 8)` (docs/API.md §6.4): weeks with posts or ready collages,
+  newest first, `post_ids` in time order, `collages` (`collage_id`, `invitation_id`, `local_date`, `image_path`,
+  `widget_path`) oldest first; page with `p_before_week` = last `week_start`. The current week is added by the client when it has no
   posts. Week number: ISO-8601 of `week_start` in `groups.time_zone` (`week_start_isodow` = Monday).
 - `posts` / `media` (`thumb_path`, `created_at` in the group's time zone for weekdays); `weekly_recaps` (`week_start`,
   `status = ready`) for "View recap".
 - Realtime: `post_deleted` → drop tiles; `posts` INSERT → add to the current week.
-- Navigation in: `groups.screen` (the group's weeks). Out: `photo.viewer`, `week.recap`, `week.edit` (album sheet),
-  `camera.capture`.
+- Navigation in: `groups.screen` (the group's weeks). Out: `photo.viewer`, `collage.view`, `week.recap`, `week.edit`
+  (album sheet), `camera.capture`.
 
 ## Platform notes
 

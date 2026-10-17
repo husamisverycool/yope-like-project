@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -342,12 +343,16 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
     // when the newest post changes; the question card's newest answer refetches with the newest post.
     val newestPost = state.photos?.firstOrNull()?.post?.id
     val developing = rememberGroupDeveloping(groupId, newestPost to state.developingVersion)
+    // This week's same-moment collages: the group's photo of each such day, in the week strip.
+    val weekStart = state.group?.let { GroupWeek.start(env.clock.instant().atZone(GroupWeek.zone(it, env.zone())).toLocalDate()) }
+    val weekCollages = rememberWeekCollages(env.backend, groupId, weekStart, newestPost)
     val answeredPosts = state.photos?.mapNotNull { photo -> photo.post.id.takeIf { photo.post.questionId != null } }
     GroupFeedScreen(
         state = state,
         now = env.clock.instant(),
         fallbackZone = env.zone(),
         developing = developingTile(developing),
+        collages = weekCollages,
         actions = GroupScreenActions(
             onBack = { nav.popBackStack() },
             onAlbums = { nav.navigate(AppRoute.AlbumsList(groupId)) },
@@ -364,6 +369,7 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
             onCamera = { nav.navigate(AppRoute.Camera(groupId)) },
             onRetry = vm::load,
             onLoadMore = vm::loadMore,
+            onCollage = { invitationId -> nav.navigate(AppRoute.Collage(groupId, invitationId)) },
         ),
         // The memory pass's entries: copy and data are theirs; the row / card and its place are this screen's.
         // The request opens `birthday.request` first (the route's destination), then the contribute sheet — as iOS.
@@ -441,7 +447,38 @@ data class GroupScreenActions(
     val onCamera: () -> Unit = {},
     val onRetry: () -> Unit = {},
     val onLoadMore: () -> Unit = {},
+    /** `collage.view` of one of this week's same-moment collages (by its invitation). */
+    val onCollage: (invitationId: String) -> Unit = {},
 )
+
+/** One of this week's same-moment collages (the group's photo of that day) with its signed tile URL. */
+data class WeekCollage(val collage: app.data.model.GroupCollage, val url: String?)
+
+/**
+ * This week's same-moment collages (`group_collages`, migration 0033) with signed tile URLs; refetched when the newest post
+ * changes ([refreshKey]) and on every resume (a collage composes two minutes after its invitation closes). Failures keep
+ * what was shown (the collages are an addition to the strip).
+ */
+@Composable
+internal fun rememberWeekCollages(backend: app.feature.account.data.AccountBackend, groupId: String, weekStart: LocalDate?, refreshKey: Any?): List<WeekCollage> {
+    var resumes by remember(groupId) { mutableIntStateOf(0) }
+    androidx.lifecycle.compose.LifecycleResumeEffect(groupId) {
+        resumes++
+        onPauseOrDispose { }
+    }
+    return androidx.compose.runtime.produceState(emptyList<WeekCollage>(), groupId, weekStart, refreshKey, resumes) {
+        if (weekStart == null) return@produceState
+        try {
+            val rows = backend.groupCollages(groupId, weekStart, GroupWeek.end(weekStart))
+            val urls = backend.signedUrls(rows.mapNotNull { it.tilePath })
+            value = rows.map { WeekCollage(it, it.tilePath?.let(urls::get)) }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // keep what is shown
+        }
+    }.value
+}
 
 @Composable
 internal fun createdInviteLabel(kind: GroupKind): String = when (kind) {
@@ -479,6 +516,7 @@ fun GroupFeedScreen(
     planRows: @Composable () -> Unit = {},
     developing: DayTile? = null,
     entryOrder: List<GroupEntrySlot> = GroupEntryOrder.declared,
+    collages: List<WeekCollage> = emptyList(),
 ) {
     val zone = GroupWeek.zone(state.group, fallbackZone)
     val today = now.atZone(zone).toLocalDate()
@@ -518,7 +556,7 @@ fun GroupFeedScreen(
                     item(key = "actions") { ActionRow(actions) }
                     item(key = "error") { TapLine(stringResource(R.string.groups_screen_error_title), actions.onRetry, Modifier.padding(top = Tokens.Sizes.globalSectionGap)) }
                 }
-                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards, planRows, developing, entryOrder)
+                else -> loaded(state, photos, today, zone, actions, birthdayRows, feedCards, planRows, developing, entryOrder, collages)
             }
         }
     }
@@ -535,6 +573,7 @@ private fun LazyListScope.loaded(
     planRows: @Composable () -> Unit,
     developing: DayTile?,
     entryOrder: List<GroupEntrySlot>,
+    collages: List<WeekCollage> = emptyList(),
 ) {
     val weekStart = GroupWeek.start(today)
     // A photo is in the week (and on the day) it became visible: an overnight photo taken on Sunday night is in
@@ -558,10 +597,10 @@ private fun LazyListScope.loaded(
         }
     }
     item(key = "weekHeader") {
-        val range = if (thisWeek.isEmpty()) null else Formats.weekRange(weekStart, GroupWeek.end(today), zone)
+        val range = if (thisWeek.isEmpty() && collages.isEmpty()) null else Formats.weekRange(weekStart, GroupWeek.end(today), zone)
         WeekHeader(stringResource(R.string.groups_screen_week_title, GroupWeek.number(today).toString()), range, actions.onWeeks)
     }
-    item(key = "strip") { WeekStrip(stripTiles(thisWeek, today, zone, actions, developing)) }
+    item(key = "strip") { WeekStrip(stripTiles(thisWeek, today, zone, actions, developing, collages)) }
     if (photos.isEmpty()) {
         item(key = "emptyBlock") {
             Box(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalSectionGap), contentAlignment = Alignment.Center) {
@@ -721,13 +760,20 @@ private fun WeekHeader(title: String, range: String?, onClick: () -> Unit) {
  * add tile (`camera.overnight.layout.developingTile`: the newest position).
  */
 @Composable
-private fun stripTiles(thisWeek: List<GroupPhoto>, today: LocalDate, zone: ZoneId, actions: GroupScreenActions, developing: DayTile? = null): List<DayTile> {
+private fun stripTiles(
+    thisWeek: List<GroupPhoto>,
+    today: LocalDate,
+    zone: ZoneId,
+    actions: GroupScreenActions,
+    developing: DayTile? = null,
+    collages: List<WeekCollage> = emptyList(),
+): List<DayTile> {
     val locale = Locale.getDefault()
     val add = DayTile.Add(stringResource(R.string.groups_screen_week_add_accessibilitylabel), actions.onCamera)
-    val days: List<DayTile> = if (thisWeek.isNotEmpty()) {
-        thisWeek.reversed().map { photo ->
+    val days: List<DayTile> = if (thisWeek.isNotEmpty() || collages.isNotEmpty()) {
+        val photoTiles = thisWeek.reversed().map { photo ->
             val day = photo.post.visibleAt.atZone(zone).toLocalDate()
-            DayTile.Photo(
+            photo.post.visibleAt to DayTile.Photo(
                 key = photo.post.id,
                 image = photo.url,
                 weekday = day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
@@ -736,6 +782,18 @@ private fun stripTiles(thisWeek: List<GroupPhoto>, today: LocalDate, zone: ZoneI
                 menu = photoMenu(photo, actions),
             )
         }
+        // The group's photo of the day (the same-moment collage) on its day, before that day's photos.
+        val collageTiles = collages.map { c ->
+            val day = c.collage.localDate
+            day.atStartOfDay(zone).toInstant() to DayTile.Photo(
+                key = "collage:" + c.collage.collageId,
+                image = c.url,
+                weekday = day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
+                accessibilityLabel = stringResource(R.string.walls_browse_a11y_collage, Formats.longDate(day)),
+                onClick = { actions.onCollage(c.collage.invitationId) },
+            )
+        }
+        (photoTiles + collageTiles).sortedBy { it.first }.map { it.second }
     } else {
         generateSequence(today) { it.plusDays(1) }.takeWhile { !it.isAfter(GroupWeek.end(today)) }.map { day ->
             DayTile.Empty(

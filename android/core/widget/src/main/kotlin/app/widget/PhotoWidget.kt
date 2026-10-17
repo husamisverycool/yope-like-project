@@ -85,6 +85,9 @@ sealed interface WidgetTap {
     /** `camera.capture` with [groupId] preselected (`app://camera?group=<id>`, `camera.fromwidget`). */
     data class Camera(val groupId: String) : WidgetTap
 
+    /** The group's same-moment collage the widget shows (its photo of the day): `app://collage?group=<id>&collage=<id>`. */
+    data class Collage(val groupId: String, val collageId: String) : WidgetTap
+
     /** The configuration activity (no group, or the group is gone). */
     data object Configure : WidgetTap
 
@@ -245,6 +248,7 @@ private fun PreviewPlaceholder(slots: PhotoWidgetSlots, sizeClass: WidgetSizeCla
 private fun tapAction(context: Context, tap: WidgetTap, appWidgetId: Int): Action {
     when (tap) {
         is WidgetTap.Camera -> DeepLinkIntents.intent(context, DeepLink.Camera(tap.groupId))?.let { return actionStartActivity(it) }
+        is WidgetTap.Collage -> DeepLinkIntents.intent(context, DeepLink.Collage(tap.groupId, tap.collageId))?.let { return actionStartActivity(it) }
         WidgetTap.App -> context.packageManager.getLaunchIntentForPackage(context.packageName)?.let { return actionStartActivity(it) }
         WidgetTap.Configure -> Unit
     }

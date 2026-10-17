@@ -91,8 +91,13 @@ Close and Share presses: `haptic.global.tap` (Android VIRTUAL_KEY; iOS none). Pa
 
 - `collages` where `invitation_id = <id>` (members), shown when `status = 'ready'`; pages from `page_count`
   (`display-<n>.jpg` in `image_path`'s folder); signed URLs (1 h).
-- In: `app://daily?…` after `closes_at`, the group screen's daily item. Out: close; `collage.share`; `camera.capture`
-  (empty).
+- In: `app://daily?…` after `closes_at`, the group screen's daily item; the day's collage tile on `groups.screen`'s
+  week strip and in `week.history` (migration 0033, `group_collages` / `group_history_weeks.collages`); a collage page of
+  `week.recap`; a widget showing the collage (`app://collage?group=<group_id>&collage=<collage_id>`, `DeepLink.collage`,
+  `camera.fromwidget.layout.target`): the collage is read by its id (`collages`, RLS: members), then shown by its
+  invitation — while that read runs the media page shows the platform indicator; it failing shows
+  `collage.view.error.title` / `collage.view.offline.title` (tap retries); a collage that is gone shows the empty state.
+  Out: close; `collage.share`; `camera.capture` (empty).
 
 ## Platform notes
 

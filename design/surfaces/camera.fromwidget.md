@@ -4,7 +4,10 @@
 (`widget.home.*`, `widget.lock.*`, `widget.android`) into `camera.capture` with the widget's group preselected in
 `camera.sendto`. **Visual reference: none** — the destination is drawn as `camera.capture` (Retro components on the
 media surface). Retro's own widget tap reloads the widget (its "Tap to reload" states); our tap opens the camera
-(RC-9). Decisions: `design/MERGE_DECISIONS.md` RC-9.
+(RC-9). One exception: a widget showing the group's same-moment collage opens that collage (`collage.view`) — the
+collage is the group's photo of the day, and Apple's widget guidance asks a tap to "deep link to details and actions
+that directly relate to the widget's content" (`camera.fromwidget.layout.target`, `collage`). Decisions:
+`design/MERGE_DECISIONS.md` RC-9.
 
 ## References
 
@@ -24,6 +27,7 @@ media surface). Retro's own widget tap reloads the widget (its "Tap to reload" s
 | element | tokens | copy | behaviour |
 |---|---|---|---|
 | tap target | `camera.fromwidget.layout.target` | none (the widget's own accessibility label, `widget.home.small.a11y.*`) | iOS: `widgetURL(app://camera?group=<id>)` on the whole widget; Android: a `PendingIntent` (ACTION_VIEW, same URI) on the Glance root (`actionStartActivity`) |
+| collage on the widget | `camera.fromwidget.layout.target` (`collage`) | none | iOS: `widgetURL(app://collage?group=<id>&collage=<collage_id>)`; Android: `WidgetTap.Collage` → the same URI; opens `collage.view` over the group (`DeepLink.collage`, Android `AppRoute.CollageById`); signed out → the app's sign-in, as for a photo |
 | group preselection | — | — | `DeepLink.camera(groupID:)`; a missing or unreadable id still opens the camera with nothing preselected; `camera.sendto` then uses its no-context default |
 
 ## States

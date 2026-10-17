@@ -45,6 +45,8 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var selfieUpload: (@Sendable (Data) -> String)?
         var tags: [PostTag] = []
         var collages: [Collage] = []
+        /// Ready same-moment collages on their group-local day (`group_history_weeks.collages`), by group.
+        var historyCollages: [GroupID: [GroupCollage]] = [:]
         var recaps: [WeeklyRecap] = []
         var albums: [AlbumWithItems] = []
         /// Wall items per person as `wall()` returns them (newest first); derived from posts when absent.
@@ -440,11 +442,17 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
             for post in posts {
                 weeks[SocialCalendar.weekStart(containing: post.post.visibleAt, in: zone), default: []].append(post.id)
             }
+            var collages: [LocalDate: [GroupCollage]] = [:]
+            for collage in (state.historyCollages[groupID] ?? []).sorted(by: { $0.localDate < $1.localDate }) {
+                let start = SocialCalendar.weekStart(containing: SocialCalendar.start(of: collage.localDate, in: zone), in: zone)
+                collages[start, default: []].append(collage)
+                if weeks[start] == nil { weeks[start] = [] }
+            }
             return weeks
                 .filter { beforeWeek == nil || $0.key < beforeWeek! }
                 .sorted { $0.key > $1.key }
                 .prefix(SocialPaging.historyWeeks)
-                .map { HistoryWeek(weekStart: $0.key, postIDs: $0.value) }
+                .map { HistoryWeek(weekStart: $0.key, postIDs: $0.value, collages: collages[$0.key] ?? []) }
         }
     }
 

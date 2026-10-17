@@ -68,6 +68,9 @@ interface CaptureData {
 
     suspend fun collageForInvitation(invitationId: String): Collage?
 
+    /** The collage by its id (a widget's collage of the day), to find its invitation; null when gone or unreadable. */
+    suspend fun collageById(collageId: String): Collage? = null
+
     /**
      * Storage path of the collage's first photo (`post_ids[0]`, its display rendition): the recap preview's
      * backdrop (collage.view, MERGE_DECISIONS L-7). Null when the post or its media is gone.
@@ -117,6 +120,8 @@ class GraphCaptureData(private val graph: DataGraph) : CaptureData {
     override suspend fun group(groupId: String): Group? = graph.groups.group(groupId)
 
     override suspend fun collageForInvitation(invitationId: String): Collage? = graph.invitations.collageForInvitation(invitationId)
+
+    override suspend fun collageById(collageId: String): Collage? = graph.invitations.collage(collageId)
 
     override suspend fun collageFirstPhotoPath(collage: Collage): String? {
         val post = collage.postIds.firstOrNull()?.let { graph.posts.post(it) } ?: return null

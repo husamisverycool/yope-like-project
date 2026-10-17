@@ -47,6 +47,15 @@ public struct MemoriesRepository: Sendable {
         await cache?.read([HistoryWeek].self, for: .history(groupID))
     }
 
+    /// `group_collages`: the group's ready same-moment collages whose day (group-local) is in `from…to`, newest first.
+    public func groupCollages(groupID: GroupID, from: LocalDate? = nil, to: LocalDate? = nil) async throws -> [GroupCollage] {
+        try await client.rpc("group_collages", [
+            "p_group_id": .id(groupID),
+            "p_from": .date(from),
+            "p_to": .date(to),
+        ])
+    }
+
     /// `on_this_day`: posts from the same month and day in earlier years (group-local).
     /// `localDate` defaults to today in the group's zone.
     public func onThisDay(groupID: GroupID, localDate: LocalDate) async throws -> [OnThisDayItem] {
@@ -81,13 +90,15 @@ public struct MemoriesRepository: Sendable {
     }
 
     /// `update_recap` (any member, once ready). `items` is the new order (nil = unchanged);
-    /// `text` nil = unchanged, `""` clears it.
-    public func updateRecap(id: RecapID, items: [PostID]? = nil, text: String? = nil) async throws -> WeeklyRecap {
-        try await client.rpc("update_recap", [
+    /// `text` nil = unchanged, `""` clears it; `collageIDs` the new order of the recap's collages (nil = unchanged).
+    public func updateRecap(id: RecapID, items: [PostID]? = nil, text: String? = nil, collageIDs: [CollageID]? = nil) async throws -> WeeklyRecap {
+        var params: [String: AnyJSON] = [
             "p_recap_id": .id(id),
             "p_items": items.map(AnyJSON.ids) ?? .null,
             "p_text": .text(text),
-        ])
+        ]
+        if let collageIDs { params["p_collage_ids"] = .array(collageIDs.map { .string($0.rawValue) }) }
+        return try await client.rpc("update_recap", params)
     }
 
     // MARK: Albums

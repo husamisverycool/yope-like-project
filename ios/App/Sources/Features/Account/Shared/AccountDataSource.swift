@@ -78,6 +78,9 @@ protocol AccountDataSource: AnyObject, Sendable {
     func profiles(ids: [UserID]) async throws -> [Profile]
     /// The newest weekly recap (`groups.screen` recap circle).
     func latestRecap(groupID: GroupID) async throws -> WeeklyRecap?
+    /// `group_collages`: the group's ready same-moment collages whose day is in `from…to` (group-local), newest first
+    /// (the week strip's collage of the day, migration 0033).
+    func groupCollages(groupID: GroupID, from: LocalDate, to: LocalDate) async throws -> [GroupCollage]
     /// Realtime inserts, updates and deletions of the group (shared channels, §8).
     func groupEvents(groupID: GroupID) -> AsyncStream<GroupEvent>
     /// A signed URL for a storage path (1 h, cached).
@@ -315,6 +318,11 @@ final class LiveAccountData: AccountDataSource {
     func latestRecap(groupID: GroupID) async throws -> WeeklyRecap? {
         let memories = try env().memories
         return try await memories.recaps(groupID: groupID, limit: 1).first
+    }
+
+    func groupCollages(groupID: GroupID, from: LocalDate, to: LocalDate) async throws -> [GroupCollage] {
+        let memories = try env().memories
+        return try await memories.groupCollages(groupID: groupID, from: from, to: to)
     }
 
     func groupEvents(groupID: GroupID) -> AsyncStream<GroupEvent> {
