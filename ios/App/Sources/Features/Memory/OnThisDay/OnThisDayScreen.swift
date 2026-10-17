@@ -232,10 +232,10 @@ struct OnThisDayScreen: View {
             .accessibilityHidden(true)
             .overlay(alignment: Alignment(horizontal: .trailing, vertical: .capMiddle)) {
                 if showsModeMenu {
+                    // Trailing-aligned to the title, then moved past its end by its own width and the gap (a custom
+                    // trailing guide in an overlay was not applied: the chevron drew over the year's last digit).
                     ModeChevron()
-                        .alignmentGuide(HorizontalAlignment.trailing) { dimensions in
-                            dimensions[HorizontalAlignment.leading] - Tokens.Sizes.onthisdayModeChevronGap
-                        }
+                        .offset(x: Self.modeChevronReserve)
                         .alignmentGuide(.capMiddle) { dimensions in
                             dimensions[VerticalAlignment.center] - Tokens.Sizes.onthisdayModeChevronDrop
                         }
