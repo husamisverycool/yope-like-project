@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import app.data.error.DataError
 import app.data.model.ChatTyping
 import app.data.model.Group
+import app.data.model.LinkPreview
 import app.data.model.Media
 import app.feature.social.common.videoDurationMs
 import app.data.model.Message
@@ -77,6 +78,8 @@ data class ChatRow(
      * `created_at` order; set by [app.feature.social.chat.threadItems]), not drawn themselves; empty for every other row.
      */
     val batch: List<String> = emptyList(),
+    /** The preview card under a text message (`chat.thread.layout.linkPreview`), while the text holds its address. */
+    val linkPreview: LinkPreview? = null,
 ) {
     val id: String get() = message.id
     val kind: MessageKind get() = message.kind
@@ -150,7 +153,13 @@ internal data class CachedReaction(val userId: String, val emoji: String)
  * (`observeMessages`), older pages by `created_at`, realtime inserts / updates / deletions
  * (docs/API.md §8), and the thread's actions.
  */
-class ChatViewModel(private val data: SocialData, val groupId: String, private val clock: java.time.Clock = java.time.Clock.systemUTC()) : ViewModel() {
+class ChatViewModel(
+    private val data: SocialData,
+    val groupId: String,
+    private val clock: java.time.Clock = java.time.Clock.systemUTC(),
+    /** Builds the preview of a link in a text I send (`chat.thread.layout.linkPreview`); null builds none. */
+    private val linkPreviews: LinkPreviewBuilder? = null,
+) : ViewModel() {
     private val _state = MutableStateFlow(ChatState(me = data.currentUserId()))
     val state: StateFlow<ChatState> = _state.asStateFlow()
     private val _effects = MutableSharedFlow<ChatEffect>(extraBufferCapacity = 16, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -355,7 +364,8 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
             publish()
             return
         }
-        messages = messages.map { if (it.id == id) it.copy(body = body, editedAt = clock.instant()) else it }
+        // An edit that drops the previewed address drops the preview (the server clears it the same way).
+        messages = messages.map { if (it.id == id) it.copy(body = body, editedAt = clock.instant(), linkPreview = ChatLinkPreviews.keeps(it.linkPreview, body)) else it }
         publish()
         viewModelScope.launch {
             try {
@@ -490,6 +500,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
                 if (local.kind == MessageKind.Voice) File(local.voicePath.orEmpty()).delete()
                 if (local.id in pending) confirm(local.id, sent)
                 _effects.emit(ChatEffect.Sent)
+                if (sent.kind == MessageKind.Text) buildLinkPreview(sent)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Throwable) {
@@ -498,6 +509,30 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
                     publish()
                 }
                 _effects.emit(ChatEffect.SendFailed)
+            }
+        }
+    }
+
+    /**
+     * After my text message is sent (`chat.thread.layout.linkPreview`): when it holds an http(s) address, the page is read
+     * once on this device, its image downscaled and uploaded, and `set_link_preview` records it. Best effort and silent:
+     * any failure leaves no preview, with no effect, toast or retry; the send itself is never held up.
+     */
+    private fun buildLinkPreview(sent: Message) {
+        val builder = linkPreviews ?: return
+        val body = sent.body ?: return
+        if (sent.authorId != data.currentUserId() || sent.linkPreview != null || ChatLinkPreviews.candidate(body) == null) return
+        viewModelScope.launch {
+            try {
+                val draft = builder.build(body) ?: return@launch
+                val saved = data.setLinkPreview(sent.id, draft)
+                if (messages.none { it.id == sent.id }) return@launch
+                messages = messages.map { if (it.id == sent.id) it.copy(linkPreview = ChatLinkPreviews.keeps(saved.linkPreview, it.body)) else it }
+                publish()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                // silent: no preview
             }
         }
     }
@@ -863,6 +898,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
                 quote = quoteFor(m, post),
                 edited = m.editedAt != null,
                 canEdit = canEdit(m),
+                linkPreview = if (m.kind == MessageKind.Text && m.id !in pending) ChatLinkPreviews.keeps(m.linkPreview, m.body) else null,
             )
         }
         _state.update { it.copy(rows = rows, me = me, people = profiles.toMap(), typing = typingNames()) }

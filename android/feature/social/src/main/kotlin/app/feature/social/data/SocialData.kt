@@ -73,6 +73,12 @@ interface SocialData {
     suspend fun editMessage(messageId: String, body: String): Message
     /** `public_app_config` (§11): `message_edit_window_s` (Edit is offered only inside it) and `typing_ttl_s`. */
     suspend fun publicConfig(): PublicAppConfig
+    /**
+     * Link previews built on the sender's device (migration 0053, `chat.thread.layout.linkPreview`): uploads the draft's
+     * JPEG (`u/<uid>/links/<uuid>.jpg`) when it has one, then `set_link_preview` on your own text message; the row with
+     * `link_preview` set.
+     */
+    suspend fun setLinkPreview(messageId: String, preview: LinkPreviewDraft): Message = throw DataException(DataError.NotConfigured)
 
     /** Reactions on text / voice messages (§5.10a), per message id, oldest first: one row per person. Never a count. */
     suspend fun messageReactions(messageIds: Collection<String>): Map<String, List<ReactionEntry>>
@@ -224,6 +230,8 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     override suspend fun deleteMessage(messageId: String) = graph.chat.deleteMessage(messageId)
     override suspend fun editMessage(messageId: String, body: String) = graph.chat.editMessage(messageId, body)
     override suspend fun publicConfig(): PublicAppConfig = graph.appConfig.publicConfig()
+    override suspend fun setLinkPreview(messageId: String, preview: LinkPreviewDraft) =
+        graph.chat.setLinkPreview(messageId, preview.url, preview.title, preview.site, preview.jpeg)
     override suspend fun messageReactions(messageIds: Collection<String>) = graph.reactions.messageReactionsFor(messageIds)
     override suspend fun reactToMessage(messageId: String, emoji: String) {
         graph.reactions.reactToMessage(messageId, emoji)

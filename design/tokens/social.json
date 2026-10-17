@@ -1762,7 +1762,7 @@
         "style": "the body's own text role and color.global.textPrimary, underlined",
         "tap": "opens the address in the browser (iOS openURL, Android the URI handler); a long press still opens the message's context menu",
         "accessibility": "each link is also an accessibility action of the message named by its address",
-        "previews": "none: no server fetch of the page (privacy); previews built on the sender's device are a later pass"
+        "previews": "built on the sender's device only (chat.thread.layout.linkPreview); the server never fetches the page and a reader's device never contacts the site (privacy)"
       },
       "source_app": "Apple Messages + WhatsApp + W3C WCAG 2.2",
       "surface": "chat.thread",
@@ -1788,6 +1788,32 @@
       "method": "Instagram's carousel shown as its first photo with the carousel icon; Jolt's photos stay posts of their own (docs/API.md posts.batch_id), so the chip, caption and menu are the first photo's",
       "level": "SOURCED",
       "notes": "Owner decision 34 (research #1)."
+    },
+    "chat.thread.layout.linkPreview": {
+      "type": "layout",
+      "value": {
+        "build": "after send_message returns my text message, the first link of chat.thread.layout.links written with its own http / https scheme (an address the detector completed is not in the text as set_link_preview needs) has its page read once on my device: iOS LPMetadataProvider (title; the site line is the address's host without 'www.'), Android one GET of the page read up to htmlMaxBytes, its og:title / og:site_name / og:image (twitter:title / twitter:image, then <title>, when absent)",
+        "image": "the page's image (at most imageMaxBytes) downscaled to imageMaxPixels on its longer side, re-encoded as JPEG at jpegQuality without metadata, uploaded to u/<uid>/links/<uuid>.jpg before set_link_preview(p_message_id, p_url = the address as written, p_title ≤ 300, p_site ≤ 100, p_image_path)",
+        "timeoutSeconds": 30,
+        "htmlMaxBytes": 1048576,
+        "imageMaxBytes": 8000000,
+        "imageMaxPixels": 510,
+        "jpegQuality": 0.85,
+        "silent": "best effort: no link, an unreadable page, a page with neither a title nor an image, or any failed call → no preview, with no message, haptic or retry; the message is never held up",
+        "card": "a C-15 row in the run's text column, chat.thread.dimension.itemGap below the text and above the reaction chip: the image as the C-15 thumbnail (size.global.rowThumbWidth × .rowThumbHeight, radius.global.thumbnail, aspect fill; no image → no thumbnail), then size.global.rowThumbGap after it the title (text role listTitle, color.global.textPrimary) over the site (text role listSubtitle, color.global.textSecondary), titleLines and siteLines lines, tail truncation; no title → the site takes the title line",
+        "titleLines": 1,
+        "siteLines": 1,
+        "tap": "opens the address in the browser as the link in the text does (chat.thread.layout.links); a long press on the text still opens the message's menu",
+        "accessibility": "one element read as its title and site (data), with the link trait (iOS) / the button role (Android); hidden while the message is pending",
+        "live": "the preview arrives on the readers' devices as the message's Realtime UPDATE (no push); an edit that drops the address drops it at once (the server clears it too); readers load only the uploaded image, never the page"
+      },
+      "source_app": "Apple Messages + WhatsApp + Meta + Retro",
+      "surface": "chat.thread",
+      "element": "link preview card under a text message, built on the sender's device",
+      "evidence": "docs/RESEARCH_FEATURES_2026-10-17.md #16 (iMessage, WhatsApp previews; https://developer.apple.com/documentation/linkpresentation, https://developer.apple.com/documentation/linkpresentation/lpmetadataprovider — timeout 30 s by default); backend/supabase/migrations/20261017000053_link_previews.sql and docs/API.md set_link_preview (fields, limits, storage path); https://ogp.me (og:title, og:site_name, og:image); https://developers.facebook.com/documentation/sharing/webmasters/web-crawlers ('Open Graph properties need to be listed before the first 1 MB' of the page); https://developers.facebook.com/documentation/sharing/webmasters/images ('The size of the image file must not exceed 8 MB'); backend/worker/src/media/renditions.ts (thumb rendition 170 × 3 = 510 px, JPEG_OPTIONS quality 85, as CaptureDraftBuilder.jpegQuality); design/components.md C-15 and chat.thread.layout.replyQuote (the photo quote's row, one line each)",
+      "method": "the mechanics of Apple LinkPresentation / Meta's crawler limits on the sender's device; the card is the C-15 row the thread already uses for a quoted photo; the image at the size and quality of the worker's own thumbnails",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (research #16). No count anywhere on the card. Retro has no link previews (not captured); iMessage's large LPLinkView card is not copied (the thread's rows are Retro's)."
     }
   }
 }

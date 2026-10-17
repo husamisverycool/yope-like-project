@@ -924,13 +924,30 @@ object Tokens {
             const val othersMessage: String = "followed only while the newest message is showing (the reader is at the bottom); scrolled up, the list keeps its place (the arrival is announced to VoiceOver / TalkBack)"
             const val motion: String = "the list's own scroll (system)"
         }
+        /** Apple Messages + WhatsApp + Meta + Retro · chat.thread · link preview card under a text message, built on the sender's device · SOURCED — token `chat.thread.layout.linkPreview` */
+        object ChatThreadLayoutLinkPreview {
+            const val build: String = "after send_message returns my text message, the first link of chat.thread.layout.links written with its own http / https scheme (an address the detector completed is not in the text as set_link_preview needs) has its page read once on my device: iOS LPMetadataProvider (title; the site line is the address's host without 'www.'), Android one GET of the page read up to htmlMaxBytes, its og:title / og:site_name / og:image (twitter:title / twitter:image, then <title>, when absent)"
+            const val image: String = "the page's image (at most imageMaxBytes) downscaled to imageMaxPixels on its longer side, re-encoded as JPEG at jpegQuality without metadata, uploaded to u/<uid>/links/<uuid>.jpg before set_link_preview(p_message_id, p_url = the address as written, p_title ≤ 300, p_site ≤ 100, p_image_path)"
+            const val timeoutSeconds: Float = 30f
+            const val htmlMaxBytes: Float = 1048576f
+            const val imageMaxBytes: Float = 8000000f
+            const val imageMaxPixels: Float = 510f
+            const val jpegQuality: Float = 0.85f
+            const val silent: String = "best effort: no link, an unreadable page, a page with neither a title nor an image, or any failed call → no preview, with no message, haptic or retry; the message is never held up"
+            const val card: String = "a C-15 row in the run's text column, chat.thread.dimension.itemGap below the text and above the reaction chip: the image as the C-15 thumbnail (size.global.rowThumbWidth × .rowThumbHeight, radius.global.thumbnail, aspect fill; no image → no thumbnail), then size.global.rowThumbGap after it the title (text role listTitle, color.global.textPrimary) over the site (text role listSubtitle, color.global.textSecondary), titleLines and siteLines lines, tail truncation; no title → the site takes the title line"
+            const val titleLines: Float = 1f
+            const val siteLines: Float = 1f
+            const val tap: String = "opens the address in the browser as the link in the text does (chat.thread.layout.links); a long press on the text still opens the message's menu"
+            const val accessibility: String = "one element read as its title and site (data), with the link trait (iOS) / the button role (Android); hidden while the message is pending"
+            const val live: String = "the preview arrives on the readers' devices as the message's Realtime UPDATE (no push); an edit that drops the address drops it at once (the server clears it too); readers load only the uploaded image, never the page"
+        }
         /** Apple Messages + WhatsApp + W3C WCAG 2.2 · chat.thread · tappable links in text messages · SOURCED — token `chat.thread.layout.links` */
         object ChatThreadLayoutLinks {
             const val detect: String = "web addresses in a text message's body, found by the platform's own detector (iOS NSDataDetector .link; Android Linkify WEB_URLS), http and https only; an address without a scheme opens as the detector completes it"
             const val style: String = "the body's own text role and color.global.textPrimary, underlined"
             const val tap: String = "opens the address in the browser (iOS openURL, Android the URI handler); a long press still opens the message's context menu"
             const val accessibility: String = "each link is also an accessibility action of the message named by its address"
-            const val previews: String = "none: no server fetch of the page (privacy); previews built on the sender's device are a later pass"
+            const val previews: String = "built on the sender's device only (chat.thread.layout.linkPreview); the server never fetches the page and a reader's device never contacts the site (privacy)"
         }
         /** Retro · chat.thread · photo message inside the thread · SOURCED — token `chat.thread.layout.photoFit` */
         object ChatThreadLayoutPhotoFit {

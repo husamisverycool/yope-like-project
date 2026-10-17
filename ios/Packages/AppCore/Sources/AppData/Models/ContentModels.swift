@@ -299,11 +299,14 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
     /// When the author last edited the text (`edit_message`, migration 0047): "Edited" shows under it; nil when never
     /// edited.
     public var editedAt: Date?
+    /// The preview the sender's device built for a link in the text (`set_link_preview`, migration 0053); nil when none.
+    public var linkPreview: LinkPreview?
 
     public init(
         id: MessageID, groupID: GroupID, authorID: UserID, kind: MessageKind, body: String? = nil,
         postID: PostID? = nil, voicePath: String? = nil, voiceDurationMs: Int? = nil, voiceLevels: [Int]? = nil,
-        replyToPostID: PostID? = nil, replyToMessageID: MessageID? = nil, createdAt: Date, editedAt: Date? = nil
+        replyToPostID: PostID? = nil, replyToMessageID: MessageID? = nil, createdAt: Date, editedAt: Date? = nil,
+        linkPreview: LinkPreview? = nil
     ) {
         self.id = id
         self.groupID = groupID
@@ -318,6 +321,7 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
         self.replyToMessageID = replyToMessageID
         self.createdAt = createdAt
         self.editedAt = editedAt
+        self.linkPreview = linkPreview
     }
 
     enum CodingKeys: String, CodingKey {
@@ -333,6 +337,29 @@ public struct Message: Codable, Hashable, Sendable, Identifiable {
         case replyToMessageID = "reply_to_message_id"
         case createdAt = "created_at"
         case editedAt = "edited_at"
+        case linkPreview = "link_preview"
+    }
+}
+
+/// `messages.link_preview` (§5.9, migration 0053): built on the sender's device; recipients never contact the site. The
+/// image is read like the message (`u/<sender>/links/<uuid>.jpg`).
+public struct LinkPreview: Codable, Hashable, Sendable {
+    /// The address as written in the message's text (http / https).
+    public var url: String
+    public var title: String?
+    public var site: String?
+    public var imagePath: String?
+
+    public init(url: String, title: String? = nil, site: String? = nil, imagePath: String? = nil) {
+        self.url = url
+        self.title = title
+        self.site = site
+        self.imagePath = imagePath
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case url, title, site
+        case imagePath = "image_path"
     }
 }
 

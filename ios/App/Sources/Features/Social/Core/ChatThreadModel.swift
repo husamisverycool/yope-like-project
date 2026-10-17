@@ -82,18 +82,25 @@ final class ChatThreadModel {
     @ObservationIgnored private var typingSentAt: Date?
     @ObservationIgnored private var typingExpiry: Task<Void, Never>?
     @ObservationIgnored private let now: @Sendable () -> Date
+    /// Builds the preview of a link in a text I send (`chat.thread.layout.linkPreview`); nil: none are built.
+    @ObservationIgnored private let linkPreviews: LinkPreviewBuilder?
+    /// The previews being built, by message (best effort, silent).
+    @ObservationIgnored private var previewTasks: [MessageID: Task<Void, Never>] = [:]
 
     private var localCounter = 0
 
-    /// - Parameter now: the clock of the edit window and the typing line (tests pass a fixed one).
+    /// - Parameters:
+    ///   - now: the clock of the edit window and the typing line (tests pass a fixed one).
+    ///   - linkPreviews: reads the page of a link in a text I send and builds its preview; nil builds none.
     init(
         groupID: GroupID, focusMessageID: MessageID? = nil, data: any SocialDataSource,
-        now: @escaping @Sendable () -> Date = { Date() }
+        now: @escaping @Sendable () -> Date = { Date() }, linkPreviews: LinkPreviewBuilder? = nil
     ) {
         self.groupID = groupID
         self.focusMessageID = focusMessageID
         self.data = data
         self.now = now
+        self.linkPreviews = linkPreviews
     }
 
     // MARK: Derived
@@ -177,6 +184,13 @@ final class ChatThreadModel {
         let moment = date ?? now()
         return typists.filter { $0.until > moment && $0.userID != me }
             .compactMap { profile($0.userID)?.socialFirstName }
+    }
+
+    /// The preview card under a text message (`chat.thread.layout.linkPreview`): its `link_preview`, while the text still
+    /// holds the address.
+    func linkPreview(of message: Message) -> LinkPreview? {
+        guard message.kind == .text else { return nil }
+        return ChatLinkPreviews.keeps(message.linkPreview, body: message.body)
     }
 
     func hasQuote(_ message: Message) -> Bool {
@@ -584,6 +598,7 @@ final class ChatThreadModel {
             isOffline = false
             confirm(localID, with: message)
             signals.emit(.sent)
+            if message.kind == .text { startLinkPreview(for: message) }
         } catch {
             // Taken back meanwhile (deleted while sending, or confirmed by its realtime echo).
             guard messages.contains(where: { $0.id == localID }), pending.contains(localID) else {
@@ -864,6 +879,8 @@ final class ChatThreadModel {
         guard body != before.body else { return }
         messages[index].body = body
         messages[index].editedAt = now()
+        // An edit that drops the previewed address drops the preview (the server clears it the same way).
+        messages[index].linkPreview = ChatLinkPreviews.keeps(before.linkPreview, body: body)
         do {
             let saved = try await data.editMessage(id: id, body: body)
             if let current = messages.firstIndex(where: { $0.id == id }) { messages[current] = saved }
@@ -881,6 +898,36 @@ final class ChatThreadModel {
             signals.emit(.failed)
             signals.post(.editFailed)
         }
+    }
+
+    // MARK: Link previews (`chat.thread.layout.linkPreview`)
+
+    /// After my text message is sent: when it holds an http(s) address, the page is read once on this device, its image
+    /// downscaled and uploaded, and `set_link_preview` records it. Best effort and silent: any failure leaves no preview,
+    /// with no message, haptic or retry; the send itself is never held up.
+    private func startLinkPreview(for message: Message) {
+        guard let builder = linkPreviews, isMine(message), message.kind == .text, message.linkPreview == nil,
+              let body = message.body, previewTasks[message.id] == nil,
+              ChatLinkPreviews.candidate(in: body) != nil else { return }
+        let id = message.id
+        let data = self.data
+        previewTasks[id] = Task { [weak self] in
+            defer { self?.previewTasks[id] = nil }
+            guard let draft = await builder.build(for: body),
+                  let saved = try? await data.setLinkPreview(messageID: id, preview: draft) else { return }
+            self?.applyLinkPreview(saved)
+        }
+    }
+
+    /// The saved row's preview, unless the message went or its text no longer holds the address meanwhile.
+    private func applyLinkPreview(_ saved: Message) {
+        guard let index = messages.firstIndex(where: { $0.id == saved.id }) else { return }
+        messages[index].linkPreview = ChatLinkPreviews.keeps(saved.linkPreview, body: messages[index].body)
+    }
+
+    /// Waits for the previews being built (tests).
+    func linkPreviewsSettled() async {
+        for task in Array(previewTasks.values) { await task.value }
     }
 
     // MARK: Typing (`chat.thread.layout.typingLine`)
@@ -1080,7 +1127,8 @@ enum ChatThreadLayout {
 // MARK: - Links (`chat.thread.layout.links`)
 
 /// The web addresses of a text message, found by the platform's own detector (`NSDataDetector`, `.link`), http and https
-/// only (an address without a scheme comes back completed by the detector). No preview is fetched (privacy).
+/// only (an address without a scheme comes back completed by the detector). Previews are built on the sender's device
+/// only (`ChatLinkPreviews`, `chat.thread.layout.linkPreview`); a reader's device never contacts the site.
 enum ChatLinks {
     struct Link: Equatable {
         let range: Range<String.Index>

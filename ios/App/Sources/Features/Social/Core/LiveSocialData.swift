@@ -92,6 +92,14 @@ struct LiveSocialData: SocialDataSource {
         try await environment.account.publicConfig()
     }
 
+    func setLinkPreview(messageID: MessageID, preview: LinkPreviewDraft) async throws -> Message {
+        var imagePath: String?
+        if let jpeg = preview.jpeg { imagePath = try await environment.uploader.uploadLinkPreview(jpeg: jpeg) }
+        return try await environment.chat.setLinkPreview(
+            messageID: messageID, url: preview.url, title: preview.title, site: preview.site, imagePath: imagePath
+        )
+    }
+
     func messageReactions(messageIDs: [MessageID]) async throws -> [MessageReaction] {
         try await environment.reactions.messageReactions(messageIDs: messageIDs)
     }
@@ -372,6 +380,7 @@ struct UnconfiguredSocialData: SocialDataSource {
     func deleteMessage(id: MessageID, groupID: GroupID) async throws { try fail() as Void }
     func editMessage(id: MessageID, body: String) async throws -> Message { try fail() }
     func publicConfig() async throws -> PublicAppConfig { try fail() }
+    func setLinkPreview(messageID: MessageID, preview: LinkPreviewDraft) async throws -> Message { try fail() }
     func messageReactions(messageIDs: [MessageID]) async throws -> [MessageReaction] { try fail() }
     func reactToMessage(id: MessageID, emoji: String) async throws -> MessageReaction { try fail() }
     func unreactToMessage(id: MessageID) async throws { try fail() as Void }

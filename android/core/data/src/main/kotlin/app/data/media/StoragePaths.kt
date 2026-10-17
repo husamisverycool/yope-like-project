@@ -32,6 +32,9 @@ object StoragePaths {
     /** `u/<uid>/selfies/<uuid>.jpg` — a selfie reaction (docs/API.md §14.1), uploaded before `react_with_selfie`. */
     fun selfie(uid: String, id: String): String = "u/${seg(uid)}/selfies/${seg(id)}.jpg"
 
+    /** `u/<uid>/links/<uuid>.jpg` — a link preview's image (migration 0053), uploaded before `set_link_preview`. */
+    fun linkPreview(uid: String, id: String): String = "u/${seg(uid)}/links/${seg(id)}.jpg"
+
     /** `avatars/<uid>/<uuid>.jpg` */
     fun avatar(uid: String, id: String): String = "avatars/${seg(uid)}/${seg(id)}.jpg"
 

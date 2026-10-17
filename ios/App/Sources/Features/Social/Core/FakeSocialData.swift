@@ -46,6 +46,8 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var typingCalls: [Bool] = []
         /// `public_app_config`: nothing set by default (no Edit item, no typing calls).
         var config = PublicAppConfig()
+        /// Each `set_link_preview` draft received, in order.
+        var linkPreviewsSent: [LinkPreviewDraft] = []
         /// Selfie reactions, one per person and post (`react_with_selfie` replaces).
         var selfies: [SelfieReaction] = []
         /// Stores a sent selfie's JPEG and returns its storage path (the Jolt demo keeps the file so the face shows);
@@ -290,6 +292,8 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         if message.body != body {
             message.body = body
             message.editedAt = tick()
+            // As the server's trigger (migration 0053): an edit that drops the previewed address drops the preview.
+            message.linkPreview = ChatLinkPreviews.keeps(message.linkPreview, body: body)
         }
         let edited = message
         update { state in
@@ -301,6 +305,26 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     func publicConfig() async throws -> PublicAppConfig {
         try call("publicConfig")
         return read { $0.config }
+    }
+
+    /// Like `set_link_preview`: my own text message whose text contains the address; the image "uploaded" to
+    /// `fake/links/<id>.jpg`. `message_not_found` / `invalid_argument` otherwise.
+    func setLinkPreview(messageID: MessageID, preview: LinkPreviewDraft) async throws -> Message {
+        await hold("setLinkPreview")
+        try call("setLinkPreview")
+        let me = read { $0.me }
+        guard var message = read({ $0.messages.first { $0.id == messageID } }), message.authorID == me else {
+            throw DataError.api(.messageNotFound)
+        }
+        guard message.kind == .text, message.body?.contains(preview.url) == true else { throw DataError.api(.invalidArgument) }
+        let imagePath = preview.jpeg.map { _ in "fake/links/" + nextID() + ".jpg" } // provenance-ok: fake storage path
+        message.linkPreview = LinkPreview(url: preview.url, title: preview.title, site: preview.site, imagePath: imagePath)
+        let saved = message
+        update { state in
+            state.linkPreviewsSent.append(preview)
+            if let index = state.messages.firstIndex(where: { $0.id == messageID }) { state.messages[index] = saved }
+        }
+        return saved
     }
 
     func messageReactions(messageIDs: [MessageID]) async throws -> [MessageReaction] {

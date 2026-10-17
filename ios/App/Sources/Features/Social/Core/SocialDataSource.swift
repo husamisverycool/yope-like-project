@@ -43,6 +43,10 @@ protocol SocialDataSource: Sendable {
     func editMessage(id: MessageID, body: String) async throws -> Message
     /// `public_app_config` (§11): `message_edit_window_s` (Edit is offered only inside it) and `typing_ttl_s`.
     func publicConfig() async throws -> PublicAppConfig
+    /// Link previews built on the sender's device (migration 0053, `chat.thread.layout.linkPreview`): uploads the draft's
+    /// JPEG (`u/<uid>/links/<uuid>.jpg`) when it has one, then `set_link_preview` on my own text message; the row with
+    /// `link_preview` set.
+    func setLinkPreview(messageID: MessageID, preview: LinkPreviewDraft) async throws -> Message
 
     // MARK: Reactions on messages (§5.10a; `chat.reactions.layout.messageReactions`)
     /// Rows `(message, user, emoji)`, oldest first: one per person and message. Never a count.

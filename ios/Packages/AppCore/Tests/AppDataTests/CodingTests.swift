@@ -412,4 +412,27 @@ final class CodingTests: XCTestCase {
         XCTAssertEqual(DownloadScope.mine.wireValue, "mine")
         XCTAssertEqual(DownloadScope.album(AlbumID("9f1c1d2e-0000-4000-8000-00000000000a")).wireValue, "album")
     }
+
+    /// Migration 0053: `messages.link_preview` (`jsonb_strip_nulls`: absent keys), null when none; the path helper.
+    func testLinkPreviewDecodesWithAndWithoutItsOptionalKeys() throws {
+        let base = """
+        {"id":"0f8fad5b-d9cb-469f-a165-70867728950f","group_id":"9f1c1d2e-0000-4000-8000-000000000001",
+         "author_id":"9f1c1d2e-0000-4000-8000-000000000002","kind":"text","body":"look https://example.com/a",
+         "created_at":"2026-10-16T08:00:00+00:00"
+        """
+        let full = base + #","link_preview":{"url":"https://example.com/a","title":"A page","site":"Example","image_path":"u/9f1c1d2e-0000-4000-8000-000000000002/links/0f8fad5b-d9cb-469f-a165-70867728950f.jpg"}}"#
+        let preview = try DataCoding.makeDecoder().decode(Message.self, from: Data(full.utf8)).linkPreview
+        XCTAssertEqual(preview, LinkPreview(
+            url: "https://example.com/a", title: "A page", site: "Example",
+            imagePath: "u/9f1c1d2e-0000-4000-8000-000000000002/links/0f8fad5b-d9cb-469f-a165-70867728950f.jpg"
+        ))
+        let urlOnly = base + #","link_preview":{"url":"https://example.com/a"}}"#
+        XCTAssertEqual(try DataCoding.makeDecoder().decode(Message.self, from: Data(urlOnly.utf8)).linkPreview, LinkPreview(url: "https://example.com/a"))
+        XCTAssertNil(try DataCoding.makeDecoder().decode(Message.self, from: Data((base + #","link_preview":null}"#).utf8)).linkPreview)
+        XCTAssertNil(try DataCoding.makeDecoder().decode(Message.self, from: Data((base + "}").utf8)).linkPreview)
+
+        let path = StoragePaths.linkPreview(owner: UserID("9f1c1d2e-0000-4000-8000-000000000002"), id: UUID(uuidString: "0F8FAD5B-D9CB-469F-A165-70867728950F")!)
+        XCTAssertEqual(path, "u/9f1c1d2e-0000-4000-8000-000000000002/links/0f8fad5b-d9cb-469f-a165-70867728950f.jpg")
+        XCTAssertTrue(StoragePaths.isSafe(path))
+    }
 }

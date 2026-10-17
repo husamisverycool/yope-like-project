@@ -52,7 +52,7 @@ Server = migrations and worker, tested against a local stack; apps = iOS and And
 | 13 | Reply to a memory ("then & now") | — (create_post reply) | merged |
 | 14 | A photo as the group cover | 0039 | merged |
 | 15 | Opt-in memory notification | 0049 + worker push.memory | merged |
-| 16 | Tappable links in chat | 0053 (link_preview, built on the sender's device) | links merged; previews building |
+| 16 | Tappable links in chat | 0053 (link_preview, built on the sender's device) | merged (links and previews) |
 | 17 | Pause all for today | 0037 | done |
 | 18 | "{name} joined" line | 0041–0042 | done |
 | 19 | Private favorites | 0038 | merged |

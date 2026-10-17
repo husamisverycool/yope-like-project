@@ -255,6 +255,33 @@ class ModelMappingTest {
         assertEquals(Instant.parse("2026-10-15T13:37:06Z"), typist.typing.until)
     }
 
+    /** Migration 0053: `messages.link_preview` (`jsonb_strip_nulls`: absent keys) in a Realtime UPDATE; the RPC's arguments and path. */
+    @Test fun linkPreviewsDecodeAndTheirArgumentsFollowTheSpec() {
+        fun row(preview: kotlinx.serialization.json.JsonElement?) = JsonObject(buildMap<String, kotlinx.serialization.json.JsonElement> {
+            put("id", JsonPrimitive("m1")); put("group_id", JsonPrimitive("g1")); put("author_id", JsonPrimitive("u1"))
+            put("kind", JsonPrimitive("text")); put("body", JsonPrimitive("look https://example.com/a"))
+            put("post_id", JsonNull); put("voice_path", JsonNull); put("voice_duration_ms", JsonNull)
+            put("reply_to_post_id", JsonNull); put("reply_to_message_id", JsonNull)
+            put("created_at", JsonPrimitive("2026-10-15T13:35:09+00:00"))
+            if (preview != null) put("link_preview", preview)
+        })
+        val full = JsonObject(mapOf(
+            "url" to JsonPrimitive("https://example.com/a"), "title" to JsonPrimitive("A page"), "site" to JsonPrimitive("Example"),
+            "image_path" to JsonPrimitive("u/u1/links/abc.jpg"),
+        ))
+        val update = RealtimeDecoding.change("g1", "messages", row(full), update = true) as GroupEvent.MessageUpdated
+        assertEquals(app.data.model.LinkPreview("https://example.com/a", "A page", "Example", "u/u1/links/abc.jpg"), update.message.linkPreview)
+        val urlOnly = DataJson.decodeFromJsonElement(Message.serializer(), row(JsonObject(mapOf("url" to JsonPrimitive("https://example.com/a")))))
+        assertEquals(app.data.model.LinkPreview("https://example.com/a"), urlOnly.linkPreview)
+        assertNull(DataJson.decodeFromJsonElement(Message.serializer(), row(JsonNull)).linkPreview)
+        assertNull(DataJson.decodeFromJsonElement(Message.serializer(), row(null)).linkPreview)
+
+        val args = rpcArgs(Rpc.SetLinkPreview) { put("p_message_id", "m1"); put("p_url", "https://example.com/a"); opt("p_title", "A page"); opt("p_site", null as String?) }
+        assertEquals(setOf("p_message_id", "p_url", "p_title"), args.keys)
+        assertThrows(IllegalArgumentException::class.java) { rpcArgs(Rpc.SetLinkPreview) { put("p_message_id", "m1") } }
+        assertEquals("u/u1/links/abc.jpg", app.data.media.StoragePaths.linkPreview("u1", "abc"))
+    }
+
     @Test fun postAndMessageRowsRoundTrip() {
         val post = Post("p", "m", "g", "u", "cap", null, null, null, true, null, Instant.parse("2026-10-15T13:35:09.329469Z"))
         assertEquals(post, DataJson.decodeFromString(Post.serializer(), DataJson.encodeToString(Post.serializer(), post)))

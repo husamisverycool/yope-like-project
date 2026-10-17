@@ -1094,6 +1094,24 @@ public enum Tokens {
             public static let othersMessage: String = "followed only while the newest message is showing (the reader is at the bottom); scrolled up, the list keeps its place (the arrival is announced to VoiceOver / TalkBack)"
             public static let motion: String = "the list's own scroll (system)"
         }
+        /// Apple Messages + WhatsApp + Meta + Retro · chat.thread · link preview card under a text message, built on the sender's device · SOURCED
+        /// token: `chat.thread.layout.linkPreview`
+        public enum ChatThreadLayoutLinkPreview {
+            public static let build: String = "after send_message returns my text message, the first link of chat.thread.layout.links written with its own http / https scheme (an address the detector completed is not in the text as set_link_preview needs) has its page read once on my device: iOS LPMetadataProvider (title; the site line is the address's host without 'www.'), Android one GET of the page read up to htmlMaxBytes, its og:title / og:site_name / og:image (twitter:title / twitter:image, then <title>, when absent)"
+            public static let image: String = "the page's image (at most imageMaxBytes) downscaled to imageMaxPixels on its longer side, re-encoded as JPEG at jpegQuality without metadata, uploaded to u/<uid>/links/<uuid>.jpg before set_link_preview(p_message_id, p_url = the address as written, p_title ≤ 300, p_site ≤ 100, p_image_path)"
+            public static let timeoutSeconds: CGFloat = 30
+            public static let htmlMaxBytes: CGFloat = 1048576
+            public static let imageMaxBytes: CGFloat = 8000000
+            public static let imageMaxPixels: CGFloat = 510
+            public static let jpegQuality: CGFloat = 0.85
+            public static let silent: String = "best effort: no link, an unreadable page, a page with neither a title nor an image, or any failed call → no preview, with no message, haptic or retry; the message is never held up"
+            public static let card: String = "a C-15 row in the run's text column, chat.thread.dimension.itemGap below the text and above the reaction chip: the image as the C-15 thumbnail (size.global.rowThumbWidth × .rowThumbHeight, radius.global.thumbnail, aspect fill; no image → no thumbnail), then size.global.rowThumbGap after it the title (text role listTitle, color.global.textPrimary) over the site (text role listSubtitle, color.global.textSecondary), titleLines and siteLines lines, tail truncation; no title → the site takes the title line"
+            public static let titleLines: CGFloat = 1
+            public static let siteLines: CGFloat = 1
+            public static let tap: String = "opens the address in the browser as the link in the text does (chat.thread.layout.links); a long press on the text still opens the message's menu"
+            public static let accessibility: String = "one element read as its title and site (data), with the link trait (iOS) / the button role (Android); hidden while the message is pending"
+            public static let live: String = "the preview arrives on the readers' devices as the message's Realtime UPDATE (no push); an edit that drops the address drops it at once (the server clears it too); readers load only the uploaded image, never the page"
+        }
         /// Apple Messages + WhatsApp + W3C WCAG 2.2 · chat.thread · tappable links in text messages · SOURCED
         /// token: `chat.thread.layout.links`
         public enum ChatThreadLayoutLinks {
@@ -1101,7 +1119,7 @@ public enum Tokens {
             public static let style: String = "the body's own text role and color.global.textPrimary, underlined"
             public static let tap: String = "opens the address in the browser (iOS openURL, Android the URI handler); a long press still opens the message's context menu"
             public static let accessibility: String = "each link is also an accessibility action of the message named by its address"
-            public static let previews: String = "none: no server fetch of the page (privacy); previews built on the sender's device are a later pass"
+            public static let previews: String = "built on the sender's device only (chat.thread.layout.linkPreview); the server never fetches the page and a reader's device never contacts the site (privacy)"
         }
         /// Retro · chat.thread · photo message inside the thread · SOURCED
         /// token: `chat.thread.layout.photoFit`
