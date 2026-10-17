@@ -7,6 +7,7 @@ import app.data.error.DataException
 import app.data.model.Album
 import app.data.model.AlbumItem
 import app.data.model.Collage
+import app.data.model.FavoritePhoto
 import app.data.model.Group
 import app.data.model.HistoryWeek
 import app.data.model.Media
@@ -113,6 +114,19 @@ interface SocialData {
     suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>): Album
     suspend fun renameAlbum(albumId: String, name: String): Album
     suspend fun deleteAlbum(albumId: String)
+    /** `add_to_album` (any member, migration 0039): after the album's last item; photos already there are skipped. */
+    suspend fun addToAlbum(albumId: String, postIds: List<String>): Album = throw DataException(DataError.NotConfigured)
+    /** `remove_from_album`: what you added; the album's creator and group admins remove any (`not_allowed` otherwise). */
+    suspend fun removeFromAlbum(albumId: String, postIds: List<String>): Unit = throw DataException(DataError.NotConfigured)
+
+    /** `set_favorite` (migration 0038): a heart only you see. */
+    suspend fun setFavorite(mediaId: String, on: Boolean): Unit = throw DataException(DataError.NotConfigured)
+    /** Which of [mediaIds] you favorited (your own `favorites` rows). */
+    suspend fun favoriteMediaIds(mediaIds: Collection<String>): Set<String> = emptySet()
+    /** `my_favorites`, newest favorite first; [before] = the last `favorited_at`. */
+    suspend fun myFavorites(before: Instant?, limit: Int): List<FavoritePhoto> = throw DataException(DataError.NotConfigured)
+    /** `set_group_cover_from_post` (group admins, migration 0039). */
+    suspend fun setGroupCover(groupId: String, postId: String): Unit = throw DataException(DataError.NotConfigured)
 
     /** Signed read URLs (1 h, docs/API.md §7); unreadable paths are absent. */
     suspend fun signedUrls(paths: Collection<String>): Map<String, String>
@@ -195,6 +209,14 @@ class GraphSocialData(private val graph: DataGraph) : SocialData {
     override suspend fun saveAlbum(groupId: String, name: String, postIds: List<String>) = graph.albums.saveAlbum(groupId, name, postIds)
     override suspend fun renameAlbum(albumId: String, name: String) = graph.albums.renameAlbum(albumId, name)
     override suspend fun deleteAlbum(albumId: String) = graph.albums.deleteAlbum(albumId)
+    override suspend fun addToAlbum(albumId: String, postIds: List<String>) = graph.albums.addToAlbum(albumId, postIds)
+    override suspend fun removeFromAlbum(albumId: String, postIds: List<String>) = graph.albums.removeFromAlbum(albumId, postIds)
+    override suspend fun setFavorite(mediaId: String, on: Boolean) = graph.favorites.setFavorite(mediaId, on)
+    override suspend fun favoriteMediaIds(mediaIds: Collection<String>) = graph.favorites.favoriteMediaIds(mediaIds)
+    override suspend fun myFavorites(before: Instant?, limit: Int) = graph.favorites.myFavorites(before, limit)
+    override suspend fun setGroupCover(groupId: String, postId: String) {
+        graph.groups.setCoverFromPost(groupId, postId)
+    }
 
     override suspend fun signedUrls(paths: Collection<String>) = graph.signedUrls.urls(paths)
     override suspend fun download(path: String) = graph.storage.download(path)

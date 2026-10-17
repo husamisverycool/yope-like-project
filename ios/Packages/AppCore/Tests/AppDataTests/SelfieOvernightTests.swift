@@ -126,7 +126,7 @@ final class SelfieOvernightIntegrationTests: XCTestCase {
         XCTAssertNotNil(reportID.uuid)
 
         // Only the author may remove someone else's; Rui removes his own, then Ana removes his next one.
-        await assertThrows(.database(code: "PT403", message: "not_allowed")) {
+        await assertThrows(.api(.notAllowed)) {
             try await rui.data.selfies.remove(postID: post.id, userID: ana.id)
         }
         try await rui.data.selfies.remove(postID: post.id)

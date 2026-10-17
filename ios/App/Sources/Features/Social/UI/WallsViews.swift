@@ -290,7 +290,8 @@ struct WallPage<Header: View>: View {
 
 // MARK: - walls.mine
 
-/// My wall: my name, avatar, the gear capsule (→ settings.root), my weeks; the profile tab's root (tab bar below).
+/// My wall: my name, avatar, the heart capsule (→ favorites) and the gear capsule (→ settings.root), my weeks; the profile
+/// tab's root (tab bar below).
 struct WallMineScreen: View {
     @State private var model: WallModel
     @State private var viewer: PhotoViewerContext?
@@ -308,8 +309,14 @@ struct WallMineScreen: View {
                 avatar: SocialImages.source(model.profile?.avatarPath),
                 onBack: isTabRoot ? nil : { dismiss() }
             ) {
-                CapsuleButton(icon: Tokens.Icons.globalSettings, accessibilityLabel: Copy.wallsMineA11ySettings) {
-                    SocialNav.push(.account(.settings))
+                HStack(spacing: Tokens.Sizes.globalPillGap) {
+                    // Your private favorites (favorites.md; owner decision 34): only you see them.
+                    CapsuleButton(icon: Tokens.Icons.globalFavorite, accessibilityLabel: Copy.favoritesTitle) {
+                        SocialNav.push(.social(.favorites))
+                    }
+                    CapsuleButton(icon: Tokens.Icons.globalSettings, accessibilityLabel: Copy.wallsMineA11ySettings) {
+                        SocialNav.push(.account(.settings))
+                    }
                 }
             }
         }

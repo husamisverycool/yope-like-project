@@ -85,10 +85,10 @@ final class PlanQuestionIntegrationTests: XCTestCase {
         try await theo.data.plans.answer(planID: plan.id, .maybe)
 
         // Only the maker and the group's admins edit, cancel and restore.
-        await assertThrows(.database(code: "PT403", message: "not_allowed")) {
+        await assertThrows(.api(.notAllowed)) {
             try await theo.data.plans.cancel(id: plan.id)
         }
-        await assertThrows(.database(code: "PT403", message: "not_allowed")) {
+        await assertThrows(.api(.notAllowed)) {
             try await theo.data.plans.update(id: plan.id, fields: PlanFields(title: "Mine now", startsAt: starts, allDay: false))
         }
         let edited = try await maya.data.plans.update(

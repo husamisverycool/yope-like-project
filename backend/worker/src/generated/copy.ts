@@ -16,17 +16,23 @@ const table = {
   "albums.list.title": "Albums", // Retro · albums.list · SOURCED
   "albums.view.a11y.cover": "Cover of {album_name}", // Retro · albums.view · SOURCED
   "albums.view.a11y.more": "More Options", // Retro · albums.view · SOURCED
+  "albums.view.add.confirm": "Add", // Google Photos · albums.view · SOURCED
+  "albums.view.add.empty": "Nothing to see here yet", // Retro · albums.view · SOURCED
   "albums.view.delete.confirm": "Yes, delete", // Retro · albums.view · SOURCED
   "albums.view.delete.message": "The photos stay in your group. Only the album goes away.", // Retro · albums.view · SOURCED
   "albums.view.delete.title": "Delete this album?", // Retro · albums.view · SOURCED
   "albums.view.empty.detail": "Photos removed by the people who shared them leave albums too.", // Retro · albums.view · SOURCED
   "albums.view.empty.title": "Nothing has been added to this album", // Retro · albums.view · SOURCED
+  "albums.view.error.notAllowed": "Only the person who added this photo can remove it.", // Google Photos · albums.view · SOURCED
+  "albums.view.menu.add": "Add Photos", // Apple Invites · albums.view · SOURCED
   "albums.view.menu.delete": "Delete Album", // Retro · albums.view · SOURCED
+  "albums.view.menu.remove": "Remove from Album", // Retro · albums.view · SOURCED
   "albums.view.menu.rename": "Rename", // Retro · albums.view · SOURCED
   "albums.view.notFound": "Couldn't find album", // Retro · albums.view · SOURCED
   "albums.view.rename.save": "Save", // Retro · albums.view · SOURCED
   "albums.view.rename.title": "Rename Album", // Retro · albums.view · SOURCED
   "albums.view.toast.deleted": "Deleted", // Retro · albums.view · SOURCED
+  "albums.view.toast.removed": "Removed", // Retro · albums.view · SOURCED
   "albums.view.toast.renamed": "Saved!", // Retro · albums.view · SOURCED
   "auth.agegate.continue": "Next", // Retro · auth.agegate · SOURCED
   "auth.agegate.error.invalidDate": "Please check the date and try again.", // Retro · auth.agegate · SOURCED
@@ -378,6 +384,10 @@ const table = {
   "daily.capture.prompt": "Taking the front photo…", // Retro · daily.capture · SOURCED
   "daily.capture.send": "Send", // Retro · daily.capture · SOURCED
   "daily.dualimage.a11y.label": "Back and front photos from {name}", // Retro · daily.dualimage · SOURCED
+  "favorites.empty.detail": "Photos you favorite will show up here. Only you can see them.", // Retro · favorites · SOURCED
+  "favorites.empty.title": "Nothing to see here yet", // Retro · favorites · SOURCED
+  "favorites.error.title": "Error loading your favorites. Tap here to try again.", // Retro · favorites · SOURCED
+  "favorites.title": "Favorites", // Apple Photos · favorites · SOURCED
   "global.a11y.loading": "Loading…", // Apple HIG · global · PLATFORM
   "global.a11y.newBadge": "New", // Retro · global · SOURCED
   "global.a11y.pagePosition": "{position} of {count}", // Retro · global · SOURCED
@@ -754,17 +764,24 @@ const table = {
   "photo.viewer.delete.confirm": "Yes, delete", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.message": "It will be removed from every group you sent it to, and from chats, walls, recaps and albums.", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.title": "Delete photo?", // Retro · photo.viewer · SOURCED
+  "photo.viewer.error.cover": "Couldn't change the cover. Please try again.", // Retro · photo.viewer · SOURCED
+  "photo.viewer.error.coverNotReady": "This photo is still processing. Please try again in a moment.", // Retro · photo.viewer · SOURCED
   "photo.viewer.error.delete": "Couldn't delete photo. Please try again.", // Retro · photo.viewer · SOURCED
+  "photo.viewer.error.favorite": "There was a problem. Please try again.", // Retro · photo.viewer · SOURCED
   "photo.viewer.error.load": "Error loading media. Tap to retry", // Retro · photo.viewer · SOURCED
   "photo.viewer.error.save": "Couldn't save photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.gone.detail": "It may have been deleted by the person who shared it.", // Retro · photo.viewer · SOURCED
   "photo.viewer.gone.title": "Couldn't find photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.header.groupWeek": "{group_name} · Week {week_number}", // Retro · photo.viewer · SOURCED
   "photo.viewer.header.week": "Week {week_number}", // Retro · photo.viewer · SOURCED
+  "photo.viewer.menu.addToAlbum": "Add to Album", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.block": "Block {name}", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.delete": "Delete", // Retro · photo.viewer · SOURCED
+  "photo.viewer.menu.favorite": "Favorite", // Apple Photos · photo.viewer · SOURCED
   "photo.viewer.menu.report": "Report Post", // Retro · photo.viewer · SOURCED
   "photo.viewer.menu.save": "Save to Camera Roll", // Retro · photo.viewer · SOURCED
+  "photo.viewer.menu.unfavorite": "Unfavorite", // Apple Photos · photo.viewer · SOURCED
+  "photo.viewer.menu.useAsCover": "Use as Cover", // Google Photos · photo.viewer · SOURCED
   "photo.viewer.permission.button": "Allow Photo Access", // Retro · photo.viewer · SOURCED
   "photo.viewer.permission.detail": "Saving a photo needs access to your photo library. You can turn it on in Settings.", // Retro · photo.viewer · SOURCED
   "photo.viewer.permission.title": "Camera Roll Access", // Retro · photo.viewer · SOURCED

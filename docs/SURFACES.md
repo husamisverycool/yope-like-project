@@ -119,7 +119,8 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 | `week.recap` | Sunday recap of the group's week | 19 (Create Recap: segmented control, serif month cards), 20 (preview + Share), 21 | Yope recaps (organized by week per Retro) |
 | `week.edit` | Reorder, remove, edit recap; save selection as named album | 30 (composer strip editing), 3 ("•••" per week — contents not captured) | Yope |
 | `week.history` | Scroll back week by week | 4, 5 (profile week sections: "Week N" + range, strip, "•••") | — |
-| `albums.list` / `albums.view` | Saved albums | 10 / 13 (Albums list, album detail) | — |
+| `albums.list` / `albums.view` | Saved albums | 10 / 13 (Albums list, album detail) | Apple Shared Albums (anyone adds; you remove what you added) |
+| `favorites` | Your private favorites (only you see them) | 11 / 13 (pushed header, album grid) | Apple Photos Favorites |
 
 ## Remembering
 

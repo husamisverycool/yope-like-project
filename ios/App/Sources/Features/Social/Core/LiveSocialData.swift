@@ -240,6 +240,39 @@ struct LiveSocialData: SocialDataSource {
         try await environment.memories.deleteAlbum(id: id, groupID: groupID)
     }
 
+    func addToAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws -> Album {
+        try await environment.memories.addToAlbum(id: id, groupID: groupID, postIDs: postIDs)
+    }
+
+    func removeFromAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws {
+        try await environment.memories.removeFromAlbum(id: id, groupID: groupID, postIDs: postIDs)
+    }
+
+    // MARK: Favorites and the group cover
+
+    func setFavorite(_ on: Bool, mediaID: MediaID) async throws {
+        try await environment.memories.setFavorite(mediaID: mediaID, on: on)
+        memo.setFavorite(on, mediaID: mediaID)
+    }
+
+    func favoriteMediaIDs(among mediaIDs: [MediaID]) async throws -> Set<MediaID> {
+        try await environment.memories.favoriteMediaIDs(among: mediaIDs)
+    }
+
+    func favorites(before: Date?, limit: Int) async throws -> [FavoritePhoto] {
+        let rows = try await environment.memories.favorites(before: before, limit: limit).items
+        if before == nil { memo.store(favorites: rows) }
+        return rows
+    }
+
+    func cachedFavorites() async -> [FavoritePhoto]? {
+        memo.favorites()
+    }
+
+    func setGroupCover(groupID: GroupID, postID: PostID) async throws {
+        _ = try await environment.groups.setCoverFromPost(groupID: groupID, postID: postID)
+    }
+
     // MARK: Files
 
     func fileURL(path: String) async throws -> URL {
@@ -307,6 +340,13 @@ struct UnconfiguredSocialData: SocialDataSource {
     func saveAlbum(groupID: GroupID, name: String, postIDs: [PostID]) async throws -> Album { try fail() }
     func renameAlbum(id: AlbumID, name: String) async throws -> Album { try fail() }
     func deleteAlbum(id: AlbumID, groupID: GroupID) async throws { try fail() as Void }
+    func addToAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws -> Album { try fail() }
+    func removeFromAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws { try fail() as Void }
+    func setFavorite(_ on: Bool, mediaID: MediaID) async throws { try fail() as Void }
+    func favoriteMediaIDs(among mediaIDs: [MediaID]) async throws -> Set<MediaID> { try fail() }
+    func favorites(before: Date?, limit: Int) async throws -> [FavoritePhoto] { try fail() }
+    func cachedFavorites() async -> [FavoritePhoto]? { nil }
+    func setGroupCover(groupID: GroupID, postID: PostID) async throws { try fail() as Void }
     func fileURL(path: String) async throws -> URL { try fail() }
 
     func events(groupID: GroupID) -> AsyncStream<GroupEvent> {
@@ -326,6 +366,7 @@ final class SocialMemo: @unchecked Sendable {
     private let lock = NSLock()
     private var recaps: [RecapID: WeeklyRecap] = [:]
     private var posts: [PostID: PostWithMedia] = [:]
+    private var favoriteRows: [FavoritePhoto]?
 
     func store(recaps new: [WeeklyRecap]) {
         lock.lock()
@@ -345,6 +386,27 @@ final class SocialMemo: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         posts = posts.filter { $0.value.post.mediaID != mediaID }
+        favoriteRows?.removeAll { $0.mediaID == mediaID }
+    }
+
+    /// The first page of `my_favorites` loaded this session.
+    func store(favorites rows: [FavoritePhoto]) {
+        lock.lock()
+        defer { lock.unlock() }
+        favoriteRows = rows
+    }
+
+    /// An unfavorite leaves the session copy at once (a favorite joins it on the next load).
+    func setFavorite(_ on: Bool, mediaID: MediaID) {
+        lock.lock()
+        defer { lock.unlock() }
+        if !on { favoriteRows?.removeAll { $0.mediaID == mediaID } }
+    }
+
+    func favorites() -> [FavoritePhoto]? {
+        lock.lock()
+        defer { lock.unlock() }
+        return favoriteRows
     }
 
     func recap(_ id: RecapID) -> WeeklyRecap? {

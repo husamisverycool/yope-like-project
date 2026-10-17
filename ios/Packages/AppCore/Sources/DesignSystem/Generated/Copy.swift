@@ -31,6 +31,10 @@ public enum Copy {
     public static func albumsViewA11yCover(albumName: String) -> String { CopyLookup.format("albums.view.a11y.cover", default: "Cover of {album_name}", ["album_name": albumName]) }
     /// "More Options" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewA11yMore: String { CopyLookup.string("albums.view.a11y.more", default: "More Options") }
+    /// "Add" — Google Photos · albums.view · verbatim · SOURCED
+    public static var albumsViewAddConfirm: String { CopyLookup.string("albums.view.add.confirm", default: "Add") }
+    /// "Nothing to see here yet" — Retro · albums.view · verbatim · SOURCED
+    public static var albumsViewAddEmpty: String { CopyLookup.string("albums.view.add.empty", default: "Nothing to see here yet") }
     /// "Yes, delete" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewDeleteConfirm: String { CopyLookup.string("albums.view.delete.confirm", default: "Yes, delete") }
     /// "The photos stay in your group. Only the album goes away." — Retro · albums.view · new · SOURCED
@@ -41,8 +45,14 @@ public enum Copy {
     public static var albumsViewEmptyDetail: String { CopyLookup.string("albums.view.empty.detail", default: "Photos removed by the people who shared them leave albums too.") }
     /// "Nothing has been added to this album" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewEmptyTitle: String { CopyLookup.string("albums.view.empty.title", default: "Nothing has been added to this album") }
+    /// "Only the person who added this photo can remove it." — Google Photos · albums.view · adapted · SOURCED
+    public static var albumsViewErrorNotAllowed: String { CopyLookup.string("albums.view.error.notAllowed", default: "Only the person who added this photo can remove it.") }
+    /// "Add Photos" — Apple Invites · albums.view · verbatim · SOURCED
+    public static var albumsViewMenuAdd: String { CopyLookup.string("albums.view.menu.add", default: "Add Photos") }
     /// "Delete Album" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewMenuDelete: String { CopyLookup.string("albums.view.menu.delete", default: "Delete Album") }
+    /// "Remove from Album" — Retro · albums.view · new · SOURCED
+    public static var albumsViewMenuRemove: String { CopyLookup.string("albums.view.menu.remove", default: "Remove from Album") }
     /// "Rename" — Retro · albums.view · new · SOURCED
     public static var albumsViewMenuRename: String { CopyLookup.string("albums.view.menu.rename", default: "Rename") }
     /// "Couldn't find album" — Retro · albums.view · verbatim · SOURCED
@@ -53,6 +63,8 @@ public enum Copy {
     public static var albumsViewRenameTitle: String { CopyLookup.string("albums.view.rename.title", default: "Rename Album") }
     /// "Deleted" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewToastDeleted: String { CopyLookup.string("albums.view.toast.deleted", default: "Deleted") }
+    /// "Removed" — Retro · albums.view · new · SOURCED
+    public static var albumsViewToastRemoved: String { CopyLookup.string("albums.view.toast.removed", default: "Removed") }
     /// "Saved!" — Retro · albums.view · verbatim · SOURCED
     public static var albumsViewToastRenamed: String { CopyLookup.string("albums.view.toast.renamed", default: "Saved!") }
     /// "Next" — Retro · auth.agegate · verbatim · SOURCED
@@ -755,6 +767,14 @@ public enum Copy {
     public static var dailyCaptureSend: String { CopyLookup.string("daily.capture.send", default: "Send") }
     /// "Back and front photos from {name}" — Retro · daily.dualimage · new · SOURCED
     public static func dailyDualimageA11yLabel(name: String) -> String { CopyLookup.format("daily.dualimage.a11y.label", default: "Back and front photos from {name}", ["name": name]) }
+    /// "Photos you favorite will show up here. Only you can see them." — Retro · favorites · new · SOURCED
+    public static var favoritesEmptyDetail: String { CopyLookup.string("favorites.empty.detail", default: "Photos you favorite will show up here. Only you can see them.") }
+    /// "Nothing to see here yet" — Retro · favorites · verbatim · SOURCED
+    public static var favoritesEmptyTitle: String { CopyLookup.string("favorites.empty.title", default: "Nothing to see here yet") }
+    /// "Error loading your favorites. Tap here to try again." — Retro · favorites · adapted · SOURCED
+    public static var favoritesErrorTitle: String { CopyLookup.string("favorites.error.title", default: "Error loading your favorites. Tap here to try again.") }
+    /// "Favorites" — Apple Photos · favorites · verbatim · SOURCED
+    public static var favoritesTitle: String { CopyLookup.string("favorites.title", default: "Favorites") }
     /// "Loading…" — Apple HIG · global · new · PLATFORM
     public static var globalA11yLoading: String { CopyLookup.string("global.a11y.loading", default: "Loading…") }
     /// "New" — Retro · global · verbatim · SOURCED
@@ -1507,8 +1527,14 @@ public enum Copy {
     public static var photoViewerDeleteMessage: String { CopyLookup.string("photo.viewer.delete.message", default: "It will be removed from every group you sent it to, and from chats, walls, recaps and albums.") }
     /// "Delete photo?" — Retro · photo.viewer · new · SOURCED
     public static var photoViewerDeleteTitle: String { CopyLookup.string("photo.viewer.delete.title", default: "Delete photo?") }
+    /// "Couldn't change the cover. Please try again." — Retro · photo.viewer · new · SOURCED
+    public static var photoViewerErrorCover: String { CopyLookup.string("photo.viewer.error.cover", default: "Couldn't change the cover. Please try again.") }
+    /// "This photo is still processing. Please try again in a moment." — Retro · photo.viewer · new · SOURCED
+    public static var photoViewerErrorCoverNotReady: String { CopyLookup.string("photo.viewer.error.coverNotReady", default: "This photo is still processing. Please try again in a moment.") }
     /// "Couldn't delete photo. Please try again." — Retro · photo.viewer · new · SOURCED
     public static var photoViewerErrorDelete: String { CopyLookup.string("photo.viewer.error.delete", default: "Couldn't delete photo. Please try again.") }
+    /// "There was a problem. Please try again." — Retro · photo.viewer · verbatim · SOURCED
+    public static var photoViewerErrorFavorite: String { CopyLookup.string("photo.viewer.error.favorite", default: "There was a problem. Please try again.") }
     /// "Error loading media. Tap to retry" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerErrorLoad: String { CopyLookup.string("photo.viewer.error.load", default: "Error loading media. Tap to retry") }
     /// "Couldn't save photo" — Retro · photo.viewer · new · SOURCED
@@ -1521,14 +1547,22 @@ public enum Copy {
     public static func photoViewerHeaderGroupWeek(groupName: String, weekNumber: String) -> String { CopyLookup.format("photo.viewer.header.groupWeek", default: "{group_name} · Week {week_number}", ["group_name": groupName, "week_number": weekNumber]) }
     /// "Week {week_number}" — Retro · photo.viewer · verbatim · SOURCED
     public static func photoViewerHeaderWeek(weekNumber: String) -> String { CopyLookup.format("photo.viewer.header.week", default: "Week {week_number}", ["week_number": weekNumber]) }
+    /// "Add to Album" — Retro · photo.viewer · verbatim · SOURCED
+    public static var photoViewerMenuAddToAlbum: String { CopyLookup.string("photo.viewer.menu.addToAlbum", default: "Add to Album") }
     /// "Block {name}" — Retro · photo.viewer · new · SOURCED
     public static func photoViewerMenuBlock(name: String) -> String { CopyLookup.format("photo.viewer.menu.block", default: "Block {name}", ["name": name]) }
     /// "Delete" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuDelete: String { CopyLookup.string("photo.viewer.menu.delete", default: "Delete") }
+    /// "Favorite" — Apple Photos · photo.viewer · verbatim · SOURCED
+    public static var photoViewerMenuFavorite: String { CopyLookup.string("photo.viewer.menu.favorite", default: "Favorite") }
     /// "Report Post" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuReport: String { CopyLookup.string("photo.viewer.menu.report", default: "Report Post") }
     /// "Save to Camera Roll" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerMenuSave: String { CopyLookup.string("photo.viewer.menu.save", default: "Save to Camera Roll") }
+    /// "Unfavorite" — Apple Photos · photo.viewer · verbatim · SOURCED
+    public static var photoViewerMenuUnfavorite: String { CopyLookup.string("photo.viewer.menu.unfavorite", default: "Unfavorite") }
+    /// "Use as Cover" — Google Photos · photo.viewer · adapted · SOURCED
+    public static var photoViewerMenuUseAsCover: String { CopyLookup.string("photo.viewer.menu.useAsCover", default: "Use as Cover") }
     /// "Allow Photo Access" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerPermissionButton: String { CopyLookup.string("photo.viewer.permission.button", default: "Allow Photo Access") }
     /// "Saving a photo needs access to your photo library. You can turn it on in Settings." — Retro · photo.viewer · new · SOURCED

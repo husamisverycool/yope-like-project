@@ -266,17 +266,22 @@ public struct AlbumItem: Codable, Hashable, Sendable {
     public var postID: PostID
     /// 0-based order.
     public var position: Int
+    /// Who added the photo (migration 0039: they may remove it); items saved before it count as the album creator's;
+    /// nil once that account is deleted.
+    public var addedBy: UserID?
 
-    public init(albumID: AlbumID, postID: PostID, position: Int) {
+    public init(albumID: AlbumID, postID: PostID, position: Int, addedBy: UserID? = nil) {
         self.albumID = albumID
         self.postID = postID
         self.position = position
+        self.addedBy = addedBy
     }
 
     enum CodingKeys: String, CodingKey {
         case albumID = "album_id"
         case postID = "post_id"
         case position
+        case addedBy = "added_by"
     }
 }
 
@@ -284,12 +289,82 @@ public struct AlbumItem: Codable, Hashable, Sendable {
 public struct AlbumWithItems: Codable, Hashable, Sendable, Identifiable {
     public var album: Album
     public var postIDs: [PostID]
+    /// Who added each item (`album_items.added_by`, migration 0039); nil in copies cached before it.
+    public var addedBy: [PostID: UserID]?
 
     public var id: AlbumID { album.id }
 
-    public init(album: Album, postIDs: [PostID]) {
+    public init(album: Album, postIDs: [PostID], addedBy: [PostID: UserID]? = nil) {
         self.album = album
         self.postIDs = postIDs
+        self.addedBy = addedBy
+    }
+
+    /// The member who added `postID` (items saved before migration 0039: the album's creator).
+    public func adder(of postID: PostID) -> UserID? {
+        addedBy?[postID] ?? (addedBy == nil ? album.createdBy : nil)
+    }
+}
+
+/// A row of `my_favorites` (migration 0038, §6.4): one of the caller's private favorites they can still see, by photo.
+/// `postID` / `groupID` are the photo's first post in the caller's groups (the group it opens in).
+public struct FavoritePhoto: Codable, Hashable, Sendable, Identifiable {
+    public var mediaID: MediaID
+    public var postID: PostID
+    public var groupID: GroupID
+    public var groupName: String
+    public var authorID: UserID
+    public var kind: MediaKind
+    /// Falls back to the original until renditions exist.
+    public var thumbPath: String
+    public var displayPath: String
+    /// Nil until the widget rendition exists.
+    public var widgetPath: String?
+    /// When the photo was posted (`posts.created_at` of `postID`).
+    public var takenAt: Date
+    /// The paging cursor (`p_before`).
+    public var favoritedAt: Date
+
+    public var id: MediaID { mediaID }
+
+    public init(
+        mediaID: MediaID, postID: PostID, groupID: GroupID, groupName: String, authorID: UserID, kind: MediaKind,
+        thumbPath: String, displayPath: String, widgetPath: String?, takenAt: Date, favoritedAt: Date
+    ) {
+        self.mediaID = mediaID
+        self.postID = postID
+        self.groupID = groupID
+        self.groupName = groupName
+        self.authorID = authorID
+        self.kind = kind
+        self.thumbPath = thumbPath
+        self.displayPath = displayPath
+        self.widgetPath = widgetPath
+        self.takenAt = takenAt
+        self.favoritedAt = favoritedAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case mediaID = "media_id"
+        case postID = "post_id"
+        case groupID = "group_id"
+        case groupName = "group_name"
+        case authorID = "author_id"
+        case kind
+        case thumbPath = "thumb_path"
+        case displayPath = "display_path"
+        case widgetPath = "widget_path"
+        case takenAt = "taken_at"
+        case favoritedAt = "favorited_at"
+    }
+}
+
+/// One of the caller's own `favorites` rows (§6.4: RLS own rows; the viewer reads which of its photos are favorites).
+struct FavoriteRow: Codable, Hashable, Sendable {
+    var mediaID: MediaID
+
+    enum CodingKeys: String, CodingKey {
+        case mediaID = "media_id"
     }
 }
 

@@ -110,6 +110,15 @@ class GroupRepository(
         opt("p_time_zone", timeZone)
     }
 
+    /**
+     * `set_group_cover_from_post` (admins, update_group's rule; migration 0039): the photo's display rendition becomes the
+     * cover. Errors: `not_group_admin`, `post_not_found`, `media_not_ready` (renditions not made yet).
+     */
+    suspend fun setCoverFromPost(groupId: String, postId: String): Group = api.rpc(Rpc.SetGroupCoverFromPost, Group.serializer()) {
+        put("p_group_id", groupId)
+        put("p_post_id", postId)
+    }
+
     /** Members (joining order) with their profiles. */
     suspend fun members(groupId: String): List<Member> {
         val members = api.select(Tables.GROUP_MEMBERS, GroupMember.serializer()) {

@@ -49,6 +49,12 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var historyCollages: [GroupID: [GroupCollage]] = [:]
         var recaps: [WeeklyRecap] = []
         var albums: [AlbumWithItems] = []
+        /// My private favorites (`favorites`): media → when favorited.
+        var favorites: [MediaID: Date] = [:]
+        /// Group covers set from a photo (`set_group_cover_from_post`).
+        var coverPosts: [GroupID: PostID] = [:]
+        /// Posts whose display rendition is not made yet (`media_not_ready`).
+        var renditionsPending: Set<PostID> = []
         /// Wall items per person as `wall()` returns them (newest first); derived from posts when absent.
         var walls: [UserID: [WallItem]] = [:]
         var cachedMessages: [GroupID: [Message]] = [:]
@@ -282,6 +288,7 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
             state.messages.removeAll { $0.postID.map(gone.contains) ?? false }
             state.reactions.removeAll { gone.contains($0.postID) }
             state.selfies.removeAll { gone.contains($0.postID) }
+            state.favorites[id] = nil
             state.deletedMedia.append(id)
         }
     }
@@ -473,9 +480,100 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         guard !trimmed.isEmpty else { throw DataError.api(.invalidName) }
         guard !postIDs.isEmpty, Set(postIDs).count == postIDs.count else { throw DataError.api(.invalidItems) }
         let created = tick()
-        let album = Album(id: AlbumID(nextID()), groupID: groupID, name: trimmed, createdBy: read { $0.me }, createdAt: created, updatedAt: created)
-        update { $0.albums.append(AlbumWithItems(album: album, postIDs: postIDs)) }
+        let me = read { $0.me }
+        let album = Album(id: AlbumID(nextID()), groupID: groupID, name: trimmed, createdBy: me, createdAt: created, updatedAt: created)
+        var adders: [PostID: UserID] = [:]
+        if let me { for id in postIDs { adders[id] = me } }
+        let saved = adders
+        update { $0.albums.append(AlbumWithItems(album: album, postIDs: postIDs, addedBy: saved)) }
         return album
+    }
+
+    /// Like `add_to_album`: any member; photos already there are skipped; each new item is added by me.
+    func addToAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws -> Album {
+        await hold("addToAlbum")
+        try call("addToAlbum")
+        guard !postIDs.isEmpty, Set(postIDs).count == postIDs.count else { throw DataError.api(.invalidItems) }
+        guard var album = read({ $0.albums.first { $0.album.id == id } }) else { throw DataError.api(.albumNotFound) }
+        let me = read { $0.me }
+        var adders = album.addedBy ?? Dictionary(uniqueKeysWithValues: album.postIDs.compactMap { post in album.album.createdBy.map { (post, $0) } })
+        for post in postIDs where !album.postIDs.contains(post) {
+            album.postIDs.append(post)
+            if let me { adders[post] = me }
+        }
+        album.addedBy = adders
+        album.album.updatedAt = tick()
+        let updated = album
+        update { state in
+            if let index = state.albums.firstIndex(where: { $0.album.id == id }) { state.albums[index] = updated }
+        }
+        return updated.album
+    }
+
+    /// Like `remove_from_album`: what I added; the creator and admins remove any (`not_allowed` otherwise).
+    func removeFromAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws {
+        try call("removeFromAlbum")
+        guard var album = read({ $0.albums.first { $0.album.id == id } }) else { throw DataError.api(.albumNotFound) }
+        let me = read { $0.me }
+        let isAdmin = read { state in state.members[groupID]?.contains { $0.member.userID == me && $0.member.role == .admin } ?? false }
+        let manager = isAdmin || (me != nil && album.album.createdBy == me)
+        if !manager, postIDs.contains(where: { album.postIDs.contains($0) && album.adder(of: $0) != me }) {
+            throw DataError.database(code: "PT403", message: "not_allowed")
+        }
+        album.postIDs.removeAll { postIDs.contains($0) }
+        let updated = album
+        update { state in
+            if let index = state.albums.firstIndex(where: { $0.album.id == id }) { state.albums[index] = updated }
+        }
+    }
+
+    func setFavorite(_ on: Bool, mediaID: MediaID) async throws {
+        try call("setFavorite")
+        let now = tick()
+        update { $0.favorites[mediaID] = on ? ($0.favorites[mediaID] ?? now) : nil }
+    }
+
+    func favoriteMediaIDs(among mediaIDs: [MediaID]) async throws -> Set<MediaID> {
+        await hold("favoriteMediaIDs")
+        try call("favoriteMediaIDs")
+        return read { state in Set(mediaIDs.filter { state.favorites[$0] != nil }) }
+    }
+
+    /// Like `my_favorites`: newest favorite first, one row per photo (its first post).
+    func favorites(before: Date?, limit: Int) async throws -> [FavoritePhoto] {
+        await hold("favorites")
+        try call("favorites")
+        return read { state in
+            state.favorites
+                .filter { before == nil || $0.value < before! }
+                .sorted { ($0.value, $1.key.rawValue) > ($1.value, $0.key.rawValue) }
+                .compactMap { mediaID, favoritedAt -> FavoritePhoto? in
+                    guard let post = state.posts.filter({ $0.post.mediaID == mediaID }).min(by: { $0.post.createdAt < $1.post.createdAt }),
+                          let media = post.media else { return nil }
+                    let group = state.groups.first { $0.id == post.post.groupID }
+                    return FavoritePhoto(
+                        mediaID: mediaID, postID: post.id, groupID: post.post.groupID, groupName: group?.name ?? "",
+                        authorID: post.post.authorID, kind: media.kind, thumbPath: media.thumbPath ?? media.originalPath,
+                        displayPath: media.displayPath ?? media.originalPath, widgetPath: nil,
+                        takenAt: post.post.createdAt, favoritedAt: favoritedAt
+                    )
+                }
+                .prefix(limit)
+                .map { $0 }
+        }
+    }
+
+    func cachedFavorites() async -> [FavoritePhoto]? { nil }
+
+    /// Like `set_group_cover_from_post`: admins only (`not_group_admin`); `media_not_ready` before the rendition exists.
+    func setGroupCover(groupID: GroupID, postID: PostID) async throws {
+        try call("setGroupCover")
+        let me = read { $0.me }
+        let isAdmin = read { state in state.members[groupID]?.contains { $0.member.userID == me && $0.member.role == .admin } ?? false }
+        guard isAdmin else { throw DataError.api(.notGroupAdmin) }
+        guard read({ $0.posts.contains { $0.id == postID && $0.post.groupID == groupID } }) else { throw DataError.api(.postNotFound) }
+        guard !read({ $0.renditionsPending.contains(postID) }) else { throw DataError.api(.mediaNotReady) }
+        update { $0.coverPosts[groupID] = postID }
     }
 
     func renameAlbum(id: AlbumID, name: String) async throws -> Album {

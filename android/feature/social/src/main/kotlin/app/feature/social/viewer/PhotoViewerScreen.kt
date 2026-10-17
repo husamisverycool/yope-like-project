@@ -87,6 +87,7 @@ import app.data.model.Media
 import app.data.model.Message
 import app.designsystem.R
 import app.designsystem.generated.Tokens
+import app.feature.social.albums.AlbumPickerSheet
 import app.feature.social.chat.FieldGlyph
 import app.feature.social.chat.endInset
 import app.feature.social.chat.glyphHit
@@ -147,6 +148,13 @@ data class ViewerNav(
     val reportSelfie: (groupId: String, selfieId: String, userId: String) -> Unit = { _, _, _ -> },
 )
 
+/** What the menu's Favorite, Use as Cover and the album picker do (set by [PhotoViewerScreen] from its view model). */
+class ViewerMenuActions(
+    val toggleFavorite: () -> Unit = {},
+    val useAsCover: () -> Unit = {},
+    val addedToAlbum: () -> Unit = {},
+)
+
 /** Transient UI state of the viewer (menus, sheets, dialogs), hoisted for tests. */
 class ViewerUiState(
     menu: Boolean = false,
@@ -158,8 +166,18 @@ class ViewerUiState(
     draft: TextFieldValue? = null,
     selfieLayer: SelfieMode? = null,
     confirmRemoveSelfie: String? = null,
+    albumPicker: Boolean = false,
 ) {
     var menu by mutableStateOf(menu)
+
+    /** "Add to Album": the album picker (`photo.viewer.layout.albumPicker`). */
+    var albumPicker by mutableStateOf(albumPicker)
+
+    /** Each opening of the picker (its view model's key). */
+    var albumPickerSession by mutableStateOf(0)
+
+    /** The menu's view-model actions (Favorite, Use as Cover, the picker's result). */
+    var menuActions = ViewerMenuActions()
     var photoMenu by mutableStateOf(photoMenu)
     var confirmDelete by mutableStateOf(confirmDelete)
     var picker by mutableStateOf(picker)
@@ -210,7 +228,13 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
         saveFailed = stringRes(R.string.photo_viewer_error_save),
         selfieSent = stringRes(R.string.viewer_selfiereaction_a11y_sent),
         selfieFailed = stringRes(R.string.viewer_selfiereaction_error),
+        favoriteFailed = stringRes(R.string.photo_viewer_error_favorite),
+        coverSet = stringRes(R.string.week_edit_toast_saved),
+        coverNotReady = stringRes(R.string.photo_viewer_error_covernotready),
+        coverFailed = stringRes(R.string.photo_viewer_error_cover),
+        addedToAlbum = stringRes(R.string.week_edit_toast_albumsaved),
     )
+    ui.menuActions = remember(vm) { ViewerMenuActions(toggleFavorite = vm::toggleFavorite, useAsCover = vm::useAsCover, addedToAlbum = vm::addedToAlbum) }
     LaunchedEffect(vm) {
         vm.effects.collect { effect ->
             when (effect) {
@@ -224,6 +248,11 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
                 // Sent: no haptic (owner decision 15), an announcement; failed: the face left the stack, Android toast.
                 ViewerEffect.SelfieSent -> announce(view, texts.selfieSent)
                 ViewerEffect.SelfieFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.selfieFailed) }
+                ViewerEffect.FavoriteFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.favoriteFailed) }
+                ViewerEffect.CoverSet -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, texts.coverSet) }
+                ViewerEffect.CoverNotReady -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.coverNotReady) }
+                ViewerEffect.CoverFailed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, texts.coverFailed) }
+                ViewerEffect.AddedToAlbum -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, texts.addedToAlbum) }
             }
         }
     }
@@ -287,6 +316,11 @@ private class ViewerTexts(
     val saveFailed: String,
     val selfieSent: String,
     val selfieFailed: String,
+    val favoriteFailed: String,
+    val coverSet: String,
+    val coverNotReady: String,
+    val coverFailed: String,
+    val addedToAlbum: String,
 )
 
 /** The viewer without its view model (snapshots render this with fixed states). Dark in both appearances. */
@@ -638,16 +672,28 @@ private val DEFAULT_ASPECT: Float get() = Tokens.Sizes.globalStripTileWidth / To
 
 /**
  * The viewer's menu (`photo.viewer.layout.menu`): save on every photo (owner decision 28: any member saves any photo
- * they can see), then delete (yours) or report + block {name} (others').
+ * they can see), Favorite / Unfavorite (private, Apple Photos), Add to Album, Use as Cover (group admins), then delete
+ * (yours) or report + block {name} (others').
  */
 @Composable
 private fun viewerMenuItems(state: ViewerState, ui: ViewerUiState, nav: ViewerNav, onSave: () -> Unit): List<DsMenuItem> {
     val save = stringRes(R.string.photo_viewer_menu_save)
+    val favorite = stringRes(R.string.photo_viewer_menu_favorite)
+    val unfavorite = stringRes(R.string.photo_viewer_menu_unfavorite)
+    val addToAlbum = stringRes(R.string.photo_viewer_menu_addtoalbum)
+    val useAsCover = stringRes(R.string.photo_viewer_menu_useascover)
     val delete = stringRes(R.string.photo_viewer_menu_delete)
     val report = stringRes(R.string.photo_viewer_menu_report)
     val block = stringRes(R.string.photo_viewer_menu_block, state.current?.author?.firstName.orEmpty())
+    val actions = ui.menuActions
     return buildList {
         if (state.current?.media != null) add(DsMenuItem(save, onSave, icon = Tokens.Icons.globalDownload))
+        if (state.current?.post != null && state.current?.gone != true) {
+            if (state.favorite) add(DsMenuItem(unfavorite, actions.toggleFavorite, icon = Tokens.Icons.globalUnfavorite))
+            else add(DsMenuItem(favorite, actions.toggleFavorite, icon = Tokens.Icons.globalFavorite))
+            add(DsMenuItem(addToAlbum, { ui.albumPickerSession++; ui.albumPicker = true }, icon = Tokens.Icons.globalAlbums))
+        }
+        if (state.canUseAsCover) add(DsMenuItem(useAsCover, actions.useAsCover, icon = Tokens.Icons.globalCover))
         if (state.mine) {
             add(DsMenuItem(delete, { ui.confirmDelete = true }, icon = Tokens.Icons.globalTrash, destructive = true))
         } else state.current?.post?.let { post ->
@@ -990,6 +1036,16 @@ private fun ViewerDialogs(
                 dismissLabel = stringRes(R.string.photo_viewer_delete_cancel),
                 onDismiss = { ui.confirmDelete = false },
                 destructive = true,
+            )
+        }
+        val albumPost = photo.post
+        if (ui.albumPicker && albumPost != null) {
+            AlbumPickerSheet(
+                groupId = albumPost.groupId,
+                postId = albumPost.id,
+                onDone = { ui.albumPicker = false; ui.menuActions.addedToAlbum() },
+                onDismiss = { ui.albumPicker = false },
+                session = ui.albumPickerSession,
             )
         }
         ui.confirmUnsend?.let { id ->

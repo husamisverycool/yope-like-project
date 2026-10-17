@@ -68,6 +68,20 @@ enum SocialNotice: Equatable, Sendable {
     case selfieFailed
     /// `viewer.selfiereaction.a11y.sent`: the announcement after a selfie is sent.
     case selfieSent
+    /// `photo.viewer.error.favorite` (`set_favorite` failed; the heart went back).
+    case favoriteFailed
+    /// `week.edit.toast.saved` after "Use as Cover".
+    case coverSet
+    /// `photo.viewer.error.coverNotReady` (`media_not_ready`).
+    case coverNotReady
+    /// `photo.viewer.error.cover`.
+    case coverFailed
+    /// `week.edit.toast.albumSaved` ("Added to Album!").
+    case albumAdded
+    /// `albums.view.toast.removed`.
+    case albumPhotoRemoved
+    /// `albums.view.error.notAllowed` (`remove_from_album` of someone else's photo).
+    case removeNotAllowed
 }
 
 extension SocialNotice {

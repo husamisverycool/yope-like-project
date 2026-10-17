@@ -152,7 +152,7 @@ Loading · empty · error · offline · permission-denied states use `retro.voic
 | `daily.capture`, `daily.liveactivity`, `daily.ongoing`, `daily.dualimage` | Retro set + `bereal.format.countdown`; `retro.voice.push-channel` (ongoing) |
 | `collage.view`, `collage.share` | Retro set + `retro.voice.share`, `retro.voice.retrospective` |
 | `week.recap`, `week.edit`, `week.history` | Retro set + `retro.voice.retrospective` (recaps), `retro.voice.formats`, `retro.voice.terse-numbers`, `retro.voice.menu-labels` |
-| `albums.list`, `albums.view` | Retro set |
+| `albums.list`, `albums.view`, `favorites` | Retro set (`retro.voice.menu-labels` for Favorite / Unfavorite / Remove from Album) |
 | `onthisday` | `retro.voice.rewind` + Retro set |
 | `birthday.add` | Retro set + `retro.voice.onboarding` |
 | `birthday.request`, `birthday.contribute`, `birthday.tribute` | Retro set + `P-BR-1`…`P-BR-3`, `P-BC-1`, `P-BC-2`, `P-BT-1` (content) |

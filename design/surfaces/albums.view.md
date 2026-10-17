@@ -27,9 +27,10 @@ Page sheet (C-29) over `albums.list`, content on `color.global.background`, scro
 3. **Meta** centred, baseline `albums.view.dimension.titleToMeta` below the name's baseline: `albums.list.row.subtitle` /
    `.row.subtitleMine` (text role `listSubtitle`, `color.global.textSecondary`) — no counts.
 4. **Action row** (C-06) `albums.view.dimension.metaToActions` below the meta baseline, inside `size.global.screenMargin`:
-   outline capsule `albums.view.menu.rename` ("Rename", fills the row) and — for the album's creator and group admins — an
-   outline icon capsule (`size.global.iconPillWidth`, `icon.global.more`) `size.global.pillGap` after it → native menu with
-   `albums.view.menu.delete` (red).
+   outline capsule `albums.view.menu.rename` ("Rename", fills the row) and an outline icon capsule
+   (`size.global.iconPillWidth`, `icon.global.more`) `size.global.pillGap` after it → native menu with
+   `albums.view.menu.add` ("Add Photos", every member — albums anyone can add to, migration 0039) and, for the album's
+   creator and group admins, `albums.view.menu.delete` (red).
 5. **Grid** `walls.mine.dimension.actionsToWeeks` below the capsules: the album's items in `position` order (the saved order;
    no date headers — RS-21), `albums.view.count.gridColumns` columns inside `size.global.screenMargin`,
    `size.global.stripGap` gaps, cells `albums.view.aspectRatio.gridCell` (aspect fill). The grid's outer contour rounds at
@@ -37,6 +38,30 @@ Page sheet (C-29) over `albums.list`, content on `color.global.background`, scro
    cell and the bottom-trailing corner of its last cell; when the last row is short, the trailing cell of the row above also
    rounds its bottom-trailing corner (the web page's `topRightCornerRounded` / `bottomRightCornerRounded` cells). Inner corners
    stay square.
+
+### Add sheet (`albums.view.layout.add`; Apple Shared Albums "Select all the items you want to add … tap Add to Shared Album", support.apple.com/108314)
+
+Sheet (C-29) over the album: C-11 close circle + centred `albums.view.menu.add` (`sheetTitle`); `size.global.titleToContent`
+below, the group's photos the album does not hold yet, newest week first (`group_history_weeks`, the first page —
+`week.history`'s weeks), as `week.edit`'s composer grid (C-21: `week.edit.count.gridColumns` square cells,
+`size.global.stripGap` gaps, inside `size.global.screenMargin`); a tap toggles a photo with `week.edit`'s pick mark
+(`week.edit.layout.selectionMark`: the photo insets, `icon.global.check` on its disc; `duration.global.crossfade`;
+accessibility: a checkbox, its checked state by the platform); the C-05 primary capsule
+`albums.view.add.confirm` ("Add") pinned at the bottom (`size.global.buttonMarginHSheet`), disabled until a photo is
+picked → `add_to_album(p_album_id, p_post_ids)` (in the order picked; photos already there are skipped) → the sheet closes,
+the grid reloads, `haptic.global.success` + Android Toast / iOS announcement `week.edit.toast.albumSaved` ("Added to
+Album!"); failed → `haptic.global.error` + `week.edit.error.save`, the selection stays. States: loading — two rows of
+`color.global.control` cells (C-28); nothing to add — C-27 title `albums.view.add.empty`; error / offline — the
+`albums.list.error.title` line (tap retries).
+
+### Remove a photo (grid cell long press → native menu)
+
+`albums.view.menu.remove` ("Remove from Album", `icon.global.remove`, destructive) on the photos you added
+(`album_items.added_by`), and on every photo for the album's creator and group admins (Apple Shared Albums: "Other
+participants can delete anything that they personally added"; the owner "can delete any photos"). No confirmation (the
+photo stays in the group). The cell leaves at once → `remove_from_album(p_album_id, [post])` → Android Toast / iOS
+announcement `albums.view.toast.removed`; `not_allowed` (403, someone else's photo) → the cell comes back,
+`haptic.global.error` + `albums.view.error.notAllowed`; other failures → back + `week.edit.error.save`.
 
 ### Rename sheet
 
@@ -58,8 +83,8 @@ delete"), cancel `photo.viewer.delete.cancel` → `delete_album` → the sheet c
 | name | text role `displayMedium`, `font.global.display`; `albums.view.dimension.coverToTitle` | album name (data) | header trait |
 | meta | text role `listSubtitle`; `albums.view.dimension.titleToMeta` | `albums.list.row.subtitle` / `.row.subtitleMine` | — |
 | Rename capsule | C-06 outline; `size.global.pillHeight`, `albums.view.dimension.metaToActions` | `albums.view.menu.rename` | rename sheet |
-| more capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `icon.global.more` | `albums.view.a11y.more` | menu: `albums.view.menu.delete` |
-| grid cell | C-21 album grid; `albums.view.count.gridColumns`, `.aspectRatio.gridCell`, `.radius.grid`, `size.global.stripGap` | `photo.viewer.a11y.photo` | → `photo.viewer` (context = album order) |
+| more capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `icon.global.more` | `albums.view.a11y.more` | menu: `albums.view.menu.add` (everyone), `albums.view.menu.delete` (creator / admin) |
+| grid cell | C-21 album grid; `albums.view.count.gridColumns`, `.aspectRatio.gridCell`, `.radius.grid`, `size.global.stripGap` | `photo.viewer.a11y.photo` | → `photo.viewer` (context = album order); long press → `albums.view.menu.remove` when allowed |
 
 ## States
 
@@ -107,7 +132,10 @@ in with `duration.global.fade`. Reduce Motion: system / cross-fades.
 - **Reads**: `albums` + `album_items` (§5.15; items need the post to be visible), `posts` / `media` (`thumb_path`),
   `profiles` (`created_by`), `group_members.role` (admin) for the more capsule.
 - **RPCs**: `rename_album(p_album_id, p_name)` (any member; `invalid_name`, `album_not_found`), `delete_album(p_album_id)`
-  (creator or admin; `not_album_owner`). Posts are never deleted by these.
+  (creator or admin; `not_album_owner`), `add_to_album(p_album_id, p_post_ids)` (any member; `invalid_items`,
+  `album_not_found`), `remove_from_album(p_album_id, p_post_ids)` (what you added; creator / admin: any; `not_allowed`).
+  Posts are never deleted by these. `album_items.added_by` decides who sees "Remove from Album"; the add sheet reads
+  `group_history_weeks` (first page) and `posts` / `media` of those weeks.
 - Realtime: `post_deleted` → drop the cell.
 - Navigation in: `albums.list`. Out: `photo.viewer`, back.
 
@@ -120,7 +148,7 @@ rounds only its outer corners; `Menu` on the capsule; `confirmationDialog`. Andr
 ## Do-not-copy
 
 - "6 members · 307 photos" counts; "Share" / link sharing / QR / Instagram story sticker (albums are private to the group);
-  the "+" add capsule (no API to add items); notes composer, sort order, download-all, admin permission settings.
+  notes composer, sort order, download-all, admin permission settings.
 - The user-styled cover title on the cover image; the book overlay texture (`/journal-overlay.webp`).
 
 ## Gaps
@@ -130,4 +158,5 @@ rounds only its outer corners; `Menu` on the capsule; `confirmationDialog`. Andr
 | `albums.view.shadow.cover` (old BLOCKED) | closed 2026-10-16: fitted on TC-J1 (the cover on white); the web /j/ page draws its cover flat (no CSS shadow — its book texture `/journal-overlay.webp` is opaque) | a raw in-app capture on white would refine σ |
 | cell aspect | TC-J1 measures 4:5; components C-21 says square, the web uses 3:4 — the in-app capture is used (RS-21) | one raw screenshot of a Retro album grid |
 | date headers | not used: our albums keep their saved order (RS-21) | — |
-| capsule row contents | composition: Rename + more (Retro: Settings / Share / +) | — |
+| capsule row contents | composition: Rename + more (Retro: Settings / Share / +); "Add Photos" sits in the more menu (Retro's "+" capsule is its add entry) so the row keeps its two capsules | — |
+| add sheet reach | the first page of the group's weeks (`group_history_weeks`, 8 weeks); older photos join an album from the viewer's Add to Album | — |

@@ -111,6 +111,9 @@ final class AlbumModel {
     private(set) var posts: [PostWithMedia] = []
     /// "Delete Album" is offered to the album's creator and group admins.
     private(set) var canDelete = false
+    /// Who added each item (`album_items.added_by`): "Remove from Album" is offered on what I added, and on every item to
+    /// the creator and admins (`canDelete`).
+    private(set) var adders: AlbumWithItems?
     var isRenaming = false
     var renameText = ""
     /// `week.edit.error.albumName` under the field.
@@ -129,6 +132,13 @@ final class AlbumModel {
     }
 
     var postIDs: [PostID] { posts.map(\.id) }
+
+    /// "Remove from Album" on this photo: I added it, or I am the album's creator or a group admin.
+    func canRemove(_ postID: PostID) -> Bool {
+        guard let me, album != nil else { return false }
+        if canDelete { return true }
+        return adders?.adder(of: postID) == me
+    }
 
     /// `albums.list.row.subtitleMine` / `.subtitle` with the creator's first name.
     var isMine: Bool { me != nil && album?.createdBy == me }
@@ -180,6 +190,7 @@ final class AlbumModel {
             return
         }
         album = found.album
+        adders = found
         posts = try await data.posts(ids: found.postIDs)
         if me == nil { me = await data.currentUserID() }
         profiles = await SocialPeople.profiles(of: posts, known: profiles, data: data)
@@ -244,6 +255,36 @@ final class AlbumModel {
                 signals.post(.changesFailed)
             }
         }
+    }
+
+    /// "Remove from Album" (`remove_from_album`): the cell leaves at once → `albums.view.toast.removed`; `not_allowed` →
+    /// back + `albums.view.error.notAllowed`; other failures → back + `week.edit.error.save`. The photo stays in the group.
+    func remove(_ postID: PostID) async {
+        guard canRemove(postID), let index = posts.firstIndex(where: { $0.id == postID }) else { return }
+        let removed = posts.remove(at: index)
+        if posts.isEmpty, phase == .ready { phase = .empty }
+        signals.emit(.warning)
+        do {
+            try await data.removeFromAlbum(id: albumID, groupID: groupID, postIDs: [postID])
+            signals.post(.albumPhotoRemoved)
+        } catch {
+            if SocialFailure(error) == .notFound {
+                phase = .notFound
+                return
+            }
+            posts.insert(removed, at: min(index, posts.count))
+            if phase == .empty { phase = .ready }
+            if SocialFailure(error) == .offline { isOffline = true }
+            signals.emit(.failed)
+            signals.post(SocialFailure.isNotAllowed(error) ? .removeNotAllowed : .changesFailed)
+        }
+    }
+
+    /// The add sheet saved photos: "Added to Album!" is confirmed and the grid reloads.
+    func photosAdded() async {
+        signals.emit(.success)
+        signals.post(.albumAdded)
+        await load()
     }
 
     func run() async {

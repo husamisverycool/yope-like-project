@@ -88,6 +88,12 @@ final class PhotoViewerModel {
     private(set) var tagPending: Set<PostID> = []
     /// The group-chat replies to each photo, oldest first (`photo.viewer.layout.comments`); absent until read.
     private(set) var comments: [PostID: [Message]] = [:]
+    /// My private favorites among the context's photos (by media; my own `favorites` rows, then this session's changes).
+    private(set) var favorites: Set<MediaID> = []
+    /// ≤ one `set_favorite` in flight per photo.
+    private(set) var favoritePending: Set<MediaID> = []
+    /// The groups of the context where I am an admin ("Use as Cover", update_group's rule).
+    private(set) var adminGroups: Set<GroupID> = []
     /// Add-only photo access was denied: the native alert with the Settings link shows.
     var saveDenied = false
     /// The viewer has nothing left to show and closes.
@@ -156,6 +162,15 @@ final class PhotoViewerModel {
 
     /// The comments under the photo on screen.
     var currentComments: [Message] { comments[selection] ?? [] }
+
+    /// The photo on screen is one of my favorites (the menu offers Unfavorite).
+    var isCurrentFavorite: Bool { current.map { favorites.contains($0.post.mediaID) } ?? false }
+
+    /// "Use as Cover": I am an admin of the photo's group and the photo is still there.
+    var canUseCurrentAsCover: Bool {
+        guard let post = current, !isCurrentGone else { return false }
+        return adminGroups.contains(post.post.groupID)
+    }
 
     // MARK: Loading
 
@@ -226,10 +241,26 @@ final class PhotoViewerModel {
         }
         await selfies.load(postIDs: ids)
         await loadProfiles(posts.values.map(\.post.authorID) + [me].compactMap { $0 } + selfies.reactors)
+        await loadFavoritesAndRoles()
         if let mine = try? await data.myGroups() {
             for group in mine { groups[group.id] = group }
         } else if let cached = await data.cachedGroups() {
             for group in cached { groups[group.id] = group }
+        }
+    }
+
+    /// Which of the photos are my favorites, and the groups where I am an admin (kept on failure: the menu then offers
+    /// Favorite and no cover item).
+    private func loadFavoritesAndRoles() async {
+        let mediaIDs = posts.values.map(\.post.mediaID).socialUnique()
+        if !mediaIDs.isEmpty, let found = try? await data.favoriteMediaIDs(among: mediaIDs) {
+            let pending = favoritePending
+            favorites = favorites.filter { pending.contains($0) }.union(found.subtracting(pending))
+        }
+        for groupID in Set(posts.values.map(\.post.groupID)) where !adminGroups.contains(groupID) {
+            if let membership = try? await data.myMembership(groupID: groupID), membership.role == .admin {
+                adminGroups.insert(groupID)
+            }
         }
     }
 
@@ -535,6 +566,52 @@ final class PhotoViewerModel {
             signals.emit(.failed)
             signals.post(.saveFailed)
         }
+    }
+
+    // MARK: Favorites and the group cover (owner decision 34)
+
+    /// Favorite / Unfavorite (`set_favorite`): applied at once with `haptic.global.select`; back as it was with
+    /// `haptic.global.error` + `photo.viewer.error.favorite` if the call fails. Taps wait while one is in flight.
+    func toggleFavorite() async {
+        guard let post = current, !isCurrentGone else { return }
+        let mediaID = post.post.mediaID
+        guard !favoritePending.contains(mediaID) else { return }
+        let wasFavorite = favorites.contains(mediaID)
+        if wasFavorite { favorites.remove(mediaID) } else { favorites.insert(mediaID) }
+        favoritePending.insert(mediaID)
+        signals.emit(.select)
+        defer { favoritePending.remove(mediaID) }
+        do {
+            try await data.setFavorite(!wasFavorite, mediaID: mediaID)
+        } catch {
+            if wasFavorite { favorites.insert(mediaID) } else { favorites.remove(mediaID) }
+            if SocialFailure(error) == .offline { isOffline = true }
+            if SocialFailure(error) == .notFound { gone.insert(post.id) }
+            signals.emit(.failed)
+            signals.post(.favoriteFailed)
+        }
+    }
+
+    /// "Use as Cover" (`set_group_cover_from_post`, admins): "Saved!" with `haptic.global.success`; `media_not_ready` →
+    /// `photo.viewer.error.coverNotReady`, other failures `photo.viewer.error.cover`, both with `haptic.global.error`.
+    func useCurrentAsCover() async {
+        guard canUseCurrentAsCover, let post = current else { return }
+        do {
+            try await data.setGroupCover(groupID: post.post.groupID, postID: post.id)
+            signals.emit(.success)
+            signals.post(.coverSet)
+        } catch {
+            if SocialFailure(error) == .offline { isOffline = true }
+            if DataError.from(error).apiCode == .notGroupAdmin { adminGroups.remove(post.post.groupID) }
+            signals.emit(.failed)
+            signals.post(SocialFailure.isMediaNotReady(error) ? .coverNotReady : .coverFailed)
+        }
+    }
+
+    /// The album picker's result (`photo.viewer.layout.albumPicker`): the photo was added or a new album saved.
+    func addedToAlbum() {
+        signals.emit(.success)
+        signals.post(.albumAdded)
     }
 
     /// `block_user` for the current photo's author (run by the shared block confirmation, `safety.block`).

@@ -29,6 +29,10 @@
     <string name="albums_view_a11y_cover">Cover of %1$s</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_a11y_more" formatted="false">More Options</string>
+    <!-- Google Photos · albums.view · verbatim · SOURCED -->
+    <string name="albums_view_add_confirm" formatted="false">Add</string>
+    <!-- Retro · albums.view · verbatim · SOURCED -->
+    <string name="albums_view_add_empty" formatted="false">Nothing to see here yet</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_delete_confirm" formatted="false">Yes, delete</string>
     <!-- Retro · albums.view · new · SOURCED -->
@@ -39,8 +43,14 @@
     <string name="albums_view_empty_detail" formatted="false">Photos removed by the people who shared them leave albums too.</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_empty_title" formatted="false">Nothing has been added to this album</string>
+    <!-- Google Photos · albums.view · adapted · SOURCED -->
+    <string name="albums_view_error_notallowed" formatted="false">Only the person who added this photo can remove it.</string>
+    <!-- Apple Invites · albums.view · verbatim · SOURCED -->
+    <string name="albums_view_menu_add" formatted="false">Add Photos</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_menu_delete" formatted="false">Delete Album</string>
+    <!-- Retro · albums.view · new · SOURCED -->
+    <string name="albums_view_menu_remove" formatted="false">Remove from Album</string>
     <!-- Retro · albums.view · new · SOURCED -->
     <string name="albums_view_menu_rename" formatted="false">Rename</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
@@ -51,6 +61,8 @@
     <string name="albums_view_rename_title" formatted="false">Rename Album</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_toast_deleted" formatted="false">Deleted</string>
+    <!-- Retro · albums.view · new · SOURCED -->
+    <string name="albums_view_toast_removed" formatted="false">Removed</string>
     <!-- Retro · albums.view · verbatim · SOURCED -->
     <string name="albums_view_toast_renamed" formatted="false">Saved!</string>
     <!-- Retro · auth.agegate · verbatim · SOURCED -->
@@ -753,6 +765,14 @@
     <string name="daily_capture_send" formatted="false">Send</string>
     <!-- Retro · daily.dualimage · new · SOURCED · args: name -->
     <string name="daily_dualimage_a11y_label">Back and front photos from %1$s</string>
+    <!-- Retro · favorites · new · SOURCED -->
+    <string name="favorites_empty_detail" formatted="false">Photos you favorite will show up here. Only you can see them.</string>
+    <!-- Retro · favorites · verbatim · SOURCED -->
+    <string name="favorites_empty_title" formatted="false">Nothing to see here yet</string>
+    <!-- Retro · favorites · adapted · SOURCED -->
+    <string name="favorites_error_title" formatted="false">Error loading your favorites. Tap here to try again.</string>
+    <!-- Apple Photos · favorites · verbatim · SOURCED -->
+    <string name="favorites_title" formatted="false">Favorites</string>
     <!-- Apple HIG · global · new · PLATFORM -->
     <string name="global_a11y_loading" formatted="false">Loading…</string>
     <!-- Retro · global · verbatim · SOURCED -->
@@ -1506,7 +1526,13 @@
     <!-- Retro · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_delete_title" formatted="false">Delete photo?</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
+    <string name="photo_viewer_error_cover" formatted="false">Couldn\'t change the cover. Please try again.</string>
+    <!-- Retro · photo.viewer · new · SOURCED -->
+    <string name="photo_viewer_error_covernotready" formatted="false">This photo is still processing. Please try again in a moment.</string>
+    <!-- Retro · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_error_delete" formatted="false">Couldn\'t delete photo. Please try again.</string>
+    <!-- Retro · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_error_favorite" formatted="false">There was a problem. Please try again.</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_error_load" formatted="false">Error loading media. Tap to retry</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
@@ -1519,14 +1545,22 @@
     <string name="photo_viewer_header_groupweek">%1$s · Week %2$s</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED · args: week_number -->
     <string name="photo_viewer_header_week">Week %1$s</string>
+    <!-- Retro · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_menu_addtoalbum" formatted="false">Add to Album</string>
     <!-- Retro · photo.viewer · new · SOURCED · args: name -->
     <string name="photo_viewer_menu_block">Block %1$s</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_delete" formatted="false">Delete</string>
+    <!-- Apple Photos · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_menu_favorite" formatted="false">Favorite</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_report" formatted="false">Report Post</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_menu_save" formatted="false">Save to Camera Roll</string>
+    <!-- Apple Photos · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_menu_unfavorite" formatted="false">Unfavorite</string>
+    <!-- Google Photos · photo.viewer · adapted · SOURCED -->
+    <string name="photo_viewer_menu_useascover" formatted="false">Use as Cover</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_permission_button" formatted="false">Allow Photo Access</string>
     <!-- Retro · photo.viewer · new · SOURCED -->

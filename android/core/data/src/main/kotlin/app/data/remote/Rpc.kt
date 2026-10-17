@@ -158,6 +158,8 @@ object Tables {
     const val WEEKLY_RECAPS = "weekly_recaps"
     const val ALBUMS = "albums"
     const val ALBUM_ITEMS = "album_items"
+    /** Migration 0038: your private favorites (own rows only). */
+    const val FAVORITES = "favorites"
     const val TRIBUTE_REQUESTS = "tribute_requests"
     const val TRIBUTE_CONTRIBUTIONS = "tribute_contributions"
     const val TRIBUTES = "tributes"

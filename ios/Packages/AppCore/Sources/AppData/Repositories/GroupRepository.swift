@@ -142,6 +142,17 @@ public struct GroupRepository: Sendable {
         return group
     }
 
+    /// `set_group_cover_from_post` (admins, update_group's rule; migration 0039): the photo's display rendition becomes
+    /// the group's cover. Errors: `not_group_admin`, `post_not_found`, `media_not_ready` (renditions not made yet).
+    public func setCoverFromPost(groupID: GroupID, postID: PostID) async throws -> PhotoGroup {
+        let group: PhotoGroup = try await client.rpc("set_group_cover_from_post", [
+            "p_group_id": .id(groupID),
+            "p_post_id": .id(postID),
+        ])
+        await onGroupsChanged?()
+        return group
+    }
+
     /// `set_group_muted`: the caller's own push mute for the group.
     public func setMuted(groupID: GroupID, muted: Bool) async throws {
         try await client.rpcVoid("set_group_muted", ["p_group_id": .id(groupID), "p_muted": .bool(muted)])

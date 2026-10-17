@@ -6,6 +6,7 @@ import app.data.error.DataException
 import app.data.model.Album
 import app.data.model.AlbumItem
 import app.data.model.Collage
+import app.data.model.FavoritePhoto
 import app.data.model.Group
 import app.data.model.GroupKind
 import app.data.model.GroupMember
@@ -62,6 +63,12 @@ class FakeSocialData(var me: String = ME) : SocialData {
     val recaps = LinkedHashMap<String, WeeklyRecap>()
     val albums = LinkedHashMap<String, Album>()
     val albumItems = LinkedHashMap<String, MutableList<AlbumItem>>()
+    /** My private favorites (`favorites`): media id → when favorited. */
+    val favorites = LinkedHashMap<String, Instant>()
+    /** Group covers set from a photo (`set_group_cover_from_post`): group id → post id. */
+    val coverPosts = LinkedHashMap<String, String>()
+    /** Posts whose display rendition is not made yet (`media_not_ready`). */
+    val renditionsPending = HashSet<String>()
     val cache = HashMap<String, String>()
     val chatCache = HashMap<String, List<Message>>()
     val wallCache = HashMap<String, List<WallItem>>()
@@ -227,8 +234,65 @@ class FakeSocialData(var me: String = ME) : SocialData {
         write("saveAlbum:$name:${postIds.joinToString(",")}")
         val a = Album("a-${albums.size + 1}", groupId, name, me, clock(), clock())
         albums[a.id] = a
-        albumItems[a.id] = postIds.mapIndexed { i, p -> AlbumItem(a.id, p, i) }.toMutableList()
+        albumItems[a.id] = postIds.mapIndexed { i, p -> AlbumItem(a.id, p, i, addedBy = me) }.toMutableList()
         return a
+    }
+
+    /** Like `add_to_album`: any member; after the last item; photos already there are skipped. */
+    override suspend fun addToAlbum(albumId: String, postIds: List<String>): Album {
+        write("addToAlbum:$albumId:${postIds.joinToString(",")}")
+        val a = albums[albumId] ?: throw DataException(DataError.Api(ApiError.AlbumNotFound, "album_not_found", 404, null))
+        val items = albumItems.getOrPut(albumId) { ArrayList() }
+        var next = (items.maxOfOrNull { it.position } ?: -1) + 1
+        for (p in postIds) if (items.none { it.postId == p }) items += AlbumItem(albumId, p, next++, addedBy = me)
+        return a
+    }
+
+    /** Like `remove_from_album`: what I added; the creator and admins remove any (`not_allowed` otherwise). */
+    override suspend fun removeFromAlbum(albumId: String, postIds: List<String>) {
+        write("removeFromAlbum:$albumId:${postIds.joinToString(",")}")
+        val a = albums[albumId] ?: throw DataException(DataError.Api(ApiError.AlbumNotFound, "album_not_found", 404, null))
+        val items = albumItems[albumId] ?: return
+        val admin = members[a.groupId].orEmpty().any { it.member.userId == me && it.member.role == MemberRole.Admin }
+        val manager = admin || a.createdBy == me
+        if (!manager && items.any { it.postId in postIds && it.addedBy != me }) throw DataException(DataError.Api(ApiError.NotAllowed, "not_allowed", 403, null))
+        items.removeAll { it.postId in postIds }
+    }
+
+    override suspend fun setFavorite(mediaId: String, on: Boolean) {
+        write("setFavorite:$mediaId:$on")
+        if (on) favorites.getOrPut(mediaId) { clock() } else favorites.remove(mediaId)
+    }
+
+    override suspend fun favoriteMediaIds(mediaIds: Collection<String>): Set<String> {
+        net("favoriteMediaIds")
+        return mediaIds.filter { it in favorites }.toSet()
+    }
+
+    /** Like `my_favorites`: newest favorite first, one row per photo (its first post). */
+    override suspend fun myFavorites(before: Instant?, limit: Int): List<FavoritePhoto> {
+        net("myFavorites")
+        return favorites.entries
+            .filter { before == null || it.value < before }
+            .sortedWith(compareByDescending<Map.Entry<String, Instant>> { it.value }.thenBy { it.key })
+            .mapNotNull { entry ->
+                val post = posts.values.filter { it.mediaId == entry.key }.minByOrNull { it.createdAt } ?: return@mapNotNull null
+                val m = media[entry.key] ?: return@mapNotNull null
+                FavoritePhoto(
+                    entry.key, post.id, post.groupId, groups[post.groupId]?.name.orEmpty(), post.authorId, m.kind,
+                    m.thumbPath ?: m.originalPath, m.displayPath ?: m.originalPath, null, post.createdAt, entry.value,
+                )
+            }
+            .take(limit)
+    }
+
+    /** Like `set_group_cover_from_post`: admins only (`not_group_admin`); `media_not_ready` before the rendition exists. */
+    override suspend fun setGroupCover(groupId: String, postId: String) {
+        write("setGroupCover:$groupId:$postId")
+        val admin = members[groupId].orEmpty().any { it.member.userId == me && it.member.role == MemberRole.Admin }
+        if (!admin) throw DataException(DataError.Api(ApiError.NotGroupAdmin, "not_group_admin", 403, null))
+        if (postId in renditionsPending) throw DataException(DataError.Api(ApiError.MediaNotReady, "media_not_ready", 409, null))
+        coverPosts[groupId] = postId
     }
     override suspend fun renameAlbum(albumId: String, name: String): Album {
         write("renameAlbum:$name")

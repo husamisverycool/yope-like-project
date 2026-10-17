@@ -26,10 +26,11 @@ account group).
      room for the avatar;
    - my avatar `size.global.avatarProfile` (C-23) at the trailing margin, centred on the name's cap middle;
    - no real-name line and no info rows (`walls.mine.layout.header`: no such data; "Weeks Posted: N" is a count);
-   - **action row** `walls.mine.dimension.nameToActions` below the name baseline: one C-06 outline icon capsule
-     (`size.global.iconPillWidth` × `size.global.pillHeight`, 1-pt `color.global.textPrimary` border, `icon.global.settings` at
-     `size.global.iconSmall`) at the trailing margin → `settings.root`. (Retro's "Recaps" / "Share Profile" capsules are not
-     product actions here — RS-14.)
+   - **action row** `walls.mine.dimension.nameToActions` below the name baseline: two C-06 outline icon capsules
+     (`size.global.iconPillWidth` × `size.global.pillHeight`, 1-pt `color.global.textPrimary` border, glyph at
+     `size.global.iconSmall`) at the trailing margin, `size.global.pillGap` apart: `icon.global.favorite` → `favorites`
+     (your private favorites, Apple Photos' Favorites album; owner decision 34, research #19), then `icon.global.settings` →
+     `settings.root`. (Retro's "Recaps" / "Share Profile" capsules are not product actions here — RS-14.)
 2. **Week sections** (`walls.mine.layout.weeks`), the first header's cap top `walls.mine.dimension.actionsToWeeks` below the
    action row:
    - **section header** (C-20): `week.history.header.title` ("Week 27", text role `sectionLabel`) + one space + the date range
@@ -54,6 +55,7 @@ account group).
 |---|---|---|---|
 | name | C-19 / C-01 title; text role `headerTitle`, `font.global.display`, `size.global.titleTop` | display name (data) | header trait |
 | avatar | C-23; `size.global.avatarProfile` | decorative (name beside it) | — |
+| favorites capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `size.global.pillHeight`, `icon.global.favorite`, `size.global.iconSmall`, `size.global.pillGap` | `favorites.title` | → `favorites` |
 | settings capsule | C-06 outline icon capsule; `size.global.iconPillWidth`, `size.global.pillHeight`, `icon.global.settings`, `size.global.iconSmall`, `walls.mine.dimension.nameToActions` | `walls.mine.a11y.settings` | → `settings.root` |
 | section header | C-20; text roles `sectionLabel` + `listSubtitle` | `week.history.header.title`; range (data) | header trait |
 | photo tile | C-17 photo tile | `photo.viewer.a11y.photoMine` ("Your photo, {date}") | tap → `photo.viewer` (context = this wall's photos, newest week first, time order inside a week) |
@@ -91,7 +93,7 @@ with `duration.global.stripInsert` + `easing.global.standard`, the new tile fade
   scrolling lists; tiles carry their full date in the label (C-17).
 - Dynamic Type: `headerTitle` → largeTitle, `sectionLabel` / `listSubtitle` → subheadline, tile labels → footnote; tiles keep
   their size (labels carry the information).
-- Focus order: name → settings → (per week) header → tiles left → right.
+- Focus order: name → favorites → settings → (per week) header → tiles left → right.
 - Contrast (`node tools/contrast.mjs`):
 
 | foreground | background | kind | light | dark | pair |
@@ -116,7 +118,7 @@ with `duration.global.stripInsert` + `easing.global.standard`, the new tile fade
 - Realtime: `post_deleted` on each of my groups → drop the tile; my own posts (`posts` INSERT) → insert into the current week;
   refetch on foreground (§8.3).
 - Navigation in: profile tab; my avatar / name in `chat.thread` and `photo.viewer`. Out: `photo.viewer`, `collage.view`,
-  `settings.root`, `camera.capture`. No deep link.
+  `settings.root`, `camera.capture`, `favorites`. No deep link.
 
 ## Platform notes
 
@@ -139,4 +141,4 @@ with `duration.global.stripInsert` + `easing.global.standard`, the new tile fade
 | `walls.mine.layout.mosaic`, `walls.mine.layout.freeformWall` (old BLOCKED) | closed: the wall is Retro's week list (RS-14) | — |
 | number of blank tiles after the add tile | one per remaining day (ENG-P runs off-screen) | one raw screenshot of a Retro profile mid-week with 2 photos |
 | profile header spacing | ST-02 render (store renders compress vertical spacing, retro-visual §3.4) | one raw screenshot of a Retro profile (light + dark) |
-| an action row with a single capsule | composition (RS-14) | owner may want more actions here |
+| the action row's capsules | composition (RS-14): favorites + settings icon capsules | owner may want more actions here |

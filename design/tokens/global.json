@@ -3455,6 +3455,54 @@
       "element": "new album / group in the header (book + plus badge; no exact SF Symbol — closest)",
       "evidence": "references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png; glyph table design/research/retro-visual.md §3.6 (SF Symbol / Material candidates); Compose names checked in material-icons-extended / -core 1.7.8 classes.jar (Gradle cache, this pass)"
     },
+    "icon.global.favorite": {
+      "level": "PLATFORM",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "type": "icon",
+      "value": {
+        "ios": "heart",
+        "android": "Rounded.FavoriteBorder"
+      },
+      "element": "favorite (menu item; the Favorites capsule on walls.mine)",
+      "evidence": "SF Symbols 7 (heart / heart.slash: the Photos app's Favorite / Unfavorite menu items); Compose material-icons-extended 1.7.8 (Icons.Rounded.FavoriteBorder / Icons.Rounded.Favorite, the Material favorite toggle)"
+    },
+    "icon.global.unfavorite": {
+      "level": "PLATFORM",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "type": "icon",
+      "value": {
+        "ios": "heart.slash",
+        "android": "Rounded.Favorite"
+      },
+      "element": "unfavorite (menu item)",
+      "evidence": "SF Symbols 7 (heart / heart.slash: the Photos app's Favorite / Unfavorite menu items); Compose material-icons-extended 1.7.8 (Icons.Rounded.FavoriteBorder / Icons.Rounded.Favorite, the Material favorite toggle)"
+    },
+    "icon.global.cover": {
+      "level": "PLATFORM",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "type": "icon",
+      "value": {
+        "ios": "photo",
+        "android": "Outlined.Image"
+      },
+      "element": "use as cover (menu item)",
+      "evidence": "SF Symbols 7 'photo'; Compose material-icons-extended 1.7.8 Icons.Outlined.Image (Google Photos 'Use As → Album cover', support.google.com/photos/answer/6128849)"
+    },
+    "icon.global.remove": {
+      "level": "PLATFORM",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "global",
+      "type": "icon",
+      "value": {
+        "ios": "minus.circle",
+        "android": "Outlined.RemoveCircleOutline"
+      },
+      "element": "remove from album (menu item)",
+      "evidence": "SF Symbols 7 'minus.circle'; Compose material-icons-extended 1.7.8 Icons.Outlined.RemoveCircleOutline (Google Photos album 'Remove', support.google.com/photos/answer/6128849)"
+    },
     "icon.global.variantRule": {
       "level": "PLATFORM",
       "source_app": "Retro",
