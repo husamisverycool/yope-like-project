@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.UUID
 
 /** A recorded voice note for the post (AAC `.m4a`) and its waveform (100 levels of 0…31, C-36; null when none). */
 data class VoiceNoteFile(val file: File, val durationMs: Int, val levels: List<Int>? = null)
@@ -38,6 +39,12 @@ enum class VoicePhase { Idle, Holding, Locked, Paused }
  * sheet stays open while the post is sent (busy capsule, "Sending…"); success closes it with a toast, a failure
  * shows the native alert with "Try Again" / "Cancel" and keeps everything. Closing asks first only when a
  * message or voice note would be lost.
+ *
+ * Several library photos (a selection, docs/RESEARCH_FEATURES_2026-10-17.md #1) are one send: each photo is its own post
+ * through the upload queue with the selection's `batch_id`, queued one after the other in the order picked (each once the
+ * one before it is posted, so the posts keep that order); the message, the voice note, the open invitations, a reply and a
+ * weekly question go with the first photo only (camera.sendto.md "Several photos"). A failure keeps the photos not yet
+ * posted; "Try Again" goes on from there.
  */
 class SendToViewModel(
     private val data: CaptureData,
@@ -70,6 +77,8 @@ class SendToViewModel(
 
     data class UiState(
         val media: CapturedMedia? = null,
+        /** Every photo of a selection, in the order picked (empty: just [media]). */
+        val items: List<CapturedMedia> = emptyList(),
         val groups: Groups = Groups.Loading,
         val selected: Set<String> = emptySet(),
         val caption: String = "",
@@ -98,10 +107,16 @@ class SendToViewModel(
                 return if (replyGroupId != null) all.filter { it.id == replyGroupId } else all
             }
 
-        /** Disabled with nothing selected, and for a video a free member cannot post (`premium_required`). */
+        /** The photos this send posts, in order: the selection, or the one capture. */
+        val selection: List<CapturedMedia> get() = items.ifEmpty { listOfNotNull(media) }
+
+        /** Several photos: the selection strip shows them (no number, tenet 2). */
+        val showsSelection: Boolean get() = selection.size > 1
+
+        /** Disabled with nothing selected, and for a video a free member cannot post (`premium_required`; any in a selection). */
         val sendEnabled: Boolean
             get() = media != null && !sending && selected.any { id -> visibleGroups.any { it.id == id } } &&
-                (media.kind != MediaKind.Video || premium)
+                (selection.none { it.kind == MediaKind.Video } || premium)
 
         /** Whether closing would lose something the member added (Retro's lost-changes rule). */
         val hasAdditions: Boolean get() = caption.isNotBlank() || voice != null || voicePhase != VoicePhase.Idle
@@ -114,7 +129,8 @@ class SendToViewModel(
         data object Close : Event
         data class Sent(val groupNames: List<String>) : Event
         data object OpenPaywall : Event
-        data class SaveToLibrary(val media: CapturedMedia) : Event
+        /** Save to the device: [media] and, for a selection, the [more] photos after it. */
+        data class SaveToLibrary(val media: CapturedMedia, val more: List<CapturedMedia> = emptyList()) : Event
         data object CreateGroup : Event
         /** Play `haptic.global.error` (the send failed). */
         data object Failed : Event
@@ -124,6 +140,7 @@ class SendToViewModel(
     private val state = MutableStateFlow(
         UiState(
             media = pending?.media,
+            items = pending?.items?.takeIf { it.size > 1 }.orEmpty(),
             replyGroupId = pending?.replyToPostId?.let { pending.contextGroupId },
             micAvailable = voiceRecorderAvailable,
         ),
@@ -141,6 +158,17 @@ class SendToViewModel(
 
     private val sender = PostSend(data, viewModelScope)
     private var sentTo: List<String> = emptyList()
+
+    /** One id for every photo of a selection (`media.batch_id`, migration 0051); null for one capture. Kept across Try Again. */
+    private val batchId: String? = if ((pending?.more?.size ?: 0) > 0) UUID.randomUUID().toString() else null
+
+    /** What the send started with (groups, message, voice note, answers): the selection's later photos are posted with it. */
+    private data class SendPlan(val groupIds: List<String>, val caption: String?, val voice: VoiceNoteFile?, val answering: List<String>)
+
+    private var plan: SendPlan? = null
+    /** The photo being queued and followed, and the photos of the selection already posted (by file). */
+    private var sendingItem: CapturedMedia? = null
+    private val posted = mutableSetOf<File>()
     private var preselected = false
     private var loadJob: Job? = null
 
@@ -154,7 +182,7 @@ class SendToViewModel(
             val premium = runCatching { data.isPremium() }.getOrDefault(false)
             state.update { it.copy(premium = premium) }
             // A picked video by a free member: the paywall once per session; otherwise Send stays disabled.
-            if (!premium && pending?.media?.kind == MediaKind.Video && gate.tryClaim()) events.send(Event.OpenPaywall)
+            if (!premium && pending?.items.orEmpty().any { it.kind == MediaKind.Video } && gate.tryClaim()) events.send(Event.OpenPaywall)
         }
         viewModelScope.launch {
             sender.status.collect { status ->
@@ -162,11 +190,19 @@ class SendToViewModel(
                     PostSend.Status.Idle -> state.update { it.copy(sending = false) }
                     PostSend.Status.Sending -> state.update { it.copy(sending = true, alert = null) }
                     is PostSend.Status.Sent -> {
-                        // The queue copied the files: drop ours.
-                        handoff.discard()
-                        state.value.voice?.file?.delete()
-                        state.update { it.copy(sending = false) }
-                        events.send(Event.Sent(sentTo))
+                        sendingItem?.let { posted += it.file }
+                        sendingItem = null
+                        val next = nextItem()
+                        if (next != null) {
+                            // A selection: its next photo, once the one before it is posted (the posts keep the order).
+                            sendItem(next)
+                        } else {
+                            // The queue copied the files: drop ours.
+                            handoff.discard()
+                            state.value.voice?.file?.delete()
+                            state.update { it.copy(sending = false) }
+                            events.send(Event.Sent(sentTo))
+                        }
                     }
                     is PostSend.Status.Failed -> {
                         state.update { it.copy(sending = false, alert = Alert.SendFailed(status.offline)) }
@@ -365,7 +401,8 @@ class SendToViewModel(
     }
 
     fun save() {
-        state.value.media?.let { events.trySend(Event.SaveToLibrary(it)) }
+        val all = state.value.selection
+        all.firstOrNull()?.let { events.trySend(Event.SaveToLibrary(it, all.drop(1))) }
     }
 
     fun createGroup() {
@@ -392,31 +429,48 @@ class SendToViewModel(
 
     private fun sendNow() {
         val s = state.value
-        val media = s.media ?: return
-        if (!s.sendEnabled) return
+        if (s.media == null || !s.sendEnabled) return
         val order = s.visibleGroups.filter { it.id in s.selected }
         sentTo = order.map { it.name }
-        val caption = s.caption.trim().takeIf { it.isNotEmpty() }
         val at = now()
-        val answering = order.mapNotNull { g -> s.shownInvitation(g.id)?.takeIf { it.isOpen(at) }?.id }
+        plan = SendPlan(
+            groupIds = order.map { it.id },
+            caption = s.caption.trim().takeIf { it.isNotEmpty() },
+            voice = s.voice,
+            answering = order.mapNotNull { g -> s.shownInvitation(g.id)?.takeIf { it.isOpen(at) }?.id },
+        )
+        nextItem()?.let(::sendItem)
+    }
+
+    /** The selection's next photo not yet posted, in the order picked. */
+    private fun nextItem(): CapturedMedia? = state.value.selection.firstOrNull { it.file !in posted }
+
+    /** Queues one photo; the first of the selection carries the message, the voice note, the answers, a reply and a question. */
+    private fun sendItem(item: CapturedMedia) {
+        val plan = plan ?: return
+        val first = item.file == state.value.selection.firstOrNull()?.file
+        sendingItem = item
         sender.send(
             NewPost(
-                kind = media.kind,
-                original = media.file,
-                width = media.width,
-                height = media.height,
-                durationMs = media.durationMs,
-                voice = s.voice?.file,
-                voiceDurationMs = s.voice?.durationMs,
-                voiceLevels = s.voice?.levels,
-                groupIds = order.map { it.id },
-                caption = caption,
-                replyToPostId = pending?.replyToPostId,
+                kind = item.kind,
+                original = item.file,
+                width = item.width,
+                height = item.height,
+                durationMs = item.durationMs,
+                voice = plan.voice?.file?.takeIf { first },
+                voiceDurationMs = plan.voice?.durationMs?.takeIf { first },
+                voiceLevels = plan.voice?.levels?.takeIf { first },
+                groupIds = plan.groupIds,
+                caption = plan.caption?.takeIf { first },
+                replyToPostId = pending?.replyToPostId?.takeIf { first },
                 // The weekly question (question.weekly B): only the post to the camera's group answers it.
-                questionId = pending?.questionId,
-                questionGroupId = pending?.questionId?.let { pending.contextGroupId },
+                questionId = pending?.questionId?.takeIf { first },
+                questionGroupId = pending?.questionId?.takeIf { first }?.let { pending.contextGroupId },
                 // The chosen groups' open invitations (migration 0035): answered as from the notification.
-                invitationIds = answering.takeIf { it.isNotEmpty() },
+                invitationIds = plan.answering.takeIf { first && it.isNotEmpty() },
+                // migration 0050: a library photo's day; migration 0051: the selection.
+                takenOn = item.takenOn,
+                batchId = batchId,
             ),
         )
     }

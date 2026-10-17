@@ -77,9 +77,12 @@ class UploadTest {
             uploads += path
         }
 
+        val insertedRows = mutableListOf<NewMedia>()
+
         override suspend fun insertMedia(media: NewMedia) {
             failInsert?.let { failInsert = null; throw DataException(it) }
             inserted += media.id
+            insertedRows += media
         }
 
         override suspend fun createPost(mediaId: String, groupIds: List<String>, options: PostOptions): List<Post> {
@@ -154,6 +157,28 @@ class UploadTest {
         assertEquals(DataError.NotSignedIn, error.error)
         val missing = assertThrows(DataException::class.java) { queue().enqueue(NewPost(kind = MediaKind.Photo, original = File(tmp.root, "nope.jpg"), groupIds = listOf("g"))) }
         assertEquals(DataError.FileUnavailable, missing.error)
+    }
+
+    /** Migrations 0050 / 0051: the draft keeps the day a library photo was taken and its selection's id; the media insert sends both. */
+    @Test fun theMediaInsertCarriesTheDayTakenAndTheBatch() = runBlocking {
+        val day = java.time.LocalDate.of(2026, 9, 14)
+        val picked = queue().enqueue(NewPost(kind = MediaKind.Photo, original = file("p.jpg", 10), groupIds = listOf("g1"), takenOn = day, batchId = "batch-1"))
+        val camera = queue().enqueue(NewPost(kind = MediaKind.Photo, original = file("c.jpg", 10), groupIds = listOf("g1")))
+        assertEquals(day, store.load(picked)!!.takenOn)
+        assertEquals("batch-1", store.load(picked)!!.batchId)
+        val remote = FakeRemote()
+        PostUploader(remote, store).run(picked)
+        PostUploader(remote, store).run(camera)
+        assertEquals(listOf(day, null), remote.insertedRows.map { it.takenOn })
+        assertEquals(listOf("batch-1", null), remote.insertedRows.map { it.batchId })
+        // A draft saved before migration 0050 (no such keys) still decodes.
+        val older = app.data.model.DataJson.decodeFromString(
+            app.data.media.upload.PostDraft.serializer(),
+            app.data.model.DataJson.encodeToString(app.data.media.upload.PostDraft.serializer(), store.load(camera)!!)
+                .replace(",\"takenOn\":null", "").replace(",\"batchId\":null", ""),
+        )
+        assertNull(older.takenOn)
+        assertNull(older.batchId)
     }
 
     @Test fun uploaderRunsAllStepsReportsProgressAndCleansUp() = runBlocking {

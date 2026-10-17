@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- share.in (design/surfaces/share.in.md): keys without an INFOPLIST_KEY_ build setting. The share sheet shows the app's
+     display name and icon (CFBundleDisplayName from Config/InfoPlist.generated.xcconfig). -->
+<plist version="1.0">
+<dict>
+	<key>AppGroupIdentifier</key>
+	<string>$(APP_GROUP_ID)</string>
+	<!-- The containing app's URL scheme (its bundle identifier, CFBundleURLTypes in App/Info.plist): `<scheme>://share`. -->
+	<key>AppURLScheme</key>
+	<string>$(APP_BUNDLE_ID)</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<!-- Photos and videos only, at most `batch_max_photos` (20, docs/API.md §11) of each; the app keeps at most
+			     the server's value of the whole share. -->
+			<key>NSExtensionActivationRule</key>
+			<dict>
+				<key>NSExtensionActivationSupportsImageWithMaxCount</key>
+				<integer>20</integer>
+				<key>NSExtensionActivationSupportsMovieWithMaxCount</key>
+				<integer>20</integer>
+			</dict>
+		</dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.share-services</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).ShareViewController</string>
+	</dict>
+</dict>
+</plist>

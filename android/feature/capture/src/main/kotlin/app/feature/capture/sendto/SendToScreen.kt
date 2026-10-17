@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -53,6 +55,8 @@ import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.stateDescription
@@ -61,8 +65,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import app.data.model.Group
+import app.data.model.MediaKind
 import app.designsystem.R
 import app.designsystem.generated.Tokens
+import app.feature.capture.data.CapturedMedia
 import app.feature.capture.ui.MediaEmptyState
 import app.feature.capture.ui.MediaSheetHeader
 import app.feature.capture.ui.OnMedia
@@ -80,6 +86,8 @@ import app.ui.components.HeaderTextButton
 import app.ui.components.MediaPill
 import app.ui.components.MediaPillStyle
 import app.ui.components.PrimaryButton
+import app.ui.components.VideoTileMarker
+import app.ui.components.stripTileShape
 import app.ui.foundation.DsMotion
 import app.ui.foundation.FadeVisibility
 import app.ui.foundation.PageRoles
@@ -99,6 +107,8 @@ data class SendToChrome(
     val preview: ImageBitmap?,
     /** Signed cover URLs (or painters) by group id (rows show `icon.global.group` without one). */
     val covers: Map<String, Any?> = emptyMap(),
+    /** Several photos: the selection strip's tiles, in the order picked (a video's frame); null until decoded. */
+    val thumbnails: List<ImageBitmap?> = emptyList(),
 )
 
 /** The voice note's callbacks (`chat.voice.layout.recording` / `.locked`, `camera.sendto.layout.messageField`). */
@@ -177,6 +187,11 @@ fun SendToScreen(
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(Dp(Tokens.Layouts.CameraSendtoLayoutPreview.topBelowHeaderCircle)))
             Preview(state, chrome, videoPreview, voice, voiceLive, sending, onOpenMessage = { onMessageSheet(true) })
+            if (state.showsSelection) {
+                // Several photos: the selection strip a section gap below the photo; the groups label keeps its gap below it.
+                Spacer(Modifier.height(Tokens.Sizes.globalSectionGap))
+                SelectionStrip(state.selection, chrome.thumbnails)
+            }
             GroupsSection(state, chrome.covers, onToggle, onCreateGroup, onRetryGroups)
         }
         // C-05 on media, pinned: 20 from the sides, its bottom `camera.sendto.size.sendButtonBottom` above the screen bottom.
@@ -217,6 +232,39 @@ fun SendToScreen(
             onDismiss = onDismissAlert,
         )
         null -> Unit
+    }
+}
+
+/**
+ * Several photos (camera.sendto.md "Several photos"): the selection as a C-17 strip — Retro's composer shows its selected
+ * media in the week-strip tile style (VID-COMP) — tiles `size.global.stripTileWidth` × `.stripTileHeight`,
+ * `size.global.stripGap` apart with the page showing through, only the strip's outer corners rounded ([stripTileShape],
+ * `radius.global.card`), from the leading `size.global.screenMargin`; each tile the photo aspect-fill (a video's frame with
+ * the video marker), `color.global.controlOnDeep` until decoded. No number anywhere (tenet 2): TalkBack reads the strip
+ * as one element, `camera.sendto.a11y.selection`.
+ */
+@Composable
+private fun SelectionStrip(items: List<CapturedMedia>, thumbnails: List<ImageBitmap?>) {
+    val label = stringResource(R.string.camera_sendto_a11y_selection)
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clearAndSetSemantics { contentDescription = label }
+            .testTag("sendto.selection"),
+        contentPadding = PaddingValues(start = Tokens.Sizes.globalScreenMargin),
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalStripGap),
+    ) {
+        itemsIndexed(items, key = { _, item -> item.file.path }) { index, item ->
+            Box(
+                Modifier
+                    .size(Tokens.Sizes.globalStripTileWidth, Tokens.Sizes.globalStripTileHeight)
+                    .clip(stripTileShape(index, items.size))
+                    .background(Tokens.Colors.globalControlOnDeep),
+            ) {
+                thumbnails.getOrNull(index)?.let { Image(BitmapPainter(it), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
+                if (item.kind == MediaKind.Video) item.durationMs?.let { VideoTileMarker(it.toLong()) }
+            }
+        }
     }
 }
 

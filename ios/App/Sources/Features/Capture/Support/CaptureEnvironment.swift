@@ -34,6 +34,11 @@ final class CaptureEnvironment {
     let sendCenter: CaptureSendCenter
     /// camera.overnight's 9 AM uploads (they continue after the camera closes).
     let overnightQueue: CaptureOvernightQueue
+    /// `public_app_config.batch_max_photos` (the library picker's limit); nil when unknown (one photo). Live: read once
+    /// from the server, then kept.
+    var batchLimit: @MainActor () async -> Int? = { nil }
+    /// share.in: the photos another app shared, taken from the App Group inbox (at most `limit`); none by default.
+    var sharedItems: @MainActor (_ limit: Int) async -> [CapturedMedia] = { _ in [] }
 
     init(
         makeCamera: @escaping @MainActor (_ supportsDualCapture: Bool) -> CaptureCamera,
@@ -66,7 +71,7 @@ final class CaptureEnvironment {
         makeCamera: @escaping @MainActor (_ supportsDualCapture: Bool) -> CaptureCamera = { LiveCaptureCamera(supportsDualCapture: $0) }
     ) -> CaptureEnvironment {
         let data = app.data
-        return CaptureEnvironment(
+        let environment = CaptureEnvironment(
             makeCamera: makeCamera,
             makeVoiceRecorder: { LiveCaptureVoiceRecorder() },
             library: LiveCaptureLibrary(),
@@ -78,6 +83,10 @@ final class CaptureEnvironment {
             navigation: LiveCaptureNavigation(router: app.router),
             coach: UserDefaultsCoachStore()
         )
+        let limit = CaptureBatchLimit(data: data)
+        environment.batchLimit = { await limit.value() }
+        environment.sharedItems = { max in await ShareInImport.take(limit: max) }
+        return environment
     }
 
     // MARK: Camera pre-warm
@@ -110,7 +119,9 @@ final class CaptureEnvironment {
             premium: premium,
             coach: coach,
             navigation: navigation,
-            overnight: overnightModel(contextGroupID: contextGroupID)
+            overnight: overnightModel(contextGroupID: contextGroupID),
+            batchLimit: batchLimit,
+            sharedItems: sharedItems
         )
     }
 
@@ -121,12 +132,14 @@ final class CaptureEnvironment {
 
     func sendToModel(
         media: CapturedMedia,
+        more: [CapturedMedia] = [],
         contextGroupID: String?,
         onClose: @escaping @MainActor () -> Void,
         onSent: @escaping @MainActor () -> Void
     ) -> SendToModel {
         SendToModel(
             media: media,
+            more: more,
             contextGroupID: contextGroupID,
             groups: groups,
             premium: premium,

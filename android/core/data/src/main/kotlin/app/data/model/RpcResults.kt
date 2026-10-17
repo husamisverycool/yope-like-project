@@ -188,6 +188,8 @@ data class PublicAppConfig(
     val messageEditWindowSeconds: Int? = null,
     /** `typing_ttl_s` (migration 0048): set_typing is sent again every half of it while typing; null = no typing calls. */
     val typingTtlSeconds: Int? = null,
+    /** `batch_max_photos` (migration 0051): most photos one selection (one post of several photos) may hold; null = not set. */
+    val batchMaxPhotos: Int? = null,
 ) {
     companion object {
         fun from(rows: List<PublicAppConfigRow>): PublicAppConfig {
@@ -200,6 +202,7 @@ data class PublicAppConfig(
                 minAgeYears = byKey["min_age_years"],
                 messageEditWindowSeconds = byKey["message_edit_window_s"],
                 typingTtlSeconds = byKey["typing_ttl_s"],
+                batchMaxPhotos = byKey["batch_max_photos"],
             )
         }
     }

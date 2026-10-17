@@ -45,6 +45,22 @@
             <!-- app:// links (widgets, notifications) are explicit intents to this activity, so
                  they need no exported filter. -->
 
+            <!-- share.in ("Share to Jolt", design/surfaces/share.in.md): photos and videos shared from other apps
+                 (developer.android.com/training/sharing/receive). MainActivity copies the EXTRA_STREAM items at once and
+                 the camera takes them as a library selection once the person is home. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+
             <!-- camera.quickaccess: the static launcher shortcut "Camera" (app://camera). -->
             <meta-data
                 android:name="android.app.shortcuts"

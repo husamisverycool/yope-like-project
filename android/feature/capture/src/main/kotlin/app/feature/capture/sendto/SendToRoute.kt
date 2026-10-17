@@ -87,6 +87,16 @@ fun SendToRoute(
     val preview by produceState<ImageBitmap?>(initialValue = null, media) {
         value = media?.let { m -> withContext(Dispatchers.IO) { if (m.kind == MediaKind.Video) videoFrame(m.file) else decodePreview(m.file, targetPx) } }
     }
+    // Several photos: the selection strip's tiles (`size.global.stripTileWidth` × `.stripTileHeight`), in order.
+    val tilePx = with(density) { maxOf(Tokens.Sizes.globalStripTileWidth, Tokens.Sizes.globalStripTileHeight).roundToPx() }
+    val selection = state.selection
+    val thumbnails by produceState<List<ImageBitmap?>>(initialValue = emptyList(), selection.map { it.file }) {
+        if (selection.size > 1) {
+            value = withContext(Dispatchers.IO) {
+                selection.map { m -> if (m.kind == MediaKind.Video) videoFrame(m.file) else decodePreview(m.file, tilePx) }
+            }
+        }
+    }
     val covers by produceState<Map<String, Any?>>(initialValue = emptyMap(), state.visibleGroups.map { it.id }) {
         val paths = state.visibleGroups.mapNotNull { g -> g.coverPath?.let { g.id to it } }
         if (paths.isNotEmpty()) {
@@ -119,7 +129,7 @@ fun SendToRoute(
         }
     }
     val storage = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) media?.let(save)
+        if (granted) state.selection.forEach(save)
     }
 
     LaunchedEffect(vm) {
@@ -141,7 +151,7 @@ fun SendToRoute(
                     ) {
                         storage.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     } else {
-                        save(event.media)
+                        (listOf(event.media) + event.more).forEach(save)
                     }
                 }
             }
@@ -153,7 +163,7 @@ fun SendToRoute(
     val hasMic = { androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED }
     SendToScreen(
         state = state,
-        chrome = SendToChrome(preview = preview, covers = covers),
+        chrome = SendToChrome(preview = preview, covers = covers, thumbnails = thumbnails),
         onClose = vm::close,
         onSave = vm::save,
         onCaption = vm::onCaption,

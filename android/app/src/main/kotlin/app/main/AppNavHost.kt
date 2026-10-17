@@ -6,13 +6,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import app.data.repo.AuthState
 import app.feature.account.AccountEnvironment
 import app.feature.account.AccountEnvironments
 import app.feature.account.LocalAccountEnvironment
@@ -21,6 +25,8 @@ import app.feature.account.plans.planDestinations
 import app.feature.account.shell.RootGate
 import app.feature.account.shell.ShellTabBar
 import app.feature.capture.captureDestinations
+import app.feature.capture.share.ShareIn
+import app.feature.capture.share.ShareInbox
 import app.feature.memory.memoryDestinations
 import app.feature.social.socialDestinations
 import app.model.AppRoute
@@ -59,6 +65,16 @@ fun AppNavHost(
             }
             ShellTabBar(navController, env, Modifier.align(Alignment.BottomCenter))
             val ready = RootGate(navController, env)
+            // share.in: photos shared from another app open the camera (which takes them as a library selection) once the
+            // person is home — signed in and onboarded; signed out, sign-in and onboarding come first.
+            val shared by ShareInbox.pending.collectAsState()
+            val entry by navController.currentBackStackEntryAsState()
+            val signedIn = env.backend.authState.collectAsState().value is AuthState.SignedIn
+            LaunchedEffect(ready, signedIn, shared != null, entry?.destination) {
+                if (ready && signedIn && shared != null && ShareIn.opensCameraFrom(entry?.destination)) {
+                    navController.navigate(AppRoute.Camera()) { launchSingleTop = true }
+                }
+            }
             // Until the session is known nothing shows, so no screen flashes before sign-up / home.
             if (!ready) Box(Modifier.fillMaxSize().background(PageRoles.page))
             // Confirmations raised by the account flows, shown as platform toasts (C-26); they outlive the

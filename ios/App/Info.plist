@@ -11,6 +11,22 @@
 	     (SessionStorage.appSession; the associated-appclip-app-identifiers entitlement grants the access). -->
 	<key>AppClipKeychainAccessGroup</key>
 	<string>$(AppIdentifierPrefix)$(APP_BUNDLE_ID).Clip</string>
+	<!-- share.in: the Share Extension opens `<bundle id>://share` to hand the shared photos over (they wait in the App
+	     Group inbox; the link carries nothing). The only registered scheme: widget links (`app://`) stay unregistered
+	     (AppModels DeepLinkParser). -->
+	<key>AppURLScheme</key>
+	<string>$(APP_BUNDLE_ID)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>$(APP_BUNDLE_ID).share</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(APP_BUNDLE_ID)</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<!-- Silent widget pushes for muted groups (docs/SPEC_FLAGS.md T6). -->

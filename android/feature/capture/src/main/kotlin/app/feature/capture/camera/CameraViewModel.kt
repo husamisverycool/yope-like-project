@@ -13,6 +13,7 @@ import app.feature.capture.data.CaptureData
 import app.feature.capture.data.CaptureHandoff
 import app.feature.capture.data.CapturePrefs
 import app.feature.capture.data.CapturedMedia
+import app.feature.capture.data.PickedFile
 import app.feature.capture.sendto.SendToViewModel
 import app.media.Lens
 import app.model.SessionPromptGate
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.Instant
+import java.time.LocalDate
 
 /**
  * `camera.capture`: opens to the camera; one tap captures a photo and hands it to `camera.sendto`
@@ -87,6 +89,11 @@ class CameraViewModel(
         val trim: TrimRequest? = null,
         /** camera.trim: the picked video could not be trimmed — the "Video too long" alert. */
         val videoTooLong: Boolean = false,
+        /**
+         * The most items the library picker offers (`batch_max_photos`, a public app_config key; several photos in one
+         * post); 1 until the server's value is known.
+         */
+        val selectionLimit: Int = 1,
     ) {
         val showControls: Boolean get() = permission == Permission.Granted && session != Session.Unavailable
 
@@ -128,11 +135,18 @@ class CameraViewModel(
 
     private var groupsJob: Job? = null
 
+    /** A library selection on its way to send-to: each video over the limit goes through the trimmer in turn first. */
+    private val selection = mutableListOf<CapturedMedia>()
+
     init {
         viewModelScope.launch {
             val premium = runCatching { data.isPremium() }.getOrDefault(false)
             state.update { it.copy(videoAvailable = premium) }
             if (state.value.session == Session.Live) rebind()
+        }
+        viewModelScope.launch {
+            val limit = runCatching { data.batchMaxPhotos() }.getOrNull()
+            if (limit != null && limit > 0) state.update { it.copy(selectionLimit = limit) }
         }
     }
 
@@ -362,48 +376,94 @@ class CameraViewModel(
      * A photo or video picked in the system Photo Picker (already copied to [file]). A video longer than the camera's
      * limit goes to the trimmer first (camera.trim; the server refuses longer videos, `video_too_long`).
      */
-    fun onPicked(file: File, kind: MediaKind) {
-        val media = when (kind) {
-            MediaKind.Video -> {
-                val duration = durationOf(file)?.toInt()?.takeIf { it > 0 } ?: return
-                if (VideoLimit.isTooLong(duration.toLong())) {
-                    state.update { it.copy(trim = TrimRequest(file, duration.toLong())) }
-                    return
+    fun onPicked(file: File, kind: MediaKind, takenOn: LocalDate? = null) = onPickedAll(listOf(PickedFile(file, kind, takenOn)))
+
+    /**
+     * Several items picked (or shared from another app, `share.in`) at once, in the order picked: one send-to for the
+     * whole selection, each item its own post with the same `batch_id`. Each video over the limit goes through the
+     * trimmer in turn — its Cancel leaves that video out, a clip that cannot be written is left out after the "Video too
+     * long" alert — and the others go on to send-to.
+     */
+    fun onPickedAll(picked: List<PickedFile>) {
+        val items = picked.mapNotNull { item ->
+            when (item.kind) {
+                MediaKind.Video -> {
+                    val duration = durationOf(item.file)?.toInt()?.takeIf { it > 0 }
+                    if (duration == null) {
+                        item.file.delete()
+                        null
+                    } else {
+                        CapturedMedia(MediaKind.Video, item.file, null, null, duration, fromLibrary = true, takenOn = item.takenOn)
+                    }
                 }
-                CapturedMedia(MediaKind.Video, file, null, null, duration, fromLibrary = true)
-            }
-            else -> {
-                val size = sizeOf(file)
-                CapturedMedia(MediaKind.Photo, file, size?.first, size?.second, null, fromLibrary = true)
+                else -> {
+                    val size = sizeOf(item.file)
+                    CapturedMedia(MediaKind.Photo, item.file, size?.first, size?.second, null, fromLibrary = true, takenOn = item.takenOn)
+                }
             }
         }
-        handoff.put(media, contextGroupId, replyToPostId, questionId)
+        if (items.isEmpty()) return
+        val kept = items.map { it.file }.toSet()
+        selection.filter { it.file !in kept }.forEach { it.file.delete() }
+        selection.clear()
+        selection += items
+        continueSelection()
+    }
+
+    /** The next video over the limit opens the trimmer; with none left, send-to opens on the selection. */
+    private fun continueSelection() {
+        val long = selection.firstOrNull { it.kind == MediaKind.Video && VideoLimit.isTooLong((it.durationMs ?: 0).toLong()) }
+        if (long != null) {
+            state.update { it.copy(trim = TrimRequest(long.file, (long.durationMs ?: 0).toLong())) }
+            return
+        }
+        val first = selection.firstOrNull() ?: return
+        val more = selection.drop(1)
+        selection.clear()
+        handoff.put(first, contextGroupId, replyToPostId, questionId, more)
         events.trySend(Event.OpenSendTo)
     }
 
     /** Where the trimmer writes the clip (the capture folder, like a recording). */
     fun trimTarget(): File = File(captureDir, "trim-${clock()}.mp4")
 
-    /** The trimmer closed: the clip opens send-to; Cancel returns to the camera; a failure shows the alert. */
+    /**
+     * The trimmer closed: the clip takes the video's place in the selection; Cancel leaves the video out (back to the
+     * camera when it was the only item); a failure shows the alert.
+     */
     fun onTrimmed(trimmed: File?, failed: Boolean) {
         val request = state.value.trim ?: return
         state.update { it.copy(trim = null) }
         request.file.delete()
+        val index = selection.indexOfFirst { it.file == request.file }
+        val original = selection.getOrNull(index)
         if (trimmed == null) {
-            if (failed) state.update { it.copy(videoTooLong = true) }
+            if (index >= 0) selection.removeAt(index)
+            if (failed) state.update { it.copy(videoTooLong = true) } else continueSelection()
             return
         }
         val duration = durationOf(trimmed)?.takeIf { it > 0 }
         if (duration == null || VideoLimit.isTooLong(duration)) {
             trimmed.delete()
+            if (index >= 0) selection.removeAt(index)
             state.update { it.copy(videoTooLong = true) }
             return
         }
-        handoff.put(CapturedMedia(MediaKind.Video, trimmed, null, null, duration.toInt(), fromLibrary = true), contextGroupId, replyToPostId, questionId)
-        events.trySend(Event.OpenSendTo)
+        val clip = CapturedMedia(MediaKind.Video, trimmed, null, null, duration.toInt(), fromLibrary = true, takenOn = original?.takenOn)
+        if (index >= 0) {
+            selection[index] = clip
+        } else {
+            selection.clear()
+            selection += clip
+        }
+        continueSelection()
     }
 
-    fun dismissVideoTooLong() = state.update { it.copy(videoTooLong = false) }
+    /** The "Video too long" alert closed: the rest of the selection goes on (nothing when it was the only item). */
+    fun dismissVideoTooLong() {
+        state.update { it.copy(videoTooLong = false) }
+        continueSelection()
+    }
 
     override fun onCleared() {
         recording?.stop()

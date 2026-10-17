@@ -61,7 +61,12 @@ final class CaptureTestRig {
         return calendar.date(from: DateComponents(year: 2026, month: 10, day: 15, hour: 12)) ?? Date(timeIntervalSince1970: 0)
     }()
 
-    func cameraModel(contextGroupID: String? = nil, now: Date = CaptureTestRig.fixedNow) -> CameraCaptureModel {
+    func cameraModel(
+        contextGroupID: String? = nil,
+        now: Date = CaptureTestRig.fixedNow,
+        batchLimit: @escaping @MainActor () async -> Int? = { nil },
+        sharedItems: @escaping @MainActor (Int) async -> [CapturedMedia] = { _ in [] }
+    ) -> CameraCaptureModel {
         CameraCaptureModel(
             contextGroupID: contextGroupID,
             camera: camera,
@@ -70,7 +75,9 @@ final class CaptureTestRig {
             navigation: navigation,
             overnight: overnightModel(contextGroupID: contextGroupID, now: now),
             longPressThreshold: .milliseconds(20),
-            clock: { now }
+            clock: { now },
+            batchLimit: batchLimit,
+            sharedItems: sharedItems
         )
     }
 
@@ -94,12 +101,14 @@ final class CaptureTestRig {
 
     func sendToModel(
         media: CapturedMedia = .photo(CaptureFakes.still(Tokens.Colors.globalAccent), capturedAt: Date()),
+        more: [CapturedMedia] = [],
         contextGroupID: String? = nil,
         onClose: @escaping @MainActor () -> Void = {},
         onSent: @escaping @MainActor () -> Void = {}
     ) -> SendToModel {
         SendToModel(
             media: media,
+            more: more,
             contextGroupID: contextGroupID,
             groups: groups,
             premium: premium,

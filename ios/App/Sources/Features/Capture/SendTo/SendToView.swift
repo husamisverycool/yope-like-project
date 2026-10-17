@@ -123,6 +123,14 @@ struct SendToView: View {
         MetricStack(alignment: .center) {
             preview
                 .metricGap(Preview.topBelowHeaderCircle, from: .top, to: .top)
+            if model.showsSelection {
+                // Several photos: the selection strip (C-17 tiles, Retro's composer strip, VID-COMP) a section gap below
+                // the photo; the groups label then keeps its section gap below the strip.
+                SendToSelectionStrip(model: model)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilitySortPriority(6)
+                    .metricGap(Tokens.Sizes.globalSectionGap, from: .bottom, to: .top)
+            }
             Text(Copy.cameraSendtoGroupsLabel)
                 .dsTextRole(TextRole.meta)
                 .foregroundStyle(Tokens.Colors.globalTextSecondary)
@@ -435,5 +443,46 @@ struct SendToMessageSheet: View {
         .dsSheetBackground()
         .presentationDragIndicator(.visible)
         .onAppear { isFocused = true }
+    }
+}
+
+/// Several photos (camera.sendto.md "Several photos"): the selection as a C-17 strip — Retro's composer shows its
+/// selected media in the week-strip tile style (VID-COMP) — tiles `size.global.stripTileWidth` × `.stripTileHeight`,
+/// `size.global.stripGap` apart with the page showing through, only the strip's outer corners rounded
+/// (`radius.global.card`), from the leading `size.global.screenMargin`; each tile the photo aspect-fill (a video's first
+/// frame with the video marker, `layout.global.videoMarker`), `color.global.controlOnDeep` until decoded. No number
+/// anywhere (tenet 2): VoiceOver reads the strip as one element, `camera.sendto.a11y.selection`.
+struct SendToSelectionStrip: View {
+    let model: SendToModel
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Tokens.Sizes.globalStripGap) {
+                ForEach(model.items) { item in
+                    tile(item)
+                }
+            }
+            .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
+            .padding(.leading, Tokens.Sizes.globalScreenMargin)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(Copy.cameraSendtoA11ySelection))
+        .accessibilityIdentifier("camera.sendto.selection")
+    }
+
+    private func tile(_ item: CapturedMedia) -> some View {
+        ZStack {
+            Tokens.Colors.globalControlOnDeep
+            if let image = model.thumbnails[item.id] {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            }
+        }
+        .frame(width: Tokens.Sizes.globalStripTileWidth, height: Tokens.Sizes.globalStripTileHeight)
+        .clipShape(Rectangle())
+        .overlay(alignment: .topTrailing) {
+            if let video = item.video { VideoTileMarker(durationMs: video.durationMs) }
+        }
     }
 }

@@ -42,8 +42,12 @@ final class CameraCaptureModel {
     private(set) var isCapturing = false
     private(set) var isVideoAvailable = false
     private(set) var showsCoach = false
-    /// A capture waiting in `camera.sendto` (presented while non-nil).
+    /// A capture waiting in `camera.sendto` (presented while non-nil); for several library photos, the first of them.
     var captured: CapturedMedia? = nil
+    /// The rest of a library selection (several photos in one post), in the order picked; empty for one capture.
+    private(set) var capturedMore: [CapturedMedia] = []
+    /// The most items the library picker offers (`batch_max_photos`, a public app_config key); 1 until it is known.
+    private(set) var selectionLimit = 1
     /// camera.trim: a library video longer than `camera.capture.duration.videoMax` in the system trimmer (presented while
     /// non-nil); send-to follows with the trimmed copy.
     var trimming: CaptureTrimRequest? = nil
@@ -63,6 +67,12 @@ final class CameraCaptureModel {
     private let clock: @MainActor () -> Date
     private let navigation: CaptureNavigation
     private let longPressThreshold: Duration
+    /// `public_app_config.batch_max_photos` (nil when unknown: one photo).
+    private let batchLimit: @MainActor () async -> Int?
+    /// Photos shared from another app (share.in), waiting in the App Group inbox; empty when none.
+    private let sharedItems: @MainActor (_ limit: Int) async -> [CapturedMedia]
+    /// A library selection on its way to send-to: videos over the limit go through the trimmer one at a time first.
+    @ObservationIgnored private var pendingSelection: [CapturedMedia] = []
     @ObservationIgnored private var longPressTask: Task<Void, Never>?
     @ObservationIgnored private var maxDurationTask: Task<Void, Never>?
     @ObservationIgnored private var isTouching = false
@@ -79,7 +89,9 @@ final class CameraCaptureModel {
         navigation: CaptureNavigation,
         overnight: OvernightCaptureModel? = nil,
         longPressThreshold: Duration = CameraCaptureModel.platformLongPress,
-        clock: @escaping @MainActor () -> Date = { Date() }
+        clock: @escaping @MainActor () -> Date = { Date() },
+        batchLimit: @escaping @MainActor () async -> Int? = { nil },
+        sharedItems: @escaping @MainActor (_ limit: Int) async -> [CapturedMedia] = { _ in [] }
     ) {
         self.contextGroupID = contextGroupID
         self.overnight = overnight
@@ -89,6 +101,8 @@ final class CameraCaptureModel {
         self.clock = clock
         self.navigation = navigation
         self.longPressThreshold = longPressThreshold
+        self.batchLimit = batchLimit
+        self.sharedItems = sharedItems
         position = Self.sessionPosition
         camera.onInterruption = { [weak self] interrupted in
             guard let self else { return }
@@ -108,6 +122,7 @@ final class CameraCaptureModel {
 
     /// First open: the system alert appears directly over this screen (no pre-prompt).
     func appear() async {
+        Task { [weak self] in await self?.loadSelectionLimit() }
         switch camera.authorization() {
         case .granted:
             break
@@ -131,6 +146,24 @@ final class CameraCaptureModel {
     /// `camera.capture.title`: "Week {number}", the week the photo will be added to.
     var title: String {
         Copy.cameraCaptureTitle(number: String(CaptureFormat.weekNumber(of: clock())))
+    }
+
+    /// `batch_max_photos` for the library picker; it stays 1 when the server's value cannot be read.
+    func loadSelectionLimit() async {
+        if let limit = await batchLimit(), limit > 0 { selectionLimit = limit }
+    }
+
+    /// share.in: photos shared from another app open send-to as a library selection would (trimmer first for long videos).
+    /// Waits while a capture is already being sent or trimmed; the items stay in the inbox until then.
+    func takeSharedItems() async {
+        guard captured == nil, trimming == nil, pendingSelection.isEmpty else { return }
+        await loadSelectionLimit()
+        let items = await sharedItems(selectionLimit)
+        guard !items.isEmpty, captured == nil, trimming == nil, pendingSelection.isEmpty else {
+            items.forEach { $0.removeTemporaryFiles() }
+            return
+        }
+        didPick(items)
     }
 
     func disappear() async {
@@ -225,6 +258,7 @@ final class CameraCaptureModel {
         defer { isCapturing = false }
         do {
             let still = try await camera.capturePhoto(flash: isFlashOn && isFlashAvailable)
+            capturedMore = []
             captured = .photo(still, capturedAt: Date())
         } catch {
             phase = .unavailable
@@ -301,6 +335,7 @@ final class CameraCaptureModel {
         }
         await startSession()
         if let video {
+            capturedMore = []
             captured = .video(video, capturedAt: Date())
         }
     }
@@ -319,49 +354,97 @@ final class CameraCaptureModel {
     /// A photo, Live Photo or video picked in the system picker (no library permission). A video longer than the camera's
     /// limit goes to the system trimmer first (camera.trim; the server refuses longer videos, `video_too_long`).
     func didPick(_ media: CapturedMedia) {
-        if media.needsPremium && !isVideoAvailable && !hasPromptedThisScreen {
+        didPick([media])
+    }
+
+    /// Several items picked (or shared, share.in) at once, in the order picked: one send-to for the whole selection, each
+    /// item its own post with the same `batch_id`. Each video longer than the limit goes through the trimmer in turn —
+    /// its Cancel leaves that video out, and one that cannot be trimmed is left out after the "Video too long" alert; the
+    /// others go on to send-to.
+    func didPick(_ items: [CapturedMedia]) {
+        guard !items.isEmpty else { return }
+        if items.contains(where: \.needsPremium) && !isVideoAvailable && !hasPromptedThisScreen {
             hasPromptedThisScreen = true
             if premium.presentPaywallIfAllowed() { return }
         }
-        if let video = media.video, CaptureVideoLimit.isTooLong(video.durationMs) {
+        pendingSelection = items
+        continueSelection()
+    }
+
+    /// The next video over the limit opens the trimmer; with none left, send-to opens on the selection.
+    private func continueSelection() {
+        if let item = pendingSelection.first(where: { $0.video.map { CaptureVideoLimit.isTooLong($0.durationMs) } ?? false }),
+           let video = item.video {
             if VideoTrimmer.canTrim(video.fileURL) {
-                trimming = CaptureTrimRequest(video: video)
+                trimming = CaptureTrimRequest(video: video, mediaID: item.id)
             } else {
-                media.removeTemporaryFiles()
+                dropFromSelection(item.id)
+                item.removeTemporaryFiles()
+                // The alert's dismissal continues with the rest (`videoTooLongDismissed`).
                 isVideoTooLong = true
             }
             return
         }
-        captured = media
+        guard let first = pendingSelection.first else { return }
+        capturedMore = Array(pendingSelection.dropFirst())
+        pendingSelection = []
+        captured = first
     }
 
-    /// The trimmer closed: the trimmed copy opens send-to; Cancel returns to the camera; a failure shows the alert.
+    private func dropFromSelection(_ id: UUID) {
+        pendingSelection.removeAll { $0.id == id }
+    }
+
+    /// The "Video too long" alert closed: the rest of the selection goes on (nothing when it was the only item).
+    func videoTooLongDismissed() {
+        isVideoTooLong = false
+        continueSelection()
+    }
+
+    /// The trimmer closed: the trimmed copy takes the video's place in the selection; Cancel leaves the video out (back to
+    /// the camera when it was the only item); a failure shows the alert.
     func didTrim(_ request: CaptureTrimRequest, to trimmed: URL?, failed: Bool) async {
         trimming = nil
         CapturedMedia.video(request.video, capturedAt: clock()).removeTemporaryFiles()
+        let original = pendingSelection.first { $0.id == request.mediaID }
         guard let trimmed else {
-            if failed { isVideoTooLong = true }
+            if let id = request.mediaID { dropFromSelection(id) }
+            if failed {
+                isVideoTooLong = true
+            } else {
+                continueSelection()
+            }
             return
         }
         guard let duration = await CaptureDraftBuilder.durationMs(of: trimmed), !CaptureVideoLimit.isTooLong(duration) else {
             try? FileManager.default.removeItem(at: trimmed)
+            if let id = request.mediaID { dropFromSelection(id) }
             isVideoTooLong = true
             return
         }
-        captured = .video(CaptureVideo(fileURL: trimmed, durationMs: duration), capturedAt: clock())
+        let clip = CapturedMedia.video(CaptureVideo(fileURL: trimmed, durationMs: duration), capturedAt: clock(), takenOn: original?.takenOn)
+        if let index = pendingSelection.firstIndex(where: { $0.id == request.mediaID }) {
+            pendingSelection[index] = clip
+        } else {
+            pendingSelection = [clip]
+        }
+        continueSelection()
     }
 
     // MARK: Send-to results
 
-    /// ✕ in send-to: the capture is discarded and the camera is back.
+    /// ✕ in send-to: the capture (the whole selection) is discarded and the camera is back.
     func discardCapture() {
         captured?.removeTemporaryFiles()
+        capturedMore.forEach { $0.removeTemporaryFiles() }
+        capturedMore = []
         captured = nil
     }
 
     /// Send tapped: the send-to sheet and the camera close at once.
     func didSend() {
         captured = nil
+        capturedMore = []
         navigation.closeCapture()
     }
 }

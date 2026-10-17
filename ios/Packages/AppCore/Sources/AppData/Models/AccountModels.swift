@@ -165,11 +165,13 @@ public struct PublicAppConfig: Codable, Hashable, Sendable {
     /// How long one `set_typing(true)` shows the typing line (`typing_ttl_s`, migration 0048); the apps call it again
     /// every half of it while typing. Nil = not set: no typing calls.
     public var typingTTLSeconds: Int?
+    /// Most photos one selection (one post of several photos) may hold (`batch_max_photos`, migration 0051); nil = not set.
+    public var batchMaxPhotos: Int?
 
     public init(
         invitationWindowSeconds: Int? = nil, maxGroupMembers: Int? = nil, weekStartISODay: Int? = nil,
         freeHistoryDays: Int? = nil, minAgeYears: Int? = nil, messageEditWindowSeconds: Int? = nil,
-        typingTTLSeconds: Int? = nil
+        typingTTLSeconds: Int? = nil, batchMaxPhotos: Int? = nil
     ) {
         self.invitationWindowSeconds = invitationWindowSeconds
         self.maxGroupMembers = maxGroupMembers
@@ -178,6 +180,7 @@ public struct PublicAppConfig: Codable, Hashable, Sendable {
         self.minAgeYears = minAgeYears
         self.messageEditWindowSeconds = messageEditWindowSeconds
         self.typingTTLSeconds = typingTTLSeconds
+        self.batchMaxPhotos = batchMaxPhotos
     }
 
     struct Row: Decodable {
@@ -197,7 +200,8 @@ public struct PublicAppConfig: Codable, Hashable, Sendable {
             freeHistoryDays: values["free_history_days"],
             minAgeYears: values["min_age_years"],
             messageEditWindowSeconds: values["message_edit_window_s"],
-            typingTTLSeconds: values["typing_ttl_s"]
+            typingTTLSeconds: values["typing_ttl_s"],
+            batchMaxPhotos: values["batch_max_photos"]
         )
     }
 }

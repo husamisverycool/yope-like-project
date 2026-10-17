@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The Share Extension's privacy manifest (share.in): it copies the photos and videos the person shares into the App
+     Group container for the app (nothing is sent off the device by the extension; the app uploads only what the person
+     then sends). No required-reason API, no tracking, no tracking domains. Answers: docs/PRIVACY_LABELS.md. -->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array></array>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array></array>
+</dict>
+</plist>

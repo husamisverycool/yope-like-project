@@ -482,6 +482,8 @@
     <!-- Retro · camera.sendto · verbatim · SOURCED -->
     <string name="camera_sendto_a11y_save" formatted="false">Save to Camera Roll</string>
     <!-- Retro · camera.sendto · new · SOURCED -->
+    <string name="camera_sendto_a11y_selection" formatted="false">Selected photos</string>
+    <!-- Retro · camera.sendto · new · SOURCED -->
     <string name="camera_sendto_a11y_voice" formatted="false">Add a voice note</string>
     <!-- Retro · camera.sendto · verbatim · SOURCED -->
     <string name="camera_sendto_cancel" formatted="false">Cancel</string>

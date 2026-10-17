@@ -6,6 +6,7 @@ import app.data.media.upload.NewPost
 import app.data.media.upload.UploadProgress
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -76,7 +77,8 @@ class PostSend(private val data: CaptureData, private val scope: CoroutineScope)
                     is UploadProgress.Done -> {
                         draftId = null
                         state.value = Status.Sent(progress.postIds)
-                        job?.cancel()
+                        // This follow ends (not `job`: a selection's next photo may already be following its own draft).
+                        this@launch.cancel()
                     }
                     is UploadProgress.Failed -> {
                         permanent = true

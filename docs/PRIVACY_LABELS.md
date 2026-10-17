@@ -3,8 +3,11 @@
 The answers to paste into App Store Connect → your app → **App Privacy** (OWNER_SETUP.md §1.7) and Play Console →
 **App content → Data safety** (OWNER_SETUP.md §2.4), derived from what the code sends off the phone and keeps. Each
 answer names the code that does it. The iPhone app carries the same answers in its privacy manifests
-(`ios/App/PrivacyInfo.xcprivacy`, `ios/AppClip/PrivacyInfo.xcprivacy`; the widget and notification extensions collect
-nothing: `ios/Widgets/PrivacyInfo.xcprivacy`, `ios/NotificationService/PrivacyInfo.xcprivacy`).
+(`ios/App/PrivacyInfo.xcprivacy`, `ios/AppClip/PrivacyInfo.xcprivacy`; the widget, notification and share extensions
+collect nothing: `ios/Widgets/PrivacyInfo.xcprivacy`, `ios/NotificationService/PrivacyInfo.xcprivacy`,
+`ios/ShareExtension/PrivacyInfo.xcprivacy` — the share extension only copies the shared photos into the App Group container
+for the app, share.in). A library or shared photo's upload carries the day it was taken (`media.taken_on`, the date only —
+never a time or a place; migration 0050): part of the photo's own data, not a new type.
 
 Definitions used (read 2026-10-17):
 

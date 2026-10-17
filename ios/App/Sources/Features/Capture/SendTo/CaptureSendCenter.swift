@@ -49,8 +49,8 @@ final class CaptureSendCenter {
         confirmations.show(text)
     }
 
-    /// Uploads and posts one capture while the composer waits. Posted: `haptic.global.send` and the request's
-    /// confirmation; the camera's temporary files are removed. Failed: `haptic.global.error`; the outbox copy is
+    /// Uploads and posts one capture while the composer waits. Posted: `haptic.global.send` (for the last photo of a
+    /// selection only, `isFinal`) and the request's confirmation; the camera's temporary files are removed. Failed: `haptic.global.error`; the outbox copy is
     /// discarded (the composer still holds the capture, and Try Again sends it as a new draft), the camera's files stay.
     func send(_ request: CaptureSendRequest) async -> Outcome {
         var draft: PostDraft
@@ -71,7 +71,7 @@ final class CaptureSendCenter {
             CaptureDraftBuilder.cleanUp(request)
             request.removeTemporaryFiles()
             postedCount += 1
-            playHaptic(Tokens.Haptics.globalSend)
+            if request.isFinal { playHaptic(Tokens.Haptics.globalSend) }
             if let text = request.confirmation { confirm(text) }
             return .posted
         } catch {

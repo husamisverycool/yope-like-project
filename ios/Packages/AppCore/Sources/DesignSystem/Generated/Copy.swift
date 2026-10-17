@@ -483,6 +483,8 @@ public enum Copy {
     public static var cameraSendtoA11yClose: String { CopyLookup.string("camera.sendto.a11y.close", default: "Close") }
     /// "Save to Camera Roll" — Retro · camera.sendto · verbatim · SOURCED
     public static var cameraSendtoA11ySave: String { CopyLookup.string("camera.sendto.a11y.save", default: "Save to Camera Roll") }
+    /// "Selected photos" — Retro · camera.sendto · new · SOURCED
+    public static var cameraSendtoA11ySelection: String { CopyLookup.string("camera.sendto.a11y.selection", default: "Selected photos") }
     /// "Add a voice note" — Retro · camera.sendto · new · SOURCED
     public static var cameraSendtoA11yVoice: String { CopyLookup.string("camera.sendto.a11y.voice", default: "Add a voice note") }
     /// "Cancel" — Retro · camera.sendto · verbatim · SOURCED

@@ -1,11 +1,13 @@
 package app.data.media.upload
 
 import app.data.model.DataJson
+import app.data.model.LocalDateSerializer
 import app.data.model.MediaKind
 import app.data.model.NewMedia
 import kotlinx.serialization.Serializable
 import java.io.File
 import java.io.FileOutputStream
+import java.time.LocalDate
 
 /** One file of a post: where it is on the device, where it goes in storage, and its type. */
 @Serializable
@@ -49,6 +51,10 @@ data class PostDraft(
     val questionGroupId: String? = null,
     /** The chosen groups' open invitations this post answers (camera.sendto; `p_invitation_ids`, migration 0035). */
     val invitationIds: List<String>? = null,
+    /** `media.taken_on` (migration 0050): the day a library photo was taken, in the device's zone; null for camera photos. */
+    @Serializable(with = LocalDateSerializer::class) val takenOn: LocalDate? = null,
+    /** `media.batch_id` (migration 0051): every photo of one selection shares it (several photos in one post); null alone. */
+    val batchId: String? = null,
     // Progress.
     val uploaded: Set<String> = emptySet(),
     val mediaInserted: Boolean = false,
@@ -75,6 +81,8 @@ data class PostDraft(
         frontWidth = frontWidth,
         frontHeight = frontHeight,
         durationMs = durationMs,
+        takenOn = takenOn,
+        batchId = batchId,
     )
 }
 

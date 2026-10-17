@@ -466,4 +466,8 @@ data class NewMedia(
     @SerialName("front_width") val frontWidth: Int? = null,
     @SerialName("front_height") val frontHeight: Int? = null,
     @SerialName("duration_ms") val durationMs: Int? = null,
+    /** Migration 0050: the day a library photo was taken, in the device's zone (the date only, never a time or a place); null for camera photos. */
+    @SerialName("taken_on") val takenOn: LocalDate? = null,
+    /** Migration 0051: one id shared by every photo of one selection (several photos in one post); null for a single photo. */
+    @SerialName("batch_id") val batchId: String? = null,
 )

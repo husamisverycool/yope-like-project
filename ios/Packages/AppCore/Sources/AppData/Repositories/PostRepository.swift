@@ -14,10 +14,17 @@ public struct NewMedia: Codable, Hashable, Sendable {
     public var frontHeight: Int?
     /// Required for video; the Live Photo motion length.
     public var durationMs: Int?
+    /// Migration 0050: the day a library photo was taken, in the device's zone (the date only; never a time or a place).
+    /// Nil for camera photos.
+    public var takenOn: LocalDate?
+    /// Migration 0051: one id shared by every photo of one selection (several photos in one post, at most
+    /// `batch_max_photos`); nil for a single photo.
+    public var batchID: String?
 
     public init(
         id: MediaID, kind: MediaKind, originalPath: String, frontOriginalPath: String? = nil, motionPath: String? = nil,
-        width: Int? = nil, height: Int? = nil, frontWidth: Int? = nil, frontHeight: Int? = nil, durationMs: Int? = nil
+        width: Int? = nil, height: Int? = nil, frontWidth: Int? = nil, frontHeight: Int? = nil, durationMs: Int? = nil,
+        takenOn: LocalDate? = nil, batchID: String? = nil
     ) {
         self.id = id
         self.kind = kind
@@ -29,6 +36,8 @@ public struct NewMedia: Codable, Hashable, Sendable {
         self.frontWidth = frontWidth
         self.frontHeight = frontHeight
         self.durationMs = durationMs
+        self.takenOn = takenOn
+        self.batchID = batchID
     }
 
     var row: JSONObject {
@@ -43,6 +52,8 @@ public struct NewMedia: Codable, Hashable, Sendable {
             "front_width": .int(frontWidth),
             "front_height": .int(frontHeight),
             "duration_ms": .int(durationMs),
+            "taken_on": .date(takenOn),
+            "batch_id": .text(batchID),
         ]
     }
 }

@@ -242,6 +242,7 @@ const table = {
   "camera.quickaccess.tile.subtitle": "Camera", // Material 3 · camera.quickaccess · PLATFORM
   "camera.sendto.a11y.close": "Close", // Retro · camera.sendto · SOURCED
   "camera.sendto.a11y.save": "Save to Camera Roll", // Retro · camera.sendto · SOURCED
+  "camera.sendto.a11y.selection": "Selected photos", // Retro · camera.sendto · SOURCED
   "camera.sendto.a11y.voice": "Add a voice note", // Retro · camera.sendto · SOURCED
   "camera.sendto.cancel": "Cancel", // Retro · camera.sendto · SOURCED
   "camera.sendto.caption.placeholder": "Add a message…", // Retro · camera.sendto · SOURCED

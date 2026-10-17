@@ -22,6 +22,7 @@ import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironments
 import app.feature.account.invite.InstallReferrerReader
 import app.feature.capture.data.CaptureDataProvider
+import app.feature.capture.share.ShareIn
 import app.feature.capture.widget.CameraShortcuts
 import app.feature.capture.widget.WidgetPrefetch
 import app.links.AppLinks
@@ -74,8 +75,8 @@ class App : Application() {
 }
 
 /**
- * The single activity. Every way in — launcher, invite App Link, widget tap, notification tap —
- * arrives as an intent and is routed into the navigation graph. The appearance follows the system
+ * The single activity. Every way in — launcher, invite App Link, widget tap, notification tap, a share from another app
+ * (share.in) — arrives as an intent and is routed into the navigation graph. The appearance follows the system
  * (`layout.global.appearance`): edge-to-edge with system-bar icons that contrast with the page
  * (`SystemBarStyle.auto`, scrims in the page colour `color.global.background.android` of each appearance),
  * the window background in the page colour of the current appearance, and the Compose content in
@@ -137,8 +138,15 @@ class MainActivity : ComponentActivity() {
         route(intent)
     }
 
-    /** Parsed with the account environment's link codec: the one its invite sheet formats links with. */
+    /**
+     * Parsed with the account environment's link codec: the one its invite sheet formats links with. A share (share.in)
+     * is copied at once, while its read grant holds; the shell opens the camera with it once the person is home.
+     */
     private fun route(intent: Intent?) {
+        if (intent != null && ShareIn.isShare(intent)) {
+            ShareIn.receive(this, intent)
+            return
+        }
         AppLinks.parse(intent, AccountEnvironments.get(this).inviteLinks.codec)?.let(deepLinks::trySend)
     }
 }

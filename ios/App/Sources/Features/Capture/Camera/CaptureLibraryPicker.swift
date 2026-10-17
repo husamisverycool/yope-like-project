@@ -3,7 +3,9 @@
 // (design/surfaces/camera.capture.md).
 // The system photo picker (PHPickerViewController): no library permission; a picked Live Photo
 // arrives as PHLivePhoto and is exported as its still and paired movie
-// (docs/PLATFORM_CONSTRAINTS.md §6).
+// (docs/PLATFORM_CONSTRAINTS.md §6). Up to `batch_max_photos` items (several photos in one post,
+// docs/RESEARCH_FEATURES_2026-10-17.md #1), handed on in the order picked; each carries the day it was taken
+// (`CaptureTakenOn`, migration 0050).
 import AppServices
 import Photos
 import PhotosUI
@@ -11,11 +13,15 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct CaptureLibraryPicker: UIViewControllerRepresentable {
-    /// Called once with the picked media, or nil when cancelled / unreadable.
-    let onFinish: @MainActor (CapturedMedia?) -> Void
+    /// The most items the picker lets the member choose (`batch_max_photos`; 1 while unknown).
+    var selectionLimit: Int = 1
+    /// Called once with the picked media in the order picked (unreadable items left out); empty when cancelled.
+    let onFinish: @MainActor ([CapturedMedia]) -> Void
 
     func makeUIViewController(context: Context) -> PHPickerViewController {
-        let configuration = PhotoLibraryService.pickerConfiguration(selectionLimit: 1, includeVideos: true)
+        var configuration = PhotoLibraryService.pickerConfiguration(selectionLimit: max(1, selectionLimit), includeVideos: true)
+        // The badges show the order the photos will be posted in.
+        if selectionLimit > 1 { configuration.selection = .ordered }
         let picker = PHPickerViewController(configuration: configuration)
         picker.delegate = context.coordinator
         return picker
@@ -29,9 +35,9 @@ struct CaptureLibraryPicker: UIViewControllerRepresentable {
 
     @MainActor
     final class Coordinator: NSObject {
-        let onFinish: @MainActor (CapturedMedia?) -> Void
+        let onFinish: @MainActor ([CapturedMedia]) -> Void
 
-        init(onFinish: @escaping @MainActor (CapturedMedia?) -> Void) {
+        init(onFinish: @escaping @MainActor ([CapturedMedia]) -> Void) {
             self.onFinish = onFinish
         }
     }
@@ -39,20 +45,24 @@ struct CaptureLibraryPicker: UIViewControllerRepresentable {
 
 extension CaptureLibraryPicker.Coordinator: @preconcurrency PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        guard let provider = results.first?.itemProvider else {
-            onFinish(nil)
+        let providers = results.map(\.itemProvider)
+        guard !providers.isEmpty else {
+            onFinish([])
             return
         }
         let finish = onFinish
         Task {
-            let media = await CaptureLibraryImport.media(from: provider)
-            finish(media)
+            var picked: [CapturedMedia] = []
+            for provider in providers {
+                if let media = await CaptureLibraryImport.media(from: provider) { picked.append(media) }
+            }
+            finish(picked)
         }
     }
 }
 
 /// Converts a picker item into `CapturedMedia`: Live Photo → still + paired movie, video → movie
-/// file, image → its data.
+/// file, image → its data; each with the day it was taken (`CaptureTakenOn`).
 enum CaptureLibraryImport {
     private struct LivePhotoFiles: Sendable {
         let still: URL
@@ -63,18 +73,28 @@ enum CaptureLibraryImport {
         if provider.canLoadObject(ofClass: PHLivePhoto.self), let files = await exportLivePhoto(provider),
            let data = try? Data(contentsOf: files.still), let size = ImageEncoder.pixelSize(data) {
             let still = CaptureStill(imageData: data, livePhotoMovieURL: files.movie, pixelWidth: size.width, pixelHeight: size.height, position: nil)
-            return .photo(still, capturedAt: Date())
+            return .photo(still, capturedAt: Date(), takenOn: CaptureTakenOn.fromImage(data))
         }
         if provider.hasItemConformingToTypeIdentifier(UTType.movie.identifier), let file = await copyMovie(provider) {
-            let duration = await CaptureDraftBuilder.durationMs(of: file) ?? 0
-            return .video(CaptureVideo(fileURL: file, durationMs: duration), capturedAt: Date())
+            return await video(at: file)
         }
-        if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier), let data = await imageData(provider),
-           let size = ImageEncoder.pixelSize(data) {
-            let still = CaptureStill(imageData: data, livePhotoMovieURL: nil, pixelWidth: size.width, pixelHeight: size.height, position: nil)
-            return .photo(still, capturedAt: Date())
+        if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier), let data = await imageData(provider) {
+            return photo(data)
         }
         return nil
+    }
+
+    /// A photo file's data (library pick, shared item): nil when it is not an image.
+    static func photo(_ data: Data) -> CapturedMedia? {
+        guard let size = ImageEncoder.pixelSize(data) else { return nil }
+        let still = CaptureStill(imageData: data, livePhotoMovieURL: nil, pixelWidth: size.width, pixelHeight: size.height, position: nil)
+        return .photo(still, capturedAt: Date(), takenOn: CaptureTakenOn.fromImage(data))
+    }
+
+    /// A movie file (library pick, shared item), with its length and creation day.
+    static func video(at file: URL) async -> CapturedMedia {
+        let duration = await CaptureDraftBuilder.durationMs(of: file) ?? 0
+        return .video(CaptureVideo(fileURL: file, durationMs: duration), capturedAt: Date(), takenOn: await CaptureTakenOn.fromMovie(at: file))
     }
 
     private static func temporaryFolder() -> URL? {
