@@ -671,6 +671,8 @@ const table = {
   "onthisday.error.title": "Something went wrong", // Retro · onthisday · SOURCED
   "onthisday.loading": "Loading…", // Retro · onthisday · SOURCED
   "onthisday.menu.delete": "Delete Post", // Retro · onthisday · SOURCED
+  "onthisday.menu.hideDay": "Hide This Day", // Timehop · onthisday · SOURCED
+  "onthisday.menu.hidePhoto": "Hide Photo", // Retro · onthisday · SOURCED
   "onthisday.menu.report": "Report Post", // Retro · onthisday · SOURCED
   "onthisday.menu.save": "Save to Camera Roll", // Retro · onthisday · SOURCED
   "onthisday.mode.day": "On this day…", // Retro · onthisday · SOURCED
@@ -690,6 +692,7 @@ const table = {
   "onthisday.subtitle.day": "On this day · {name}", // Retro · onthisday · SOURCED
   "onthisday.subtitle.shuffle": "Memories · {name}", // Retro · onthisday · SOURCED
   "onthisday.toast.deleted": "Deleted", // Retro · onthisday · SOURCED
+  "onthisday.toast.hidden": "Hidden", // Retro · onthisday · SOURCED
   "onthisday.toast.saved": "Saved!", // Retro · onthisday · SOURCED
   "paywall.close.accessibilityLabel": "Close", // Apple HIG · paywall · VERIFIED
   "paywall.error.products": "Plans aren't available right now. Please try again.", // Retro · paywall · SOURCED
@@ -917,6 +920,13 @@ const table = {
   "settings.blocked.title": "Blocked People", // Retro · settings.blocked · SOURCED
   "settings.blocked.unblock": "Unblock", // Retro · settings.blocked · SOURCED
   "settings.blocked.unknown": "Someone you blocked", // Retro · settings.blocked · SOURCED
+  "settings.hidden.day.detail": "Every photo from this day", // Retro · settings.hidden · SOURCED
+  "settings.hidden.empty.message": "Photos and days you hide from On This Day show up here. Only you see what you hide.", // Retro · settings.hidden · SOURCED
+  "settings.hidden.empty.title": "No hidden memories", // Retro · settings.hidden · SOURCED
+  "settings.hidden.error": "Error loading hidden memories. Tap here to try again.", // Retro · settings.hidden · SOURCED
+  "settings.hidden.title": "Hidden Memories", // Retro · settings.hidden · SOURCED
+  "settings.hidden.unhide": "Unhide", // Timehop · settings.hidden · SOURCED
+  "settings.hidden.unhideError": "There was a problem. Please try again.", // Retro · settings.hidden · SOURCED
   "settings.notifications.categories": "Notification Categories", // Material 3 · settings.notifications · VERIFIED
   "settings.notifications.error": "There was a problem saving your changes. Please try again.", // Retro · settings.notifications · SOURCED
   "settings.notifications.groups.footer": "Turn a group off to mute it. Its photos still reach your widgets.", // Retro · settings.notifications · SOURCED
@@ -941,6 +951,7 @@ const table = {
   "settings.root.blocked": "Blocked People", // Retro · settings.root · SOURCED
   "settings.root.close.accessibilityLabel": "Close", // Apple HIG · settings.root · VERIFIED
   "settings.root.contact": "Contact Us", // Retro · settings.root · SOURCED
+  "settings.root.hiddenMemories": "Hidden Memories", // Retro · settings.root · SOURCED
   "settings.root.manageSubscription": "Your Subscription", // Retro · settings.root · SOURCED
   "settings.root.notifications": "Notification Settings", // Retro · settings.root · SOURCED
   "settings.root.notifications.header": "Notifications", // Retro · settings.root · SOURCED

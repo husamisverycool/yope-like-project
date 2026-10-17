@@ -287,13 +287,20 @@ struct OnThisDayScreen: View {
         .accessibilityIdentifier("onthisday.title")
     }
 
-    /// D. The native menu: save (every memory, owner decision 28), then delete (your memory, destructive) or report
-    /// (someone else's, destructive).
+    /// D. The native menu: save (every memory, owner decision 28), hide the photo or its whole day from your memories
+    /// (every memory, for you only — owner decision 34; Retro's Rewind 'Hide photo'), then delete (your memory,
+    /// destructive) or report (someone else's, destructive).
     private var moreMenu: some View {
         CircleMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.onthisdayA11yMore, style: .glass) {
             if let current = model.current {
                 Button(Copy.onthisdayMenuSave) {
                     Task { await model.save() }
+                }
+                Button(Copy.onthisdayMenuHidePhoto) {
+                    Task { await model.hidePhoto() }
+                }
+                Button(Copy.onthisdayMenuHideDay) {
+                    Task { await model.hideDay() }
                 }
                 if current.isMine {
                     Button(Copy.onthisdayMenuDelete, role: .destructive) {

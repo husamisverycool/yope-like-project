@@ -6,6 +6,7 @@ import app.data.error.DataException
 import app.data.model.Collage
 import app.data.model.Group
 import app.data.model.GroupTribute
+import app.data.model.HiddenMemory
 import app.data.model.HistoryWeek
 import app.data.model.GroupKind
 import app.data.model.Media
@@ -79,11 +80,33 @@ class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBacken
 
     override suspend fun group(groupId: String): Group? = call("group").let { groups[groupId] }
 
+    /** As `on_this_day`: blocked authors and your hidden photos and days (the day in the group's zone) are left out. */
     override suspend fun onThisDay(groupId: String, localDate: LocalDate): List<OnThisDayItem> {
         call("onThisDay")
         lastOnThisDayDate = localDate
-        return onThisDay[groupId].orEmpty().filter { it.authorId !in blocked }
+        val zone = groups[groupId]?.timeZone?.let { java.time.ZoneId.of(it) } ?: java.time.ZoneOffset.UTC
+        return onThisDay[groupId].orEmpty().filter { item ->
+            item.authorId !in blocked && hides.none { it.mediaId == item.mediaId || it.day == item.createdAt.atZone(zone).toLocalDate() }
+        }
     }
+
+    /** Your hidden photos and days (`memory_hides`), oldest hide first. */
+    val hides = mutableListOf<HiddenMemory>()
+
+    /** `hide_memory`: idempotent; exactly one of [mediaId] / [day]. */
+    override suspend fun hideMemory(mediaId: String?, day: LocalDate?) {
+        call("hideMemory")
+        if ((mediaId == null) == (day == null)) throw DataException(api(ApiError.InvalidArgument))
+        if (hides.any { (mediaId != null && it.mediaId == mediaId) || (day != null && it.day == day) }) return
+        val post = mediaId?.let { id -> posts.values.firstOrNull { it.mediaId == id } ?: throw DataException(api(ApiError.MediaNotFound)) }
+        hides += HiddenMemory(
+            id = "h-" + (hides.size + 1), mediaId = mediaId, day = day, createdAt = now, postId = post?.id, groupId = post?.groupId,
+            kind = post?.let { MediaKind.Photo }, thumbPath = post?.let { media[it.mediaId]?.thumbPath }, takenAt = post?.createdAt,
+        )
+    }
+
+    /** `my_hidden_memories`: newest hide first. */
+    override suspend fun hiddenMemories(): List<HiddenMemory> = call("hiddenMemories").let { hides.reversed() }
 
     var lastOnThisDayDate: LocalDate? = null
 

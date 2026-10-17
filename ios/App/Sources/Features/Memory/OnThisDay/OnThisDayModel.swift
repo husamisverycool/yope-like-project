@@ -26,6 +26,8 @@ final class OnThisDayModel {
     /// One memory = one post.
     struct Memory: Identifiable, Equatable, Sendable {
         let id: PostID
+        /// The photo (`hide_memory` p_media_id: Hide Photo).
+        let mediaID: MediaID
         let authorID: UserID
         /// The poster's first name (`{name}` of the subtitle and the photo's label).
         let authorName: String
@@ -89,6 +91,11 @@ final class OnThisDayModel {
     private var playTask: Task<Void, Never>?
     /// The shuffle's pool: every week of the group's history (`group_history_weeks`), read once per session.
     private var historyWeeks: [HistoryWeek]?
+    /// The caller's hidden photos and days (`my_hidden_memories`, read with the shuffle's pool, plus the hides made on
+    /// this page): the dice never picks them (migration 0038).
+    private var hiddenMedia: Set<MediaID> = []
+    private var hiddenDays: Set<LocalDate> = []
+    private var hiddenLoaded = false
 
     /// - Parameters:
     ///   - savePhoto: saves image data with add-only access (`PhotoLibraryService.saveImage`).
@@ -231,6 +238,7 @@ final class OnThisDayModel {
         return posts.map { post in
             Memory(
                 id: post.post.id,
+                mediaID: post.post.mediaID,
                 authorID: post.post.authorID,
                 authorName: names[post.post.authorID] ?? "",
                 displayURL: post.media?.imagePath(for: .display).flatMap { urls[$0] },
@@ -384,20 +392,27 @@ final class OnThisDayModel {
         isPicking = true
         defer { isPicking = false }
         do {
-            let weeks = try await loadHistory(data: data)
-            let shown = shownIDs
-            let candidates = weeks.compactMap { week -> [PostID]? in
-                let unshown = week.postIDs.filter { !shown.contains($0) }
-                return unshown.isEmpty ? nil : unshown
+            _ = try await loadHistory(data: data)
+            try await loadHidden(data: data)
+            var picked: Memory?
+            // Each pass leaves one post out of the pool, so the loop ends when the pool does.
+            while picked == nil {
+                let shown = shownIDs
+                let candidates = (historyWeeks ?? []).compactMap { week -> [PostID]? in
+                    let unshown = week.postIDs.filter { !shown.contains($0) }
+                    return unshown.isEmpty ? nil : unshown
+                }
+                guard !candidates.isEmpty else { return }
+                let week = candidates[min(candidates.count - 1, max(0, randomIndex(candidates.count)))]
+                let postID = week[min(week.count - 1, max(0, randomIndex(week.count)))]
+                if let memory = try await resolve([postID], data: data).first, !isHidden(memory) {
+                    picked = memory
+                } else {
+                    // Hidden by a block, hidden from your memories or gone meanwhile: leave it out of the pool, try another.
+                    dropFromPool(postID)
+                }
             }
-            guard !candidates.isEmpty else { return }
-            let week = candidates[min(candidates.count - 1, max(0, randomIndex(candidates.count)))]
-            let postID = week[min(week.count - 1, max(0, randomIndex(week.count)))]
-            guard let memory = try await resolve([postID], data: data).first else {
-                // Hidden by a block or gone meanwhile: leave it out of the pool and try another.
-                historyWeeks = historyWeeks?.map { HistoryWeek(weekStart: $0.weekStart, postIDs: $0.postIDs.filter { $0 != postID }) }
-                return
-            }
+            guard let memory = picked else { return }
             picks.append(memory)
             if startsShuffle { mode = .shuffle }
             move(to: picks.count - 1, change: change)
@@ -427,6 +442,28 @@ final class OnThisDayModel {
         historyWeeks = weeks
         dependencies.cache.set(weeks, key: key, user: me, postIDs: Set(weeks.flatMap(\.postIDs)))
         return weeks
+    }
+
+    /// `my_hidden_memories`, once per page (the hides made here are added as they happen).
+    private func loadHidden(data: any MemoryDataSource) async throws {
+        guard !hiddenLoaded else { return }
+        let rows = try await data.hiddenMemories()
+        hiddenMedia.formUnion(rows.compactMap(\.mediaID))
+        hiddenDays.formUnion(rows.compactMap(\.day))
+        hiddenLoaded = true
+    }
+
+    /// The photo, or the day it was taken on (group time zone, as `on_this_day` reckons it), is hidden from your memories.
+    private func isHidden(_ memory: Memory) -> Bool {
+        hiddenMedia.contains(memory.mediaID) || hiddenDays.contains(localDay(of: memory))
+    }
+
+    private func localDay(of memory: Memory) -> LocalDate {
+        LocalDate(memory.createdAt, in: timeZone)
+    }
+
+    private func dropFromPool(_ postID: PostID) {
+        historyWeeks = historyWeeks?.map { HistoryWeek(weekStart: $0.weekStart, postIDs: $0.postIDs.filter { $0 != postID }) }
     }
 
     /// `p_limit` of the shuffle's history pages: the API's upper clamp (docs/API.md `group_history_weeks`: 1–52).
@@ -500,6 +537,49 @@ final class OnThisDayModel {
             dependencies.haptics(Tokens.Haptics.globalError)
             dependencies.toasts.show(MemoryFailure(error) == .offline ? Copy.onthisdayOfflineDetail : Copy.onthisdayErrorDetail)
         }
+    }
+
+    // MARK: Hide (the '•••' menu: Hide Photo, Hide This Day — owner decision 34, migration 0038)
+
+    /// "Hide Photo" (any memory): `hide_memory(p_media_id)`; the photo leaves the dial at once (as a deletion does) and
+    /// `onthisday.toast.hidden` confirms. For you only: nothing changes for anyone else. Shown again from Settings →
+    /// Hidden Memories (no undo here: no neighbouring surface has one).
+    func hidePhoto() async {
+        guard let current else { return }
+        await hide(.photo(current.mediaID)) { $0.mediaID == current.mediaID }
+    }
+
+    /// "Hide This Day": `hide_memory(p_day)` with the memory's calendar day in the group's zone; every memory of that day
+    /// leaves the dial at once.
+    func hideDay() async {
+        guard let current else { return }
+        let day = localDay(of: current)
+        let zone = timeZone
+        await hide(.day(day)) { LocalDate($0.createdAt, in: zone) == day }
+    }
+
+    /// Writes the hide, then drops every memory `matches` selects (day memories and shuffle picks). `haptic.global.success`
+    /// + the toast; a failure: `haptic.global.error` + the error / offline line, and the dial stays as it was.
+    private func hide(_ target: MemoryHideTarget, matches: (Memory) -> Bool) async {
+        guard let data = dependencies.data else { return }
+        stopPlaying()
+        do {
+            try await data.hideMemory(target)
+        } catch {
+            dependencies.haptics(Tokens.Haptics.globalError)
+            dependencies.toasts.show(MemoryFailure(error) == .offline ? Copy.onthisdayOfflineDetail : Copy.onthisdayErrorDetail)
+            return
+        }
+        switch target {
+        case let .photo(mediaID): hiddenMedia.insert(mediaID)
+        case let .day(day): hiddenDays.insert(day)
+        }
+        var removed = Set<PostID>()
+        for memory in memories + picks where matches(memory) && removed.insert(memory.id).inserted {
+            removePost(memory.id)
+        }
+        dependencies.haptics(Tokens.Haptics.globalSuccess)
+        dependencies.toasts.show(Copy.onthisdayToastHidden)
     }
 
     // MARK: Deletions (docs/API.md §8.2)

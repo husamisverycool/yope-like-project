@@ -71,6 +71,7 @@ sealed interface AppRoute {
     @Serializable data object SettingsNotifications : AppRoute { override val surface get() = "settings.notifications" }
     @Serializable data object SettingsAccount : AppRoute { override val surface get() = "settings.account" }
     @Serializable data object SettingsBlocked : AppRoute { override val surface get() = "settings.blocked" }
+    @Serializable data object SettingsHidden : AppRoute { override val surface get() = "settings.hidden" }
     @Serializable data object Paywall : AppRoute { override val surface get() = "paywall" }
     @Serializable data class SafetyReport(val groupId: String? = null, val postId: String? = null, val userId: String? = null) : AppRoute { override val surface get() = "safety.report" }
     @Serializable data class SafetyBlock(val userId: String) : AppRoute { override val surface get() = "safety.block" }

@@ -118,6 +118,36 @@
       "level": "SOURCED",
       "notes": "Someone else's memory only; destructive (red). Opens safety.report."
     },
+    "onthisday.menu.hidePhoto": {
+      "text": "Hide Photo",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-panels.png (RWP phone 2: Retro's Rewind '•••' menu 'Hide photo'; design/research/retro-timehop.md 'On this week' entry)",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (docs/RESEARCH_FEATURES_2026-10-17.md #12). Casing matched to the menu's other items, Retro's media-viewer overflow ('Report Post', 'Delete Post'): Title Case for the product object (retro.voice.title-case). Every memory; for you only (hide_memory p_media_id)."
+    },
+    "onthisday.menu.hideDay": {
+      "text": "Hide This Day",
+      "origin": "new",
+      "source_app": "Timehop",
+      "surface": "onthisday",
+      "evidence": "Timehop App Store listing 'Hide your bad memories' (https://apps.apple.com/us/app/id569077959); Google Photos memories 'Hide this date from all memories' (https://support.google.com/photos/answer/9454489), accessed 2026-10-17",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (research #12). Verb first, no period, Title Case as the neighbouring 'Hide Photo'. Every photo taken on that calendar day (group time zone) leaves your memories, for you only (hide_memory p_day)."
+    },
+    "onthisday.toast.hidden": {
+      "text": "Hidden",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt rewind_home_delete_media_success ('Deleted')",
+      "pattern": "retro.voice.confirmation",
+      "level": "SOURCED",
+      "notes": "Verb swap delete → hide (the Rewind's own confirmation after its menu's other action). After Hide Photo and Hide This Day; shown again from Settings → Hidden Memories (no undo: no neighbouring surface has one)."
+    },
     "onthisday.menu.delete": {
       "text": "Delete Post",
       "origin": "verbatim",

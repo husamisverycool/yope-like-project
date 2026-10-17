@@ -533,6 +533,29 @@ final class AccountSnapshotTests: XCTestCase {
         record(NavigationStack { SettingsBlockedView(model: failing) }, "settings.blocked", "error")
     }
 
+    func testSettingsHidden() async {
+        let loading = SettingsHiddenModel(data: fixture.data)
+        record(NavigationStack { SettingsHiddenView(model: loading) }, "settings.hidden", "loading")
+
+        let empty = SettingsHiddenModel(data: fixture.data)
+        await empty.load()
+        record(NavigationStack { SettingsHiddenView(model: empty) }, "settings.hidden", "empty")
+
+        let group = fixture.data.addGroup("Lima family", kind: .family, createdBy: fixture.me.id, members: [fixture.me, fixture.rui])
+        fixture.data.addHiddenMemory(post: fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 60))
+        fixture.data.addHiddenMemory(day: LocalDate(year: 2023, month: 12, day: 5)!)
+        await photos()
+        let loaded = SettingsHiddenModel(data: fixture.data)
+        await loaded.load()
+        record(NavigationStack { SettingsHiddenView(model: loaded) }, "settings.hidden", "default", appearances: AccountSnapshot.both)
+
+        fixture.data.failures["hiddenMemories"] = .http(status: 500)
+        let failing = SettingsHiddenModel(data: fixture.data)
+        await failing.load()
+        record(NavigationStack { SettingsHiddenView(model: failing) }, "settings.hidden", "error")
+        fixture.data.failures = [:]
+    }
+
     // MARK: safety.report (sheet form; the app shows the same reasons as native action sheets)
 
     func testSafetyReport() {

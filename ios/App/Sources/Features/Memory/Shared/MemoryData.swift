@@ -32,6 +32,10 @@ protocol MemoryDataSource: Sendable {
     func deletePost(id: PostID) async throws
     /// The bytes at a (signed) file URL (the original photo, for saving).
     func downloadData(from url: URL) async throws -> Data
+    /// `hide_memory` (migration 0038): one photo or one calendar day leaves your memories, for you only.
+    func hideMemory(_ target: MemoryHideTarget) async throws
+    /// `my_hidden_memories`: your hidden photos and days (the shuffle leaves them out).
+    func hiddenMemories() async throws -> [HiddenMemory]
 
     // birthday.add
     func myPrivateProfile() async throws -> ProfilePrivate?
@@ -148,6 +152,14 @@ struct LiveMemoryData: MemoryDataSource {
 
     func deletePost(id: PostID) async throws {
         try await environment.posts.deletePost(id: id)
+    }
+
+    func hideMemory(_ target: MemoryHideTarget) async throws {
+        try await environment.memories.hideMemory(target)
+    }
+
+    func hiddenMemories() async throws -> [HiddenMemory] {
+        try await environment.memories.myHiddenMemories()
     }
 
     func downloadData(from url: URL) async throws -> Data {

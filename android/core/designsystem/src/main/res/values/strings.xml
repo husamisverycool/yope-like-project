@@ -1339,6 +1339,10 @@
     <string name="onthisday_loading" formatted="false">Loading…</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_menu_delete" formatted="false">Delete Post</string>
+    <!-- Timehop · onthisday · new · SOURCED -->
+    <string name="onthisday_menu_hideday" formatted="false">Hide This Day</string>
+    <!-- Retro · onthisday · adapted · SOURCED -->
+    <string name="onthisday_menu_hidephoto" formatted="false">Hide Photo</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_menu_report" formatted="false">Report Post</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
@@ -1377,6 +1381,8 @@
     <string name="onthisday_subtitle_shuffle">Memories · %1$s</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_toast_deleted" formatted="false">Deleted</string>
+    <!-- Retro · onthisday · adapted · SOURCED -->
+    <string name="onthisday_toast_hidden" formatted="false">Hidden</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_toast_saved" formatted="false">Saved!</string>
     <!-- Apple HIG · paywall · new · VERIFIED -->
@@ -1831,6 +1837,20 @@
     <string name="settings_blocked_unblock" formatted="false">Unblock</string>
     <!-- Retro · settings.blocked · new · SOURCED -->
     <string name="settings_blocked_unknown" formatted="false">Someone you blocked</string>
+    <!-- Retro · settings.hidden · new · SOURCED -->
+    <string name="settings_hidden_day_detail" formatted="false">Every photo from this day</string>
+    <!-- Retro · settings.hidden · new · SOURCED -->
+    <string name="settings_hidden_empty_message" formatted="false">Photos and days you hide from On This Day show up here. Only you see what you hide.</string>
+    <!-- Retro · settings.hidden · new · SOURCED -->
+    <string name="settings_hidden_empty_title" formatted="false">No hidden memories</string>
+    <!-- Retro · settings.hidden · adapted · SOURCED -->
+    <string name="settings_hidden_error" formatted="false">Error loading hidden memories. Tap here to try again.</string>
+    <!-- Retro · settings.hidden · new · SOURCED -->
+    <string name="settings_hidden_title" formatted="false">Hidden Memories</string>
+    <!-- Timehop · settings.hidden · adapted · SOURCED -->
+    <string name="settings_hidden_unhide" formatted="false">Unhide</string>
+    <!-- Retro · settings.hidden · verbatim · SOURCED -->
+    <string name="settings_hidden_unhideerror" formatted="false">There was a problem. Please try again.</string>
     <!-- Material 3 · settings.notifications · new · VERIFIED -->
     <string name="settings_notifications_categories" formatted="false">Notification Categories</string>
     <!-- Retro · settings.notifications · verbatim · SOURCED -->
@@ -1879,6 +1899,8 @@
     <string name="settings_root_close_accessibilitylabel" formatted="false">Close</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_contact" formatted="false">Contact Us</string>
+    <!-- Retro · settings.root · new · SOURCED -->
+    <string name="settings_root_hiddenmemories" formatted="false">Hidden Memories</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->
     <string name="settings_root_managesubscription" formatted="false">Your Subscription</string>
     <!-- Retro · settings.root · verbatim · SOURCED -->

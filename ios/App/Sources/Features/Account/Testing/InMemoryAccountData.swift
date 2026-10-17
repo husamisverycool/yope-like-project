@@ -431,15 +431,42 @@ final class InMemoryAccountData: AccountDataSource {
             userID: try requireUser(), quietStart: settings?.quietStart, quietEnd: settings?.quietEnd,
             timeZone: settings?.timeZone, updatedAt: now, overnight: settings?.overnight ?? true, pausedUntil: until
         )
+        return until
     }
 
     func hasPremium() async throws -> Bool {
         try await record("hasPremium")
         return premium
     }
+
+    // MARK: Hidden memories
+
+    /// The caller's hidden photos and days, newest hide first (as `my_hidden_memories`).
+    var hiddenMemoryRows: [HiddenMemory] = []
+
+    func hiddenMemories() async throws -> [HiddenMemory] {
+        try await record("hiddenMemories")
+        return hiddenMemoryRows
+    }
+
+    func unhideMemory(id: MemoryHideID) async throws {
+        try await record("unhideMemory")
+        hiddenMemoryRows.removeAll { $0.id == id }
+    }
+
+    /// A hidden photo of one of the fixture's posts (`hide_memory` p_media_id) or a hidden day, newest first.
+    @discardableResult
+    func addHiddenMemory(post: PostWithMedia? = nil, day: LocalDate? = nil) -> HiddenMemory {
+        let row = HiddenMemory(
+            id: MemoryHideID(makeID()), mediaID: post?.post.mediaID, day: day, createdAt: now, postID: post?.post.id,
+            groupID: post?.post.groupID, kind: post?.media?.kind, thumbPath: post?.media?.thumbPath ?? post?.media?.originalPath,
+            takenAt: post?.post.createdAt
+        )
+        hiddenMemoryRows.insert(row, at: 0)
+        return row
+    }
 }
 
-        return until
 /// Fixed plans for paywall tests and UI-test scenarios (no store).
 @MainActor
 final class InMemoryPurchases: PurchasesProviding {

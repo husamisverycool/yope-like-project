@@ -79,6 +79,37 @@ data class OnThisDayItem(
     @SerialName("years_ago") val yearsAgo: Int,
 )
 
+/** A `memory_hides` row as `hide_memory` returns it (migration 0038): exactly one of [mediaId] / [day] is set. */
+@Serializable
+data class MemoryHide(
+    val id: String,
+    @SerialName("user_id") val userId: String,
+    @SerialName("media_id") val mediaId: String? = null,
+    val day: LocalDate? = null,
+    @SerialName("created_at") val createdAt: Instant,
+)
+
+/**
+ * One row of `my_hidden_memories` (Settings → Hidden Memories, newest hide first): a hidden day ([day] set) or a hidden
+ * photo you can still see ([mediaId] set, with one post of it, its thumbnail and when that post was made).
+ */
+@Serializable
+data class HiddenMemory(
+    val id: String,
+    @SerialName("media_id") val mediaId: String? = null,
+    val day: LocalDate? = null,
+    @SerialName("created_at") val createdAt: Instant,
+    @SerialName("post_id") val postId: String? = null,
+    @SerialName("group_id") val groupId: String? = null,
+    val kind: MediaKind? = null,
+    /** The thumbnail (the original until renditions are ready). */
+    @SerialName("thumb_path") val thumbPath: String? = null,
+    @SerialName("taken_at") val takenAt: Instant? = null,
+) {
+    /** A hidden day (Hide This Day) rather than one photo. */
+    val isDay: Boolean get() = day != null
+}
+
 /** One row of `create_overnight_post` (§14.3): a group the photo develops in, and when. */
 @Serializable
 data class DevelopingPost(

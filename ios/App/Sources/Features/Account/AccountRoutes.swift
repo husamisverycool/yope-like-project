@@ -18,6 +18,8 @@ enum AccountRoute: Hashable {
     case settingsName
     /// `settings.blocked`
     case settingsBlocked
+    /// `settings.hidden` (Hidden Memories: the photos and days you hid from your memories).
+    case settingsHidden
     /// `onboarding.widget` opened from settings.root → Widgets.
     case settingsWidgets
     /// The Yope-era group profile page, gone in the redesign (MERGE RA-9): chat.thread's header still opens it; it shows
@@ -116,6 +118,8 @@ struct AccountDestination: View {
             SettingsNameScreen()
         case .settingsBlocked:
             SettingsBlockedScreen()
+        case .settingsHidden:
+            SettingsHiddenScreen()
         case .settingsWidgets:
             SettingsWidgetsPage()
         case let .groupProfile(groupID), let .groupSettings(groupID):

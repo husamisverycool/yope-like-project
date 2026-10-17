@@ -24,6 +24,7 @@ import app.feature.account.safety.ReportRoute
 import app.feature.account.safety.reportTarget
 import app.feature.account.settings.SettingsAccountRoute
 import app.feature.account.settings.SettingsBlockedRoute
+import app.feature.account.settings.SettingsHiddenRoute
 import app.feature.account.settings.SettingsNotificationsRoute
 import app.feature.account.settings.SettingsRootRoute
 import app.model.AppRoute
@@ -77,6 +78,7 @@ fun NavGraphBuilder.accountDestinations(navController: NavHostController) {
     composable<AppRoute.SettingsNotifications> { SettingsNotificationsRoute(navController) }
     composable<AppRoute.SettingsAccount> { SettingsAccountRoute(navController) }
     composable<AppRoute.SettingsBlocked> { SettingsBlockedRoute(navController) }
+    composable<AppRoute.SettingsHidden> { SettingsHiddenRoute(navController) }
     composable<AppRoute.Paywall> { PaywallRoute(navController) }
 
     // Safety flows draw over the calling surface (sheet / dialog), so they are dialog destinations.

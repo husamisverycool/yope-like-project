@@ -7,8 +7,10 @@ import app.data.model.Collage
 import app.data.model.DailyInvitation
 import app.data.model.GroupCollage
 import app.data.model.GroupTribute
+import app.data.model.HiddenMemory
 import app.data.model.HistoryWeek
 import app.data.model.InstantSerializer
+import app.data.model.MemoryHide
 import app.data.model.OnThisDayItem
 import app.data.model.Post
 import app.data.model.RenderStatus
@@ -75,6 +77,25 @@ class BrowseRepository(private val api: Api, private val cache: OfflineCache, pr
             put("p_group_id", groupId)
             put("p_local_date", localDate)
         }
+
+    /**
+     * `hide_memory` (migration 0038): one photo ([mediaId], by media, so every group it was sent to) or one calendar day
+     * ([day]) leaves your memories (On This Day, the Memories widget, the shuffle), for you only. Exactly one of the two.
+     * Idempotent: hiding again returns the existing row.
+     */
+    suspend fun hideMemory(mediaId: String? = null, day: LocalDate? = null): MemoryHide {
+        require((mediaId == null) != (day == null)) { "hide_memory: a photo or a day" }
+        return api.rpc(Rpc.HideMemory, MemoryHide.serializer()) {
+            opt("p_media_id", mediaId)
+            opt("p_day", day)
+        }
+    }
+
+    /** `unhide_memory`: a hidden photo or day shows in your memories again (your own rows only; unknown ids: no-op). */
+    suspend fun unhideMemory(hideId: String) = api.rpcUnit(Rpc.UnhideMemory) { put("p_id", hideId) }
+
+    /** `my_hidden_memories`: hidden days and the hidden photos you can still see, newest hide first (Settings). */
+    suspend fun hiddenMemories(): List<HiddenMemory> = api.rpcList(Rpc.MyHiddenMemories, HiddenMemory.serializer())
 
     companion object {
         const val WALL_PAGE = 50

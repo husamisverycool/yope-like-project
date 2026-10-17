@@ -531,3 +531,83 @@ public struct OnThisDayItem: Codable, Hashable, Sendable {
         case yearsAgo = "years_ago"
     }
 }
+
+public typealias MemoryHideID = Identifier<MemoryHide>
+
+/// What `hide_memory` hides from the caller's memories (migration 0038; docs/API.md `hide_memory`): one photo (by media,
+/// so every group it was sent to) or every photo taken on one calendar day. For the caller only.
+public enum MemoryHideTarget: Hashable, Sendable {
+    case photo(MediaID)
+    case day(LocalDate)
+}
+
+/// A row of `memory_hides` (migration 0038), as `hide_memory` returns it: exactly one of `mediaID` / `day` is set.
+public struct MemoryHide: Codable, Hashable, Sendable, Identifiable {
+    public var id: MemoryHideID
+    public var userID: UserID
+    public var mediaID: MediaID?
+    public var day: LocalDate?
+    public var createdAt: Date
+
+    public init(id: MemoryHideID, userID: UserID, mediaID: MediaID?, day: LocalDate?, createdAt: Date) {
+        self.id = id
+        self.userID = userID
+        self.mediaID = mediaID
+        self.day = day
+        self.createdAt = createdAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userID = "user_id"
+        case mediaID = "media_id"
+        case day
+        case createdAt = "created_at"
+    }
+}
+
+/// A row of `my_hidden_memories` (Settings → Hidden Memories, newest hide first): a hidden day (`day` set), or a hidden
+/// photo the caller can still see (`mediaID` set, with one post of it, its thumbnail and when it was posted).
+public struct HiddenMemory: Codable, Hashable, Sendable, Identifiable {
+    public var id: MemoryHideID
+    public var mediaID: MediaID?
+    public var day: LocalDate?
+    public var createdAt: Date
+    public var postID: PostID?
+    public var groupID: GroupID?
+    public var kind: MediaKind?
+    /// The photo's thumbnail (the original until renditions are ready).
+    public var thumbPath: String?
+    /// When its first visible post was made.
+    public var takenAt: Date?
+
+    public init(
+        id: MemoryHideID, mediaID: MediaID? = nil, day: LocalDate? = nil, createdAt: Date, postID: PostID? = nil,
+        groupID: GroupID? = nil, kind: MediaKind? = nil, thumbPath: String? = nil, takenAt: Date? = nil
+    ) {
+        self.id = id
+        self.mediaID = mediaID
+        self.day = day
+        self.createdAt = createdAt
+        self.postID = postID
+        self.groupID = groupID
+        self.kind = kind
+        self.thumbPath = thumbPath
+        self.takenAt = takenAt
+    }
+
+    /// A hidden day (Hide This Day) rather than one photo.
+    public var isDay: Bool { day != nil }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case mediaID = "media_id"
+        case day
+        case createdAt = "created_at"
+        case postID = "post_id"
+        case groupID = "group_id"
+        case kind
+        case thumbPath = "thumb_path"
+        case takenAt = "taken_at"
+    }
+}

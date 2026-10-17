@@ -110,6 +110,10 @@ data class OnThisDayActions(
     val onShowDay: () -> Unit = {},
     val onShare: () -> Unit = {},
     val onSave: () -> Unit = {},
+    /** "Hide Photo": this photo leaves your memories (for you only). */
+    val onHidePhoto: () -> Unit = {},
+    /** "Hide This Day": every photo of the memory's day leaves your memories (for you only). */
+    val onHideDay: () -> Unit = {},
     val onDelete: () -> Unit = {},
     val onReport: () -> Unit = {},
     val onRetry: () -> Unit = {},
@@ -275,6 +279,9 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
                     { menuOpen = false },
                     buildList {
                         add(DsMenuItem(stringResource(R.string.onthisday_menu_save), actions.onSave))
+                        // Owner decision 34: hide a memory, for you only (Retro's Rewind 'Hide photo'; Timehop's hidden days).
+                        add(DsMenuItem(stringResource(R.string.onthisday_menu_hidephoto), actions.onHidePhoto))
+                        add(DsMenuItem(stringResource(R.string.onthisday_menu_hideday), actions.onHideDay))
                         if (isMine(memory)) {
                             add(DsMenuItem(stringResource(R.string.onthisday_menu_delete), { confirmDelete = true }, destructive = true))
                         } else {
