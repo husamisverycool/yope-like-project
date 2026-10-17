@@ -100,10 +100,10 @@ final class InMemoryAccountData: AccountDataSource {
     }
 
     @discardableResult
-    func addPost(groupID: GroupID, author: UserID, minutesAgo: Int, caption: String? = nil) -> PostWithMedia {
+    func addPost(groupID: GroupID, author: UserID, minutesAgo: Int, caption: String? = nil, batchID: String? = nil) -> PostWithMedia {
         let mediaID = MediaID(makeID())
         let created = now.addingTimeInterval(TimeInterval(-minutesAgo * 60))
-        let post = Post(id: PostID(makeID()), mediaID: mediaID, groupID: groupID, authorID: author, caption: caption, createdAt: created)
+        let post = Post(id: PostID(makeID()), mediaID: mediaID, groupID: groupID, authorID: author, caption: caption, createdAt: created, batchID: batchID)
         let media = Media(id: mediaID, ownerID: author, kind: .photo, originalPath: "u/" + author.rawValue + "/" + mediaID.rawValue + "/original.jpg", createdAt: created)
         let item = PostWithMedia(post: post, media: media)
         postsByGroup[groupID, default: []].append(item)

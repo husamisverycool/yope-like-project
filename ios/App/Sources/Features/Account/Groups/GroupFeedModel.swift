@@ -8,10 +8,14 @@ import Foundation
 import Observation
 import UIKit
 
-/// One member's week: their newest photo of this week (a C-18 friend card).
+/// One member's week: their newest photo of this week (a C-18 friend card). When that photo was posted together with
+/// others (`layout.global.photoBatch`), the card shows the batch's first photo with the batch marker instead.
 struct MemberWeek: Identifiable, Equatable {
     let member: MemberProfile
+    /// The card's photo: the newest photo, or the first photo of the newest batch.
     let newest: PostWithMedia
+    /// The card stands for photos posted together (`layout.global.batchMarker`).
+    var isBatch: Bool = false
     var id: UserID { member.member.userID }
 }
 
@@ -19,7 +23,11 @@ struct MemberWeek: Identifiable, Equatable {
 struct DaySection: Identifiable, Equatable {
     /// Start of the day in the group's time zone.
     let day: Date
-    let posts: [PostWithMedia]
+    /// The day's cells, newest first: photos posted together (`layout.global.photoBatch`) are one run in posted order,
+    /// on the day of its first photo; a photo posted alone is a run of its own.
+    let runs: [[PostWithMedia]]
+    /// The cells' photos: each run's first photo.
+    var posts: [PostWithMedia] { runs.compactMap(\.first) }
     var id: Date { day }
 }
 
@@ -132,31 +140,35 @@ final class GroupFeedModel {
         return days
     }
 
-    /// One friend card per member who shared this week, newest first: that member's newest photo of the week.
+    /// One friend card per member who shared this week, newest first: that member's newest photo of the week; photos
+    /// posted together are one card, the batch's first photo (`layout.global.photoBatch`).
     var memberWeeks: [MemberWeek] {
-        var newestByAuthor: [UserID: PostWithMedia] = [:]
-        for post in thisWeekPosts {
-            if let current = newestByAuthor[post.post.authorID], current.post.visibleAt >= post.post.visibleAt { continue }
-            newestByAuthor[post.post.authorID] = post
+        var newestRunByAuthor: [UserID: [PostWithMedia]] = [:]
+        for run in thisWeekRuns {
+            guard let lead = run.first else { continue }
+            newestRunByAuthor[lead.post.authorID] = run // oldest → newest: an author's last run is their newest
         }
-        return newestByAuthor.compactMap { userID, post -> MemberWeek? in
-            guard let member = members.first(where: { $0.member.userID == userID }) else { return nil }
-            return MemberWeek(member: member, newest: post)
+        let cards = newestRunByAuthor.compactMap { userID, run -> (week: MemberWeek, at: Date)? in
+            guard let lead = run.first, let last = run.last,
+                  let member = members.first(where: { $0.member.userID == userID }) else { return nil }
+            return (MemberWeek(member: member, newest: lead, isBatch: run.count > 1), last.post.visibleAt)
         }
-        .sorted { $0.newest.post.visibleAt > $1.newest.post.visibleAt }
+        return cards.sorted { $0.at > $1.at }.map(\.week)
     }
 
-    /// The photos from before this week by day (group time zone), newest first.
+    /// The photos from before this week by day (group time zone), newest first; photos posted together are one cell.
     var earlierSections: [DaySection] {
         let calendar = calendar
         let weekStart = currentWeek?.start ?? .distantFuture
+        let older = posts.filter { $0.post.visibleAt < weekStart }.sorted { $0.post.visibleAt < $1.post.visibleAt }
         var sections: [DaySection] = []
-        for post in posts.sorted(by: { $0.post.visibleAt > $1.post.visibleAt }) where post.post.visibleAt < weekStart {
-            let day = calendar.startOfDay(for: post.post.visibleAt)
+        for run in PhotoBatches.runs(older, key: { $0.post.batchKey }).reversed() {
+            guard let lead = run.first else { continue }
+            let day = calendar.startOfDay(for: lead.post.visibleAt)
             if let last = sections.last, last.day == day {
-                sections[sections.count - 1] = DaySection(day: day, posts: last.posts + [post])
+                sections[sections.count - 1] = DaySection(day: day, runs: last.runs + [run])
             } else {
-                sections.append(DaySection(day: day, posts: [post]))
+                sections.append(DaySection(day: day, runs: [run]))
             }
         }
         return sections

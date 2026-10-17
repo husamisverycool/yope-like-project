@@ -12,6 +12,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
+import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -24,14 +28,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.unit.LayoutDirection
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
@@ -78,6 +92,10 @@ internal const val TABULAR_DIGITS = "tnum"
  * platform activity indicator in the glyph's place; error: `chat.voice.error.play` in `color.global.destructive` in the
  * waveform's and label's place (tap retries). Play ↔ pause cross-fades (`duration.global.crossfade`). One button: [label]
  * (`chat.voice.a11y.message` / `.messageMine`), action `chat.voice.a11y.play` / `.pause`; the waveform is decorative.
+ *
+ * [onSeek] (`chat.voice.layout.scrub`): while playing or paused part-way, a horizontal drag that starts on the capsule
+ * seeks to the finger's place along the waveform (a tap still plays / pauses; vertical drags pass to the list), and
+ * TalkBack adjusts the position by `stepMs` ([voiceScrubSemantics]). Null: no seeking.
  */
 @Composable
 fun VoiceCapsule(
@@ -90,6 +108,7 @@ fun VoiceCapsule(
     onMedia: Boolean = false,
     levels: List<Int>? = null,
     progress: Float? = null,
+    onSeek: ((Float) -> Unit)? = null,
 ) {
     val fill = if (onMedia) Tokens.Colors.globalControlOnDeep else PageRoles.secondarySurface
     val ink = if (onMedia) Tokens.Colors.globalTextOnMedia else Tokens.Colors.globalTextPrimary
@@ -104,10 +123,12 @@ fun VoiceCapsule(
         modifier
             .heightIn(min = Tokens.Sizes.globalPillHeight)
             .background(fill, CircleShape)
+            .voiceScrub(state, onSeek)
             .tapClickable(onClick = onClick)
             .clearAndSetSemantics {
                 contentDescription = label
                 role = Role.Button
+                voiceScrubSemantics(state, durationMs, elapsedMs, progress, onSeek)
                 if (state == VoiceState.Error) stateDescription = errorText
                 onClick(action) { onClick(); true }
             }
@@ -137,6 +158,72 @@ fun VoiceCapsule(
             Spacer(Modifier.width(Tokens.Sizes.globalPillIconGap))
             Text(Formats.voiceDuration(shown), style = TextRoles.pill.copy(fontFeatureSettings = TABULAR_DIGITS), color = ink, maxLines = 1)
         }
+    }
+}
+
+/** `chat.voice.layout.scrub`: the note can be sought (playing or paused part-way) and the caller handles it. */
+private fun scrubbable(state: VoiceState, onSeek: ((Float) -> Unit)?): Boolean =
+    onSeek != null && (state == VoiceState.Playing || state == VoiceState.Paused)
+
+/**
+ * `chat.voice.layout.scrub` drag: once a pointer that went down on a scrubbable capsule passes the horizontal touch slop,
+ * every move seeks to its place along the waveform (C-36: `size.global.pillPaddingLeading` + `size.global.iconSmall` +
+ * `size.global.pillIconGap` in from the leading edge, `chat.voice.dimension.waveform` wide, drawn left to right) and is
+ * consumed, so the tap and the list's scroll do not take it. An idle capsule does nothing.
+ */
+@Composable
+private fun Modifier.voiceScrub(state: VoiceState, onSeek: ((Float) -> Unit)?): Modifier {
+    val canScrub by rememberUpdatedState(scrubbable(state, onSeek))
+    val seek by rememberUpdatedState(onSeek)
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val density = LocalDensity.current
+    val insetPx = with(density) { (Tokens.Sizes.globalPillPaddingLeading + Tokens.Sizes.globalIconSmall + Tokens.Sizes.globalPillIconGap).toPx() }
+    val waveformPx = with(density) { Tokens.Sizes.chatVoiceDimensionWaveform.toPx() }
+    return pointerInput(rtl, insetPx, waveformPx) {
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false)
+            if (!canScrub) return@awaitEachGesture
+            val minX = VoiceScrub.waveformMinX(size.width.toFloat(), insetPx, waveformPx, rtl)
+            val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ -> change.consume() } ?: return@awaitEachGesture
+            seek?.invoke(VoiceScrub.fraction(drag.position.x, minX, waveformPx))
+            horizontalDrag(drag.id) { change ->
+                change.consume()
+                seek?.invoke(VoiceScrub.fraction(change.position.x, minX, waveformPx))
+            }
+        }
+    }
+}
+
+/**
+ * `chat.voice.layout.scrub` for TalkBack: while the note plays or is paused part-way, a progress range 0…[durationMs]
+ * at [elapsedMs] whose adjust moves `stepMs` forward / back ([VoiceScrub.step]); the state reads the elapsed time.
+ * For the capsule and for any parent that clears its semantics (the thread row).
+ */
+fun SemanticsPropertyReceiver.voiceScrubSemantics(state: VoiceState, durationMs: Long, elapsedMs: Long, progress: Float?, onSeek: ((Float) -> Unit)?) {
+    if (!scrubbable(state, onSeek) || durationMs <= 0 || onSeek == null) return
+    progressBarRangeInfo = ProgressBarRangeInfo(elapsedMs.coerceIn(0L, durationMs).toFloat(), 0f..durationMs.toFloat())
+    stateDescription = Formats.spokenDuration(elapsedMs)
+    setProgress { target ->
+        onSeek(VoiceScrub.step(progress ?: 0f, durationMs, forward = target > elapsedMs))
+        true
+    }
+}
+
+/** `chat.voice.layout.scrub`: the positions a drag along the waveform and the accessibility steps seek to. Pure. */
+object VoiceScrub {
+    /** The waveform's left edge in the capsule: [leadingInset] from the leading edge (the right edge right to left). */
+    fun waveformMinX(capsuleWidth: Float, leadingInset: Float, waveformWidth: Float, rightToLeft: Boolean): Float =
+        if (rightToLeft) capsuleWidth - leadingInset - waveformWidth else leadingInset
+
+    /** The note's position under the finger at [x]: its share of the waveform (drawn left to right), clamped to 0…1. */
+    fun fraction(x: Float, waveformMinX: Float, waveformWidth: Float): Float =
+        if (waveformWidth <= 0f) 0f else ((x - waveformMinX) / waveformWidth).coerceIn(0f, 1f)
+
+    /** One step of [stepMs] forward or back from [progress] of a [durationMs] note, clamped to 0…1; unknown length: no move. */
+    fun step(progress: Float, durationMs: Long, forward: Boolean, stepMs: Float = Tokens.Layouts.ChatVoiceLayoutScrub.stepMs): Float {
+        if (durationMs <= 0) return progress
+        val delta = stepMs / durationMs
+        return (progress + if (forward) delta else -delta).coerceIn(0f, 1f)
     }
 }
 

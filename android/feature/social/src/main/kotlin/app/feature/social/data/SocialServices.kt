@@ -66,6 +66,12 @@ interface VoiceServices {
     fun pause()
 
     /**
+     * `chat.voice.layout.scrub`: moves the note [key] (playing or paused part-way) to [fraction] (0…1) of its length; a
+     * playing note plays on from there, a paused one stays paused. Any other key: nothing.
+     */
+    fun seek(key: String, fraction: Float)
+
+    /**
      * The waveform of the audio file [key] (its storage path) at [url] for a note stored without one (C-36 fallback):
      * 100 levels of 0…31, or null when it cannot be decoded. Computed once per file and kept.
      */
@@ -162,6 +168,12 @@ class PlatformVoiceServices(private val context: Context) : VoiceServices {
     override fun pause() {
         player.pause()
         state.value = VoicePlayback(playingKey, false, state.value.progress)
+    }
+
+    override fun seek(key: String, fraction: Float) {
+        if (key != playingKey) return
+        val duration = player.state.value.durationMs?.takeIf { it > 0 } ?: return
+        player.seekTo((fraction.coerceIn(0f, 1f) * duration).toLong())
     }
 
     override suspend fun levels(key: String, url: String): List<Int>? = AudioLevels.cached(key, url)

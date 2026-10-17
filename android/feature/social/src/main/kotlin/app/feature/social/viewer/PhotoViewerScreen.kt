@@ -95,6 +95,7 @@ import app.feature.social.chat.glyphHit
 import app.feature.social.chat.MessageField
 import app.feature.social.chat.VoiceCapsule
 import app.feature.social.chat.VoiceUi
+import app.feature.social.chat.voiceScrubSemantics
 import app.feature.social.chat.voiceStateOf
 import app.feature.social.common.Formats
 import app.feature.social.common.LocalSocialData
@@ -305,7 +306,7 @@ fun PhotoViewerScreen(vm: PhotoViewerViewModel, nav: ViewerNav, ui: ViewerUiStat
             state = state,
             ui = ui,
             nav = nav,
-            voice = VoiceUi(playback, loadingKey, failedKeys, computedLevels, onPlay),
+            voice = VoiceUi(playback, loadingKey, failedKeys, computedLevels, onSeek = voice::seek, onPlay = onPlay),
             onNext = { haptics.tap(); vm.next() },
             onPrevious = { haptics.tap(); vm.previous() },
             onRetry = vm::retryLoad,
@@ -812,6 +813,7 @@ private fun Footer(photo: ViewerPhoto, state: ViewerState, ui: ViewerUiState, vo
                         onMedia = true,
                         levels = voice.levelsOf(notePath, post.voiceLevels),
                         progress = voice.progressOf(notePath),
+                        onSeek = voice.seekerOf(notePath),
                     )
                 }
             }
@@ -910,6 +912,8 @@ private fun CommentLine(m: Message, photo: ViewerPhoto, state: ViewerState, ui: 
                 .clearAndSetSemantics {
                     contentDescription = label
                     customActions = items.map { i -> CustomAccessibilityAction(i.text) { i.onClick(); true } }
+                    // A voice reply: TalkBack adjusts its position while it plays or is paused part-way (`chat.voice.layout.scrub`).
+                    if (isVoice) voiceScrubSemantics(voice.stateOf(m.voicePath), duration, voice.elapsedOf(m.voicePath, duration), voice.progressOf(m.voicePath), voice.seekerOf(m.voicePath))
                 }
                 .padding(horizontal = Tokens.Sizes.globalScreenMargin),
             verticalAlignment = Alignment.Top,
@@ -937,6 +941,7 @@ private fun CommentLine(m: Message, photo: ViewerPhoto, state: ViewerState, ui: 
                         onMedia = true,
                         levels = voice.levelsOf(path, m.voiceLevels),
                         progress = voice.progressOf(path),
+                        onSeek = voice.seekerOf(path),
                     )
                 } else {
                     Text(

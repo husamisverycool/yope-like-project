@@ -45,6 +45,13 @@ and played (`color.global.textPrimary`; media `color.global.textOnMedia`) up to 
 mid-way, the bar under the progress split; starting another voice message stops the current one; at the end the capsule
 returns to idle. Another member's and your own messages look the same (Retro rows do not separate senders).
 
+Scrubbing (`chat.voice.layout.scrub`; Apple Voice Memos: "drag the waveform left or right" to change where playback
+begins): while the note plays or is paused part-way, a horizontal drag that starts on the capsule (past the platform's
+touch slop) seeks to the finger's place along the waveform — its share of `chat.voice.dimension.waveform`, clamped to the
+note; the played bars and the elapsed label follow the finger; a playing note plays on from there, a paused one stays
+paused. A tap still plays / pauses (a drag never toggles); a drag that starts vertically scrolls the thread; an idle
+capsule takes no drag (the thread scrolls and the viewer pages through it). No haptic, no playhead dot.
+
 Levels: the note's `voice_levels` (100 values, 0…31). A note without levels (sent before 2026-10-16) draws every bar at
 `size.global.waveformBarMinHeight` until it has been played once; then its levels are computed on the device from the
 downloaded file (the recording's reduction, `layout.global.waveform.reduction`) and kept for that file.
@@ -79,8 +86,8 @@ the available width (WA-B2: 0:07 → 77 bars, the 0:11 draft in its capsule).
 
 | element | component · tokens | copy | behaviour |
 |---|---|---|---|
-| voice capsule | C-06 fill + C-07 anatomy + C-36; `chat.voice.layout.capsule` (`size.global.pillHeight`, `radius.global.capsule`, `size.global.pillPaddingLeading` / `.pillIconGap` / `.pillPaddingTrailing`, `size.global.iconSmall`, text role `pill`, `chat.voice.dimension.waveform`) | `chat.voice.a11y.message` / `.messageMine`; action `chat.voice.a11y.play` / `.pause` | tap → play / pause (`chat.voice.layout.playback`); long press → the thread's context menu |
-| waveform | C-36; `layout.global.waveform`, `size.global.waveformBarWidth` / `.waveformBarGap` / `.waveformBarMinHeight`, `color.global.textPrimary` / `.textOnMedia` / `.textSecondary` | — (decorative) | played part follows the playback |
+| voice capsule | C-06 fill + C-07 anatomy + C-36; `chat.voice.layout.capsule` (`size.global.pillHeight`, `radius.global.capsule`, `size.global.pillPaddingLeading` / `.pillIconGap` / `.pillPaddingTrailing`, `size.global.iconSmall`, text role `pill`, `chat.voice.dimension.waveform`) | `chat.voice.a11y.message` / `.messageMine`; action `chat.voice.a11y.play` / `.pause` | tap → play / pause (`chat.voice.layout.playback`); playing / paused part-way: horizontal drag → seek (`chat.voice.layout.scrub`); long press → the thread's context menu |
+| waveform | C-36; `layout.global.waveform`, `size.global.waveformBarWidth` / `.waveformBarGap` / `.waveformBarMinHeight`, `color.global.textPrimary` / `.textOnMedia` / `.textSecondary` | — (decorative) | played part follows the playback and the finger while scrubbing (x ÷ width = the position) |
 | duration | `chat.voice.layout.durationFormat` | duration (data) | idle: total; playing: elapsed |
 | recording row | C-13 field content; `icon.global.mic` (`color.global.destructive`), text role `body`, `color.global.textSecondary` | `chat.voice.recording.slideToCancel` | see Structure |
 | lock circle | C-11; `size.global.circleButton`, `color.global.control`, `icon.global.lock`, `size.global.pillGap` | `chat.voice.a11y.lock` | slide up / double-tap → hands-free |
@@ -116,6 +123,7 @@ the available width (WA-B2: 0:07 → 77 bars, the 0:11 draft in its capsule).
 | field ↔ recording row; locked rows; recording ↔ paused | fade `duration.global.fade` + `easing.global.standard` | same fade |
 | slide to cancel / to lock | tracks the finger (no curve) | allowed (`layout.global.reduceMotion`: finger-tracked motion stays) |
 | played bars / live waveform | follow the playback / each sample, no animation | same |
+| scrubbing | the played bars and the label track the finger (no curve) | allowed (finger-tracked) |
 
 ## Haptics
 
@@ -130,6 +138,13 @@ the available width (WA-B2: 0:07 → 77 bars, the 0:11 draft in its capsule).
 
 - The capsule is one button: label `chat.voice.a11y.message` / `.messageMine` ("Maya's voice message, 0:38"), action name
   `chat.voice.a11y.play` / `.pause`; `{duration}` is spoken as minutes and seconds. The waveform is decorative (hidden).
+- Scrubbing without a drag (`chat.voice.layout.scrub`): while the note plays or is paused part-way the capsule is also
+  adjustable — VoiceOver swipe up / down (`accessibilityAdjustableAction`,
+  https://developer.apple.com/documentation/swiftui/view/accessibilityadjustableaction(_:)), TalkBack's adjust (a progress
+  range 0…duration with `SemanticsActions.SetProgress`; on the thread row and the viewer's reply row, whose semantics
+  replace the capsule's) — moving `stepMs` (5 s; YouTube's seek-bar arrows "Seek backward/forward 5 seconds",
+  https://support.google.com/youtube/answer/7631406) forward / back, clamped to the note; the value reads the elapsed time
+  in the `{duration}` format. Idle: no change.
 - Recording without a press-and-hold: the mic's custom action starts recording in the locked state (lock circle label
   `chat.voice.a11y.lock`); delete, pause / continue, preview and send are buttons. The elapsed time is a live region
   (updates every second, polite); paused, the field reads the draft's length.
@@ -186,4 +201,4 @@ the available width (WA-B2: 0:07 → 77 bars, the 0:11 draft in its capsule).
 | a Retro audio component | none exists; composition (RS-7) + C-36 (owner decision 16) | — |
 | `chat.voice.layout.widthRule` (old BLOCKED) | closed: the capsule hugs its content (fixed waveform length) | — |
 | playback progress beyond the elapsed time | closed: played bars (C-36) | — |
-| scrubbing by dragging along the waveform (WhatsApp, Messages) | not built: the capsule is one button (play / pause); dragging would need a second gesture target inside a 37-pt capsule | — |
+| scrubbing by dragging along the waveform (WhatsApp, Messages) | closed: `chat.voice.layout.scrub` — a horizontal drag on a playing / paused capsule seeks (Apple Voice Memos' waveform drag), the tap stays play / pause; VoiceOver / TalkBack adjust in 5-s steps | — |

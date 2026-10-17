@@ -104,9 +104,12 @@ fun SectionHeader(
     }
 }
 
-/** A photo cell of a C-21 grid: [accessibilityLabel] (copy) names its date / person; [menu] is its long-press menu (C-29). */
+/**
+ * A photo cell of a C-21 grid: [accessibilityLabel] (copy) names its date / person; [menu] is its long-press menu (C-29);
+ * [batch]: it stands for photos posted together — the batch marker (`layout.global.batchMarker`).
+ */
 @Immutable
-data class GridCell(val key: Any, val image: Any?, val accessibilityLabel: String, val onClick: (() -> Unit)? = null, val menu: List<DsMenuItem> = emptyList())
+data class GridCell(val key: Any, val image: Any?, val accessibilityLabel: String, val onClick: (() -> Unit)? = null, val menu: List<DsMenuItem> = emptyList(), val batch: Boolean = false)
 
 /**
  * C-21 photo grid: [columns] square cells (`radius.global.photo`, 0), `size.global.stripGap` apart, full width
@@ -142,6 +145,7 @@ fun PhotoGrid(
                                     },
                                 ),
                         )
+                        if (cell.batch) BatchTileMarker()
                         if (cell.menu.isNotEmpty()) DsDropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, items = cell.menu)
                     }
                 }

@@ -60,7 +60,7 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
      photos posted together (`layout.global.photoBatch`: one author, one `batch_id`, one after another) are **one tile**,
      the batch's first photo with the batch marker (`layout.global.batchMarker`, Instagram's carousel icon in the top
      right; never a count), its label + `chat.thread.a11y.batch`; a tap opens `photo.viewer` on it with the whole batch
-     and its page dots (`photo.viewer.layout.batchDots`); the friend cards and the earlier grid show each photo;
+     and its page dots (`photo.viewer.layout.batchDots`); the friend cards and the earlier grid do the same (below);
      **add tile last** (→ `camera.capture` for this group); when the week has no photos yet: add tile **first**, then
      empty-day tiles for each remaining day of the week (Retro's empty week, H43 / H22) and the C-27 block below
      (see States).
@@ -69,7 +69,9 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
    `radius.global.card`), `size.global.cardGap` apart, the next card peeking, first card at the margin:
    - **friend cards (C-18)**, one per member who shared this week (newest first): avatar `size.global.avatarList` +
      first name (`listTitle`) above the card showing that member's newest photo of the week; no badge (Retro's
-     "N new" / "Seen" are do-not-copy);
+     "N new" / "Seen" are do-not-copy); when that photo was posted together with others (`layout.global.photoBatch`),
+     the card shows the batch's first photo with the batch marker (`layout.global.batchMarker`, top-trailing on the
+     card) and its label + `chat.thread.a11y.batch`, and opens `photo.viewer` on the batch;
    - then the **feed cards** Retro puts in the same pager (its Rewind and "Year in Photos" cards, APK-S
      `home_rewind_upsell_feed_card_*`, `home_feed_card_annual_recap_title`), each while its feature has content:
      the birthday videos the viewer may watch (`birthday.tribute` entry C, newest first, MERGE FV-3), on this day
@@ -84,7 +86,9 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
      image itself was not captured — composition of C-18, C-09 and the display role.
 9. **Earlier** — photos from before this week, newest first, paged: dated sections (C-20 dated variant: the day in
    the long date format, text role `sectionLabel`; no "•••") over a 3-column grid of square cells (C-21, `radius.global.photo`
-   0, `size.global.stripGap` 2 gaps, full width inside the margins); `size.global.sectionGap` between sections.
+   0, `size.global.stripGap` 2 gaps, full width inside the margins); `size.global.sectionGap` between sections. Photos
+   posted together are **one cell**, the batch's first photo with the batch marker, in the section of that photo's day;
+   its label + `chat.thread.a11y.batch`; a tap opens `photo.viewer` on the batch (`photo.viewer.layout.batchDots`).
 
 ## Elements
 
@@ -105,8 +109,8 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
 | feed card | C-18 geometry + `layout.global.photoScrim` + `displaySmall` + C-09 | `onthisday.entry.*`, `year.story.entry.*` | → `onthisday` / `year.story` |
 | batch tile | C-17 photo tile + `layout.global.batchMarker` (`icon.global.batch`) | `groups.screen.photo.accessibilityLabel` + `chat.thread.a11y.batch` | → `photo.viewer` at the batch's first photo (the batch, `photo.viewer.layout.batchDots`); long press → the first photo's menu |
 | strip tiles | C-17 (`size.global.stripTileWidth` / `.stripTileHeight`, `size.global.stripGap`, `radius.global.card` outer, `layout.global.photoScrim`, `tileLabel`; empty-day `color.global.control` + `color.global.emptyTileText`) | photo tile `groups.screen.photo.accessibilityLabel` ({date}, {first_name}); add tile `groups.screen.week.add.accessibilityLabel` | photo → `photo.viewer` (this week, this group); collage tile (a11y `walls.browse.a11y.collage`) → `collage.view` of that collage, no menu; add → `camera.capture` (`DeepLink.camera(groupID:)`); long press → `groups.screen.layout.menu` |
-| friend card | C-18 | name (data); card label `groups.screen.photo.accessibilityLabel` | → `photo.viewer` on that member's photos of the week |
-| grid cell | C-21 dated grid | `groups.screen.photo.accessibilityLabel` | → `photo.viewer`; long press → menu (`groups.screen.photo.menu.report`, `.block`) |
+| friend card | C-18 (a batch: + `layout.global.batchMarker`) | name (data); card label `groups.screen.photo.accessibilityLabel` (a batch: + `chat.thread.a11y.batch`) | → `photo.viewer` on that member's photos of the week (a batch: at its first photo, the batch side by side) |
+| grid cell | C-21 dated grid (a batch: + `layout.global.batchMarker`) | `groups.screen.photo.accessibilityLabel` (a batch: + `chat.thread.a11y.batch`) | → `photo.viewer` (a batch: at its first photo); long press → menu (`groups.screen.photo.menu.report`, `.block`) |
 
 ## States
 

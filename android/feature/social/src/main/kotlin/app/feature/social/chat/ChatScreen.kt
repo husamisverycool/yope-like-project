@@ -321,7 +321,7 @@ fun ChatScreen(vm: ChatViewModel, focusMessageId: String?, nav: ChatNav, ui: Cha
         ui = ui,
         nav = nav,
         focusMessageId = focusMessageId,
-        voice = VoiceUi(playback, loadingKey, failedKeys, computedLevels, onPlay),
+        voice = VoiceUi(playback, loadingKey, failedKeys, computedLevels, onSeek = voice::seek, onPlay = onPlay),
         recorder = recorder,
         onDraft = vm::setDraft,
         onSend = vm::send,
@@ -360,6 +360,7 @@ class VoiceUi(
     val loadingKey: String?,
     val failedKeys: Set<String>,
     private val computedLevels: Map<String, List<Int>> = emptyMap(),
+    private val onSeek: (path: String, fraction: Float) -> Unit = { _, _ -> },
     private val onPlay: (path: String, needsLevels: Boolean) -> Unit,
 ) {
     fun stateOf(path: String?): VoiceState = voiceStateOf(path, playback.key, playback.isPlaying, playback.progress, loadingKey, failedKeys)
@@ -373,6 +374,9 @@ class VoiceUi(
 
     /** Tap on a capsule: plays / pauses [path]; [stored] null → its levels are computed once the file is here. */
     fun play(path: String, stored: List<Int>?) = onPlay(path, stored == null)
+
+    /** `chat.voice.layout.scrub`: the capsule's seek for [path] (null path: no seeking). */
+    fun seekerOf(path: String?): ((Float) -> Unit)? = path?.let { p -> { fraction -> onSeek(p, fraction) } }
 
     companion object {
         val Idle = VoiceUi(VoicePlayback(null, false), null, emptySet()) { _, _ -> }
@@ -1241,6 +1245,12 @@ private fun MessageBody(
     val semantics = Modifier.clearAndSetSemantics {
         contentDescription = label
         role = Role.Button
+        // A voice message: TalkBack adjusts its position while it plays or is paused part-way (`chat.voice.layout.scrub`).
+        if (row.kind == MessageKind.Voice) {
+            val path = row.message.voicePath
+            val duration = (row.message.voiceDurationMs ?: 0).toLong()
+            voiceScrubSemantics(voice.stateOf(path), duration, voice.elapsedOf(path, duration), voice.progressOf(path), voice.seekerOf(path))
+        }
         if (row.failed) stateDescription = failedText else if (row.edited) stateDescription = editedText
         customActions = actions
     }
@@ -1269,6 +1279,7 @@ private fun MessageBody(
                     VoiceCapsule(
                         duration, voice.elapsedOf(path, duration), voice.stateOf(path), label, onClick = tap,
                         levels = voice.levelsOf(path, row.message.voiceLevels), progress = voice.progressOf(path),
+                        onSeek = voice.seekerOf(path),
                     )
                 }
             }
@@ -1409,6 +1420,7 @@ private fun PhotoMessage(row: ChatRow, afterHeader: Boolean, ui: ChatUiState, na
             VoiceCapsule(
                 duration, voice.elapsedOf(notePath, duration), voice.stateOf(notePath), voiceLabel, onClick = { voice.play(notePath, post.voiceLevels) },
                 levels = voice.levelsOf(notePath, post.voiceLevels), progress = voice.progressOf(notePath),
+                onSeek = voice.seekerOf(notePath),
             )
         }
     }

@@ -28,7 +28,9 @@ app: photos, add tile, blank placeholders). Here the weeks are the group's: ever
      "Apr 29 – May 5"; left out for the current week while it has no photos), and `icon.global.more` (`color.global.textPrimary`)
      with its ink at the trailing margin → week menu;
    - **strip** (C-17) `size.global.sectionHeaderToContent` below the header baseline, starting at `size.global.screenMargin`,
-     scrolling sideways with no trailing inset: one photo tile per post in time order (several on a day = several tiles),
+     scrolling sideways with no trailing inset: one photo tile per post in time order (several on a day = several tiles;
+     photos posted together, `layout.global.photoBatch`, are **one tile**: the batch's first photo with the batch marker
+     `layout.global.batchMarker`, its label + `chat.thread.a11y.batch`, opening `photo.viewer` on the batch),
      `size.global.stripTileWidth` × `.stripTileHeight`, `size.global.stripGap` apart, outer corners `radius.global.card` (first
      tile's leading, last tile's trailing), inner corners `radius.global.photo`; photo aspect fill under
      `layout.global.photoScrim`, weekday label (`tileLabel`, `color.global.textOnMedia`, baseline `size.global.tileLabelBaseline`);
@@ -77,6 +79,7 @@ Mechanics: BeReal's Memories calendar — past posts are reached from a month gr
 | back + title | C-02; `icon.global.back`, `size.global.backInset`, `size.global.headerGap`, text role `headerTitle` | `chat.thread.a11y.back`; group name (data) | pops to `groups.screen` |
 | section header | C-20; text roles `sectionLabel` + `listSubtitle`, `icon.global.more`; `size.global.sectionHeaderToContent`, `size.global.sectionGap` | `week.history.header.title`; range (data); `week.history.a11y.more` | "•••" → week menu |
 | photo tile | C-17 photo tile | `week.history.a11y.tile` | → `photo.viewer` (context = that week's posts, time order) with `duration.global.photoOpen` |
+| batch tile | C-17 photo tile + `layout.global.batchMarker` (`icon.global.batch`) | `week.history.a11y.tile` + `chat.thread.a11y.batch` | → `photo.viewer` at the batch's first photo (the batch side by side, `photo.viewer.layout.batchDots`) |
 | collage tile | C-17 photo tile | `walls.browse.a11y.collage` ({date} = the collage's day) | → `collage.view` of that collage (by its invitation) |
 | add tile | C-17 add tile | `week.history.a11y.add` | → `camera.capture` for this group (`DeepLink.camera(groupID:)`) |
 | empty-day tile | C-17 empty-day tile | `week.history.a11y.emptyDay` | not interactive |

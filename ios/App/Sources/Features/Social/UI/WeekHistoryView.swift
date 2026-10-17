@@ -228,14 +228,18 @@ struct WeekHistorySection: View {
 
     /// Photo tiles in time order (several on a day = several tiles); each day's same-moment collage (the group's
     /// photo of that day, migration 0033) on its day, before that day's photos; the current week per
-    /// `week.history.layout.currentWeek` (add tile → camera for this group).
+    /// `week.history.layout.currentWeek` (add tile → camera for this group). Photos posted together are one tile, the
+    /// batch's first photo with the batch marker (`layout.global.photoBatch`); the viewer opens on it with the batch.
     private var tiles: [WeekStripTile] {
-        let photos = posts.map { post in
-            WeekStripPhoto(
+        let runs = PhotoBatches.runs(posts) { $0.post.batchKey }
+        let postPhotos: [WeekStripPhoto] = runs.compactMap { run in
+            guard let post = run.first else { return nil }
+            return WeekStripPhoto(
                 id: post.id.rawValue, date: post.post.visibleAt, source: SocialImages.source(post.media?.gridPath),
-                videoDurationMs: post.media?.videoDurationMs
+                videoDurationMs: post.media?.videoDurationMs, isBatch: run.count > 1
             )
-        } + week.collages.map { collage in
+        }
+        let photos = postPhotos + week.collages.map { collage in
             WeekStripPhoto(
                 id: Self.collagePrefix + collage.collageID.rawValue,
                 date: SocialCalendar.start(of: collage.localDate, in: model.timeZone),
@@ -259,7 +263,7 @@ struct WeekHistorySection: View {
             }
             guard let post = post(for: tile) else { return "" }
             let label = SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: model.timeZone)
-            return SocialA11y.withVideo(label, media: post.media)
+            return SocialA11y.withBatch(SocialA11y.withVideo(label, media: post.media), isBatch: tile.isBatch)
         }
     }
 
