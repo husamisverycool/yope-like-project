@@ -803,6 +803,19 @@ set_typing(p_group_id uuid, p_typing boolean) → void
 `chat_typing.until` becomes now + `typing_ttl_s` (6 s). `false` when the field empties or the message is sent: `until`
 = now. Members only (`not_group_member`). Records nothing when `typing_ttl_s` is NULL.
 
+#### `download_items`
+```
+download_items(p_scope text, p_album_id uuid = null, p_before timestamptz = null, p_limit int = 100)
+  → table(post_id uuid, media_id uuid, kind media_kind, original_path text, front_original_path text, motion_path text,
+          caption text, taken_on date, posted_at timestamptz)
+```
+Downloads (migration 0052; Yope "download all photos", Retro "Download your package"): the apps save each original
+(Live Photo: still + motion) to the photo library with signed URLs, as Save to Camera Roll does. `'mine'` (free):
+every photo and video you posted that is still in one of your groups, once per media, newest first, paged by
+`p_before` = the last row's `posted_at` (≤ 200 a page). `'album'` (premium, `premium_required` 402): the album's
+photos you can see, all of them in album order (`album_not_found` for a non-member). `invalid_argument` for another
+scope. Never a number of photos: show progress without counts.
+
 #### `set_memory_alerts`
 ```
 set_memory_alerts(p_on boolean, p_time_zone text = null) → notification_settings

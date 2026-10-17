@@ -58,6 +58,8 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     SetNotificationsPaused("set_notifications_paused", setOf("p_paused"), setOf("p_time_zone")),
     /** The opt-in memory notification (migration 0049): on needs the device's zone. */
     SetMemoryAlerts("set_memory_alerts", setOf("p_on"), setOf("p_time_zone")),
+    /** Migration 0052: the originals to save — all my photos (free) or an album (premium). */
+    DownloadItems("download_items", setOf("p_scope"), setOf("p_album_id", "p_before", "p_limit")),
     SetBirthday("set_birthday", setOf("p_birthday", "p_opt_in")),
     ConfirmAge("confirm_age", setOf("p_birthdate")),
 

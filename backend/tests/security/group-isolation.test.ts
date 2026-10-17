@@ -213,6 +213,7 @@ describe('group isolation: RPCs', () => {
     edit_caption: { args: () => ({ p_post_id: seeded.postIds[0], p_caption: 'x' }), expect: 'error' },
     set_typing: { args: () => ({ p_group_id: seeded.group.id, p_typing: true }), expect: 'error' }, // typing line (0048)
     set_memory_alerts: { args: () => ({ p_on: false }), expect: 'own-account' }, // memory notification (0049): the caller's own row
+    download_items: { args: () => ({ p_scope: 'album', p_album_id: seeded.albumId }), expect: 'error' }, // downloads (0052)
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {
