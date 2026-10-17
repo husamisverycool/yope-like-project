@@ -91,6 +91,9 @@ class ModelMappingTest {
         assertEquals("u/u/m/r/w.jpg", ready.imagePath(Media.Rendition.Widget))
         assertEquals("u/u/m/r/ft.jpg", ready.frontImagePath(Media.Rendition.Thumb))
         assertEquals("u/u/m/front.jpg", ready.frontImagePath(Media.Rendition.Display)) // no front display rendition: original
+        // A video's original is the movie: its poster renditions show before the transcode finishes.
+        val video = base.copy(kind = MediaKind.Video, originalPath = "u/u/m/original.mp4", frontOriginalPath = null, thumbPath = "u/u/m/r/thumb.jpg")
+        assertEquals("u/u/m/r/thumb.jpg", video.imagePath(Media.Rendition.Thumb))
     }
 
     @Test fun collagePagesFollowPageCount() {

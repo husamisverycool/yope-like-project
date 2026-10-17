@@ -123,8 +123,10 @@ struct WallWeekList: View {
             case let .collage(collage)?:
                 return Copy.wallsBrowseA11yCollage(date: SocialFormat.spokenDate(collage.createdAt, timeZone: model.timeZone))
             case let .post(post)?:
-                if model.owner == .me { return Copy.photoViewerA11yPhotoMine(date: SocialFormat.spokenDate(post.post.visibleAt, timeZone: model.timeZone)) }
-                return SocialA11y.tile(date: post.post.visibleAt, name: model.profile?.socialFirstName ?? "", timeZone: model.timeZone)
+                if model.owner == .me {
+                    return SocialA11y.withVideo(Copy.photoViewerA11yPhotoMine(date: SocialFormat.spokenDate(post.post.visibleAt, timeZone: model.timeZone)), media: post.media)
+                }
+                return SocialA11y.withVideo(SocialA11y.tile(date: post.post.visibleAt, name: model.profile?.socialFirstName ?? "", timeZone: model.timeZone), media: post.media)
             case nil:
                 return ""
             }
@@ -160,11 +162,14 @@ enum WallTiles {
     static func tiles(for week: WallModel.Week, model: WallModel, canAdd: Bool) -> [WeekStripTile] {
         let photos = week.tiles.map { tile -> WeekStripPhoto in
             let path: String?
+            var videoDurationMs: Int?
             switch tile {
-            case let .post(post): path = post.media?.gridPath
+            case let .post(post):
+                path = post.media?.gridPath
+                videoDurationMs = post.media?.videoDurationMs
             case let .collage(collage): path = collage.imagePath
             }
-            return WeekStripPhoto(id: tile.id, date: tile.createdAt, source: SocialImages.source(path))
+            return WeekStripPhoto(id: tile.id, date: tile.createdAt, source: SocialImages.source(path), videoDurationMs: videoDurationMs)
         }
         let days = SocialCalendar.days(of: week.weekStart).map { SocialCalendar.start(of: $0, in: model.timeZone) }
         return currentWeekTiles(

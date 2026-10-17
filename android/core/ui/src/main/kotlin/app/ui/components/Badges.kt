@@ -1,6 +1,12 @@
 package app.ui.components
 
 import androidx.compose.foundation.background
+import java.time.format.DateTimeFormatter
+import java.time.LocalTime
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -40,28 +46,52 @@ fun UnreadDot(modifier: Modifier = Modifier) {
 }
 
 /**
- * C-25 video duration pill ("1:00"): capsule `color.global.surfaceLight`, `icon.global.video` + the duration in
- * text role `pillSmall` (13 bold, tabular digits) in `color.global.onSurfaceLight`. Measured 71 × 24 (PAY):
- * height `size.global.badgeHeight` (the same 24), width hugs with half the height as padding (capsule ends);
- * the glyph is `size.global.iconSmall` (its own size is not measured — Gap), `size.global.pillIconGap` before
- * the digits. [contentDescription]: the duration in words (copy).
+ * C-25 video duration pill ("1:00"): capsule `color.global.surfaceLight`, `size.global.videoPillHeight` tall,
+ * `size.global.videoPillPadding` each side; `icon.global.video` (`size.global.iconSmall`), `size.global.videoPillGap`, then
+ * the duration in text role `pillSmall` (13 bold, tabular digits) in `color.global.onSurfaceLight` (PAY: 71 × 28).
+ * [text] null: the glyph alone (a tile too narrow for the digits, `layout.global.videoMarker`). [contentDescription]
+ * null: no semantics of its own (the owner's label says "Video, …").
  */
 @Composable
-fun VideoDurationPill(text: String, contentDescription: String, modifier: Modifier = Modifier) {
-    val height = Tokens.Sizes.globalBadgeHeight
+fun VideoDurationPill(text: String?, contentDescription: String?, modifier: Modifier = Modifier) {
     Row(
         modifier
-            .height(height)
+            .height(Tokens.Sizes.globalVideoPillHeight)
             .background(Tokens.Colors.globalSurfaceLight, CircleShape)
-            .padding(horizontal = height / 2)
-            .clearAndSetSemantics { this.contentDescription = contentDescription },
-        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillIconGap),
+            .padding(horizontal = Tokens.Sizes.globalVideoPillPadding)
+            .clearAndSetSemantics { if (contentDescription != null) this.contentDescription = contentDescription },
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalVideoPillGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(Tokens.Icons.globalVideo, contentDescription = null, tint = Tokens.Colors.globalOnSurfaceLight, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
-        Text(text, style = TextRoles.pillSmall, color = Tokens.Colors.globalOnSurfaceLight, maxLines = 1)
+        if (text != null) Text(text, style = TextRoles.pillSmall.copy(fontFeatureSettings = "tnum"), color = Tokens.Colors.globalOnSurfaceLight, maxLines = 1, softWrap = false)
     }
 }
+
+/**
+ * `layout.global.videoMarker`: the video pill at a photo's or tile's top-trailing corner, `size.global.videoPillInset` from
+ * both edges; where the duration does not fit inside the tile less both insets, the glyph alone. Put it in a [Box] over
+ * the photo (it aligns itself). Decorative: the owner's label carries "Video, {duration}" (`chat.thread.a11y.video`).
+ */
+@Composable
+fun BoxScope.VideoTileMarker(durationMs: Long, modifier: Modifier = Modifier) {
+    val text = videoDurationText(durationMs)
+    val inset = Tokens.Sizes.globalVideoPillInset
+    val measurer = rememberTextMeasurer()
+    val style = TextRoles.pillSmall.copy(fontFeatureSettings = "tnum")
+    val density = LocalDensity.current
+    BoxWithConstraints(modifier.matchParentSize().padding(inset)) {
+        val digits = with(density) { measurer.measure(text, style).size.width.toDp() }
+        val full = Tokens.Sizes.globalVideoPillPadding * 2 + Tokens.Sizes.globalIconSmall + Tokens.Sizes.globalVideoPillGap + digits
+        VideoDurationPill(if (full <= maxWidth) text else null, contentDescription = null, modifier = Modifier.align(Alignment.TopEnd))
+    }
+}
+
+/** "0:10" (`chat.voice.layout.durationFormat`), whole seconds. */
+fun videoDurationText(durationMs: Long): String =
+    DateTimeFormatter.ofPattern(Tokens.Layouts.ChatVoiceLayoutDurationFormat.pattern).format(LocalTime.ofSecondOfDay((durationMs.coerceAtLeast(0) / MS_PER_SECOND)))
+
+private const val MS_PER_SECOND = 1_000L
 
 /**
  * C-25 premium pill ("FREE"): capsule filled with `layout.global.premiumGradient` (top #D543DE → bottom

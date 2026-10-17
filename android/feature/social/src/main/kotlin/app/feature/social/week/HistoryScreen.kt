@@ -140,7 +140,9 @@ private fun HistorySection(week: HistoryWeekUi, state: HistoryState, nav: Histor
             p.thumbPath,
             p.post.visibleAt,
             stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()),
-        ) { nav.photo(start, p.post.id) }
+            { nav.photo(start, p.post.id) },
+            p.videoDurationMs,
+        )
     }
     val menu = buildList {
         week.recapId?.let { id -> add(DsMenuItem(stringRes(R.string.week_history_menu_viewrecap), { nav.recap(id) })) }

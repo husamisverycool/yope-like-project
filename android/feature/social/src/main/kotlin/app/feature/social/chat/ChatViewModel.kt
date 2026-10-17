@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import app.data.error.DataError
 import app.data.model.Group
 import app.data.model.Media
+import app.feature.social.common.videoDurationMs
 import app.data.model.Message
 import app.data.model.MessageKind
 import app.data.model.Post
@@ -34,7 +35,7 @@ import java.io.File
 /** The quote above a reply (`chat.thread.layout.replyQuote`). */
 sealed interface Quote {
     /** A reply to a photo: a C-15 row — thumbnail, "Post by {name}" over "Week {n}" (ISO week of the post in the group's zone). */
-    data class Photo(val postId: String, val posterName: String?, val thumbPath: String?, val weekNumber: Int?) : Quote
+    data class Photo(val postId: String, val posterName: String?, val thumbPath: String?, val weekNumber: Int?, val videoDurationMs: Long? = null) : Quote
 
     /** A reply to a message: one grey line, the sender's name in semibold then the quoted text ([text] null = an attachment). */
     data class Text(val messageId: String, val senderName: String?, val text: String?, val attachment: Boolean) : Quote
@@ -556,7 +557,7 @@ class ChatViewModel(private val data: SocialData, val groupId: String, private v
         if (repliedPost != null) {
             val p = posts[repliedPost] ?: return null
             val week = app.feature.social.common.Formats.isoWeek(p.visibleAt.atZone(_state.value.zone).toLocalDate())
-            return Quote.Photo(p.id, profiles[p.authorId]?.firstName, media[p.mediaId]?.imagePath(Media.Rendition.Thumb), week)
+            return Quote.Photo(p.id, profiles[p.authorId]?.firstName, media[p.mediaId]?.imagePath(Media.Rendition.Thumb), week, media[p.mediaId]?.videoDurationMs)
         }
         val id = m.replyToMessageId ?: return null
         val q = messages.firstOrNull { it.id == id } ?: quoted[id] ?: return null

@@ -149,11 +149,11 @@ struct WeekEditView: View {
                         .accessibilityHidden(true)
                 }
                 ForEach(posts) { post in
-                    let label = SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: .current)
-                    DayTile(tile: WeekStripTile(id: post.id.rawValue, kind: .photo(SocialImages.source(post.media?.gridPath)), date: post.post.visibleAt))
+                    let label = SocialA11y.withVideo(SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: .current), media: post.media)
+                    DayTile(tile: WeekStripTile(id: post.id.rawValue, kind: .photo(SocialImages.source(post.media?.gridPath)), date: post.post.visibleAt, videoDurationMs: post.media?.videoDurationMs))
                         .contentShape(Rectangle())
                         .draggable(post.id.rawValue) {
-                            DayTile(tile: WeekStripTile(id: post.id.rawValue, kind: .photo(SocialImages.source(post.media?.gridPath)), date: post.post.visibleAt))
+                            DayTile(tile: WeekStripTile(id: post.id.rawValue, kind: .photo(SocialImages.source(post.media?.gridPath)), date: post.post.visibleAt, videoDurationMs: post.media?.videoDurationMs))
                                 .onAppear { dragged = post.id }
                         }
                         .dropDestination(for: String.self) { items, _ in
@@ -227,10 +227,13 @@ struct WeekEditView: View {
                     let checked = model.isChecked(post.id)
                     Button { model.toggle(post.id) } label: {
                         SelectionMarkedCell(source: SocialImages.source(post.media?.gridPath), checked: checked)
+                            .overlay(alignment: .topTrailing) {
+                                if let durationMs = post.media?.videoDurationMs { VideoTileMarker(durationMs: durationMs) }
+                            }
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(Text(SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: .current)))
+                    .accessibilityLabel(Text(SocialA11y.withVideo(SocialA11y.tile(date: post.post.visibleAt, name: model.profiles[post.post.authorID]?.socialFirstName ?? "", timeZone: .current), media: post.media)))
                     .accessibilityValue(Text(checked ? Copy.weekEditA11yInRecap : Copy.weekEditA11yNotInRecap))
                     .accessibilityAddTraits(.isToggle)
                 }

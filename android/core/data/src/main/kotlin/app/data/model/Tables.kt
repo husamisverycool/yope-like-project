@@ -113,8 +113,11 @@ data class Media(
     @SerialName("renditions_ready_at") val renditionsReadyAt: Instant?,
     @SerialName("created_at") val createdAt: Instant,
 ) {
-    /** §7 "Which image to show": the rendition once ready, the original until then. */
-    fun imagePath(use: Rendition): String = if (renditionsReadyAt == null) originalPath else when (use) {
+    /**
+     * §7 "Which image to show": the rendition once ready, the original until then. A video's original is the movie: its
+     * poster renditions are used as soon as the worker wrote them (before the transcode finishes).
+     */
+    fun imagePath(use: Rendition): String = if (renditionsReadyAt == null && kind != MediaKind.Video) originalPath else when (use) {
         Rendition.Display -> displayPath
         Rendition.Thumb -> thumbPath
         Rendition.Widget -> widgetPath

@@ -60,6 +60,16 @@ class WeekSnapshotTest : SnapshotBase() {
         snap(data, dark = true) { WeekHistoryContent(state, historyNav, {}, {}) }
     }
 
+    /** Two of the week's photos are videos: their tiles carry the glyph-only video pill (`layout.global.videoMarker`). */
+    @Test fun historyWithVideo() {
+        val data = FakeSocialData().apply {
+            seedWeek()
+            makeVideo("w-2", 10_000)
+            makeVideo("w-5", 7_200)
+        }
+        snap(data) { WeekHistoryContent(HistoryViewModel(data, GROUP) { LocalDate.parse("2026-10-14") }.state.value, historyNav, {}, {}) }
+    }
+
     @Test fun historyLoading() = snap { WeekHistoryContent(HistoryState(), historyNav, {}, {}) }
 
     @Test fun historyEmpty() {

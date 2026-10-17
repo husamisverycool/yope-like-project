@@ -319,6 +319,12 @@ enum SocialA11y {
         )
     }
 
+    /// `label`, then `chat.thread.a11y.video` ("Video, 10 seconds") when `media` is a video (`layout.global.videoMarker`).
+    static func withVideo(_ label: String, media: Media?) -> String {
+        guard let durationMs = media?.videoDurationMs else { return label }
+        return label + ", " + Copy.chatThreadA11yVideo(duration: SocialFormat.spokenDuration(milliseconds: durationMs)) // provenance-ok: list separator joining two copy strings
+    }
+
     /// `week.history.a11y.emptyDay` ("Thursday, October 15, no photos").
     static func emptyDay(_ date: Date, timeZone: TimeZone) -> String {
         Copy.weekHistoryA11yEmptyDay(

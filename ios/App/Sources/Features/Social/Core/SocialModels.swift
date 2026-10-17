@@ -202,6 +202,8 @@ extension Media {
     var gridPath: String? { imagePath(for: .thumb) }
     /// The storage path the full-screen viewer shows (`display_path`, the original until ready).
     var displayImagePath: String? { imagePath(for: .display) }
+    /// A video's length (ms) for its marker and label (`layout.global.videoMarker`); nil for photos and Live Photos.
+    var videoDurationMs: Int? { kind == .video ? (durationMs ?? 0) : nil }
 }
 
 extension Profile {

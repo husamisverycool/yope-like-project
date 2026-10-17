@@ -569,6 +569,19 @@ final class ComponentSnapshotTests: XCTestCase {
         }
     }
 
+    /// `layout.global.videoMarker`: the pill with its length on a 240-pt card, the glyph alone on an 84-pt strip tile.
+    func testC25VideoMarker() {
+        record("c25-video-marker", height: Tokens.Sizes.globalFriendCardHeight) {
+            HStack(alignment: .top, spacing: Tokens.Sizes.globalPillGap) {
+                PhotoView(source: photo(12))
+                    .frame(width: Tokens.Sizes.globalFriendCardWidth, height: Tokens.Sizes.globalFriendCardHeight)
+                    .overlay(alignment: .topTrailing) { VideoTileMarker(durationMs: 9400) }
+                    .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
+                DayTile(tile: WeekStripTile(id: "v", kind: .photo(photo(3)), date: Date(timeIntervalSince1970: 1_791_331_200), videoDurationMs: 10000))
+            }
+        }
+    }
+
     // MARK: C-27 … C-28 states
 
     func testC27EmptyStates() {

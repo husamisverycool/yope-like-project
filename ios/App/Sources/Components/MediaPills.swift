@@ -1,29 +1,61 @@
-// Shared component — C-25 chips and small pills (design/components.md): the video duration pill and the premium pill.
+// Shared component — C-25 chips and small pills (design/components.md): the video duration pill (and its tile marker,
+// `layout.global.videoMarker`) and the premium pill.
 // The fill pill ('Create') is C-06 `.fill`, the position pill C-22 (`PositionPill`), the relative-week pill C-03.
-// Evidence: PAY ((945–955, 1480–1495), col x=960 y1450–1525); RV §3.1, §3.3, §4 #8.
+// Evidence: PAY ((945–955, 1480–1495), col x=960 y1450–1525; the "1:00" pill x 718–930, y 455–538 on the card x 232–974,
+// top 410); RV §3.1, §3.3, §4 #8; references/auto/platform/android-photopicker-unselected-f150.png (top-trailing marker).
 import DesignSystem
 import SwiftUI
 import UIKit
 
-/// Video duration ('1:00'): capsule `color.global.surfaceLight` with `icon.global.video` and monospaced digits in text
-/// role `pillSmall`, `color.global.onSurfaceLight`. Retro's pill measures 71 × 24 pt; height 24 is read from
-/// `size.global.badgeHeight` (the same measured capsule height; no token of its own — Gap), width hugs the content with
-/// the platform's padding. Accessibility: read by the owner element (the duration in words from copy).
+/// Video duration ('1:00'): capsule `color.global.surfaceLight`, `size.global.videoPillHeight` tall,
+/// `size.global.videoPillPadding` each side; `icon.global.video` (`size.global.iconSmall`), `size.global.videoPillGap`, then
+/// monospaced digits in text role `pillSmall`, `color.global.onSurfaceLight` (PAY: 71 × 28 pt). `duration` nil: the glyph
+/// alone (a tile too narrow for the digits, `layout.global.videoMarker`). Accessibility: read by the owner element
+/// (`chat.thread.a11y.video`).
 struct VideoDurationPill: View {
-    let duration: String
+    let duration: String?
 
     var body: some View {
-        HStack {
+        HStack(spacing: Tokens.Sizes.globalVideoPillGap) {
             Glyph(Tokens.Icons.globalVideo, size: Tokens.Sizes.globalIconSmall, relativeTo: TextRole.pillSmall.relativeTo)
-            Text(duration)
-                .dsTextStyle(TextRole.pillSmall)
-                .monospacedDigit()
-                .lineLimit(1)
+            if let duration {
+                Text(duration)
+                    .dsTextStyle(TextRole.pillSmall)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .fixedSize()
+            }
         }
         .foregroundStyle(Tokens.Colors.globalOnSurfaceLight)
-        .padding(.horizontal)
-        .frame(minHeight: Tokens.Sizes.globalBadgeHeight)
+        .padding(.horizontal, Tokens.Sizes.globalVideoPillPadding)
+        .frame(height: Tokens.Sizes.globalVideoPillHeight)
         .background(Tokens.Colors.globalSurfaceLight, in: Capsule())
+        .fixedSize()
+        .accessibilityHidden(true)
+    }
+
+    /// '0:10' in `chat.voice.layout.durationFormat` (whole seconds).
+    static func text(milliseconds: Int) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = Tokens.Layouts.ChatVoiceLayoutDurationFormat.pattern
+        return formatter.string(from: Date(timeIntervalSince1970: TimeInterval(max(0, milliseconds) / 1000))) // provenance-ok: ms → whole seconds
+    }
+}
+
+/// `layout.global.videoMarker`: the video pill at a photo's or tile's top-trailing corner, `size.global.videoPillInset`
+/// from both edges; where the duration does not fit inside the tile less both insets, the glyph alone. Place it as an
+/// overlay aligned `.topTrailing`.
+struct VideoTileMarker: View {
+    let durationMs: Int
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            VideoDurationPill(duration: VideoDurationPill.text(milliseconds: durationMs))
+            VideoDurationPill(duration: nil)
+        }
+        .padding(Tokens.Sizes.globalVideoPillInset)
+        .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
 }

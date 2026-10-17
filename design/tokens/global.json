@@ -1741,6 +1741,73 @@
       "precision": "±0.5 pt",
       "unit": "pt"
     },
+    "size.global.videoPillHeight": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "dimension",
+      "value": 28,
+      "element": "height of the video duration pill (\"1:00\", C-25)",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206×2622 @3x, 402 pt; the \"Share Video\" media card, card x ≈ 232–974, top edge y 410): white capsule rows y 455–538 (84 px), x 718–930 (213 px = 71 pt wide)",
+      "method": "px ÷ 3 (pixel scan, white ≥ 235 per channel; this pass, python3 -I + PIL)",
+      "precision": "±0.5 pt",
+      "unit": "pt",
+      "notes": "Was read as size.global.badgeHeight (24) before it was measured (C-25 \"71 × 24\"); the capsule is 28 pt tall."
+    },
+    "size.global.videoPillPadding": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "dimension",
+      "value": 12,
+      "element": "horizontal padding inside the video duration pill (capsule edge → glyph ink; last digit ink → capsule edge)",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206×2622 @3x, 402 pt; the \"Share Video\" media card, card x ≈ 232–974, top edge y 410): capsule left x 718 → glyph ink x 755 (37 px); digit ink end x 896 → capsule right x 930 (34 px)",
+      "method": "(37 + 34) ÷ 2 ÷ 3 = 11.8 → 12",
+      "precision": "±0.5 pt",
+      "unit": "pt",
+      "notes": "The glyph side measures 12.3, the digit side 11.3 (digit side bearing): one value."
+    },
+    "size.global.videoPillGap": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "dimension",
+      "value": 6,
+      "element": "gap between the video glyph and the duration digits in the pill",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206×2622 @3x, 402 pt; the \"Share Video\" media card, card x ≈ 232–974, top edge y 410): glyph ink ends x 794, first digit ink starts x 813 (19 px)",
+      "method": "px ÷ 3 = 6.3",
+      "precision": "±0.5 pt",
+      "unit": "pt"
+    },
+    "size.global.videoPillInset": {
+      "level": "SOURCED",
+      "source_app": "Retro",
+      "surface": "global",
+      "type": "dimension",
+      "value": 15,
+      "element": "distance of the video pill from the top and trailing edges of the media it marks",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206×2622 @3x, 402 pt; the \"Share Video\" media card, card x ≈ 232–974, top edge y 410): card top edge y 410 → pill top y 455 (45 px); pill right x 930 → card right edge x 974 (44 px)",
+      "method": "px ÷ 3 = 15.0 / 14.7",
+      "precision": "±0.5 pt",
+      "unit": "pt"
+    },
+    "layout.global.videoMarker": {
+      "level": "SOURCED",
+      "source_app": "Retro + Android photo picker",
+      "surface": "global",
+      "type": "layout",
+      "value": {
+        "marker": "C-25 video duration pill: capsule color.global.surfaceLight, size.global.videoPillHeight tall, size.global.videoPillPadding each side; icon.global.video (size.global.iconSmall) then size.global.videoPillGap then the duration (chat.voice.layout.durationFormat, text role pillSmall, monospaced digits) in color.global.onSurfaceLight",
+        "placement": "top-trailing corner of the photo or tile, size.global.videoPillInset from both edges",
+        "narrow": "when the pill with its duration does not fit inside the tile less both insets, the pill keeps only the glyph (same height and padding)",
+        "where": "every place a video shows as a tile or thumbnail: week strips (history, walls, the recap editor), the chat thread's photo messages and quoted photos, album grids; the viewer plays the video instead",
+        "accessibility": "hidden itself; the tile's label adds chat.thread.a11y.video (\"Video, {duration}\" spoken)"
+      },
+      "element": "how a video is marked among photos",
+      "evidence": "references/auto/retro/lazyweb/retro-lazyweb-20260529-paywall.png (RAW iOS 1206×2622 @3x, 402 pt; the \"Share Video\" media card, card x ≈ 232–974, top edge y 410) (the \"1:00\" pill at the media card's top-trailing corner); references/auto/platform/android-photopicker-unselected-f150.png (Android system photo picker, developer.android.com/training/data-storage/shared/photopicker Figure 1: a video cell shows its duration \"00:15\" and a play glyph at the cell's top-trailing corner)",
+      "method": "Retro's pill and inset (measured, size.global.videoPill*); its top-trailing placement on thumbnails is the platform picker's",
+      "notes": "Locket's video marker was not captured. Retro shows its pill on a 247-pt card; on 84-pt strip tiles the duration does not fit beside the glyph with the measured insets, hence the narrow rule."
+    },
     "size.global.tabBarHeight": {
       "level": "SOURCED",
       "source_app": "Retro",

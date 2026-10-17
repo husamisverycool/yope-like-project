@@ -82,7 +82,8 @@ public struct Media: Codable, Hashable, Sendable, Identifiable {
     /// `renditions_ready_at` is set, the original until then. For a video this is the poster
     /// rendition (nil until the worker made it, since the original is the video file).
     public func imagePath(for rendition: Rendition) -> String? {
-        if renditionsReadyAt != nil {
+        // A video's poster renditions are written before its transcode finishes (renditions_ready_at): used at once.
+        if renditionsReadyAt != nil || kind == .video {
             switch rendition {
             case .display: if let displayPath { return displayPath }
             case .thumb: if let thumbPath { return thumbPath }

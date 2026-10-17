@@ -321,12 +321,15 @@ struct AlbumGrid: View {
                 Button { open(post) } label: {
                     PhotoView(source: SocialImages.source(post?.media?.gridPath))
                         .aspectRatio(Tokens.AspectRatios.albumsViewAspectRatioGridCell, contentMode: .fit)
+                        .overlay(alignment: .topTrailing) {
+                            if let durationMs = post?.media?.videoDurationMs { VideoTileMarker(durationMs: durationMs) }
+                        }
                         .clipShape(shape)
                         .contentShape(shape)
                 }
                 .buttonStyle(.plain)
                 .disabled(post == nil)
-                .accessibilityLabel(Text(post.map(label) ?? ""))
+                .accessibilityLabel(Text(post.map { SocialA11y.withVideo(label($0), media: $0.media) } ?? ""))
                 .accessibilityHidden(post == nil)
             }
         }

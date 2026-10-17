@@ -325,6 +325,12 @@ class FakeSocialData(var me: String = ME) : SocialData {
         )
     }
 
+    /** Makes [postId]'s media a video of [durationMs] (`layout.global.videoMarker`, viewer playback). */
+    fun makeVideo(postId: String, durationMs: Int) {
+        val m = media.getValue(posts.getValue(postId).mediaId)
+        media[m.id] = m.copy(kind = MediaKind.Video, originalPath = "u/${m.ownerId}/${m.id}/r/video.mp4", durationMs = durationMs)
+    }
+
     /** A thread with text, a reply to a photo, a photo with caption and reactions, and voice messages. */
     fun seedChat() {
         seedGroup()

@@ -89,6 +89,9 @@ import app.feature.social.common.LocalSocialServices
 import app.feature.social.common.PersonAvatar
 import app.feature.social.common.PhotoSaveUi
 import app.feature.social.common.RemotePhoto
+import app.feature.social.common.videoDurationMs
+import app.feature.social.common.withVideoLabel
+import app.ui.components.VideoTileMarker
 import app.feature.social.common.photoModel
 import app.ui.media.DualImage
 import app.feature.social.common.announce
@@ -379,6 +382,8 @@ class RowLabels(
     private val photo: (String, String) -> String,
     private val photoMine: (String) -> String,
     private val caption: (String) -> String,
+    /** `chat.thread.a11y.video` ("Video, {duration}"), appended for a video post. */
+    private val video: ((String) -> String)? = null,
 ) {
     fun of(row: ChatRow): String {
         val name = row.author?.firstName.orEmpty()
@@ -390,7 +395,9 @@ class RowLabels(
             }
             MessageKind.Photo -> {
                 val t = Formats.shortTime(row.message.createdAt)
-                val base = if (row.mine) photoMine(t) else photo(name, t)
+                val photoLabel = if (row.mine) photoMine(t) else photo(name, t)
+                val videoMs = row.media?.videoDurationMs
+                val base = if (videoMs != null && video != null) "$photoLabel, ${video.invoke(Formats.spokenDuration(videoMs))}" else photoLabel
                 row.post?.caption?.takeIf { it.isNotBlank() }?.let { "$base, ${caption(it)}" } ?: base
             }
         }
@@ -409,6 +416,7 @@ fun rowLabels(): RowLabels {
             photo = { n, t -> r.getString(R.string.chat_thread_a11y_photo, n, t) },
             photoMine = { t -> r.getString(R.string.chat_thread_a11y_photomine, t) },
             caption = { c -> r.getString(R.string.chat_thread_a11y_caption, c) },
+            video = { d -> r.getString(R.string.chat_thread_a11y_video, d) },
         )
     }
 }
@@ -851,7 +859,7 @@ private fun QuoteView(quote: Quote, nav: ChatNav, scrollTo: (String) -> Unit) {
     val secondary = PageRoles.secondaryText()
     when (quote) {
         is Quote.Photo -> {
-            val label = stringRes(R.string.chat_thread_a11y_replyquote, quote.posterName.orEmpty())
+            val label = withVideoLabel(LocalContext.current, stringRes(R.string.chat_thread_a11y_replyquote, quote.posterName.orEmpty()), quote.videoDurationMs)
             Row(
                 Modifier
                     .tapClickable { nav.photo(quote.postId) }
@@ -861,11 +869,10 @@ private fun QuoteView(quote: Quote, nav: ChatNav, scrollTo: (String) -> Unit) {
                     },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                RemotePhoto(
-                    quote.thumbPath,
-                    null,
-                    Modifier.size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight).clip(RoundedCornerShape(Tokens.Radii.globalThumbnail)),
-                )
+                Box(Modifier.size(Tokens.Sizes.globalRowThumbWidth, Tokens.Sizes.globalRowThumbHeight).clip(RoundedCornerShape(Tokens.Radii.globalThumbnail))) {
+                    RemotePhoto(quote.thumbPath, null, Modifier.fillMaxSize())
+                    quote.videoDurationMs?.let { VideoTileMarker(it) }
+                }
                 Spacer(Modifier.width(Tokens.Sizes.globalRowThumbGap))
                 Column {
                     Text(stringRes(R.string.chat_thread_reply_posttitle, quote.posterName.orEmpty()), style = TextRoles.listTitle, color = Tokens.Colors.globalTextPrimary, maxLines = 1)
@@ -1061,6 +1068,7 @@ private fun PhotoMessage(row: ChatRow, afterHeader: Boolean, ui: ChatUiState, na
             } else {
                 RemotePhoto(media?.imagePath(app.data.model.Media.Rendition.Display), null, Modifier.fillMaxSize(), fallbackPath = media?.imagePath(app.data.model.Media.Rendition.Thumb))
             }
+            media?.videoDurationMs?.let { VideoTileMarker(it) }
         }
         if (row.reactions.isNotEmpty()) {
             Spacer(Modifier.height(Tokens.Sizes.chatReactionsDimensionChipTop))

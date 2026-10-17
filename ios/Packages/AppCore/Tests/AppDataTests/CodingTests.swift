@@ -189,6 +189,10 @@ final class CodingTests: XCTestCase {
         XCTAssertEqual(media.imagePath(for: .display), "u/o/m/original.jpg", "missing rendition falls back")
         media.kind = .video
         XCTAssertNil(media.imagePath(for: .display))
+        // A video's poster renditions show before the transcode finishes (renditions_ready_at still null).
+        media.renditionsReadyAt = nil
+        XCTAssertEqual(media.imagePath(for: .thumb), "u/o/m/r/thumb.jpg")
+        XCTAssertNil(media.imagePath(for: .display), "no poster yet: nothing (the original is the movie)")
     }
 
     func testJWTSubject() {

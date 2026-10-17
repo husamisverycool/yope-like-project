@@ -72,6 +72,18 @@ class ChatSnapshotTest : SnapshotBase() {
         chat(ChatViewModel(data, GROUP).state.value, data = data)
     }
 
+    /** A video in the thread (`layout.global.videoMarker`: the pill with its length on the card) and a reply quoting it. */
+    @Test fun videoMessage() {
+        val data = FakeSocialData().apply {
+            seedGroup()
+            val video = addPhoto("p-1", FakeSocialData.ANA, BASE, caption = "first swim of the year")
+            makeVideo(video.id, 9_400)
+            messages += FakeSocialData.message("m-1", GROUP, FakeSocialData.ANA, MessageKind.Photo, postId = video.id, at = BASE)
+            messages += FakeSocialData.message("m-2", GROUP, BEN, MessageKind.Text, body = "brave", replyToPostId = video.id, at = BASE.plusSeconds(120))
+        }
+        chat(ChatViewModel(data, GROUP).state.value, data = data)
+    }
+
     @Test fun loading() = chat(ChatState(phase = ChatState.Phase.Loading))
 
     @Test fun empty() {

@@ -56,6 +56,16 @@
       "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED"
     },
+    "chat.thread.a11y.video": {
+      "text": "Video, {duration}",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "chat.thread",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel` (label the content, no \"button\" suffix); chat.thread.a11y.caption (a part appended to a photo's label); Retro's word \"video\" (media_viewer_tagged_user_title_video \"In this video\", references/auto/retro/apk/retro-android-2026.10.1150-strings.txt)",
+      "pattern": "platform.a11yLabel — the content in a word, then its detail",
+      "level": "SOURCED",
+      "notes": "Appended to a tile's or photo message's label when it is a video (layout.global.videoMarker); {duration} spoken by the platform formatter (\"10 seconds\")."
+    },
     "chat.thread.a11y.replyQuote": {
       "text": "Reply to {name}'s post",
       "origin": "new",

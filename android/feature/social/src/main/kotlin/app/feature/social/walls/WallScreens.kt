@@ -319,6 +319,7 @@ private fun WallWeekSection(
                 if (me) stringRes(R.string.photo_viewer_a11y_photomine, Formats.spokenDate(day))
                 else stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), name),
                 tile.groupId?.let { g -> { nav.photo(userId, g, tile.postId) } },
+                tile.videoDurationMs,
             )
             is WallTile.CollageTile -> StripPhoto(
                 tile.key,

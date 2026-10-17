@@ -75,6 +75,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.designsystem.R
+import app.feature.social.common.withVideoLabel
+import app.ui.components.VideoTileMarker
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
 import app.feature.social.common.RemotePhoto
@@ -268,7 +270,7 @@ private val PLACEHOLDER_CELLS: Int get() = Tokens.Counts.weekEditCountGridColumn
 private fun GridCell(photo: WeekPhoto, checked: Boolean, state: EditState, onToggle: () -> Unit) {
     val zone = ZoneId.systemDefault()
     val day = photo.post.visibleAt.atZone(zone).toLocalDate()
-    val label = stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), photo.authorName.orEmpty())
+    val label = withVideoLabel(LocalContext.current, stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), photo.authorName.orEmpty()), photo.videoDurationMs)
     val value = stringRes(if (checked) R.string.week_edit_a11y_inrecap else R.string.week_edit_a11y_notinrecap)
     val mark = Tokens.Layouts.WeekEditLayoutSelectionMark
     BoxWithConstraints(
@@ -287,6 +289,7 @@ private fun GridCell(photo: WeekPhoto, checked: Boolean, state: EditState, onTog
         val shown by animateFloatAsState(if (checked) 1f else 0f, DsMotion.crossfade(), label = "mark")
         Box(Modifier.fillMaxSize().graphicsLayer { alpha = shown }.background(Tokens.Colors.globalControl))
         RemotePhoto(photo.thumbPath, null, Modifier.fillMaxSize().padding(inset).clip(RoundedCornerShape(corner)))
+        photo.videoDurationMs?.let { VideoTileMarker(it) }
         if (shown > 0f) SelectionCheck(Modifier.graphicsLayer { alpha = shown }.offset(cell * mark.markCentreRatio - Tokens.Sizes.globalCheckCircle / 2, cell * mark.markCentreRatio - Tokens.Sizes.globalCheckCircle / 2))
     }
 }
@@ -334,7 +337,11 @@ private fun ChosenStrip(state: EditState, onMove: (String, Int) -> Unit, modifie
     else if (strip.isEmpty()) listOf(DayTile.Placeholder("empty"))
     else strip.map { p ->
         val day = p.post.visibleAt.atZone(zone).toLocalDate()
-        DayTile.Photo(p.post.id, photoModel(p.thumbPath), Formats.weekdayShort(day), stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()))
+        DayTile.Photo(
+            p.post.id, photoModel(p.thumbPath), Formats.weekdayShort(day),
+            withVideoLabel(LocalContext.current, stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()), p.videoDurationMs),
+            videoDurationMs = p.videoDurationMs,
+        )
     }
     fun itemAt(x: Float) = listState.layoutInfo.visibleItemsInfo.firstOrNull { x >= it.offset && x < it.offset + it.size }
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl

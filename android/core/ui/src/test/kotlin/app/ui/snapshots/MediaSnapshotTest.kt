@@ -38,6 +38,9 @@ import app.ui.components.TabBar
 import app.ui.components.TabBarItem
 import app.ui.components.UnreadDot
 import app.ui.components.VideoDurationPill
+import app.ui.components.WeekStrip
+import app.ui.components.DayTile
+import app.ui.components.VideoTileMarker
 import app.ui.components.ViewerFooter
 import app.ui.components.ViewerHeader
 import app.ui.components.ViewerPage
@@ -104,6 +107,17 @@ class MediaSnapshotTest(appearance: Appearance) : SnapshotTest(appearance) {
                 PremiumPill("FREE")
                 PositionPill("3 of 4")
             }
+        }
+    }
+
+    /** `layout.global.videoMarker`: on a 240-pt card the pill with its length; on an 84-pt strip tile the glyph alone. */
+    @Test fun c25VideoMarker() = snap("c25-chips", "video-marker", surface = Surface.Page) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillGap)) {
+            Box(Modifier.size(Tokens.Sizes.globalFriendCardWidth, Tokens.Sizes.globalFriendCardHeight)) {
+                DsImage(landscape(12), null, Modifier.fillMaxSize())
+                VideoTileMarker(9_400L)
+            }
+            WeekStrip(listOf(DayTile.Photo("v", portrait(3), "Wed", "Wednesday, video", videoDurationMs = 10_000L)))
         }
     }
 

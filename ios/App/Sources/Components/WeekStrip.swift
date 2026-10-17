@@ -10,11 +10,14 @@ struct WeekStripPhoto: Hashable {
     let id: String
     let date: Date
     var source: PhotoSource?
+    /// A video's length (ms): its tile carries the video marker (`layout.global.videoMarker`); nil for photos.
+    var videoDurationMs: Int?
 
-    init(id: String, date: Date, source: PhotoSource?) {
+    init(id: String, date: Date, source: PhotoSource?, videoDurationMs: Int? = nil) {
         self.id = id
         self.date = date
         self.source = source
+        self.videoDurationMs = videoDurationMs
     }
 }
 
@@ -35,6 +38,8 @@ struct WeekStripTile: Identifiable, Hashable {
     let kind: Kind
     /// The photo's or the empty day's date (nil for add / placeholder tiles).
     let date: Date?
+    /// A video tile: its length (ms), shown by the video marker (`layout.global.videoMarker`).
+    var videoDurationMs: Int? = nil
 }
 
 /// Which tiles a week shows (C-17): one tile per photo in chronological order (two photos of one day → two tiles);
@@ -54,7 +59,7 @@ enum WeekStripLayout {
             lhs.date == rhs.date ? lhs.id < rhs.id : lhs.date < rhs.date
         }
         let tiles = ordered.map { photo in
-            WeekStripTile(id: "photo-\(photo.id)", kind: .photo(photo.source), date: photo.date)
+            WeekStripTile(id: "photo-\(photo.id)", kind: .photo(photo.source), date: photo.date, videoDurationMs: photo.videoDurationMs)
         }
         return tiles + (canAdd ? [add] : [])
     }
@@ -78,7 +83,8 @@ enum WeekStripLayout {
 /// A day tile: `size.global.stripTileWidth` × `.stripTileHeight` (3:4), square inner corners (`radius.global.photo`).
 ///
 /// - Photo: aspect-fill; bottom scrim `layout.global.photoScrim`; weekday (text role `tileLabel`,
-///   `color.global.textOnMedia`) centred, its baseline `size.global.tileLabelBaseline` above the bottom.
+///   `color.global.textOnMedia`) centred, its baseline `size.global.tileLabelBaseline` above the bottom; a video carries
+///   the video marker at the top-trailing corner (`layout.global.videoMarker`; glyph only at this width).
 /// - Empty day: fill `color.global.control`; three centred lines in `color.global.emptyTileText` — month (text role
 ///   `tileMonth`), day number (text role `tileDay`, tabular digits), weekday (`tileMonth`). Retro's 27 pt line pitch has
 ///   no token (Gap) — the lines stack at the fonts' own line heights.
@@ -109,6 +115,9 @@ struct DayTile: View {
                             .lineLimit(1)
                             .alignmentGuide(.bottom) { label in label[.lastTextBaseline] + Tokens.Sizes.globalTileLabelBaseline }
                     }
+                }
+                .overlay(alignment: .topTrailing) {
+                    if let durationMs = tile.videoDurationMs { VideoTileMarker(durationMs: durationMs) }
                 }
         case .emptyDay:
             ZStack {

@@ -65,6 +65,8 @@ import app.designsystem.dsShadow
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
 import app.feature.social.common.RemotePhoto
+import app.feature.social.common.withVideoLabel
+import app.ui.components.VideoTileMarker
 import app.feature.social.common.photoModel
 import app.feature.social.common.stringRes
 import app.feature.social.walls.ErrorLine
@@ -290,10 +292,8 @@ fun AlbumViewContent(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String) 
             }
             else -> itemsIndexed(photos, key = { _, p -> p.post.id }) { i, p ->
                 val date = Formats.viewerDate(p.post.createdAt)
-                val label = stringRes(R.string.photo_viewer_a11y_photo, p.authorName.orEmpty(), date)
-                RemotePhoto(
-                    p.thumbPath,
-                    null,
+                val label = withVideoLabel(LocalContext.current, stringRes(R.string.photo_viewer_a11y_photo, p.authorName.orEmpty(), date), p.videoDurationMs)
+                Box(
                     Modifier
                         .aspectRatio(Tokens.AspectRatios.albumsViewAspectRatioGridCell)
                         .clip(gridCellShape(i, photos.size, columns))
@@ -302,7 +302,10 @@ fun AlbumViewContent(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String) 
                             contentDescription = label
                             role = Role.Button
                         },
-                )
+                ) {
+                    RemotePhoto(p.thumbPath, null, Modifier.fillMaxSize())
+                    p.videoDurationMs?.let { VideoTileMarker(it) }
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ import app.data.error.ApiError
 import app.data.error.DataError
 import app.data.model.Album
 import app.data.model.Media
+import app.feature.social.common.videoDurationMs
 import app.data.model.MemberRole
 import app.data.model.Post
 import app.data.model.Profile
@@ -100,7 +101,7 @@ data class AlbumViewState(
 
 enum class RenameError { Empty, Save }
 
-data class AlbumPhoto(val post: Post, val thumbPath: String?, val authorName: String?)
+data class AlbumPhoto(val post: Post, val thumbPath: String?, val authorName: String?, val videoDurationMs: Long? = null)
 
 sealed interface AlbumEffect {
     data object Renamed : AlbumEffect
@@ -174,7 +175,7 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
         }
         val media = p.media.associateBy { it.id }
         val names = p.profiles.associate { it.id to it.firstName }
-        val photos = p.posts.filter { it.id !in removed }.map { AlbumPhoto(it, media[it.mediaId]?.imagePath(Media.Rendition.Thumb), names[it.authorId]) }
+        val photos = p.posts.filter { it.id !in removed }.map { AlbumPhoto(it, media[it.mediaId]?.imagePath(Media.Rendition.Thumb), names[it.authorId], media[it.mediaId]?.videoDurationMs) }
         val me = data.currentUserId()
         _state.update {
             it.copy(

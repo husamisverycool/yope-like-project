@@ -13,6 +13,7 @@ import app.data.model.WeeklyRecap
 import app.data.offline.DataState
 import app.data.realtime.GroupEvent
 import app.feature.social.common.Formats
+import app.feature.social.common.videoDurationMs
 import app.feature.social.data.SocialData
 import app.feature.social.data.cached
 import app.feature.social.data.dataError
@@ -33,8 +34,8 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.ZoneId
 
-/** A photo tile of the week screens. */
-data class WeekPhoto(val post: Post, val thumbPath: String?, val authorName: String?)
+/** A photo tile of the week screens; [videoDurationMs] set for a video (its marker, `layout.global.videoMarker`). */
+data class WeekPhoto(val post: Post, val thumbPath: String?, val authorName: String?, val videoDurationMs: Long? = null)
 
 /**
  * Recaps being edited, shared by `week.edit` and `week.recap` so the recap screen shows an edit at
@@ -152,7 +153,7 @@ class RecapViewModel(private val data: SocialData, private val groupId: String, 
         val posts = p.posts.filter { it.id !in removed }.associateBy { it.id }
         val media = p.media.associateBy { it.id }
         val names = p.profiles.associate { it.id to it.firstName }
-        fun photo(id: String) = posts[id]?.let { post -> WeekPhoto(post, media[post.mediaId]?.imagePath(Media.Rendition.Thumb), names[post.authorId]) }
+        fun photo(id: String) = posts[id]?.let { post -> WeekPhoto(post, media[post.mediaId]?.imagePath(Media.Rendition.Thumb), names[post.authorId], media[post.mediaId]?.videoDurationMs) }
         val phase = when {
             recap == null -> RecapState.Phase.Empty
             recap.status == RenderStatus.Pending -> RecapState.Phase.Pending
@@ -249,7 +250,7 @@ class WeekEditViewModel(
                 val posts = p.posts.associateBy { it.id }
                 val media = p.media.associateBy { it.id }
                 val names = p.profiles.associate { it.id to it.firstName }
-                fun photo(id: String) = posts[id]?.let { post -> WeekPhoto(post, media[post.mediaId]?.imagePath(Media.Rendition.Thumb), names[post.authorId]) }
+                fun photo(id: String) = posts[id]?.let { post -> WeekPhoto(post, media[post.mediaId]?.imagePath(Media.Rendition.Thumb), names[post.authorId], media[post.mediaId]?.videoDurationMs) }
                 val recapItems = recap?.items.orEmpty().filter { it in posts }
                 val others = p.weekPostIds.filter { it !in recapItems && it in posts }
                 // The grid: every visible post of the week in time order (the strip keeps the recap's order).
@@ -508,7 +509,7 @@ class HistoryViewModel(private val data: SocialData, private val groupId: String
         val list = weeks.map { w ->
             HistoryWeekUi(
                 weekStart = w.weekStart,
-                photos = w.postIds.mapNotNull { id -> posts[id]?.let { p -> WeekPhoto(p, media[p.mediaId]?.imagePath(Media.Rendition.Thumb), names[p.authorId]) } },
+                photos = w.postIds.mapNotNull { id -> posts[id]?.let { p -> WeekPhoto(p, media[p.mediaId]?.imagePath(Media.Rendition.Thumb), names[p.authorId], media[p.mediaId]?.videoDurationMs) } },
                 recapId = recaps[w.weekStart],
                 isCurrent = w.weekStart == current,
             )

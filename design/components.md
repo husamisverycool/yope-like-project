@@ -488,11 +488,12 @@ APK-X wv3.a (11/11 W600); RV §3.1, §3.3, §4 #8.
 |---|---|
 | fill pill / template "Create" | C-06 fill variant |
 | position pill | see C-22 |
-| video duration ("1:00") | capsule `color.global.surfaceLight` 71 × 24, `icon.global.video` + monospaced digits, text role `pillSmall` (13 bold) `color.global.onSurfaceLight` |
+| video duration ("1:00") | capsule `color.global.surfaceLight` 71 × 28 (`size.global.videoPillHeight`; padding `size.global.videoPillPadding`), `icon.global.video` (`size.global.iconSmall`), `size.global.videoPillGap`, monospaced digits, text role `pillSmall` (13 bold) `color.global.onSurfaceLight` |
+| video marker on a tile (`layout.global.videoMarker`) | the video pill at the photo's top-trailing corner, `size.global.videoPillInset` (15) from both edges (PAY's media card; the Android photo picker marks videos at the same corner); where the digits do not fit inside the tile less both insets (84-pt strip tiles, 72-pt quote thumbnails) the glyph alone; on week strips, the recap editor, chat cards and quotes, album grids; hidden from accessibility — the owner's label adds `chat.thread.a11y.video` |
 | premium pill ("FREE") | 51 × 26 capsule, `layout.global.premiumGradient` (top #D543DE → bottom #A327B8) / `color.global.premium`, label text role `pillSmall` (13 bold, caps) `color.global.onBadge`; coloured shadow not measured; **paywall only** (purple kept, owner decision 7): on a plan card with a free trial, centred on the title's cap middle, `paywall.size.planPillInset` (19.5) from the card's edge |
 | relative week | C-03 |
 
-**Evidence.** PAY ((945–955,1480–1495), col x=960 y1450–1525); RV §3.1, §3.3, §4 #8.
+**Evidence.** PAY ((945–955,1480–1495), col x=960 y1450–1525; "1:00" pill x718–930 y455–538 on the card x232–974, top 410); RV §3.1, §3.3, §4 #8; `references/auto/platform/android-photopicker-unselected-f150.png` (top-trailing video marker).
 
 ## C-26 Toasts and confirmations
 

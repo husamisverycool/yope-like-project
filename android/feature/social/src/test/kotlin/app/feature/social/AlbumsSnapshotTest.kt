@@ -60,6 +60,15 @@ class AlbumsSnapshotTest : SnapshotBase() {
         view(state, data, dark = true)
     }
 
+    /** An album with a video: its grid cell carries the video pill (`layout.global.videoMarker`). */
+    @Test fun viewWithVideo() {
+        val data = FakeSocialData().apply {
+            seedAlbums()
+            makeVideo("w-1", 8_000)
+        }
+        view(AlbumViewModel(data, GROUP, "a-2").state.value, data)
+    }
+
     @Test fun viewLoading() = view(AlbumViewState())
 
     @Test fun viewEmpty() {

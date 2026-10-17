@@ -557,6 +557,9 @@ struct ChatMessageRow: View {
         } label: {
             PhotoView(source: SocialImages.source(post?.media?.displayImagePath))
                 .frame(width: Tokens.Sizes.globalFriendCardWidth, height: Tokens.Sizes.globalFriendCardHeight)
+                .overlay(alignment: .topTrailing) {
+                    if let durationMs = post?.media?.videoDurationMs { VideoTileMarker(durationMs: durationMs) }
+                }
                 .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
                 .contentShape(DSShape.rounded(Tokens.Radii.globalCard))
         }
@@ -570,7 +573,8 @@ struct ChatMessageRow: View {
 
     private func photoLabel(_ post: PostWithMedia?) -> String {
         let time = SocialFormat.time(message.createdAt)
-        return row.isMine ? Copy.chatThreadA11yPhotoMine(time: time) : Copy.chatThreadA11yPhoto(name: authorName, time: time)
+        let label = row.isMine ? Copy.chatThreadA11yPhotoMine(time: time) : Copy.chatThreadA11yPhoto(name: authorName, time: time)
+        return SocialA11y.withVideo(label, media: post?.media)
     }
 
     // MARK: Quotes (`chat.thread.layout.replyQuote`)
@@ -586,6 +590,9 @@ struct ChatMessageRow: View {
             HStack(alignment: .top, spacing: Tokens.Sizes.globalRowThumbGap) {
                 PhotoView(source: SocialImages.source(quoted.media?.gridPath))
                     .frame(width: Tokens.Sizes.globalRowThumbWidth, height: Tokens.Sizes.globalRowThumbHeight)
+                    .overlay(alignment: .topTrailing) {
+                        if let durationMs = quoted.media?.videoDurationMs { VideoTileMarker(durationMs: durationMs) }
+                    }
                     .clipShape(DSShape.rounded(Tokens.Radii.globalThumbnail))
                 VStack(alignment: .leading, spacing: 0) {
                     Text(Copy.chatThreadReplyPostTitle(name: name))
@@ -602,7 +609,7 @@ struct ChatMessageRow: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(Copy.chatThreadA11yReplyQuote(name: name)))
+        .accessibilityLabel(Text(SocialA11y.withVideo(Copy.chatThreadA11yReplyQuote(name: name), media: quoted.media)))
         .accessibilityAddTraits(.isButton)
     }
 
