@@ -563,6 +563,8 @@ const table = {
   "notifications.push.channel.recap.name": "Weekly Recaps", // Retro · notifications.push · SOURCED
   "notifications.push.channel.tribute.description": "Birthday videos your group made for you", // Retro · notifications.push · SOURCED
   "notifications.push.channel.tribute.name": "Birthday Videos", // Retro · notifications.push · SOURCED
+  "notifications.push.channel.yearStory.description": "When your group's Year in Photos is ready", // Retro · notifications.push · SOURCED
+  "notifications.push.channel.yearStory.name": "Year in Photos", // Retro · notifications.push · SOURCED
   "notifications.push.dailyInvitation.body": "What are you up to right now?", // Retro · daily.notification · SOURCED
   "notifications.push.dailyInvitation.title": "{group}", // Retro · daily.notification · SOURCED
   "notifications.push.newPost.body": "{name} just posted.", // Retro · notifications.push · SOURCED
@@ -589,6 +591,8 @@ const table = {
   "notifications.push.selfieReaction.title": "{group}", // Retro · notifications.push · SOURCED
   "notifications.push.tribute.body": "{group} made you a birthday video.", // Retro · notifications.push · SOURCED
   "notifications.push.tribute.title": "Happy birthday!", // Retro · notifications.push · SOURCED
+  "notifications.push.yearStory.body": "Your {year} Recap is ready.", // Retro · notifications.push · SOURCED
+  "notifications.push.yearStory.title": "{group}", // Retro · notifications.push · SOURCED
   "onboarding.permission.camera.denied.button": "Allow Camera Access", // Retro · onboarding.permission.camera · SOURCED
   "onboarding.permission.camera.denied.detail": "We need permission to use your camera so you can take photos for your groups.", // Retro · onboarding.permission.camera · SOURCED
   "onboarding.permission.camera.denied.title": "Camera Access", // Retro · onboarding.permission.camera · SOURCED
@@ -1095,6 +1099,7 @@ const table = {
   "year.story.position": "{position} of {total}", // Retro · year.story · SOURCED
   "year.story.share": "Share", // Retro · year.story · SOURCED
   "year.story.summary.replay": "Watch again", // Retro · year.story · SOURCED
+  "year.story.tagged.title": "The moments you were in", // Retro · year.story · SOURCED
   "year.story.together.aside": "Some days, everyone was there", // Retro · year.story · SOURCED
   "year.story.together.title": "You didn’t go through these moments alone", // Retro · year.story · SOURCED
 } as const;

@@ -117,6 +117,36 @@ describe('create_post', () => {
     expect(await rpc(v.client, 'create_post', { p_media_id: video.id, p_group_ids: [g.id] })).toHaveLength(1);
   });
 
+  it('short videos: create_post refuses a video longer than video_max_ms, in the whole seconds the apps show', async () => {
+    const [v] = await createUsers(1, 'Short');
+    const g = await createGroup(v);
+    await grantPremium(v.id, null);
+    const [{ value }] = await sql<{ value: number }>(`select value from public.public_app_config where key = 'video_max_ms'`);
+    expect(value).toBe(10000); // camera.capture.duration.videoMax
+    const video = async (durationMs: number) => {
+      const id = randomUUID();
+      const path = await upload(v, `u/${v.id}/${id}/original.mp4`, 'video/mp4');
+      const { error } = await v.client.from('media').insert({ id, kind: 'video', original_path: path, width: 1, height: 1, duration_ms: durationMs });
+      expect(error).toBeNull();
+      return id;
+    };
+    // 10,999 ms reads "0:10" (a recording stopped at the limit overshoots by a few frames): accepted.
+    for (const ms of [1, 10000, 10999]) {
+      expect(await rpc(v.client, 'create_post', { p_media_id: await video(ms), p_group_ids: [g.id] })).toHaveLength(1);
+    }
+    for (const ms of [11000, 60000, 3_600_000]) {
+      await expectRpcError(rpc(v.client, 'create_post', { p_media_id: await video(ms), p_group_ids: [g.id] }), 'video_too_long', 400);
+    }
+    // Clients cannot shorten the length after the fact (no update on media).
+    const long = await video(60000);
+    const upd = await v.client.from('media').update({ duration_ms: 5000 }).eq('id', long);
+    expect(upd.error?.code).toBe('42501');
+    await expectRpcError(rpc(v.client, 'create_post', { p_media_id: long, p_group_ids: [g.id] }), 'video_too_long', 400);
+    // Live Photos are not videos: their motion length is not limited here.
+    const live = await createMedia(v, { kind: 'live_photo' });
+    expect(await rpc(v.client, 'create_post', { p_media_id: live.id, p_group_ids: [g.id] })).toHaveLength(1);
+  });
+
   it('in_window only for an open invitation of that group; otherwise an ordinary post (no "late" flag)', async () => {
     const [inv] = await sql<{ id: string }>(
       `insert into public.daily_invitations (group_id, local_date, fires_at, closes_at, status)

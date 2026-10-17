@@ -213,6 +213,22 @@ fun CameraRoute(
         questionText = question?.let { q -> remember(q.key) { WeeklyQuestions.text(context, q.key) } },
         overnight = overnight,
     )
+    // camera.trim: a library video over the limit, trimmed before send-to.
+    state.trim?.let { request ->
+        val target = remember(request) { vm.trimTarget() }
+        VideoTrimRoute(request, target, onFinish = vm::onTrimmed)
+    }
+    if (state.videoTooLong) {
+        val limit = remember(context) { app.feature.capture.camera.TrimWords.limit(context) }
+        app.ui.system.SystemAlertDialog(
+            title = stringResource(R.string.camera_capture_videotoolong_title),
+            text = stringResource(R.string.camera_capture_videotoolong_message, limit),
+            confirmLabel = stringResource(R.string.camera_capture_videotoolong_dismiss),
+            onConfirm = vm::dismissVideoTooLong,
+            dismissLabel = null,
+            onDismiss = vm::dismissVideoTooLong,
+        )
+    }
     // Returning from Settings with access granted.
     LifecycleResumeEffect(state.permission) {
         if (state.permission == CameraViewModel.Permission.Denied && MediaPermissions.isGranted(context, MediaPermission.Camera)) {

@@ -86,6 +86,23 @@ class ScreenSnapshotTest {
     private val photo get() = Images.photo(900, 1200, 0).asImageBitmap()
     private val front get() = Images.selfie(300, 400).asImageBitmap()
 
+    // ---- camera.trim ------------------------------------------------------------------------
+
+    /** A 42-second library video on the trimmer (a sample photo stands in for the video frame), the range moved to 0:12. */
+    private fun trim(name: String, dark: Boolean = false, busy: Boolean = false, failed: Boolean = false) = snap("camera.trim_$name", dark) {
+        val range = androidx.compose.runtime.remember { app.feature.capture.camera.TrimRange(42_000L, 12_000L, 22_000L) }
+        app.feature.capture.camera.VideoTrimContent(
+            range = range, aspect = 3f / 4f, playing = true, busy = busy, failedToLoad = failed,
+            onTogglePlay = {}, onRangeChanged = { _, _ -> }, onRetry = {}, onCancel = {}, onDone = {},
+            video = { m -> Image(photo, null, contentScale = ContentScale.Crop, modifier = m) },
+        )
+    }
+
+    @Test fun trimRange() = trim("range")
+    @Test fun trimRangeDark() = trim("range", dark = true)
+    @Test fun trimBusy() = trim("busy", busy = true)
+    @Test fun trimLoadError() = trim("error", failed = true)
+
     // ---- camera.capture ---------------------------------------------------------------------
 
     private fun camera(name: String, state: CameraViewModel.UiState, live: Boolean = true, dark: Boolean = false) = snap("camera.capture_$name", dark) {

@@ -122,21 +122,34 @@ export interface VideoOutputs {
   mp4: Buffer;
   poster: Buffer;
   cpuSeconds: number;
+  /** Length of the uploaded file and of the stored video (ffprobe, ms; null when the container does not say). */
+  inputMs: number | null;
+  durationMs: number | null;
+}
+
+/** The container's duration in ms (ffprobe format.duration), or null. */
+async function probeMs(file: string): Promise<number | null> {
+  const seconds = Number((await probe(file)).format.duration);
+  return Number.isFinite(seconds) && seconds > 0 ? Math.round(seconds * 1000) : null;
 }
 
 /**
  * Premium video: H.264 (yuv420p, High profile) + AAC in MP4 with the index up front
  * (+faststart), no metadata; libx264 / AAC at ffmpeg's default quality settings. The poster is
- * the first frame, as PNG (lossless input for the JPEG renditions).
+ * the first frame, as PNG (lossless input for the JPEG renditions). `maxMs` (app_config
+ * video_max_ms, "short videos") cuts the output after that much of the start: whatever length a
+ * client reported, the stored video is never longer.
  */
-export async function transcodeVideo(input: Buffer, inputName: string): Promise<VideoOutputs> {
+export async function transcodeVideo(input: Buffer, inputName: string, maxMs?: number | null): Promise<VideoOutputs> {
   return withTemp(async (dir) => {
     const src = path.join(dir, `in${path.extname(inputName) || ".mov"}`);
     await fs.writeFile(src, input);
     const out = path.join(dir, "out.mp4");
     const posterFile = path.join(dir, "poster.png");
+    const limit = maxMs != null && maxMs > 0 ? ["-t", (maxMs / 1000).toFixed(3)] : [];
     const a = await ffmpeg([
       "-y", "-i", src,
+      ...limit,
       "-map", "0:v:0", "-map", "0:a:0?",
       "-c:v", "libx264", "-pix_fmt", "yuv420p", "-profile:v", "high",
       "-c:a", "aac",
@@ -145,7 +158,13 @@ export async function transcodeVideo(input: Buffer, inputName: string): Promise<
       out,
     ]);
     const b = await ffmpeg(["-y", "-i", out, "-frames:v", "1", "-map_metadata", "-1", posterFile]);
-    return { mp4: await fs.readFile(out), poster: await fs.readFile(posterFile), cpuSeconds: a.cpuSeconds + b.cpuSeconds };
+    return {
+      mp4: await fs.readFile(out),
+      poster: await fs.readFile(posterFile),
+      cpuSeconds: a.cpuSeconds + b.cpuSeconds,
+      inputMs: await probeMs(src),
+      durationMs: await probeMs(out),
+    };
   });
 }
 

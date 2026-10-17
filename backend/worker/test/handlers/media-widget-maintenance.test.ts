@@ -1,5 +1,6 @@
 // media.renditions, widget.refresh, storage.delete, auth.delete_user, moderation.report.
 import { execFileSync } from "node:child_process";
+import { probe } from "../../src/media/ffmpeg.js";
 import fs from "node:fs";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
@@ -74,6 +75,23 @@ describe("media.renditions", () => {
     expect(m.display_path).toMatch(/r\/display\.jpg$/);
     expect(m.renditions_ready_at).not.toBeNull();
     expect(await objectExists(media.originalPath)).toBe(false);
+  });
+
+  it("short videos: a client that reports a false length still never stores a longer video (cut to video_max_ms)", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "worker-vid-"));
+    const file = path.join(dir, "long.mp4");
+    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=30:duration=13", "-f", "lavfi", "-i", "sine=duration=13", "-c:v", "mpeg4", "-c:a", "aac", "-shortest", file]);
+    await sql(`insert into public.entitlements (user_id, entitlement, expires_at, source) values ($1, 'premium', null, 'test') on conflict do nothing`, [u[2]!.id]);
+    // createMedia reports 1,500 ms for every video: create_post believes it.
+    const { media } = await postPhoto(u[2]!, [g.id], {}, { kind: "video", body: fs.readFileSync(file) });
+    await w.runner.runUntilIdle({ kinds: ["media.renditions"] });
+    const [m] = await sql(`select original_path, duration_ms from public.media where id = $1`, [media.id]);
+    expect(m.original_path).toBe(`u/${u[2]!.id}/${media.id}/r/video.mp4`);
+    expect(m.duration_ms).toBeGreaterThanOrEqual(9900);
+    expect(m.duration_ms).toBeLessThanOrEqual(10100);
+    const stored = path.join(dir, "stored.mp4");
+    fs.writeFileSync(stored, await w.svc.storage.download(m.original_path));
+    expect(Number((await probe(stored)).format.duration)).toBeLessThanOrEqual(10.1);
   });
 });
 

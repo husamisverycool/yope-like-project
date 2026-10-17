@@ -152,6 +152,156 @@
       "level": "SOURCED",
       "notes": "Retry action of the error block (Retro capitalises it)."
     },
+    "camera.capture.videoTooLong.title": {
+      "text": "Video too long",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_composer_error_video_too_long_title)",
+      "level": "SOURCED",
+      "notes": "Native alert title when a picked video is longer than camera.capture.duration.videoMax and cannot be trimmed on the device (or the trim failed). Retro shows the same pair in its composer."
+    },
+    "camera.capture.videoTooLong.message": {
+      "text": "Please select a video under {duration}",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_composer_error_video_too_long_message_template \"Please select a video under %1$s\")",
+      "level": "SOURCED",
+      "notes": "{duration}: camera.capture.duration.videoMax in words from the platform formatter (\"10 seconds\"; DateComponentsFormatter .full / MeasureFormat WIDE)."
+    },
+    "camera.capture.videoTooLong.dismiss": {
+      "text": "OK",
+      "origin": "verbatim",
+      "source_app": "Apple HIG",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (legal_disclosures_ok); HIG Alerts ('OK' for informational alerts)",
+      "pattern": "platform.alertButton",
+      "level": "VERIFIED"
+    },
+    "camera.trim.title": {
+      "text": "Trim Video",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_title)",
+      "level": "SOURCED",
+      "notes": "Android trimmer header (C-29 SheetHeader); iOS shows the system trimmer's own title."
+    },
+    "camera.trim.done": {
+      "text": "Done",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_done)",
+      "level": "SOURCED"
+    },
+    "camera.trim.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (cancel)",
+      "level": "SOURCED"
+    },
+    "camera.trim.range": {
+      "text": "{start} – {end} ({length})",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_range \"%1$s – %2$s (%3$s)\")",
+      "level": "SOURCED",
+      "notes": "Times in the duration format of layout.global.durationFormat / chat.voice.layout.durationFormat (\"0:03 – 0:13 (0:10)\")."
+    },
+    "camera.trim.a11y.timeline": {
+      "text": "Video trim timeline",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_timeline)",
+      "level": "SOURCED",
+      "notes": "TalkBack label of the range slider."
+    },
+    "camera.trim.a11y.startEarlier": {
+      "text": "Start one second earlier",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_start_earlier)",
+      "level": "SOURCED",
+      "notes": "TalkBack custom action on the range slider."
+    },
+    "camera.trim.a11y.startLater": {
+      "text": "Start one second later",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_start_later)",
+      "level": "SOURCED",
+      "notes": "TalkBack custom action on the range slider."
+    },
+    "camera.trim.a11y.endEarlier": {
+      "text": "End one second earlier",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_end_earlier)",
+      "level": "SOURCED",
+      "notes": "TalkBack custom action on the range slider."
+    },
+    "camera.trim.a11y.endLater": {
+      "text": "End one second later",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_end_later)",
+      "level": "SOURCED",
+      "notes": "TalkBack custom action on the range slider."
+    },
+    "camera.trim.a11y.play": {
+      "text": "Play",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_play)",
+      "level": "SOURCED",
+      "notes": "Click label of the video while paused."
+    },
+    "camera.trim.a11y.pause": {
+      "text": "Pause",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_pause)",
+      "level": "SOURCED",
+      "notes": "Click label of the video while playing."
+    },
+    "camera.trim.a11y.busy": {
+      "text": "Trimming…",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "design/copy-patterns.md `retro.voice.progress`: \"Updating…\" (`add_journal_media_to_week_success_message`), \"Downloading…\" (`journal_settings_download_all_success_message`); the verb from \"Trim Video\" (video_editor_title)",
+      "pattern": "retro.voice.progress — gerund + \"…\"",
+      "level": "SOURCED",
+      "notes": "TalkBack label of the C-28 indicator while the clip is written (Android)."
+    },
+    "camera.trim.error.load": {
+      "text": "Error loading video…",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_load_error)",
+      "level": "SOURCED"
+    },
+    "camera.trim.error.retry": {
+      "text": "Retry",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.trim",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_retry)",
+      "level": "SOURCED"
+    },
     "camera.sendto.title": {
       "text": "Share Photo",
       "origin": "adapted",

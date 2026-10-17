@@ -63,6 +63,7 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 |---|---|---|---|
 | `camera.capture` | Opens to camera; one tap captures; Live Photo; video (premium) | no analog — media surface (black, C-11 glass / media circles, 22 Rewind controls layout) | Locket (camera), Yope |
 | `camera.sendto` | Choose one or more groups; optional caption and voice note; send (no mandatory edit) | 30 (composer sheet "Add to Your Week": Cancel / title / Update, strip, grid), 17 (postcard composer: "Add a message" pill, 60 pt capsule), 8 (avatar grid) | Locket, Yope (send-to flow) |
+| `camera.trim` | A library video longer than the camera's limit is trimmed before send-to (short videos; the server enforces the same limit) | no analog in Retro's visuals (its Android "Trim Video" editor was not captured) — iOS: the system trimmer (UIVideoEditorController); Android: media surface with C-29 header, Material 3 range slider | Retro (editor wording, "Video too long"), Apple (system trimmer) |
 | `camera.fromwidget` | Widget tap opens straight into the camera | no analog — as `camera.capture` | Locket |
 | `camera.overnight` | Camera mode "9 AM · Now": photos develop for the chosen groups at 9 AM in the group's time zone; nobody sees them before; one developing tile per group | 19 (native segmented control on black, TC-REC) on the `camera.capture` media surface; C-09 pill, C-17 placeholder tile, C-29 sheet | Dispo (switch, 9 AM reveal, shoot to rolls), Lapse (no preview, one alert, sequential review) |
 

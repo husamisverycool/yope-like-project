@@ -45,6 +45,7 @@ enum class ApiError(val wire: String, val httpStatus: Int) {
     PostNotEligible("post_not_eligible", 403),
     UnderMinimumAge("under_minimum_age", 403),
     PremiumRequired("premium_required", 402),
+    VideoTooLong("video_too_long", 400),
     PostNotFound("post_not_found", 404),
     MediaNotFound("media_not_found", 404),
     MessageNotFound("message_not_found", 404),

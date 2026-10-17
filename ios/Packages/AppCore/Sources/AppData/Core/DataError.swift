@@ -14,6 +14,7 @@ public enum APIErrorCode: String, CaseIterable, Sendable {
     case postNotEligible = "post_not_eligible"
     case underMinimumAge = "under_minimum_age"
     case premiumRequired = "premium_required"
+    case videoTooLong = "video_too_long"
     case postNotFound = "post_not_found"
     case mediaNotFound = "media_not_found"
     case messageNotFound = "message_not_found"

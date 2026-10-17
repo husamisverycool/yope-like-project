@@ -1123,6 +1123,10 @@
     <string name="notifications_push_channel_tribute_description" formatted="false">Birthday videos your group made for you</string>
     <!-- Retro · notifications.push · new · SOURCED -->
     <string name="notifications_push_channel_tribute_name" formatted="false">Birthday Videos</string>
+    <!-- Retro · notifications.push · new · SOURCED -->
+    <string name="notifications_push_channel_yearstory_description" formatted="false">When your group\'s Year in Photos is ready</string>
+    <!-- Retro · notifications.push · new · SOURCED -->
+    <string name="notifications_push_channel_yearstory_name" formatted="false">Year in Photos</string>
     <!-- Retro · daily.notification · new · SOURCED -->
     <string name="notifications_push_dailyinvitation_body" formatted="false">What are you up to right now?</string>
     <!-- Retro · daily.notification · new · SOURCED · args: group -->
@@ -1175,6 +1179,10 @@
     <string name="notifications_push_tribute_body">%1$s made you a birthday video.</string>
     <!-- Retro · notifications.push · new · SOURCED -->
     <string name="notifications_push_tribute_title" formatted="false">Happy birthday!</string>
+    <!-- Retro · notifications.push · adapted · SOURCED · args: year -->
+    <string name="notifications_push_yearstory_body">Your %1$s Recap is ready.</string>
+    <!-- Retro · notifications.push · new · SOURCED · args: group -->
+    <string name="notifications_push_yearstory_title">%1$s</string>
     <!-- Retro · onboarding.permission.camera · adapted · SOURCED -->
     <string name="onboarding_permission_camera_denied_button" formatted="false">Allow Camera Access</string>
     <!-- Retro · onboarding.permission.camera · adapted · SOURCED -->
@@ -2187,6 +2195,8 @@
     <string name="year_story_share" formatted="false">Share</string>
     <!-- Retro · year.story · new · SOURCED -->
     <string name="year_story_summary_replay" formatted="false">Watch again</string>
+    <!-- Retro · year.story · new · SOURCED -->
+    <string name="year_story_tagged_title" formatted="false">The moments you were in</string>
     <!-- Retro · year.story · new · SOURCED -->
     <string name="year_story_together_aside" formatted="false">Some days, everyone was there</string>
     <!-- Retro · year.story · adapted · SOURCED -->

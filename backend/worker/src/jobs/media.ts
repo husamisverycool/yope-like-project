@@ -14,6 +14,7 @@ import {
   videoPoster,
 } from "../media/renditions.js";
 import type { JobContext, Services } from "../services.js";
+import { configValue } from "./collage.js";
 import { str } from "../services.js";
 import { MEDIA_COLUMNS, type MediaRow } from "../types.js";
 
@@ -156,11 +157,21 @@ export async function mediaRenditions(ctx: JobContext): Promise<void> {
   }
   if (media.kind === "video" && !media.original_path.endsWith("/r/video.mp4")) {
     // Premium video: one H.264/AAC MP4 that plays on both platforms, without metadata, replaces the upload.
-    const v = await transcodeVideo(original, path.basename(media.original_path));
-    ctx.log.info("video transcoded", { media_id: id, cpu_seconds: v.cpuSeconds, bytes: v.mp4.length });
+    // Short videos: the stored video is cut to app_config.video_max_ms whatever length the client reported
+    // (create_post checks the reported length; this makes it true), and media.duration_ms becomes the real one.
+    const maxMs = await configValue<number>(ctx.db, "video_max_ms");
+    const v = await transcodeVideo(original, path.basename(media.original_path), maxMs);
+    ctx.log.info("video transcoded", {
+      media_id: id, cpu_seconds: v.cpuSeconds, bytes: v.mp4.length, input_ms: v.inputMs, stored_ms: v.durationMs,
+      cut: maxMs != null && v.inputMs != null && v.inputMs > maxMs,
+    });
     const next = await swapFile(ctx, media, "original_path", renditionPath(media, "video.mp4"), v.mp4, "video/mp4");
     if (!next) return;
     media = next;
+    if (v.durationMs != null && v.durationMs !== media.duration_ms) {
+      must(await ctx.db.from("media").update({ duration_ms: v.durationMs }).eq("id", id), "media duration");
+      media = { ...media, duration_ms: v.durationMs };
+    }
   }
 
   must(await ctx.db.from("media").update({ renditions_ready_at: ctx.now().toISOString() }).eq("id", id).is("renditions_ready_at", null), "media ready");

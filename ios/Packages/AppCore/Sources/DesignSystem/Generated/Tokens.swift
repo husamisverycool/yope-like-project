@@ -926,6 +926,14 @@ public enum Tokens {
         public enum CameraSendtoLayoutTextStyleMap {
             public static let counter: String = "callout"
         }
+        /// Apple (system trimmer) + Retro (mechanics, wording) · camera.trim · trimming a library video to the length a post may hold · PLATFORM
+        /// token: `camera.trim.layout.screen`
+        public enum CameraTrimLayoutScreen {
+            public static let ios: String = "UIVideoEditorController (the system trimmer, its own chrome and controls), videoMaximumDuration = camera.capture.duration.videoMax, videoQuality typeHigh"
+            public static let android: String = "media surface (color.global.backgroundDeep, dark appearance): C-29 SheetHeader (camera.trim.cancel · camera.trim.title · camera.trim.done); the video aspect-fit in the remaining space, looping the chosen range, tap = play / pause; size.global.screenMargin below it a Material 3 RangeSlider (default colours) inside size.global.screenMargin, the range at most camera.capture.duration.videoMax and at least one second, starting on the first camera.capture.duration.videoMax of the video; size.global.sectionHeaderToContent below the slider the range line camera.trim.range in text role listSubtitle, color.global.textSecondary; Done → Media3 Transformer clip (H.264 / AAC MP4) with the C-28 loading indicator on the video"
+            public static let trigger: String = "a library pick (camera.capture library circle) whose length in whole seconds exceeds camera.capture.duration.videoMax"
+            public static let cannotTrim: String = "native alert camera.capture.videoTooLong.title / .message / .dismiss; back to the camera"
+        }
         /// Apple Messages + WhatsApp + Retro · chat.composer · composer glyphs: idle vs typing · SOURCED
         /// token: `chat.composer.layout.typingState`
         public enum ChatComposerLayoutTypingState {

@@ -1125,6 +1125,10 @@ public enum Copy {
     public static var notificationsPushChannelTributeDescription: String { CopyLookup.string("notifications.push.channel.tribute.description", default: "Birthday videos your group made for you") }
     /// "Birthday Videos" — Retro · notifications.push · new · SOURCED
     public static var notificationsPushChannelTributeName: String { CopyLookup.string("notifications.push.channel.tribute.name", default: "Birthday Videos") }
+    /// "When your group's Year in Photos is ready" — Retro · notifications.push · new · SOURCED
+    public static var notificationsPushChannelYearStoryDescription: String { CopyLookup.string("notifications.push.channel.yearStory.description", default: "When your group's Year in Photos is ready") }
+    /// "Year in Photos" — Retro · notifications.push · new · SOURCED
+    public static var notificationsPushChannelYearStoryName: String { CopyLookup.string("notifications.push.channel.yearStory.name", default: "Year in Photos") }
     /// "What are you up to right now?" — Retro · daily.notification · new · SOURCED
     public static var notificationsPushDailyInvitationBody: String { CopyLookup.string("notifications.push.dailyInvitation.body", default: "What are you up to right now?") }
     /// "{group}" — Retro · daily.notification · new · SOURCED
@@ -1177,6 +1181,10 @@ public enum Copy {
     public static func notificationsPushTributeBody(group: String) -> String { CopyLookup.format("notifications.push.tribute.body", default: "{group} made you a birthday video.", ["group": group]) }
     /// "Happy birthday!" — Retro · notifications.push · new · SOURCED
     public static var notificationsPushTributeTitle: String { CopyLookup.string("notifications.push.tribute.title", default: "Happy birthday!") }
+    /// "Your {year} Recap is ready." — Retro · notifications.push · adapted · SOURCED
+    public static func notificationsPushYearStoryBody(year: String) -> String { CopyLookup.format("notifications.push.yearStory.body", default: "Your {year} Recap is ready.", ["year": year]) }
+    /// "{group}" — Retro · notifications.push · new · SOURCED
+    public static func notificationsPushYearStoryTitle(group: String) -> String { CopyLookup.format("notifications.push.yearStory.title", default: "{group}", ["group": group]) }
     /// "Allow Camera Access" — Retro · onboarding.permission.camera · adapted · SOURCED
     public static var onboardingPermissionCameraDeniedButton: String { CopyLookup.string("onboarding.permission.camera.denied.button", default: "Allow Camera Access") }
     /// "We need permission to use your camera so you can take photos for your groups." — Retro · onboarding.permission.camera · adapted · SOURCED
@@ -2189,6 +2197,8 @@ public enum Copy {
     public static var yearStoryShare: String { CopyLookup.string("year.story.share", default: "Share") }
     /// "Watch again" — Retro · year.story · new · SOURCED
     public static var yearStorySummaryReplay: String { CopyLookup.string("year.story.summary.replay", default: "Watch again") }
+    /// "The moments you were in" — Retro · year.story · new · SOURCED
+    public static var yearStoryTaggedTitle: String { CopyLookup.string("year.story.tagged.title", default: "The moments you were in") }
     /// "Some days, everyone was there" — Retro · year.story · new · SOURCED
     public static var yearStoryTogetherAside: String { CopyLookup.string("year.story.together.aside", default: "Some days, everyone was there") }
     /// "You didn’t go through these moments alone" — Retro · year.story · adapted · SOURCED

@@ -775,6 +775,13 @@ object Tokens {
         object CameraSendtoLayoutTextStyleMap {
             const val counter: String = "callout"
         }
+        /** Apple (system trimmer) + Retro (mechanics, wording) · camera.trim · trimming a library video to the length a post may hold · PLATFORM — token `camera.trim.layout.screen` */
+        object CameraTrimLayoutScreen {
+            const val ios: String = "UIVideoEditorController (the system trimmer, its own chrome and controls), videoMaximumDuration = camera.capture.duration.videoMax, videoQuality typeHigh"
+            const val android: String = "media surface (color.global.backgroundDeep, dark appearance): C-29 SheetHeader (camera.trim.cancel · camera.trim.title · camera.trim.done); the video aspect-fit in the remaining space, looping the chosen range, tap = play / pause; size.global.screenMargin below it a Material 3 RangeSlider (default colours) inside size.global.screenMargin, the range at most camera.capture.duration.videoMax and at least one second, starting on the first camera.capture.duration.videoMax of the video; size.global.sectionHeaderToContent below the slider the range line camera.trim.range in text role listSubtitle, color.global.textSecondary; Done → Media3 Transformer clip (H.264 / AAC MP4) with the C-28 loading indicator on the video"
+            const val trigger: String = "a library pick (camera.capture library circle) whose length in whole seconds exceeds camera.capture.duration.videoMax"
+            const val cannotTrim: String = "native alert camera.capture.videoTooLong.title / .message / .dismiss; back to the camera"
+        }
         /** Apple Messages + WhatsApp + Retro · chat.composer · composer glyphs: idle vs typing · SOURCED — token `chat.composer.layout.typingState` */
         object ChatComposerLayoutTypingState {
             const val idle: String = "trailing glyphs inside the field: icon.global.camera, then icon.global.mic (last), both color.global.textSecondary, size.global.icon box"

@@ -35,6 +35,9 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${libs.versions.lifecycle.get()}")
     implementation(libs.kotlinx.coroutines.android)
+    // camera.trim: a library video longer than camera.capture.duration.videoMax is clipped on the device.
+    implementation(libs.media3.exoplayer)
+    implementation("androidx.media3:media3-transformer:${libs.versions.media3.get()}")
     debugImplementation(libs.compose.ui.test.manifest)
 
     testImplementation(libs.bundles.robolectric.test)

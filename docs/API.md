@@ -100,6 +100,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `post_not_eligible` | 403 | Tribute photo is neither yours nor one you are self-tagged in. |
 | `under_minimum_age` | 403 | Age gate refused. |
 | `premium_required` | 402 | Video posts need an active premium entitlement. |
+| `video_too_long` | 400 | `create_post`: the video is longer than `app_config.video_max_ms` (`details` = `video_max_ms=…`). |
 | `post_not_found` | 404 | Post does not exist, or the caller cannot see it (not a member / block). |
 | `media_not_found` | 404 | Media does not exist or is not the caller's. |
 | `message_not_found` | 404 | Message does not exist, is not visible, or is not yours (`delete_message`). |
@@ -263,7 +264,7 @@ block between viewer and owner).
 | `front_display_path`, `front_thumb_path` | text? | worker | renditions of the front image |
 | `width`, `height` | int? | client | pixels of the original (> 0) |
 | `front_width`, `front_height` | int? | client | |
-| `duration_ms` | int? | client | **required** for `video`; Live Photo motion length |
+| `duration_ms` | int? | client (worker for video) | **required** for `video`; Live Photo motion length. For a video the worker replaces it with the stored file's real length after transcoding (≤ `app_config.video_max_ms`) |
 | `renditions_ready_at` | timestamptz? | worker | null until the renditions exist; show `original_path` until then |
 | `created_at` | timestamptz | | |
 
@@ -650,6 +651,13 @@ group, all or nothing. Duplicate group ids are ignored.
   own the media (`media_not_found`).
 - `kind = video` requires an active premium entitlement (`premium_required`). Photos and
   Live Photos never do.
+- Short videos: a video whose `media.duration_ms`, in whole seconds as the apps show it
+  ("0:10" = 10,000–10,999 ms), exceeds `app_config.video_max_ms` (10 s, the camera's limit
+  `camera.capture.duration.videoMax`) is refused (`video_too_long`); so is any video while
+  `video_max_ms` is NULL. The apps trim library videos to the limit before uploading. The
+  worker cuts the stored video to `video_max_ms` when it transcodes and writes the real
+  length into `media.duration_ms`, so a false reported length never stores a longer video
+  (migration 0029).
 - `p_voice_path` must be your upload (convention `u/<uid>/<media_id>/voice.m4a`) and
   needs `p_voice_duration_ms > 0` (`invalid_voice`). The caption and voice note go on
   every group's post.
@@ -1049,6 +1057,7 @@ A NULL value means "not sourced yet", and the dependent feature fails closed (ex
 | `week_start_isodow` | 1 (Monday) | yes | history weeks, recap weeks |
 | `free_history_days` | NULL (unlimited) | yes | `group_history_weeks` for non-premium |
 | `max_group_members` | 30 | yes | member cap trigger |
+| `video_max_ms` | 10000 (`camera.capture.duration.videoMax`, Locket "Record up to 10 seconds"; migration 0029) | yes | `create_post` (`video_too_long`; NULL = no video), the worker's video transcode (cut to it) |
 | `min_age_years` | 13 (owner decision 26; BeReal, Locket, Retro and Yope terms, `design/research/platform.md`; migration 0026) | yes | `confirm_age` (fails closed if NULL) |
 | `invite_ttl_seconds` | NULL = links never expire (owner decision 27; migration 0026) | no | `create_invite` |
 | `birthday_request_lead_days` | 7 | no | `due_birthday_requests` |

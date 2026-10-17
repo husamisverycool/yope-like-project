@@ -101,6 +101,22 @@
       "level": "SOURCED",
       "notes": "Mechanics (Locket). Unchanged by the redesign."
     },
+    "camera.trim.layout.screen": {
+      "type": "layout",
+      "value": {
+        "ios": "UIVideoEditorController (the system trimmer, its own chrome and controls), videoMaximumDuration = camera.capture.duration.videoMax, videoQuality typeHigh",
+        "android": "media surface (color.global.backgroundDeep, dark appearance): C-29 SheetHeader (camera.trim.cancel · camera.trim.title · camera.trim.done); the video aspect-fit in the remaining space, looping the chosen range, tap = play / pause; size.global.screenMargin below it a Material 3 RangeSlider (default colours) inside size.global.screenMargin, the range at most camera.capture.duration.videoMax and at least one second, starting on the first camera.capture.duration.videoMax of the video; size.global.sectionHeaderToContent below the slider the range line camera.trim.range in text role listSubtitle, color.global.textSecondary; Done → Media3 Transformer clip (H.264 / AAC MP4) with the C-28 loading indicator on the video",
+        "trigger": "a library pick (camera.capture library circle) whose length in whole seconds exceeds camera.capture.duration.videoMax",
+        "cannotTrim": "native alert camera.capture.videoTooLong.title / .message / .dismiss; back to the camera"
+      },
+      "source_app": "Apple (system trimmer) + Retro (mechanics, wording)",
+      "surface": "camera.trim",
+      "element": "trimming a library video to the length a post may hold",
+      "evidence": "https://developer.apple.com/documentation/uikit/uivideoeditorcontroller (\"an editing interface for trimming video\", videoMaximumDuration); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt video_editor_* (\"Trim Video\", \"Done\", \"Video trim timeline\", \"%1$s – %2$s (%3$s)\", one-second start / end steps) and journal_composer_error_video_too_long_*; Material 3 RangeSlider (https://m3.material.io/components/sliders/overview, \"Range sliders\")",
+      "method": "platform component on iOS; on Android (no system trimmer) the platform range slider with Retro's editor wording, composed from existing components (C-29 header, C-28 loading)",
+      "level": "PLATFORM",
+      "notes": "The server enforces the same limit (app_config.video_max_ms, create_post video_too_long; the worker cuts the stored video), so a client that skips this step still never posts a longer video. Retro's own trimmer layout was not captured: Android draws Material 3's range slider instead of Retro's thumbnail strip (Gap)."
+    },
     "camera.capture.size.recordingOutline": {
       "type": "dimension",
       "value": 4,

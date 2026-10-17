@@ -169,6 +169,40 @@ final class CaptureCameraModelTests: XCTestCase {
         XCTAssertEqual(model.captured?.kind, .video, "prompt refused: send-to opens; its send capsule stays disabled")
     }
 
+    /// camera.trim: the limit counts whole seconds as `create_post` does; a long pick that the system trimmer cannot
+    /// open shows "Video too long"; a trimmed clip opens send-to; Cancel returns to the camera.
+    func testLongLibraryVideoGoesThroughTheTrimmer() async {
+        XCTAssertEqual(CaptureVideoLimit.maxMs, 10000)
+        XCTAssertFalse(CaptureVideoLimit.isTooLong(10999))
+        XCTAssertTrue(CaptureVideoLimit.isTooLong(11000))
+
+        let rig = CaptureTestRig()
+        rig.premium.premium = true
+        let model = rig.cameraModel()
+        await model.appear()
+        // Not a movie file: the system trimmer cannot open it.
+        let notAMovie = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".mov")
+        FileManager.default.createFile(atPath: notAMovie.path, contents: Data([0]))
+        model.didPick(.video(CaptureVideo(fileURL: notAMovie, durationMs: 42000), capturedAt: Date()))
+        XCTAssertNil(model.captured)
+        XCTAssertNil(model.trimming)
+        XCTAssertTrue(model.isVideoTooLong)
+
+        // The trimmer's answers.
+        model.isVideoTooLong = false
+        let request = CaptureTrimRequest(video: CaptureVideo(fileURL: notAMovie, durationMs: 42000))
+        await model.didTrim(request, to: nil, failed: false)
+        XCTAssertNil(model.captured, "Cancel: back to the camera")
+        XCTAssertFalse(model.isVideoTooLong)
+        await model.didTrim(request, to: nil, failed: true)
+        XCTAssertTrue(model.isVideoTooLong)
+
+        // A short pick goes straight to send-to.
+        model.isVideoTooLong = false
+        model.didPick(.video(CaptureVideo(fileURL: notAMovie, durationMs: 9000), capturedAt: Date()))
+        XCTAssertEqual(model.captured?.kind, .video)
+    }
+
     func testDiscardAndSendResults() async {
         let rig = CaptureTestRig()
         let model = rig.cameraModel(contextGroupID: "fake-group-2")

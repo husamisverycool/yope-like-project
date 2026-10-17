@@ -44,6 +44,11 @@ final class CameraCaptureModel {
     private(set) var showsCoach = false
     /// A capture waiting in `camera.sendto` (presented while non-nil).
     var captured: CapturedMedia? = nil
+    /// camera.trim: a library video longer than `camera.capture.duration.videoMax` in the system trimmer (presented while
+    /// non-nil); send-to follows with the trimmed copy.
+    var trimming: CaptureTrimRequest? = nil
+    /// camera.trim: the picked video cannot be trimmed on this device — the "Video too long" alert.
+    var isVideoTooLong = false
     /// Increments when a recording starts (announcement trigger).
     private(set) var recordingStarts = 0
 
@@ -311,13 +316,39 @@ final class CameraCaptureModel {
 
     // MARK: Library
 
-    /// A photo, Live Photo or video picked in the system picker (no library permission).
+    /// A photo, Live Photo or video picked in the system picker (no library permission). A video longer than the camera's
+    /// limit goes to the system trimmer first (camera.trim; the server refuses longer videos, `video_too_long`).
     func didPick(_ media: CapturedMedia) {
         if media.needsPremium && !isVideoAvailable && !hasPromptedThisScreen {
             hasPromptedThisScreen = true
             if premium.presentPaywallIfAllowed() { return }
         }
+        if let video = media.video, CaptureVideoLimit.isTooLong(video.durationMs) {
+            if VideoTrimmer.canTrim(video.fileURL) {
+                trimming = CaptureTrimRequest(video: video)
+            } else {
+                media.removeTemporaryFiles()
+                isVideoTooLong = true
+            }
+            return
+        }
         captured = media
+    }
+
+    /// The trimmer closed: the trimmed copy opens send-to; Cancel returns to the camera; a failure shows the alert.
+    func didTrim(_ request: CaptureTrimRequest, to trimmed: URL?, failed: Bool) async {
+        trimming = nil
+        CapturedMedia.video(request.video, capturedAt: clock()).removeTemporaryFiles()
+        guard let trimmed else {
+            if failed { isVideoTooLong = true }
+            return
+        }
+        guard let duration = await CaptureDraftBuilder.durationMs(of: trimmed), !CaptureVideoLimit.isTooLong(duration) else {
+            try? FileManager.default.removeItem(at: trimmed)
+            isVideoTooLong = true
+            return
+        }
+        captured = .video(CaptureVideo(fileURL: trimmed, durationMs: duration), capturedAt: clock())
     }
 
     // MARK: Send-to results

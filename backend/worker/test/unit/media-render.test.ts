@@ -74,6 +74,16 @@ describe("video", () => {
     expect(v.cpuSeconds).toBeGreaterThan(0);
   });
 
+  it("short videos: the stored video is cut to video_max_ms and reports its real length", async () => {
+    const long = await transcodeVideo(makeVideo({ seconds: 12 }), "original.mov", 10000);
+    expect(long.inputMs).toBeGreaterThanOrEqual(11900);
+    expect(long.durationMs).toBeGreaterThanOrEqual(9900);
+    expect(long.durationMs).toBeLessThanOrEqual(10100);
+    const short = await transcodeVideo(makeVideo({ seconds: 2 }), "original.mov", 10000);
+    expect(short.durationMs).toBeGreaterThanOrEqual(1900);
+    expect(short.durationMs).toBeLessThanOrEqual(2100);
+  });
+
   it("Live Photo movie: kept as is without location; with a location key, remuxed without it", async () => {
     expect(await scrubMovieLocation(makeVideo({ seconds: 1, codec: "libx264" }))).toBeNull();
     const located = makeVideo({ seconds: 1, codec: "libx264", location: "+48.8566+002.3522/" });

@@ -8,6 +8,10 @@ import app.data.model.MediaKind
 import app.data.model.RenderStatus
 import app.data.offline.DataState
 import app.feature.capture.camera.CameraViewModel
+import app.feature.capture.camera.TrimRange
+import app.feature.capture.camera.TrimRequest
+import app.feature.capture.camera.VideoLimit
+import app.feature.capture.camera.trimTime
 import app.feature.capture.collage.CollageViewModel
 import app.feature.capture.daily.DailyCaptureViewModel
 import app.feature.capture.data.CaptureHandoff
@@ -401,6 +405,68 @@ class ViewModelTests {
         data.premium = true
         val premium = sendTo("g1", MediaKind.Video, gate)
         assertTrue(premium.ui.value.sendEnabled)
+    }
+
+    // ---- camera.trim (short videos) -------------------------------------------------------
+
+    @Test fun theLimitCountsWholeSecondsAsTheServerDoes() {
+        assertEquals(10_000L, VideoLimit.maxMs) // camera.capture.duration.videoMax
+        assertFalse(VideoLimit.isTooLong(10_000L))
+        assertFalse(VideoLimit.isTooLong(10_999L)) // reads "0:10"
+        assertTrue(VideoLimit.isTooLong(11_000L))
+        assertEquals("0:10", trimTime(10_999L))
+    }
+
+    @Test fun theTrimRangeStaysBetweenOneSecondAndTheLimit() {
+        val range = TrimRange(durationMs = 60_000L)
+        assertEquals(0L to 10_000L, range.startMs to range.endMs) // the first 10 s
+        range.update(30_000L, 10_000L) // the start dragged past the end: the end follows
+        assertEquals(30_000L to 31_000L, range.startMs to range.endMs)
+        range.update(30_000L, 55_000L) // the end dragged 25 s away: the start follows
+        assertEquals(45_000L to 55_000L, range.startMs to range.endMs)
+        range.shiftEnd(10_000L) // past the video's end
+        assertEquals(50_000L to 60_000L, range.startMs to range.endMs)
+        range.shiftStart(-60_000L)
+        assertEquals(0L to 10_000L, range.startMs to range.endMs)
+        val short = TrimRange(durationMs = 600L) // shorter than a second: the whole video
+        assertEquals(0L to 600L, short.startMs to short.endMs)
+    }
+
+    @Test fun aLongLibraryVideoOpensTheTrimmerAndItsClipOpensSendTo() = runTest(dispatcher) {
+        var length = 42_000L
+        val vm = CameraViewModel(data, handoff, MemoryCapturePrefs(), SessionPromptGate(), dir, "g1", durationOf = { length }, sizeOf = { 300 to 400 })
+        val events = mutableListOf<CameraViewModel.Event>()
+        val job = launch { vm.event.toList(events) }
+        val picked = File(dir, "picked.mp4").apply { writeText("v") }
+        vm.onPicked(picked, MediaKind.Video)
+        assertEquals(TrimRequest(picked, 42_000L), vm.ui.value.trim)
+        assertNull(handoff.pending.value)
+        // Cancel: back to the camera, nothing handed on.
+        vm.onTrimmed(null, failed = false)
+        assertNull(vm.ui.value.trim)
+        assertFalse(vm.ui.value.videoTooLong)
+        assertFalse(picked.exists())
+        // A clip that could not be written: the "Video too long" alert.
+        vm.onPicked(File(dir, "p2.mp4").apply { writeText("v") }, MediaKind.Video)
+        vm.onTrimmed(null, failed = true)
+        assertTrue(vm.ui.value.videoTooLong)
+        vm.dismissVideoTooLong()
+        // The clip: send-to with its real length.
+        vm.onPicked(File(dir, "p3.mp4").apply { writeText("v") }, MediaKind.Video)
+        length = 9_800L
+        val clip = vm.trimTarget().apply { writeText("clip") }
+        vm.onTrimmed(clip, failed = false)
+        assertEquals(clip, handoff.pending.value!!.media.file)
+        assertEquals(9_800, handoff.pending.value!!.media.durationMs)
+        assertEquals(listOf(CameraViewModel.Event.OpenSendTo), events)
+        job.cancel()
+    }
+
+    @Test fun aShortLibraryVideoGoesStraightToSendTo() = runTest(dispatcher) {
+        val vm = camera() // 3 s
+        vm.onPicked(File(dir, "short.mp4").apply { writeText("v") }, MediaKind.Video)
+        assertNull(vm.ui.value.trim)
+        assertEquals(MediaKind.Video, handoff.pending.value!!.media.kind)
     }
 
     @Test fun queueFailureKeepsTheCaptureAndShowsTheError() {

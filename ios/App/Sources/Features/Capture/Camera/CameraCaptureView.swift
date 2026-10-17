@@ -46,6 +46,19 @@ struct CameraCaptureView: View {
                 }
                 .ignoresSafeArea()
             }
+            // camera.trim: the system trimmer for a library video over the limit (its own chrome, system appearance).
+            .fullScreenCover(item: $model.trimming) { request in
+                VideoTrimmer(request: request) { trimmed, failed in
+                    Task { await model.didTrim(request, to: trimmed, failed: failed) }
+                }
+                .ignoresSafeArea()
+                .preferredColorScheme(systemAppearance)
+            }
+            .alert(Copy.cameraCaptureVideoTooLongTitle, isPresented: $model.isVideoTooLong) {
+                Button(Copy.cameraCaptureVideoTooLongDismiss, role: .cancel) {}
+            } message: {
+                Text(Copy.cameraCaptureVideoTooLongMessage(duration: CaptureVideoLimit.spoken))
+            }
             // camera.overnight's destination sheet follows the system appearance (C-29).
             .sheet(isPresented: destinationBinding, onDismiss: { model.overnight?.destinationClosed() }) {
                 if let overnight = model.overnight {
