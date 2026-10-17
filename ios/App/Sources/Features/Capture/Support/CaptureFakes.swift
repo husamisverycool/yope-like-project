@@ -386,6 +386,10 @@ final class FakeCapturePosting: CapturePosting {
         }
         // The Jolt demo: the photo joins its groups in the demo world.
         DemoSentPosts.add(draft)
+        // As `PostPublisher` does live: a photo taken for the weekly question is linked once posted.
+        if let questionID = draft.questionID, let groupID = draft.questionGroupID {
+            try? await PlansServices.shared.questions.answerQuestion(mediaID: draft.mediaID, groupID: groupID, questionID: questionID)
+        }
     }
 
     func discard(_ mediaID: MediaID) async {

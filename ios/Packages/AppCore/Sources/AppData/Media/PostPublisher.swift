@@ -56,6 +56,10 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
     /// `create_post`, so it develops at the groups' next 09:00 (docs/API.md §14.3). Photos only, without caption,
     /// voice note, invitation or reply. Optional so drafts saved before it existed still decode (nil = posted now).
     public var overnight: Bool?
+    /// The weekly question this photo answers (question.weekly B, docs/API.md §14.4): once posted — at once or retried
+    /// from the outbox — its post in `questionGroupID` is linked with `answer_question`. Optional so older drafts decode.
+    public var questionID: GroupQuestionID?
+    public var questionGroupID: GroupID?
 
     public var id: MediaID { mediaID }
 
@@ -78,7 +82,9 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         invitationID: InvitationID? = nil,
         replyToPostID: PostID? = nil,
         createdAt: Date = Date(),
-        overnight: Bool? = nil
+        overnight: Bool? = nil,
+        questionID: GroupQuestionID? = nil,
+        questionGroupID: GroupID? = nil
     ) {
         self.mediaID = mediaID
         self.kind = kind
@@ -99,6 +105,8 @@ public struct PostDraft: Codable, Hashable, Sendable, Identifiable {
         self.replyToPostID = replyToPostID
         self.createdAt = createdAt
         self.overnight = overnight
+        self.questionID = questionID
+        self.questionGroupID = questionGroupID
     }
 
     /// Storage objects of this draft, with the paths of docs/API.md §7.
@@ -262,9 +270,18 @@ public actor PostPublisher {
             let groups = Set(draft.groupIDs)
             created = try await posts.posts(mediaID: draft.mediaID).filter { groups.contains($0.groupID) }
         }
+        await answerQuestion(draft, posts: created)
         uploader.ledger?.forget(items.map(\.path))
         discard(draft.mediaID)
         return created
+    }
+
+    /// Links the post in the question's group to the weekly question (question.weekly B). Best effort: the photo is
+    /// posted either way, and a question that closed meanwhile is not a failed post.
+    private func answerQuestion(_ draft: PostDraft, posts created: [Post]) async {
+        guard draft.overnight != true, let questionID = draft.questionID,
+              let post = created.first(where: { $0.groupID == draft.questionGroupID }) else { return }
+        _ = try? await QuestionRepository(client: posts.client).answer(postID: post.id, questionID: questionID)
     }
 
     private func folder(_ mediaID: MediaID) -> URL {

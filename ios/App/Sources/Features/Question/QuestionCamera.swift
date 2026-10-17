@@ -11,10 +11,11 @@ import SwiftUI
 /// The camera hand-off of the weekly question.
 ///
 /// The card's button `prepare`s a context and opens the camera for the group (`AppModal.camera`); the camera that then
-/// appears for that group `claim`s it (its pill shows the question). The next capture posted to that group from the
-/// camera's send-to is linked to the question (`didPost`, called by `CaptureSendCenter`), once; posts to other groups
-/// are not. The camera's 9 AM mode (camera.overnight) `drop`s it. Any later camera opening claims nothing, so the
-/// question never follows the member into an unrelated capture.
+/// appears for that group `claim`s it (its pill shows the question). The next capture sent to that group from the
+/// camera's send-to carries the question in its draft (`answering`, called by `CaptureSendCenter`): the posting layer
+/// links the post once it is posted — at once, or when the outbox retries the draft (`PostPublisher`) — and `didPost`
+/// ends the context, once; posts to other groups are not answers. The camera's 9 AM mode (camera.overnight) `drop`s it.
+/// Any later camera opening claims nothing, so the question never follows the member into an unrelated capture.
 @MainActor
 @Observable
 final class QuestionCameraContext {
@@ -57,22 +58,23 @@ final class QuestionCameraContext {
         active = nil
     }
 
-    /// A capture was posted: when it went to the active question's group, the post there becomes an answer
-    /// (`answer_question`), once. Overnight (9 AM) photos are never answers.
+    /// A capture about to be sent: when it goes to the active question's group, its draft carries the question
+    /// (`questionID`, `questionGroupID`), so its post there becomes an answer (`answer_question`) once posted. Overnight
+    /// (9 AM) photos are never answers. The context stays until `didPost` (a failed send tried again still answers).
+    func answering(_ draft: PostDraft) -> PostDraft {
+        guard let active, draft.overnight != true, draft.groupIDs.contains(GroupID(active.groupID)) else { return draft }
+        var answer = draft
+        answer.questionID = active.questionID
+        answer.questionGroupID = GroupID(active.groupID)
+        return answer
+    }
+
+    /// A capture was posted: when it answered the active question (the posting layer linked it), the context ends —
+    /// once — and the question's card refetches.
     func didPost(_ draft: PostDraft) {
-        guard let active, draft.overnight != true, draft.groupIDs.contains(GroupID(active.groupID)) else { return }
+        guard let active, draft.questionID == active.questionID else { return }
         self.active = nil
-        let services = PlansServices.shared
-        Task { @MainActor in
-            do {
-                try await services.questions.answerQuestion(
-                    mediaID: draft.mediaID, groupID: GroupID(active.groupID), questionID: active.questionID
-                )
-                services.didChange()
-            } catch {
-                // The photo is posted either way; it simply is not linked (the week may have ended meanwhile).
-            }
-        }
+        PlansServices.shared.didChange()
     }
 }
 

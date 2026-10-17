@@ -333,12 +333,23 @@ final class PlansModelTests: XCTestCase {
         context.prepare(QuestionCameraContext.Context(groupID: PlansFixture.groupID.rawValue, questionID: PlansFixture.questionID, text: "Q"))
         _ = context.claim(groupID: PlansFixture.groupID.rawValue)
         let file = PostDraft.File(url: URL(fileURLWithPath: "/dev/null"), contentType: "image/jpeg")
-        let elsewhere = PostDraft(mediaID: answer.post.mediaID, kind: .photo, original: file, groupIDs: [GroupID("other")], createdAt: PlansFixture.now)
+        let elsewhere = context.answering(
+            PostDraft(mediaID: answer.post.mediaID, kind: .photo, original: file, groupIDs: [GroupID("other")], createdAt: PlansFixture.now)
+        )
+        XCTAssertNil(elsewhere.questionID, "a post to another group is not an answer")
         context.didPost(elsewhere)
-        XCTAssertNotNil(context.active, "a post to another group is not an answer")
-        let draft = PostDraft(mediaID: answer.post.mediaID, kind: .photo, original: file, groupIDs: [PlansFixture.groupID], createdAt: PlansFixture.now)
+        XCTAssertNotNil(context.active)
+        // The draft carries the question, so the outbox links the post when it is retried too (`PostPublisher`).
+        let draft = context.answering(
+            PostDraft(mediaID: answer.post.mediaID, kind: .photo, original: file, groupIDs: [PlansFixture.groupID], createdAt: PlansFixture.now)
+        )
+        XCTAssertEqual(draft.questionID, PlansFixture.questionID)
+        XCTAssertEqual(draft.questionGroupID, PlansFixture.groupID)
+        try await FakeCapturePosting().publish(draft)
         context.didPost(draft)
-        XCTAssertNil(context.active, "linked once")
+        XCTAssertNil(context.active, "answered once")
+        let later = PostDraft(kind: .photo, original: file, groupIDs: [PlansFixture.groupID], createdAt: PlansFixture.now)
+        XCTAssertNil(context.answering(later).questionID, "a later capture carries no question")
         try await waitFor { fixture.data.calls.contains("answerQuestion") }
         let answers = try await fixture.data.answers(questionID: PlansFixture.questionID, groupID: PlansFixture.groupID)
         XCTAssertEqual(answers.map(\.id), [answer.id])

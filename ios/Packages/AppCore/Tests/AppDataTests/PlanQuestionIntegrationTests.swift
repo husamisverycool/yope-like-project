@@ -206,6 +206,18 @@ final class PlanQuestionIntegrationTests: XCTestCase {
         let feed = try await maya.data.posts.page(groupID: group.id).items
         XCTAssertTrue(feed.contains { $0.id == post.id }, "the answer is in the group like any photo")
 
+        // A photo taken for the question that waited in the outbox (offline, the app closed mid-send) carries the
+        // question: the retry that posts it links it.
+        let waitingFile = try temporaryFile(tinyJPEG, extension: "jpg")
+        let waiting = try await theo.data.publisher.enqueue(PostDraft(
+            kind: .photo, original: .init(url: waitingFile, contentType: ContentType.jpeg), groupIDs: [group.id],
+            questionID: question.id, questionGroupID: group.id
+        ))
+        let retried = await theo.data.publisher.resumePending()
+        let retriedPost = try XCTUnwrap(retried[waiting.mediaID]?.get().first)
+        let withRetried = try await maya.data.questions.answers(questionID: question.id)
+        XCTAssertEqual(Set(withRetried.map(\.id)), [post.id, retriedPost.id])
+
         // Only the author links their post.
         await assertThrows(.api(.postNotFound)) {
             try await maya.data.questions.answer(postID: post.id, questionID: question.id)

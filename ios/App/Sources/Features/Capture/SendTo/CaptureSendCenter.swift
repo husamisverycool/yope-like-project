@@ -53,7 +53,7 @@ final class CaptureSendCenter {
     /// confirmation; the camera's temporary files are removed. Failed: `haptic.global.error`; the outbox copy is
     /// discarded (the composer still holds the capture, and Try Again sends it as a new draft), the camera's files stay.
     func send(_ request: CaptureSendRequest) async -> Outcome {
-        let draft: PostDraft
+        var draft: PostDraft
         do {
             draft = try await Task.detached(priority: .userInitiated) {
                 try await CaptureDraftBuilder.build(request)
@@ -62,9 +62,11 @@ final class CaptureSendCenter {
             CaptureDraftBuilder.cleanUp(request)
             return fail(.sendFailed)
         }
+        // question.weekly B: a capture answering the week's question carries it, so the post is linked to it
+        // (`answer_question`) once posted — at once, or when the outbox retries it.
+        draft = QuestionCameraContext.shared.answering(draft)
         do {
             try await posting.publish(draft)
-            // question.weekly B: a capture answering the week's question is linked to it (`answer_question`).
             QuestionCameraContext.shared.didPost(draft)
             CaptureDraftBuilder.cleanUp(request)
             request.removeTemporaryFiles()
