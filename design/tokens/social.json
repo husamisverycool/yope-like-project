@@ -1656,7 +1656,8 @@
       "evidence": "https://help.bereal.com/hc/en-us/articles/7531349180829 (BeReal Memories: past posts reached from a calendar of the days that have one, accessed 2026-10-17); docs/RESEARCH_FEATURES_2026-10-17.md #21; references/auto/retro/lazyweb/retro-lazyweb-20251020-week43-dark.png (icon.global.calendar); design/components.md C-02, C-06 (fill), C-11, C-29; migration 0045 (group_history_months)",
       "method": "composition: BeReal's calendar mechanics (only the days with a memory open) drawn with Retro's components and type roles",
       "level": "SOURCED",
-      "notes": "Owner decision 34 (research #21). BeReal's day thumbnails are not drawn (not captured; the grid shows numbers only).",
+      "notes": "Owner decision 34 (research #21). BeReal's day thumbnails are not drawn (not captured; the grid shows numbers only)."
+    },
     "chat.reactions.layout.messageReactions": {
       "type": "layout",
       "value": {
