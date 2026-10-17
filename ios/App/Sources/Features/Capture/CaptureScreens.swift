@@ -21,7 +21,7 @@ struct CameraCaptureScreen: View {
                         resolved.sendToModel(
                             media: media,
                             more: model.capturedMore,
-                            contextGroupID: model.contextGroupID,
+                            contextGroupID: model.sendToGroupID,
                             onClose: { model.discardCapture() },
                             onSent: { model.didSend() }
                         )

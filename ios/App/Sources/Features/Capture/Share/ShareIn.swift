@@ -23,15 +23,23 @@ final class ShareInHandoff {
     }
 }
 
+/// A share as the camera takes it: the items in the order shared, and the group picked in the share sheet's suggestion
+/// row (`ShareTargetDonations`; nil when the app itself was picked).
+struct ShareInSelection: Sendable {
+    var media: [CapturedMedia] = []
+    var groupID: String? = nil
+}
+
 /// The inbox's items as `CapturedMedia`, with the day each was taken (`CaptureTakenOn`), in the order shared.
 enum ShareInImport {
     /// At most `limit` items (`batch_max_photos`); the rest, and anything unreadable, is deleted. Photos are read into
     /// memory as library picks are; movies move into this app's temporary folder (removed once posted or discarded).
     @MainActor
-    static func take(limit: Int, inbox: ShareInbox = ShareInbox.forBundle(.main)) async -> [CapturedMedia] {
-        guard inbox.hasItems else { return [] }
+    static func take(limit: Int, inbox: ShareInbox = ShareInbox.forBundle(.main)) async -> ShareInSelection {
+        guard inbox.hasItems else { return ShareInSelection() }
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        let files = inbox.take(into: folder)
+        let share = inbox.takeShare(into: folder)
+        let files = share.files
         var media: [CapturedMedia] = []
         for (index, file) in files.enumerated() {
             guard index < max(1, limit) else {
@@ -47,7 +55,7 @@ enum ShareInImport {
                 media.append(await CaptureLibraryImport.video(at: file.url))
             }
         }
-        return media
+        return ShareInSelection(media: media, groupID: media.isEmpty ? nil : share.groupID)
     }
 }
 

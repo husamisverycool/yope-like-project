@@ -152,13 +152,26 @@ final class CaptureBatchTests: XCTestCase {
         var asked: Int?
         let model = rig.cameraModel(batchLimit: { 20 }, sharedItems: { limit in
             asked = limit
-            return shared
+            return ShareInSelection(media: shared)
         })
         await model.takeSharedItems()
         XCTAssertEqual(asked, 20, "at most batch_max_photos")
         XCTAssertEqual(model.captured?.id, shared[0].id)
         XCTAssertEqual(model.captured?.takenOn, LocalDate("2026-07-04"))
         XCTAssertEqual(model.capturedMore.map(\.id), [shared[1].id])
+        XCTAssertNil(model.sendToGroupID, "no group picked: the camera's rule")
+    }
+
+    func testAGroupPickedInTheShareSheetIsPreselected() async {
+        let rig = CaptureTestRig()
+        let shared = photo()
+        let model = rig.cameraModel(contextGroupID: "fake-group-1", sharedItems: { _ in
+            ShareInSelection(media: [shared], groupID: "fake-group-2")
+        })
+        await model.takeSharedItems()
+        XCTAssertEqual(model.sendToGroupID, "fake-group-2")
+        model.discardCapture()
+        XCTAssertEqual(model.sendToGroupID, "fake-group-1", "the next capture is the camera's own")
     }
 
     func testTheShareLinkWaitsUntilThePersonIsHome() {

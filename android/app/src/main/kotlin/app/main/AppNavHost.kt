@@ -12,10 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import app.data.repo.AuthState
 import app.feature.account.AccountEnvironment
 import app.feature.account.AccountEnvironments
@@ -27,6 +29,7 @@ import app.feature.account.shell.ShellTabBar
 import app.feature.capture.captureDestinations
 import app.feature.capture.share.ShareIn
 import app.feature.capture.share.ShareInbox
+import app.feature.capture.share.ShareTargets
 import app.feature.memory.memoryDestinations
 import app.feature.social.socialDestinations
 import app.model.AppRoute
@@ -74,6 +77,12 @@ fun AppNavHost(
                 if (ready && signedIn && shared != null && ShareIn.opensCameraFrom(entry?.destination)) {
                     navController.navigate(AppRoute.Camera()) { launchSingleTop = true }
                 }
+            }
+            // share.in: a group opened (groups.screen) becomes one of the share sheet's per-group targets.
+            val openedGroupId = entry?.takeIf { it.destination.hasRoute<AppRoute.Group>() }?.toRoute<AppRoute.Group>()?.groupId
+            val appContext = LocalContext.current
+            LaunchedEffect(openedGroupId) {
+                if (signedIn && openedGroupId != null) ShareTargets.recordOpen(appContext, openedGroupId)
             }
             // Until the session is known nothing shows, so no screen flashes before sign-up / home.
             if (!ready) Box(Modifier.fillMaxSize().background(PageRoles.page))

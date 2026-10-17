@@ -46,6 +46,8 @@ final class CameraCaptureModel {
     var captured: CapturedMedia? = nil
     /// The rest of a library selection (several photos in one post), in the order picked; empty for one capture.
     private(set) var capturedMore: [CapturedMedia] = []
+    /// share.in: the group picked in the share sheet's suggestion row for the capture waiting in send-to (nil: none).
+    private(set) var sharedGroupID: String? = nil
     /// The most items the library picker offers (`batch_max_photos`, a public app_config key); 1 until it is known.
     private(set) var selectionLimit = 1
     /// camera.trim: a library video longer than `camera.capture.duration.videoMax` in the system trimmer (presented while
@@ -69,8 +71,9 @@ final class CameraCaptureModel {
     private let longPressThreshold: Duration
     /// `public_app_config.batch_max_photos` (nil when unknown: one photo).
     private let batchLimit: @MainActor () async -> Int?
-    /// Photos shared from another app (share.in), waiting in the App Group inbox; empty when none.
-    private let sharedItems: @MainActor (_ limit: Int) async -> [CapturedMedia]
+    /// Photos shared from another app (share.in), waiting in the App Group inbox, with the group picked in the share
+    /// sheet; no media when none.
+    private let sharedItems: @MainActor (_ limit: Int) async -> ShareInSelection
     /// A library selection on its way to send-to: videos over the limit go through the trimmer one at a time first.
     @ObservationIgnored private var pendingSelection: [CapturedMedia] = []
     @ObservationIgnored private var longPressTask: Task<Void, Never>?
@@ -91,7 +94,7 @@ final class CameraCaptureModel {
         longPressThreshold: Duration = CameraCaptureModel.platformLongPress,
         clock: @escaping @MainActor () -> Date = { Date() },
         batchLimit: @escaping @MainActor () async -> Int? = { nil },
-        sharedItems: @escaping @MainActor (_ limit: Int) async -> [CapturedMedia] = { _ in [] }
+        sharedItems: @escaping @MainActor (_ limit: Int) async -> ShareInSelection = { _ in ShareInSelection() }
     ) {
         self.contextGroupID = contextGroupID
         self.overnight = overnight
@@ -143,6 +146,9 @@ final class CameraCaptureModel {
         await overnight?.appear()
     }
 
+    /// The group send-to preselects: the one picked in the share sheet for a shared capture, else the camera's context.
+    var sendToGroupID: String? { sharedGroupID ?? contextGroupID }
+
     /// `camera.capture.title`: "Week {number}", the week the photo will be added to.
     var title: String {
         Copy.cameraCaptureTitle(number: String(CaptureFormat.weekNumber(of: clock())))
@@ -154,16 +160,18 @@ final class CameraCaptureModel {
     }
 
     /// share.in: photos shared from another app open send-to as a library selection would (trimmer first for long videos).
-    /// Waits while a capture is already being sent or trimmed; the items stay in the inbox until then.
+    /// Waits while a capture is already being sent or trimmed; the items stay in the inbox until then. A group picked in
+    /// the share sheet's suggestion row is preselected in send-to (`sendToGroupID`).
     func takeSharedItems() async {
         guard captured == nil, trimming == nil, pendingSelection.isEmpty else { return }
         await loadSelectionLimit()
-        let items = await sharedItems(selectionLimit)
+        let shared = await sharedItems(selectionLimit)
+        let items = shared.media
         guard !items.isEmpty, captured == nil, trimming == nil, pendingSelection.isEmpty else {
             items.forEach { $0.removeTemporaryFiles() }
             return
         }
-        didPick(items)
+        pick(items, sharedGroupID: shared.groupID)
     }
 
     func disappear() async {
@@ -259,6 +267,7 @@ final class CameraCaptureModel {
         do {
             let still = try await camera.capturePhoto(flash: isFlashOn && isFlashAvailable)
             capturedMore = []
+            sharedGroupID = nil
             captured = .photo(still, capturedAt: Date())
         } catch {
             phase = .unavailable
@@ -336,6 +345,7 @@ final class CameraCaptureModel {
         await startSession()
         if let video {
             capturedMore = []
+            sharedGroupID = nil
             captured = .video(video, capturedAt: Date())
         }
     }
@@ -362,7 +372,12 @@ final class CameraCaptureModel {
     /// its Cancel leaves that video out, and one that cannot be trimmed is left out after the "Video too long" alert; the
     /// others go on to send-to.
     func didPick(_ items: [CapturedMedia]) {
+        pick(items, sharedGroupID: nil)
+    }
+
+    private func pick(_ items: [CapturedMedia], sharedGroupID: String?) {
         guard !items.isEmpty else { return }
+        self.sharedGroupID = sharedGroupID
         if items.contains(where: \.needsPremium) && !isVideoAvailable && !hasPromptedThisScreen {
             hasPromptedThisScreen = true
             if premium.presentPaywallIfAllowed() { return }
@@ -438,6 +453,7 @@ final class CameraCaptureModel {
         captured?.removeTemporaryFiles()
         capturedMore.forEach { $0.removeTemporaryFiles() }
         capturedMore = []
+        sharedGroupID = nil
         captured = nil
     }
 
@@ -445,6 +461,7 @@ final class CameraCaptureModel {
     func didSend() {
         captured = nil
         capturedMore = []
+        sharedGroupID = nil
         navigation.closeCapture()
     }
 }

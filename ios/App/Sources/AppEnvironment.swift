@@ -99,6 +99,10 @@ final class AppEnvironment {
             storedPushToken: { pushTokenRecord.token },
             withdrawNotifications: { posts, messages in
                 await deliveredNotifications.withdraw(posts: posts, messages: messages)
+            },
+            // share.in: the share sheet's per-group targets follow the person's groups; none after sign-out.
+            keepShareTargets: { groupIDs in
+                await ShareTargetDonations.keep(only: groupIDs)
             }
         )
         // An App Clip join signed the person in already: its Keychain session moves into the app (no second SMS code).

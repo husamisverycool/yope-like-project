@@ -4,13 +4,16 @@ import Foundation
 /// as Apple's Shared Albums take items from the share sheet ("Share → Add to Shared Album", support.apple.com/108314):
 ///
 ///     <container>/ShareInbox/<uuid>.<ext>   one file per shared photo or video
+///     <container>/ShareInbox/group.txt     the group chosen in the share sheet's suggestion row (optional)
 ///     <container>/ShareInbox/items.json    [ShareInbox.Item] in the order shared (written last, atomically)
 ///
 /// The extension replaces whatever an earlier share left; the app takes the items (moving the files out) when the
-/// person is home, and the inbox is empty again. Nothing else is stored: no caption, no place, no sender.
+/// person is home, and the inbox is empty again. Nothing else is stored: no caption, no place, no sender. The group is
+/// the id of the `INSendMessageIntent` conversation the person picked (`ShareTargetIntent`); send-to preselects it.
 public struct ShareInbox: Sendable {
     public static let directoryName = "ShareInbox"
     static let manifestName = "items.json"
+    static let groupFileName = "group.txt"
 
     public enum Kind: String, Codable, Sendable {
         case image
@@ -39,6 +42,18 @@ public struct ShareInbox: Sendable {
         }
     }
 
+    /// What a take hands to the app: the files in the order shared, and the group chosen in the share sheet (nil: the
+    /// app itself was chosen).
+    public struct Share: Hashable, Sendable {
+        public var files: [File]
+        public var groupID: String?
+
+        public init(files: [File], groupID: String?) {
+            self.files = files
+            self.groupID = groupID
+        }
+    }
+
     public let rootURL: URL
 
     public init(rootURL: URL) {
@@ -53,6 +68,13 @@ public struct ShareInbox: Sendable {
     }
 
     private var manifestURL: URL { rootURL.appendingPathComponent(Self.manifestName) }
+    private var groupURL: URL { rootURL.appendingPathComponent(Self.groupFileName) }
+
+    /// The group chosen in the share sheet's suggestion row for what is waiting (nil: none, or not a plain id).
+    public func groupID() -> String? {
+        guard let data = try? Data(contentsOf: groupURL) else { return nil }
+        return Self.plainGroupID(String(decoding: data, as: UTF8.self))
+    }
 
     /// What is waiting, in the order shared (empty when nothing is).
     public func items() -> [Item] {
@@ -63,12 +85,15 @@ public struct ShareInbox: Sendable {
 
     public var hasItems: Bool { !items().isEmpty }
 
-    /// Replaces what is waiting with copies of `files`, in their order (the share sheet's). Throws when nothing could be
-    /// written.
-    public func replace(with files: [File]) throws {
+    /// Replaces what is waiting with copies of `files`, in their order (the share sheet's), and the group chosen in the
+    /// share sheet (`groupID`, nil when the app itself was chosen). Throws when nothing could be written.
+    public func replace(with files: [File], groupID: String? = nil) throws {
         clear()
         let manager = FileManager.default
         try manager.createDirectory(at: rootURL, withIntermediateDirectories: true)
+        if let groupID = groupID.flatMap(Self.plainGroupID) {
+            try? Data(groupID.utf8).write(to: groupURL, options: [.atomic])
+        }
         var items: [Item] = []
         for file in files {
             let ext = file.url.pathExtension.lowercased()
@@ -87,10 +112,16 @@ public struct ShareInbox: Sendable {
     /// Takes every waiting item: its file is moved into `destination` (created when missing) and the inbox is emptied.
     /// Items whose file is gone are left out.
     public func take(into destination: URL) -> [File] {
+        takeShare(into: destination).files
+    }
+
+    /// `take(into:)` with the group chosen in the share sheet (nil when none, or when nothing was waiting).
+    public func takeShare(into destination: URL) -> Share {
         let waiting = items()
+        let group = groupID()
         guard !waiting.isEmpty else {
             clear()
-            return []
+            return Share(files: [], groupID: nil)
         }
         let manager = FileManager.default
         try? manager.createDirectory(at: destination, withIntermediateDirectories: true)
@@ -106,7 +137,7 @@ public struct ShareInbox: Sendable {
             }
         }
         clear()
-        return taken
+        return Share(files: taken, groupID: taken.isEmpty ? nil : group)
     }
 
     /// Removes everything waiting.
@@ -118,6 +149,15 @@ public struct ShareInbox: Sendable {
     /// point outside the inbox.
     static func isPlainFileName(_ name: String) -> Bool {
         !name.isEmpty && !name.contains("/") && name != "." && name != ".." && !name.hasPrefix(".")
+    }
+
+    /// A group id as the server writes it (a UUID): letters, digits and hyphens, at most 64 characters; anything else
+    /// is no group (send-to then preselects as for any share).
+    static func plainGroupID(_ raw: String) -> String? {
+        let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty, value.count <= 64,
+              value.unicodeScalars.allSatisfy({ $0.isASCII && (CharacterSet.alphanumerics.contains($0) || $0 == "-") }) else { return nil }
+        return value
     }
 }
 

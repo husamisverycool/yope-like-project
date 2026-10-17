@@ -13,6 +13,12 @@
 	<dict>
 		<key>NSExtensionAttributes</key>
 		<dict>
+			<!-- The share sheet's suggestion row: the app donates an INSendMessageIntent per group (App
+			     ShareTargetDonations); picking one opens this extension with that intent (`extensionContext.intent`). -->
+			<key>IntentsSupported</key>
+			<array>
+				<string>INSendMessageIntent</string>
+			</array>
 			<!-- Photos and videos only, at most `batch_max_photos` (20, docs/API.md §11) of each; the app keeps at most
 			     the server's value of the whole share. -->
 			<key>NSExtensionActivationRule</key>

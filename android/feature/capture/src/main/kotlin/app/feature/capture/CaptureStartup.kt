@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Build
 import androidx.camera.lifecycle.ProcessCameraProvider
 import app.feature.capture.data.CaptureDataProvider
+import app.feature.capture.share.ShareTargets
 import app.feature.capture.widget.CameraShortcuts
 import app.feature.capture.widget.CaptureWidgetConfigureUi
 import app.feature.capture.widget.WidgetPrefetch
@@ -72,10 +73,11 @@ fun installCapture(application: Application) {
     PersonalWidgets.onPlaced = { WidgetPrefetch.refreshPersonal(application, CaptureDataProvider.get(application)) }
     DataGraph.get(application)?.let { graph ->
         mirrorSessionIntoWidgets(application, graph.auth.authState)
-        // A group left or deleted loses its camera shortcut when the group list loads.
+        // A group left or deleted loses its camera shortcut and its share target (share.in) when the group list loads.
         startupScope.launch {
             graph.groups.myGroupIds.filterNotNull().distinctUntilChanged().collect { ids ->
                 runCatching { CameraShortcuts.sync(application, ids) }
+                runCatching { ShareTargets.sync(application, ids) }
             }
         }
     }
@@ -93,10 +95,12 @@ internal fun mirrorSessionIntoWidgets(application: Application, states: Flow<Aut
                 if (meta.isSignedOut() != signedOut) {
                     runCatching { meta.setSignedOut(signedOut) }
                     if (signedOut) {
-                        // Nothing of the last person stays: friend and memories photos, premium styles, group shortcuts.
+                        // Nothing of the last person stays: friend and memories photos, premium styles, group shortcuts,
+                        // the share sheet's group targets.
                         runCatching { PersonalWidgetStores.clear(application) }
                         runCatching { meta.setPremium(false) }
                         runCatching { CameraShortcuts.clear(application) }
+                        runCatching { ShareTargets.clear(application) }
                     }
                     runCatching { WidgetBinding.refreshAll(application) }
                 }

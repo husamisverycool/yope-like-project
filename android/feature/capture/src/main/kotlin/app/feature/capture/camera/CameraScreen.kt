@@ -180,7 +180,7 @@ fun CameraRoute(
     if (replyToPostId == null && question == null) {
         val shared by ShareInbox.pending.collectAsStateWithLifecycle()
         LaunchedEffect(shared) {
-            if (shared != null) ShareInbox.take()?.let(vm::onPickedAll)
+            if (shared != null) ShareInbox.takeShare()?.let { share -> vm.onPickedAll(share.items, share.groupId) }
         }
     }
     DisposableEffect(controller) {

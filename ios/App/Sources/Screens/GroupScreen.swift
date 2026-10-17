@@ -18,7 +18,7 @@ struct GroupScreen: View {
     @Environment(AccountDependencies.self) private var dependencies
 
     var body: some View {
-        GroupFeedView(model: GroupFeedModel(groupID: GroupID(groupID), data: dependencies.data))
+        GroupFeedView(model: GroupFeedModel(groupID: GroupID(groupID), data: dependencies.data), donatesShareTarget: true)
     }
 }
 
@@ -31,14 +31,17 @@ struct GroupFeedView: View {
     /// The birthday request rows' and the plans block's models: their days order the two (`GroupEntryOrder`, MERGE FV-1).
     @State private var birthdayEntry: BirthdayRequestsEntryModel
     @State private var planEntry: PlanRowModel
+    /// share.in: opening the group makes it one of the share sheet's suggestions (`ShareTargetDonations`; off in snapshots).
+    private let donatesShareTarget: Bool
     @Environment(AccountDependencies.self) private var dependencies
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @ScaledMetric private var titleSize: CGFloat
     @ScaledMetric private var sectionLabelSize: CGFloat
 
-    init(model: GroupFeedModel) {
+    init(model: GroupFeedModel, donatesShareTarget: Bool = false) {
         _model = State(initialValue: model)
+        self.donatesShareTarget = donatesShareTarget
         _birthdayEntry = State(initialValue: BirthdayRequestsEntryModel(groupID: model.groupID, dependencies: .current))
         _planEntry = State(initialValue: PlanRowModel(groupID: model.groupID, services: .shared))
         _titleSize = ScaledMetric(wrappedValue: TextRole.headerTitle.size, relativeTo: TextRole.headerTitle.relativeTo)
@@ -69,6 +72,10 @@ struct GroupFeedView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task { await model.load() }
         .task { await followDeveloping() }
+        .task(id: model.group?.name) {
+            guard donatesShareTarget, let group = model.group else { return }
+            await ShareTargetDonations.donate([ShareTargetDonations.Group(id: group.id.rawValue, name: group.name)])
+        }
         .task(id: PlansServices.shared.revision) { await developingTile?.refresh() }
         .onDisappear { model.stop() }
         .onChange(of: scenePhase) { _, phase in

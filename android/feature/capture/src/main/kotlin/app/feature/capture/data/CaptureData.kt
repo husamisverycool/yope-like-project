@@ -18,6 +18,7 @@ import app.data.repo.Member
 import app.data.model.DayMemory
 import app.data.model.PersonPhoto
 import app.data.model.WidgetPerson
+import app.feature.capture.share.ShareTargets
 import app.feature.capture.widget.CameraShortcuts
 import app.widget.HttpsRenditionDownloader
 import kotlinx.coroutines.CancellationException
@@ -154,6 +155,8 @@ class GraphCaptureData(private val graph: DataGraph, private val context: Contex
     override fun recordSend(groupIds: List<String>) {
         val app = context?.applicationContext ?: return
         graph.scope.launch { runCatching { CameraShortcuts.recordSend(app, groupIds) { id -> graph.groups.group(id) } } }
+        // share.in: the groups posted to become the share sheet's per-group targets.
+        graph.scope.launch { runCatching { ShareTargets.record(app, groupIds, this@GraphCaptureData) } }
     }
 
     override suspend fun myGroupIds(): Set<String>? = orNull { graph.groups.myGroups().map { it.id }.toSet() }
