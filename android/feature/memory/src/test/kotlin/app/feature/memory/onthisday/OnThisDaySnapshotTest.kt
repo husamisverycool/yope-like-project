@@ -27,7 +27,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 private fun memory(id: String, name: String, date: LocalDate, author: String = "u-$name", w: Int = 3, h: Int = 4) =
-    Memory(id, author, name, TestImages.url("$id-display", w, h), "u/$author/$id/original.jpg", date)
+    Memory(id, author, name, TestImages.url("$id-display", w, h), "u/$author/$id/original.jpg", date, "m-$id")
 
 /** Four memories of Dec 5 (sample photos, fixtures/photos/), newest first. */
 internal val sampleMemories = listOf(
@@ -100,6 +100,9 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.onNodeWithTag(OnThisDayTags.MORE).performClick()
         compose.mainClock.advanceTimeBy(settleMillis)
         compose.onNodeWithText("Save to Camera Roll").assertExists()
+        // Owner decision 34: any memory hides from your own memories (the photo or its whole day).
+        compose.onNodeWithText("Hide Photo").assertExists()
+        compose.onNodeWithText("Hide This Day").assertExists()
         compose.onNodeWithText("Report Post").assertExists()
         compose.onNodeWithText("Delete Post").assertDoesNotExist()
         compose.waitForIdle()
@@ -115,6 +118,8 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.onNodeWithTag(OnThisDayTags.MORE).performClick()
         compose.mainClock.advanceTimeBy(settleMillis)
         compose.onNodeWithText("Save to Camera Roll").assertExists()
+        compose.onNodeWithText("Hide Photo").assertExists()
+        compose.onNodeWithText("Hide This Day").assertExists()
         compose.onNodeWithText("Delete Post").assertExists()
         compose.onNodeWithText("Report Post").assertDoesNotExist()
         compose.waitForIdle()

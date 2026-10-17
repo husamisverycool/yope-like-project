@@ -94,8 +94,17 @@ the newest). One post = one memory. The indicator starts on slot 0; slot index =
 Never shown again (no nagging).
 
 **D. Menu ('•••', native — C-29 context menu)**, items in this order: `onthisday.menu.save` ("Save to
-Camera Roll", every memory — owner decision 28), then your own memory — `onthisday.menu.delete` ("Delete Post",
-destructive red); someone else's memory — `onthisday.menu.report` ("Report Post", destructive red). Sharing another
+Camera Roll", every memory — owner decision 28), `onthisday.menu.hidePhoto` ("Hide Photo", every memory — Retro's Rewind
+'Hide photo', RWP phone 2) and `onthisday.menu.hideDay` ("Hide This Day", every memory — Timehop "Hide your bad
+memories", Google Photos "Hide this date from all memories"; owner decision 34, research #12), then your own memory —
+`onthisday.menu.delete` ("Delete Post", destructive red); someone else's memory — `onthisday.menu.report` ("Report
+Post", destructive red). **Hide** is for you only (nothing changes for anyone else, the photo stays in the group):
+Hide Photo → `hide_memory(p_media_id)`; Hide This Day → `hide_memory(p_day)` with the memory's calendar day in the
+group's time zone (the day `on_this_day` reckons). No confirmation (it is shown again from `settings.hidden`); the
+memory — or every memory of that day — leaves the dial at once, as a deletion does (the next memory shows, else the
+previous; none left: the C-27 empty block), and toast `onthisday.toast.hidden` ("Hidden"). No undo: no neighbouring
+surface has one. Failure: the dial stays; `onthisday.error.detail` / `onthisday.offline.detail`. The shuffle never
+picks a hidden photo or day (`my_hidden_memories`, read with its pool, plus the hides made on the page). Sharing another
 member's photo is not offered (owner decision 12). Report → `safety.report`; Delete → native confirmation
 (`onthisday.delete.title` / `.message` / `.confirm` "Yes, delete" / `.cancel`) → `delete_post` → toast
 `onthisday.toast.deleted`, the memory leaves the dial. Save → toast `onthisday.toast.saved`; failure
@@ -120,7 +129,7 @@ under the title; no haptic of its own (the platform menu's). For VoiceOver / Tal
 | date title | C-35: `font.global.display`, text role `headerTitle`, `size.global.titleTop`, `size.global.headerGap`, `color.global.textOnMedia`, `layout.onthisday.dateFormat` | — (data) | changes with the memory (cross-fade); opens the mode menu (E) |
 | expand chevron + mode menu | `icon.global.chevronDown`, `dimension.onthisday.modeChevron.width` / `.gap` / `.drop`, `fontWeight.onthisday.modeChevron`, `color.global.textOnMedia`; C-29 menu | `onthisday.mode.day`, `.mode.shuffle` | "On this day…" back to the day; "Shuffle" as the dice |
 | subtitle | text role `textButton`, `color.onthisday.subtitle`, `dimension.onthisday.subtitleBaseline` | `onthisday.subtitle.day`, `.subtitle.shuffle` | `{name}` = poster |
-| more | C-11 glass: `size.global.circleButtonPhoto`, `color.global.glass`, `icon.global.more`, `size.global.headerInset` | `onthisday.a11y.more`; menu `onthisday.menu.*`, `onthisday.delete.*`, `onthisday.toast.*`, `onthisday.saveFailed`, `onthisday.saveDenied.*` | native menu (D) |
+| more | C-11 glass: `size.global.circleButtonPhoto`, `color.global.glass`, `icon.global.more`, `size.global.headerInset` | `onthisday.a11y.more`; menu `onthisday.menu.*` (save, hidePhoto, hideDay, delete / report), `onthisday.delete.*`, `onthisday.toast.*` (saved, deleted, hidden), `onthisday.saveFailed`, `onthisday.saveDenied.*` | native menu (D) |
 | scrim | `layout.global.photoScrim`, `color.global.scrim` | — | decorative |
 | share | C-11 large glass: `size.global.circleButtonLarge`, `color.global.glass`, `icon.global.share`, `size.global.icon`, `layout.onthisday.controls` | `onthisday.a11y.share`, `onthisday.share.subtitle` | native share sheet; your own memory only (owner decision 12) — elsewhere its place stays empty |
 | random | same, `icon.global.random` | `onthisday.a11y.shuffle` | shuffle |
@@ -138,6 +147,7 @@ under the title; no haptic of its own (the platform menu's). For VoiceOver / Tal
 | offline | same block | `onthisday.offline.title`, `.offline.detail`, `.error.retry` | `retro.voice.error` |
 | permission-denied (save) | native alert, button opens Settings | `onthisday.saveDenied.*` | `retro.voice.permission` |
 | memory deleted while open (`post_deleted`) | drop it from the dial; if it was shown, show the next (or previous) one | — | docs/API.md 8.2 |
+| memory hidden (Hide Photo / Hide This Day) | the same as a deletion, for every memory the hide covers | `onthisday.toast.hidden` | migration 0038 |
 
 ## Motion
 
@@ -154,8 +164,8 @@ under the title; no haptic of its own (the platform menu's). For VoiceOver / Tal
 
 Each slot crossed on the dial and each automatic step while playing → `haptic.global.select` (Retro: one tick per
 dial step, SEGMENT_FREQUENT_TICK / CLOCK_TICK). Taps on back, more, share, random, play / pause →
-`haptic.global.tap` (Android VIRTUAL_KEY; iOS none). Save succeeded → `haptic.global.success`; delete confirmed →
-`haptic.global.warning`; save / delete failed → `haptic.global.error`. Menu and share sheet play their own.
+`haptic.global.tap` (Android VIRTUAL_KEY; iOS none). Save or hide succeeded → `haptic.global.success`; delete confirmed →
+`haptic.global.warning`; save / delete / hide failed → `haptic.global.error`. Menu and share sheet play their own.
 
 ## Accessibility
 
@@ -196,11 +206,14 @@ dial step, SEGMENT_FREQUENT_TICK / CLOCK_TICK). Taps on back, more, share, rando
 - **Shuffle (dice):** `rpc("group_history_weeks", p_group_id, p_limit: 52)` paged with `p_before_week` until a page
   has fewer than 52 rows (cache per session); pick a random week, then a random `post_id` of it; then `posts` /
   `media` / `profiles` as above. Respects `free_history_days` (older weeks are left out for free users — T1).
-- **Writes:** save (your own memory: download the original to the photo library; no API call); `rpc("delete_post", p_post_id)` (own
-  post); report → `safety.report` (target kind `post`).
+- **Writes:** save (any memory: download the original to the photo library; no API call); `rpc("delete_post", p_post_id)` (own
+  post); `rpc("hide_memory", p_media_id | p_day)` (any memory, for you only; migration 0038); report → `safety.report`
+  (target kind `post`).
+- **Hidden memories:** `on_this_day` already leaves out your hidden photos and days; the shuffle filters its picks with
+  `rpc("my_hidden_memories")` (read once per page with the pool).
 - **Realtime:** private broadcast `group:<group_id>` `post_deleted` → drop that memory.
 - **Navigation in:** the entry card on `groups.screen` (no deep link, no push). **Out:** back → group screen; menu →
-  `safety.report`; share sheet.
+  `safety.report`; share sheet. Hidden memories are shown again from `settings.hidden`.
 
 ## Platform notes
 

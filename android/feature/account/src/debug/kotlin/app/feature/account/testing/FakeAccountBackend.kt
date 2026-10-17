@@ -7,6 +7,7 @@ import app.data.model.Group
 import app.data.model.GroupInvite
 import app.data.model.GroupKind
 import app.data.model.GroupMember
+import app.data.model.HiddenMemory
 import app.data.model.Media
 import app.data.model.MediaKind
 import app.data.model.MemberRole
@@ -294,6 +295,20 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
         call("report")
         reports += Triple(kind, targetId, reason)
         return id("r")
+    }
+
+    // Hidden memories (migration 0038) -------------------------------------------------------------------
+    /** Your hidden photos and days, newest hide first (as `my_hidden_memories`). */
+    val hiddenRows = mutableListOf<HiddenMemory>()
+
+    override suspend fun hiddenMemories(): List<HiddenMemory> {
+        call("hiddenMemories")
+        return hiddenRows.toList()
+    }
+
+    override suspend fun unhideMemory(hideId: String) {
+        call("unhideMemory")
+        hiddenRows.removeAll { it.id == hideId }
     }
 
     // Account ---------------------------------------------------------------------------------------

@@ -798,7 +798,8 @@ All measurements with `python3 -I` (PIL + numpy) on the files below.
 
 - Closed by Retro: the Timehop items M-9 (banner colour rule) and M-10 (progress bar) no longer exist (Rewind has no
   banner); M-23 (Wrapped text width) replaced by the frame padding; M-20 share (built for your own memories, RM-6 / owner decision 12) — Retro's 'Hide photo'
-  stays unbuilt (no API).
+  is built since owner decision 34 (research #12; migration 0038 `hide_memory`): "Hide Photo" and "Hide This Day" in the
+  Rewind menu, shown again from `settings.hidden` (onthisday.md D).
 - Still BLOCKED: copy `year.story.card.app` (the app line on the recap card, Retro's 'retro.app') — owner names the app
   and its domain. No token is BLOCKED.
 - Still open (not BLOCKED, captures listed in each spec's Gaps): RM-3 / RM-4 (dial recording), M-24 (tap halves —

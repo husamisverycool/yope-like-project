@@ -11,6 +11,7 @@ import app.data.error.DataException
 import app.data.model.Collage
 import app.data.model.Group
 import app.data.model.GroupTribute
+import app.data.model.HiddenMemory
 import app.data.model.HistoryWeek
 import app.data.model.Media
 import app.data.model.OnThisDayItem
@@ -63,6 +64,12 @@ interface MemoryBackend {
 
     /** `delete_post` (your own post). */
     suspend fun deletePost(postId: String)
+
+    /** `hide_memory` (migration 0038): one photo ([mediaId]) or one calendar day ([day]) leaves your memories, for you only. */
+    suspend fun hideMemory(mediaId: String?, day: LocalDate?)
+
+    /** `my_hidden_memories`: your hidden photos and days (the dice leaves them out). */
+    suspend fun hiddenMemories(): List<HiddenMemory>
 
     // Birthdays (docs/API.md §5.2, §5.16-§5.18, set_birthday, contribute_tribute).
     suspend fun privateProfile(): ProfilePrivate?
@@ -117,6 +124,12 @@ class GraphMemoryBackend(private val graph: DataGraph) : MemoryBackend {
         graph.browse.historyWeeks(groupId, beforeWeek, limit)
 
     override suspend fun deletePost(postId: String) = graph.posts.deletePost(postId)
+
+    override suspend fun hideMemory(mediaId: String?, day: LocalDate?) {
+        graph.browse.hideMemory(mediaId, day)
+    }
+
+    override suspend fun hiddenMemories(): List<HiddenMemory> = graph.browse.hiddenMemories()
 
     override suspend fun privateProfile(): ProfilePrivate? = graph.profiles.privateProfile()
 
@@ -188,6 +201,8 @@ object UnconfiguredMemoryBackend : MemoryBackend {
     override fun postDeletions(groupId: String): Flow<String> = emptyFlow()
     override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek> = fail()
     override suspend fun deletePost(postId: String) = fail()
+    override suspend fun hideMemory(mediaId: String?, day: LocalDate?) = fail()
+    override suspend fun hiddenMemories(): List<HiddenMemory> = fail()
     override suspend fun privateProfile(): ProfilePrivate? = fail()
     override suspend fun setBirthday(birthday: LocalDate?, optIn: Boolean): ProfilePrivate = fail()
     override suspend fun openRequests(): List<TributeRequest> = fail()

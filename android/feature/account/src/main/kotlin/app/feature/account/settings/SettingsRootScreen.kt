@@ -173,6 +173,7 @@ fun SettingsRootRoute(nav: NavController) {
             onNotifications = { nav.navigate(AppRoute.SettingsNotifications) },
             onWidgets = { nav.navigate(OnboardingWidgetFromSettingsRoute) },
             onBlocked = { nav.navigate(AppRoute.SettingsBlocked) },
+            onHidden = { nav.navigate(AppRoute.SettingsHidden) },
             onPermission = { PermissionChecks.openSafely(context, PermissionChecks.appSettingsIntent(context)) },
             onUrl = { ExternalActions.openInAppBrowser(context, it) },
             onMail = { ExternalActions.mail(context, it) },
@@ -192,6 +193,8 @@ data class SettingsRootActions(
     val onNotifications: () -> Unit = {},
     val onWidgets: () -> Unit = {},
     val onBlocked: () -> Unit = {},
+    /** Privacy → Hidden Memories (settings.hidden). */
+    val onHidden: () -> Unit = {},
     val onPermission: () -> Unit = {},
     val onUrl: (String) -> Unit = {},
     val onMail: (String) -> Unit = {},
@@ -205,7 +208,7 @@ data class SettingsRootActions(
  * Subscription (Premium → paywall; subscribers "Your Subscription" with Annual / Monthly → the Play subscription page; the
  * platform indicator while the store answers); Notifications; Widgets ("Add Widget" → onboarding.widget); Appearance
  * (Android only: the "True Black" switch row, owner decision 21 — Retro's true-black dark scheme); Privacy
- * (Blocked People); System Permissions (Camera, Microphone, Contacts, Push Notifications — "Denied" when denied → the
+ * (Blocked People, Hidden Memories); System Permissions (Camera, Microphone, Contacts, Push Notifications — "Denied" when denied → the
  * app's page in system Settings); About (Contact Us, Privacy Policy, Terms of Use — each omitted while its
  * `config/app.json` value is BLOCKED — and Version); Sign Out (confirmed; the row shows the indicator while it runs).
  */
@@ -260,7 +263,12 @@ fun SettingsRootScreen(
             )
             // Privacy
             SettingsHeader(stringResource(R.string.settings_root_privacy_header))
-            SettingsGroup(listOf(navRow(stringResource(R.string.settings_root_blocked), onClick = actions.onBlocked)))
+            SettingsGroup(
+                listOf(
+                    navRow(stringResource(R.string.settings_root_blocked), onClick = actions.onBlocked),
+                    navRow(stringResource(R.string.settings_root_hiddenmemories), onClick = actions.onHidden),
+                ),
+            )
             // System Permissions
             SettingsHeader(stringResource(R.string.settings_root_permissions_header))
             val denied = stringResource(R.string.settings_root_permissions_denied)

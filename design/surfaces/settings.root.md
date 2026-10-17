@@ -41,7 +41,8 @@ Header: centred `settings.root.title` (`sheetTitle`) + trailing close circle (C-
    #1C1C1E. Kept on the device (app-private SharedPreferences, as the app's other device settings); the window, the bar
    scrims and every open screen follow at once. iOS has no such row (its dark page is already #000000, Retro's iOS).
    The row is always listed (light too): the switch names the dark theme (as AntennaPod's "Full black").
-5. **Privacy** (`settings.root.privacy.header`): row `settings.root.blocked` + chevron → `settings.blocked`.
+5. **Privacy** (`settings.root.privacy.header`): row `settings.root.blocked` + chevron → `settings.blocked`; row
+   `settings.root.hiddenMemories` ("Hidden Memories") + chevron → `settings.hidden` (owner decision 34, research #12).
 6. **System Permissions** (`settings.root.permissions.header`): rows `settings.root.permissions.camera`, `.photos` (iOS),
    `.microphone`, `.contacts`, `.notifications`; trailing value `settings.root.permissions.denied` (`listSubtitle`,
    `color.global.textSecondary`) when denied, else none; chevron; each row → the app's page in system Settings.
@@ -102,7 +103,7 @@ Row presses → `haptic.global.tap` (Android). The True Black switch (Android) �
   `AVAudioApplication.recordPermission`, `CNContactStore.authorizationStatus`, `UNUserNotificationCenter.notificationSettings`
   / Android `ContextCompat.checkSelfPermission` + `NotificationManagerCompat.areNotificationsEnabled`.
 - Sign out: `unregister_device(p_push_token)` then `auth.signOut()` (docs/API.md §2).
-- In: `walls.mine` (settings capsule, C-19). Out: `settings.account`, `settings.notifications`, `settings.blocked`,
+- In: `walls.mine` (settings capsule, C-19). Out: `settings.account`, `settings.notifications`, `settings.blocked`, `settings.hidden`,
   `paywall`, `onboarding.widget`, system Settings, legal pages, `auth.phone` (after sign-out).
 
 ## Platform notes

@@ -158,6 +158,9 @@ fun OnThisDayDestination(
     val saved = stringResource(R.string.onthisday_toast_saved)
     val saveFailed = stringResource(R.string.onthisday_savefailed)
     val deleted = stringResource(R.string.onthisday_toast_deleted)
+    val hidden = stringResource(R.string.onthisday_toast_hidden)
+    val hideFailed = stringResource(R.string.onthisday_error_detail)
+    val hideOffline = stringResource(R.string.onthisday_offline_detail)
     LaunchedEffect(vm) {
         vm.requests.collect { event ->
             when (event) {
@@ -168,6 +171,9 @@ fun OnThisDayDestination(
                         OnThisDayEvent.Toast.Kind.Saved -> saved
                         OnThisDayEvent.Toast.Kind.SaveFailed -> saveFailed
                         OnThisDayEvent.Toast.Kind.Deleted -> deleted
+                        OnThisDayEvent.Toast.Kind.Hidden -> hidden
+                        OnThisDayEvent.Toast.Kind.HideFailed -> hideFailed
+                        OnThisDayEvent.Toast.Kind.HideOffline -> hideOffline
                     },
                 )
                 OnThisDayEvent.SaveDenied -> saveDenied = true
@@ -197,6 +203,8 @@ fun OnThisDayDestination(
                     vm.save()
                 }
             },
+            onHidePhoto = vm::hidePhoto,
+            onHideDay = vm::hideDay,
             onDelete = vm::delete,
             onReport = { (state as? OnThisDayState.Page)?.memory?.let { onReport(it.postId) } },
             onRetry = vm::retry,

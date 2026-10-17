@@ -185,6 +185,7 @@ enum MemoryIDs {
     static let request = MemoryFixtureIDs.request
     static let tribute = MemoryFixtureIDs.tribute
     static func post(_ number: Int) -> PostID { MemoryFixtureIDs.post(number) }
+    static func media(_ number: Int) -> MediaID { MemoryFixtureIDs.media(number) }
 }
 
 /// Real sample photos (fixtures/photos/, `SamplePhotos`) for the memory fixtures (`FixtureMemoryData.scenario`).

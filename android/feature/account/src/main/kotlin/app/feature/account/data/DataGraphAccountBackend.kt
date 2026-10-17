@@ -8,6 +8,7 @@ import app.data.model.Group
 import app.data.model.GroupInvite
 import app.data.model.GroupKind
 import app.data.model.GroupMember
+import app.data.model.HiddenMemory
 import app.data.model.Media
 import app.data.model.NotificationSettings
 import app.data.model.Post
@@ -126,6 +127,9 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
     override suspend fun unblock(userId: String) = graph.safety.unblock(userId)
     override suspend fun report(kind: ReportTargetKind, targetId: String, reason: String): String = graph.safety.report(kind, targetId, reason)
 
+    override suspend fun hiddenMemories(): List<HiddenMemory> = graph.browse.hiddenMemories()
+    override suspend fun unhideMemory(hideId: String) = graph.browse.unhideMemory(hideId)
+
     override suspend fun deleteAccount() = graph.account.deleteAccount()
     override suspend fun isPremium(): Boolean = graph.entitlements.isPremium()
 }
@@ -191,6 +195,8 @@ class UnconfiguredAccountBackend : AccountBackend {
     override suspend fun block(userId: String) = fail()
     override suspend fun unblock(userId: String) = fail()
     override suspend fun report(kind: ReportTargetKind, targetId: String, reason: String): String = fail()
+    override suspend fun hiddenMemories(): List<HiddenMemory> = fail()
+    override suspend fun unhideMemory(hideId: String) = fail()
     override suspend fun deleteAccount() = fail()
     override suspend fun isPremium(): Boolean = false
 }

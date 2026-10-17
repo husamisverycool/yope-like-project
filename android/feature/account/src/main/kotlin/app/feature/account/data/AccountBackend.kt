@@ -5,6 +5,7 @@ import app.data.model.Group
 import app.data.model.GroupInvite
 import app.data.model.GroupKind
 import app.data.model.GroupMember
+import app.data.model.HiddenMemory
 import app.data.model.Media
 import app.data.model.NotificationSettings
 import app.data.model.Post
@@ -108,6 +109,12 @@ interface AccountBackend {
     suspend fun block(userId: String)
     suspend fun unblock(userId: String)
     suspend fun report(kind: ReportTargetKind, targetId: String, reason: String): String
+
+    // Hidden memories (settings.hidden; migration 0038) ------------------------------------------------
+    /** `my_hidden_memories`: your hidden days and the hidden photos you can still see, newest hide first. */
+    suspend fun hiddenMemories(): List<HiddenMemory>
+    /** `unhide_memory`: the photo or day shows in your memories again. */
+    suspend fun unhideMemory(hideId: String)
 
     // Account -------------------------------------------------------------------------------------
     suspend fun deleteAccount()

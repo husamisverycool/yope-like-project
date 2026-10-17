@@ -1341,6 +1341,10 @@ public enum Copy {
     public static var onthisdayLoading: String { CopyLookup.string("onthisday.loading", default: "Loading…") }
     /// "Delete Post" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayMenuDelete: String { CopyLookup.string("onthisday.menu.delete", default: "Delete Post") }
+    /// "Hide This Day" — Timehop · onthisday · new · SOURCED
+    public static var onthisdayMenuHideDay: String { CopyLookup.string("onthisday.menu.hideDay", default: "Hide This Day") }
+    /// "Hide Photo" — Retro · onthisday · adapted · SOURCED
+    public static var onthisdayMenuHidePhoto: String { CopyLookup.string("onthisday.menu.hidePhoto", default: "Hide Photo") }
     /// "Report Post" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayMenuReport: String { CopyLookup.string("onthisday.menu.report", default: "Report Post") }
     /// "Save to Camera Roll" — Retro · onthisday · verbatim · SOURCED
@@ -1375,6 +1379,8 @@ public enum Copy {
     public static func onthisdaySubtitleShuffle(name: String) -> String { CopyLookup.format("onthisday.subtitle.shuffle", default: "Memories · {name}", ["name": name]) }
     /// "Deleted" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayToastDeleted: String { CopyLookup.string("onthisday.toast.deleted", default: "Deleted") }
+    /// "Hidden" — Retro · onthisday · adapted · SOURCED
+    public static var onthisdayToastHidden: String { CopyLookup.string("onthisday.toast.hidden", default: "Hidden") }
     /// "Saved!" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayToastSaved: String { CopyLookup.string("onthisday.toast.saved", default: "Saved!") }
     /// "Close" — Apple HIG · paywall · new · VERIFIED
@@ -1829,6 +1835,20 @@ public enum Copy {
     public static var settingsBlockedUnblock: String { CopyLookup.string("settings.blocked.unblock", default: "Unblock") }
     /// "Someone you blocked" — Retro · settings.blocked · new · SOURCED
     public static var settingsBlockedUnknown: String { CopyLookup.string("settings.blocked.unknown", default: "Someone you blocked") }
+    /// "Every photo from this day" — Retro · settings.hidden · new · SOURCED
+    public static var settingsHiddenDayDetail: String { CopyLookup.string("settings.hidden.day.detail", default: "Every photo from this day") }
+    /// "Photos and days you hide from On This Day show up here. Only you see what you hide." — Retro · settings.hidden · new · SOURCED
+    public static var settingsHiddenEmptyMessage: String { CopyLookup.string("settings.hidden.empty.message", default: "Photos and days you hide from On This Day show up here. Only you see what you hide.") }
+    /// "No hidden memories" — Retro · settings.hidden · new · SOURCED
+    public static var settingsHiddenEmptyTitle: String { CopyLookup.string("settings.hidden.empty.title", default: "No hidden memories") }
+    /// "Error loading hidden memories. Tap here to try again." — Retro · settings.hidden · adapted · SOURCED
+    public static var settingsHiddenError: String { CopyLookup.string("settings.hidden.error", default: "Error loading hidden memories. Tap here to try again.") }
+    /// "Hidden Memories" — Retro · settings.hidden · new · SOURCED
+    public static var settingsHiddenTitle: String { CopyLookup.string("settings.hidden.title", default: "Hidden Memories") }
+    /// "Unhide" — Timehop · settings.hidden · adapted · SOURCED
+    public static var settingsHiddenUnhide: String { CopyLookup.string("settings.hidden.unhide", default: "Unhide") }
+    /// "There was a problem. Please try again." — Retro · settings.hidden · verbatim · SOURCED
+    public static var settingsHiddenUnhideError: String { CopyLookup.string("settings.hidden.unhideError", default: "There was a problem. Please try again.") }
     /// "Notification Categories" — Material 3 · settings.notifications · new · VERIFIED
     public static var settingsNotificationsCategories: String { CopyLookup.string("settings.notifications.categories", default: "Notification Categories") }
     /// "There was a problem saving your changes. Please try again." — Retro · settings.notifications · verbatim · SOURCED
@@ -1871,6 +1891,8 @@ public enum Copy {
     public static var settingsRootCloseAccessibilityLabel: String { CopyLookup.string("settings.root.close.accessibilityLabel", default: "Close") }
     /// "Contact Us" — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootContact: String { CopyLookup.string("settings.root.contact", default: "Contact Us") }
+    /// "Hidden Memories" — Retro · settings.root · new · SOURCED
+    public static var settingsRootHiddenMemories: String { CopyLookup.string("settings.root.hiddenMemories", default: "Hidden Memories") }
     /// "Your Subscription" — Retro · settings.root · verbatim · SOURCED
     public static var settingsRootManageSubscription: String { CopyLookup.string("settings.root.manageSubscription", default: "Your Subscription") }
     /// "Notification Settings" — Retro · settings.root · verbatim · SOURCED

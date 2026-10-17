@@ -9,6 +9,7 @@ import Foundation
 final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     enum Operation: String, CaseIterable, Sendable {
         case group, postsWithMedia, profiles, signedURLs, onThisDay, historyWeeks, deletePost, downloadData
+        case hideMemory, hiddenMemories
         case myPrivateProfile, setBirthday
         case openRequests, request, myContribution, contribute, withdraw, eligiblePostIDs
         case tribute, groupTributes, downloadFile, yearStory, collages, tags, isTagged, tagSelf, untagSelf
@@ -21,6 +22,8 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         var posts: [PostWithMedia] = []
         var profiles: [Profile] = []
         var onThisDay: [OnThisDayItem] = []
+        /// The caller's hidden photos and days (`memory_hides`), oldest hide first.
+        var hides: [HiddenMemory] = []
         var privateProfile: ProfilePrivate?
         var requests: [TributeRequest] = []
         /// The caller's own contributions.
@@ -126,10 +129,41 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         return stream
     }
 
+    /// As `on_this_day`: the group's rows minus the caller's hidden photos and days (the day in the group's zone).
     func onThisDay(groupID: GroupID, localDate: LocalDate) async throws -> [OnThisDayItem] {
         let current = try await record(.onThisDay)
         let groupPosts = Set(current.posts.filter { $0.post.groupID == groupID }.map(\.post.id))
-        return current.onThisDay.filter { groupPosts.contains($0.postID) }
+        let zone = current.groups.first { $0.id == groupID }?.resolvedTimeZone ?? MemoryFormat.utc
+        let hiddenMedia = Set(current.hides.compactMap(\.mediaID))
+        let hiddenDays = Set(current.hides.compactMap(\.day))
+        return current.onThisDay.filter { item in
+            groupPosts.contains(item.postID) && !hiddenMedia.contains(item.mediaID)
+                && !hiddenDays.contains(LocalDate(item.createdAt, in: zone))
+        }
+    }
+
+    /// `hide_memory`: idempotent; a photo must be one of the fixture's posts.
+    func hideMemory(_ target: MemoryHideTarget) async throws {
+        let current = try await record(.hideMemory)
+        let row: HiddenMemory
+        switch target {
+        case let .photo(mediaID):
+            guard !current.hides.contains(where: { $0.mediaID == mediaID }) else { return }
+            guard let post = current.posts.first(where: { $0.post.mediaID == mediaID }) else { throw DataError.api(.mediaNotFound) }
+            row = HiddenMemory(
+                id: MemoryHideID(UUID()), mediaID: mediaID, createdAt: current.now, postID: post.post.id, groupID: post.post.groupID,
+                kind: post.media?.kind, thumbPath: post.media?.thumbPath ?? post.media?.originalPath, takenAt: post.post.createdAt
+            )
+        case let .day(day):
+            guard !current.hides.contains(where: { $0.day == day }) else { return }
+            row = HiddenMemory(id: MemoryHideID(UUID()), day: day, createdAt: current.now)
+        }
+        update { $0.hides.append(row) }
+    }
+
+    /// `my_hidden_memories`: newest hide first.
+    func hiddenMemories() async throws -> [HiddenMemory] {
+        Array(try await record(.hiddenMemories).hides.reversed())
     }
 
     /// The group's posts by week (Monday start, group time zone), newest week first, posts chronological;

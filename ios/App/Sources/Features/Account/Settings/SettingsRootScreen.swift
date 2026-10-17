@@ -68,6 +68,9 @@ struct SettingsRootScreen: View {
                         SettingsRow(Copy.settingsRootBlocked, kind: .navigation { path.append(.account(.settingsBlocked)) })
                             .accessibilityIdentifier("settings.root.blocked")
                             .asSettingsRow(),
+                        SettingsRow(Copy.settingsRootHiddenMemories, kind: .navigation { path.append(.account(.settingsHidden)) })
+                            .accessibilityIdentifier("settings.root.hidden")
+                            .asSettingsRow(),
                     ])
                     SettingsGroup(header: Copy.settingsRootPermissionsHeader, rows: SystemPermission.allCases.map { permission in
                         SettingsRow(

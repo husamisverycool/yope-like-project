@@ -2735,6 +2735,16 @@
       "pattern": "retro.voice.settings",
       "level": "SOURCED"
     },
+    "settings.root.hiddenMemories": {
+      "text": "Hidden Memories",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.root",
+      "evidence": "design/copy-patterns.md retro.voice.settings (Title-Case row); feature name after Timehop's settings 'Hidden Memory' (design/research/retro-timehop.md, T help/th-help-2024-02-settings-hidden-memory.jpg) and Google Photos 'Hide dates' (https://support.google.com/photos/answer/9454489, accessed 2026-10-17)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "Privacy section, after Blocked People. Opens settings.hidden (owner decision 34, research #12). No count (Timehop's '1 Hidden Memory Today' carries one: not copied)."
+    },
     "settings.root.permissions.header": {
       "text": "System Permissions",
       "origin": "verbatim",
@@ -3299,6 +3309,74 @@
       "pattern": "retro.voice.error",
       "level": "SOURCED",
       "notes": "Noun swap friends → blocked people."
+    },
+    "settings.hidden.title": {
+      "text": "Hidden Memories",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.hidden",
+      "evidence": "design/copy-patterns.md retro.voice.title-case (tool screen title); the row that opens it, settings.root.hiddenMemories",
+      "pattern": "retro.voice.title-case",
+      "level": "SOURCED"
+    },
+    "settings.hidden.unhide": {
+      "text": "Unhide",
+      "origin": "adapted",
+      "source_app": "Timehop",
+      "surface": "settings.hidden",
+      "evidence": "Timehop settings 'UNHIDE' (design/research/retro-timehop.md, T help/th-help-2024-02-settings-hidden-memory.jpg)",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Timehop's capitals → Retro's button casing (one word, Sentence case), as settings.blocked.unblock."
+    },
+    "settings.hidden.day.detail": {
+      "text": "Every photo from this day",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.hidden",
+      "evidence": "design/copy-patterns.md retro.voice.sentence-case; what a hidden date means in Google Photos ('When you hide a date, you won't get photos taken on that date', https://support.google.com/photos/answer/9454489, accessed 2026-10-17)",
+      "pattern": "retro.voice.sentence-case",
+      "level": "SOURCED",
+      "notes": "Subtitle of a hidden day's row (Hide This Day); a hidden photo's row shows its thumbnail instead."
+    },
+    "settings.hidden.empty.title": {
+      "text": "No hidden memories",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.hidden",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `manage_keys_given_empty_state_title` ('No keys shared yet'), `postcard_orders_empty_state_title` ('No postcards sent'); settings.blocked.empty.title",
+      "pattern": "retro.voice.empty-state",
+      "level": "SOURCED"
+    },
+    "settings.hidden.empty.message": {
+      "text": "Photos and days you hide from On This Day show up here. Only you see what you hide.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "settings.hidden",
+      "evidence": "design/copy-patterns.md retro.voice.empty-state (explanation with a period); Retro 'These photos are only visible to you.' (references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `rewind_home_no_permission_upsell_message`, retro.voice.second-person)",
+      "pattern": "retro.voice.empty-state",
+      "level": "SOURCED",
+      "notes": "The second sentence follows Retro's Rewind privacy reassurance: a hide changes nothing for anyone else (migration 0038)."
+    },
+    "settings.hidden.error": {
+      "text": "Error loading hidden memories. Tap here to try again.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "settings.hidden",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `friends_tab_loading_error` ('Error loading friends. Tap here to try again.')",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED",
+      "notes": "Noun swap friends → hidden memories. Error and offline (retried when back online)."
+    },
+    "settings.hidden.unhideError": {
+      "text": "There was a problem. Please try again.",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "settings.hidden",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `error_message_generic`",
+      "pattern": "retro.voice.error",
+      "level": "SOURCED",
+      "notes": "Message-only alert when unhide_memory fails; the row comes back."
     },
     "safety.report.menuItem.post": {
       "text": "Report Post",

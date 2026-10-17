@@ -103,9 +103,16 @@ protocol AccountDataSource: AnyObject, Sendable {
     /// `set_overnight_alerts`: the push when overnight photos develop (camera.overnight; docs/API.md §14.3).
     func setOvernightAlerts(_ on: Bool) async throws
     func hasPremium() async throws -> Bool
-}
     /// `set_notifications_paused` (Pause All) with the device's zone; returns the end of the pause (nil when off).
     func setNotificationsPaused(_ paused: Bool) async throws -> Date?
+
+    // MARK: Hidden memories (settings.hidden; migration 0038)
+
+    /// `my_hidden_memories`: your hidden days and the hidden photos you can still see, newest hide first.
+    func hiddenMemories() async throws -> [HiddenMemory]
+    /// `unhide_memory`: the photo or day shows in your memories again.
+    func unhideMemory(id: MemoryHideID) async throws
+}
 
 /// `AccountDataSource` over AppData. With a nil environment (config/app.json has no Supabase URL / anon key yet,
 /// BLOCKED) every call fails with `DataError.notConfigured` and the screens show their error states.
@@ -386,9 +393,21 @@ final class LiveAccountData: AccountDataSource {
         let account = try env().account
         return try await account.hasPremium()
     }
-}
+
     func setNotificationsPaused(_ paused: Bool) async throws -> Date? {
         let account = try env().account
         return try await account.setNotificationsPaused(paused).pausedUntil
     }
 
+    // MARK: Hidden memories
+
+    func hiddenMemories() async throws -> [HiddenMemory] {
+        let memories = try env().memories
+        return try await memories.myHiddenMemories()
+    }
+
+    func unhideMemory(id: MemoryHideID) async throws {
+        let memories = try env().memories
+        try await memories.unhideMemory(id: id)
+    }
+}

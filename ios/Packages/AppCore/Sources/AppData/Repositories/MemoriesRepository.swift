@@ -62,6 +62,30 @@ public struct MemoriesRepository: Sendable {
         try await client.rpc("on_this_day", ["p_group_id": .id(groupID), "p_local_date": .date(localDate)])
     }
 
+    // MARK: Hidden memories (migration 0038)
+
+    /// `hide_memory`: one photo (`p_media_id`) or one calendar day (`p_day`) leaves the caller's memories (On This Day, the
+    /// Memories widget, the shuffle), for the caller only. Idempotent: hiding again returns the existing row.
+    @discardableResult
+    public func hideMemory(_ target: MemoryHideTarget) async throws -> MemoryHide {
+        switch target {
+        case let .photo(mediaID):
+            return try await client.rpc("hide_memory", ["p_media_id": .id(mediaID)])
+        case let .day(day):
+            return try await client.rpc("hide_memory", ["p_day": .date(day)])
+        }
+    }
+
+    /// `unhide_memory`: shows a hidden photo or day again (only the caller's own rows; unknown ids are a no-op).
+    public func unhideMemory(id: MemoryHideID) async throws {
+        try await client.rpcVoid("unhide_memory", ["p_id": .id(id)])
+    }
+
+    /// `my_hidden_memories`: hidden days and the hidden photos the caller can still see, newest hide first.
+    public func myHiddenMemories() async throws -> [HiddenMemory] {
+        try await client.rpc("my_hidden_memories")
+    }
+
     // MARK: Recaps
 
     /// The group's recaps, newest week first.

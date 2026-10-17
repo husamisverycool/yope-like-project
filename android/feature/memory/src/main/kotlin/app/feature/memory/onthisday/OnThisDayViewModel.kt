@@ -38,8 +38,10 @@ data class Memory(
     val displayUrl: String?,
     /** Storage path of the original (save / share sign it on demand). */
     val originalPath: String,
-    /** The day it was posted, in the group's time zone (the date title). */
+    /** The day it was posted, in the group's time zone (the date title; Hide This Day hides it). */
     val date: LocalDate,
+    /** The photo (`hide_memory` p_media_id: Hide Photo). */
+    val mediaId: String,
 )
 
 /** Which memories the dial steps through. */
@@ -85,7 +87,20 @@ sealed interface OnThisDayState {
 sealed interface OnThisDayEvent {
     /** Toast (C-26). */
     data class Toast(val kind: Kind) : OnThisDayEvent {
-        enum class Kind { Saved, SaveFailed, Deleted }
+        enum class Kind {
+            Saved,
+            SaveFailed,
+            Deleted,
+
+            /** Hide Photo / Hide This Day went through (`onthisday.toast.hidden`). */
+            Hidden,
+
+            /** The hide failed (`onthisday.error.detail`). */
+            HideFailed,
+
+            /** The hide failed offline (`onthisday.offline.detail`). */
+            HideOffline,
+        }
     }
 
     /** The share sheet with the memory's original. */
@@ -127,6 +142,14 @@ class OnThisDayViewModel(
 
     /** The memories of today, kept while shuffling. */
     private var day: List<Memory> = emptyList()
+
+    /**
+     * Your hidden photos and days (`my_hidden_memories`, read with the dice's pool, plus the hides made on this page): the
+     * dice never picks them (migration 0038).
+     */
+    private val hiddenMedia = mutableSetOf<String>()
+    private val hiddenDays = mutableSetOf<LocalDate>()
+    private var hiddenLoaded = false
 
     init {
         // Cached content first: today's page as last shown paints at once; the refresh replaces it.
@@ -187,7 +210,7 @@ class OnThisDayViewModel(
         val urls = backend.signedUrls(media.values.map { it.imagePath(Media.Rendition.Display) }.toSet())
         val memories = items.mapNotNull { row ->
             val m = media[row.mediaId] ?: return@mapNotNull null
-            Memory(row.postId, row.authorId, names[row.authorId].orEmpty(), urls[m.imagePath(Media.Rendition.Display)], m.originalPath, row.createdAt.atZone(zone).toLocalDate())
+            Memory(row.postId, row.authorId, names[row.authorId].orEmpty(), urls[m.imagePath(Media.Rendition.Display)], m.originalPath, row.createdAt.atZone(zone).toLocalDate(), row.mediaId)
         }
         return if (memories.isEmpty()) null else OnThisDayState.Page(memories, 0, group.name)
     }
@@ -261,20 +284,45 @@ class OnThisDayViewModel(
         }
     }
 
-    /** A random week of the history, then a random post of it (never one already shown when others exist). */
+    /**
+     * A random week of the history, then a random post of it (never one already shown when others exist). A post hidden
+     * from your memories (its photo or its day), hidden by a block or gone leaves the pool and another is drawn; each pass
+     * removes one post, so the loop ends with the pool.
+     */
     private suspend fun randomMemory(exclude: Set<String>): Memory? {
-        val all = weeks ?: historyWeeks().also { weeks = it }
-        val ids = all.flatMap { it.postIds }
-        if (ids.isEmpty()) return null
-        val fresh = all.map { w -> w.copy(postIds = w.postIds.filterNot(exclude::contains)) }.filter { it.postIds.isNotEmpty() }
-        val week = (fresh.ifEmpty { all }).let { it[random.nextInt(it.size)] }
-        val postId = week.postIds[random.nextInt(week.postIds.size)]
+        if (weeks == null) weeks = historyWeeks()
+        loadHidden()
+        while (true) {
+            val all = weeks.orEmpty().filter { it.postIds.isNotEmpty() }
+            if (all.isEmpty()) return null
+            val fresh = all.map { w -> w.copy(postIds = w.postIds.filterNot(exclude::contains)) }.filter { it.postIds.isNotEmpty() }
+            val week = (fresh.ifEmpty { all }).let { it[random.nextInt(it.size)] }
+            val postId = week.postIds[random.nextInt(week.postIds.size)]
+            val memory = memoryOf(postId)
+            if (memory != null && !isHidden(memory)) return memory
+            weeks = weeks?.map { w -> w.copy(postIds = w.postIds.filterNot { it == postId }) }
+        }
+    }
+
+    private suspend fun memoryOf(postId: String): Memory? {
         val post: Post = backend.posts(listOf(postId)).firstOrNull() ?: return null
         val m = backend.media(listOf(post.mediaId)).firstOrNull() ?: return null
         val name = backend.profiles(listOf(post.authorId)).firstOrNull()?.firstName.orEmpty()
         val path = m.imagePath(Media.Rendition.Display)
-        return Memory(post.id, post.authorId, name, backend.signedUrls(listOf(path))[path], m.originalPath, post.createdAt.atZone(zone).toLocalDate())
+        return Memory(post.id, post.authorId, name, backend.signedUrls(listOf(path))[path], m.originalPath, post.createdAt.atZone(zone).toLocalDate(), post.mediaId)
     }
+
+    /** `my_hidden_memories`, once per page (the hides made here are added as they happen). */
+    private suspend fun loadHidden() {
+        if (hiddenLoaded) return
+        val rows = backend.hiddenMemories()
+        rows.mapNotNullTo(hiddenMedia) { it.mediaId }
+        rows.mapNotNullTo(hiddenDays) { it.day }
+        hiddenLoaded = true
+    }
+
+    /** The photo, or the day it was taken on (group time zone, as `on_this_day` reckons it), is hidden from your memories. */
+    private fun isHidden(memory: Memory): Boolean = memory.mediaId in hiddenMedia || memory.date in hiddenDays
 
     /** `group_history_weeks` paged by [SHUFFLE_PAGE] until a page comes back short. */
     private suspend fun historyWeeks(): List<HistoryWeek> {
@@ -335,6 +383,48 @@ class OnThisDayViewModel(
                     events.trySend(OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.Deleted))
                 }
                 .onFailure { queue.haptic(Tokens.Haptics.globalError) }
+        }
+    }
+
+    // ---- hide (the menu: Hide Photo, Hide This Day — owner decision 34, migration 0038) ---------------------------------
+
+    /**
+     * "Hide Photo" (any memory): `hide_memory(p_media_id)`; the photo leaves the dial at once (as a deletion does) and the
+     * toast "Hidden" confirms. For you only: nothing changes for anyone else. Shown again from Settings → Hidden Memories (no
+     * undo here: no neighbouring surface has one).
+     */
+    fun hidePhoto() {
+        val memory = (_state.value as? OnThisDayState.Page)?.memory ?: return
+        hide(mediaId = memory.mediaId, hiddenDay = null) { it.mediaId == memory.mediaId }
+    }
+
+    /** "Hide This Day": `hide_memory(p_day)` with the memory's day in the group's zone; every memory of that day leaves. */
+    fun hideDay() {
+        val memory = (_state.value as? OnThisDayState.Page)?.memory ?: return
+        hide(mediaId = null, hiddenDay = memory.date) { it.date == memory.date }
+    }
+
+    /**
+     * Writes the hide, then drops every memory [matches] selects (the day's and the shuffle's picks): `haptic.global.success`
+     * and the toast; a failure: `haptic.global.error` and the error / offline line, the dial as it was.
+     */
+    private fun hide(mediaId: String?, hiddenDay: LocalDate?, matches: (Memory) -> Boolean) {
+        _state.update { s -> if (s is OnThisDayState.Page) s.copy(playing = false) else s }
+        viewModelScope.launch {
+            attempt { backend.hideMemory(mediaId, hiddenDay) }
+                .onSuccess {
+                    mediaId?.let(hiddenMedia::add)
+                    hiddenDay?.let(hiddenDays::add)
+                    val shown = (_state.value as? OnThisDayState.Page)?.memories.orEmpty()
+                    (shown + day).filter(matches).map { it.postId }.distinct().forEach(::onPostDeleted)
+                    queue.haptic(Tokens.Haptics.globalSuccess)
+                    events.trySend(OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.Hidden))
+                }
+                .onFailure { e ->
+                    queue.haptic(Tokens.Haptics.globalError)
+                    val offline = failureOf(e) == Failure.Offline
+                    events.trySend(OnThisDayEvent.Toast(if (offline) OnThisDayEvent.Toast.Kind.HideOffline else OnThisDayEvent.Toast.Kind.HideFailed))
+                }
         }
     }
 

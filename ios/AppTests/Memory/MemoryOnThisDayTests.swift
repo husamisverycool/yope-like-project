@@ -256,6 +256,80 @@ final class MemoryOnThisDayTests: XCTestCase {
         model.stopListening()
     }
 
+    /// Owner decision 34 (research #12): "Hide Photo" (Retro's Rewind 'Hide photo') on any memory, for you only; it leaves
+    /// the dial at once, as a deletion does, and the next read of the day leaves it out too.
+    func testHidePhotoTakesItOffTheDialAtOnceAndConfirms() async {
+        let context = MemoryTestContext()
+        let model = makeModel(context)
+        await model.loadIfNeeded()
+        model.next()
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(9), "Bea's photo: someone else's memory hides too")
+        context.clearHaptics()
+        await model.hidePhoto()
+        XCTAssertEqual(context.data.calls(of: .hideMemory), 1)
+        XCTAssertEqual(context.data.snapshot.hides.map(\.mediaID), [MemoryIDs.media(9)], "hide_memory(p_media_id)")
+        XCTAssertEqual(model.memories.map(\.id), [MemoryIDs.post(6), MemoryIDs.post(8), MemoryIDs.post(7)])
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(8), "the next memory shows")
+        XCTAssertEqual(context.lastToast, Copy.onthisdayToastHidden)
+        XCTAssertEqual(context.haptics, [Tokens.Haptics.globalSuccess])
+        XCTAssertEqual(context.data.calls(of: .deletePost), 0, "the photo stays in the group")
+
+        let reopened = makeModel(context)
+        await reopened.loadIfNeeded()
+        XCTAssertEqual(reopened.memories.map(\.id), [MemoryIDs.post(6), MemoryIDs.post(8), MemoryIDs.post(7)])
+        model.stopListening()
+        reopened.stopListening()
+    }
+
+    /// "Hide This Day" (Timehop "Hide your bad memories"): every memory taken on that calendar day (group time zone) goes.
+    func testHideThisDayTakesEveryMemoryOfThatDayOffTheDial() async throws {
+        let context = MemoryTestContext()
+        let model = makeModel(context)
+        await model.loadIfNeeded()
+        model.next()
+        model.next()
+        let day = LocalDate(try XCTUnwrap(model.current).createdAt, in: utc)
+        await model.hideDay()
+        XCTAssertEqual(context.data.snapshot.hides.map(\.day), [day], "hide_memory(p_day), the group-local day")
+        XCTAssertEqual(model.memories.map(\.id), [MemoryIDs.post(6)], "posts 9, 8 and 7 were taken that evening three years ago")
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(6))
+        XCTAssertEqual(context.lastToast, Copy.onthisdayToastHidden)
+
+        // Hiding the last day leaves the C-27 empty block.
+        await model.hideDay()
+        XCTAssertEqual(model.phase, .empty)
+        model.stopListening()
+    }
+
+    func testAFailedHideKeepsTheMemoryAndSaysSo() async {
+        let context = MemoryTestContext()
+        context.data.fail(.hideMemory, with: .offline)
+        let model = makeModel(context)
+        await model.loadIfNeeded()
+        context.clearHaptics()
+        await model.hidePhoto()
+        XCTAssertEqual(model.memories.count, 4)
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(6))
+        XCTAssertEqual(context.lastToast, Copy.onthisdayOfflineDetail)
+        XCTAssertEqual(context.haptics, [Tokens.Haptics.globalError])
+        model.stopListening()
+    }
+
+    /// The dice never lands on a photo (or a day) you hid: picks are filtered with `my_hidden_memories`.
+    func testShuffleLeavesOutHiddenPhotos() async {
+        let context = MemoryTestContext { state in
+            state.hides = [HiddenMemory(id: MemoryHideID(UUID()), mediaID: MemoryIDs.media(2), createdAt: state.now)]
+        }
+        let model = makeModel(context)
+        await model.loadIfNeeded()
+        await model.shuffle()
+        // The newest week holds posts 2 and 1; the first index is always picked, and post 2 is hidden.
+        XCTAssertEqual(model.mode, .shuffle)
+        XCTAssertEqual(model.current?.id, MemoryIDs.post(1))
+        XCTAssertEqual(context.data.calls(of: .hiddenMemories), 1)
+        model.stopListening()
+    }
+
     func testDeletedMemoriesLeaveTheDialAndTheEmptyBlockShowsWhenNoneRemain() async {
         let context = MemoryTestContext()
         let model = makeModel(context)

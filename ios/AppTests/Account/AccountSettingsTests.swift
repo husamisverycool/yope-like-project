@@ -182,6 +182,60 @@ final class AccountSettingsTests: XCTestCase {
         XCTAssertEqual(row.name, Copy.settingsBlockedUnknown)
     }
 
+    // MARK: settings.hidden
+
+    /// Hidden Memories (owner decision 34, research #12): hidden photos and days, newest hide first; Unhide is optimistic
+    /// and comes back when it fails.
+    func testHiddenMemoriesListAndOptimisticUnhide() async {
+        let fixture = AccountFixture()
+        let group = fixture.familyGroup()
+        let photo = fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 60)
+        let day = LocalDate(year: 2023, month: 12, day: 5)!
+        fixture.data.addHiddenMemory(post: photo)
+        fixture.data.addHiddenMemory(day: day)
+        let model = SettingsHiddenModel(data: fixture.data)
+        await model.load()
+        XCTAssertEqual(model.phase, .loaded)
+        XCTAssertEqual(model.rows.map(\.isDay), [true, false], "newest hide first")
+        XCTAssertEqual(model.rows[0].subtitle, Copy.settingsHiddenDayDetail)
+        XCTAssertEqual(model.rows[0].title(), MemoryFormat.memoryDate(MemoryFormat.calendarDate(day), timeZone: MemoryFormat.utc))
+        XCTAssertNil(model.rows[1].subtitle, "a photo's row shows its thumbnail instead")
+        XCTAssertEqual(model.rows[1].memory.thumbPath, photo.media?.originalPath)
+        XCTAssertEqual(model.rows[1].title(timeZone: MemoryFormat.utc), MemoryFormat.memoryDate(photo.post.createdAt, timeZone: MemoryFormat.utc))
+
+        fixture.data.failures["unhideMemory"] = .offline
+        let row = model.rows[1]
+        var unhidden = await model.unhide(row)
+        XCTAssertFalse(unhidden)
+        XCTAssertEqual(model.rows.count, 2, "restored")
+        XCTAssertEqual(model.errorCount, 1, "the message-only alert")
+
+        fixture.data.failures = [:]
+        unhidden = await model.unhide(row)
+        XCTAssertTrue(unhidden)
+        XCTAssertEqual(model.rows.map(\.isDay), [true])
+        XCTAssertEqual(fixture.data.hiddenMemoryRows.map(\.day), [day], "unhide_memory removed the photo's row")
+        XCTAssertEqual(model.successCount, 1)
+    }
+
+    func testHiddenMemoriesEmptyErrorAndRetry() async {
+        let fixture = AccountFixture()
+        let empty = SettingsHiddenModel(data: fixture.data)
+        await empty.load()
+        XCTAssertEqual(empty.phase, .loaded)
+        XCTAssertTrue(empty.rows.isEmpty, "the C-27 empty block")
+
+        fixture.data.failures["hiddenMemories"] = .offline
+        let model = SettingsHiddenModel(data: fixture.data)
+        await model.load()
+        XCTAssertEqual(model.phase, .error, "offline and error: Retro's one tappable line")
+        fixture.data.failures = [:]
+        fixture.data.addHiddenMemory(day: LocalDate(year: 2022, month: 7, day: 22)!)
+        await model.load()
+        XCTAssertEqual(model.phase, .loaded)
+        XCTAssertEqual(model.rows.count, 1)
+    }
+
     // MARK: safety.report
 
     func testReportReasonsFollowTheTarget() {
