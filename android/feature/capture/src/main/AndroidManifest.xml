@@ -8,6 +8,23 @@
         android:maxSdkVersion="28" />
 
     <application>
+        <!-- camera.quickaccess: the Quick Settings tile "Camera" that opens the app to the camera (CameraTileService).
+             Label copy camera.quickaccess.tile.label (the app's name), icon ic_tile_camera (Material photo_camera
+             outlined, solid white: the system tints tile icons). Not toggleable: a button (API 33 meta-data). -->
+        <service
+            android:name="app.feature.capture.CameraTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_camera"
+            android:label="@string/camera_quickaccess_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="false" />
+        </service>
+
         <!-- collage.share: the page image handed to the Sharesheet as content:// (read grant only). -->
         <provider
             android:name="app.feature.capture.collage.CaptureFileProvider"

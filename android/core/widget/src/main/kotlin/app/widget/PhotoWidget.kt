@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
@@ -31,16 +32,20 @@ import androidx.glance.appwidget.updateAll
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.currentState
+import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.size
 import androidx.glance.semantics.contentDescription
 import androidx.glance.semantics.semantics
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.unit.ColorProvider
 import app.links.DeepLinkIntents
 import app.model.DeepLink
+import app.model.DeepLinkCodec
 import app.model.WidgetSnapshot
+import app.model.WidgetStyle
 import app.designsystem.generated.Tokens
 import java.io.File
 import kotlin.math.max
@@ -82,8 +87,14 @@ interface PhotoWidgetSlots {
 
 /** What tapping the widget opens. */
 sealed interface WidgetTap {
-    /** `camera.capture` with [groupId] preselected (`app://camera?group=<id>`, `camera.fromwidget`). */
-    data class Camera(val groupId: String) : WidgetTap
+    /**
+     * `camera.capture` with [groupId] preselected (`app://camera?group=<id>`, `camera.fromwidget`); null: the camera with
+     * nobody preselected (a friend widget or All Groups without a photo yet).
+     */
+    data class Camera(val groupId: String?) : WidgetTap
+
+    /** The memory in the photo viewer (`widget.memories`: `app://post?group=<id>&post=<id>`). */
+    data class Post(val groupId: String, val postId: String) : WidgetTap
 
     /** The group's same-moment collage the widget shows (its photo of the day): `app://collage?group=<id>&collage=<id>`. */
     data class Collage(val groupId: String, val collageId: String) : WidgetTap
@@ -95,30 +106,70 @@ sealed interface WidgetTap {
     data object App : WidgetTap
 }
 
-/** Per-widget state: which group a widget shows. */
+/** The home-screen photo widgets the configuration activity sets up (one receiver each, [WidgetLayouts]). */
+enum class WidgetKind {
+    /** Group Updates (`widget.android`): one group, or All Groups. */
+    Group,
+
+    /** Friend Updates (`widget.friend`): one person. */
+    Friend,
+
+    /** Your Memories (`widget.memories`): only a style to choose. */
+    Memories,
+}
+
+/**
+ * What the configuration activity chose for a widget: the group ([groupId], or [allGroups]) of a group widget, the
+ * person ([personId]) of a friend widget, and every photo widget's [style] (`widget.styles`).
+ */
+data class WidgetChoice(
+    val groupId: String? = null,
+    val allGroups: Boolean = false,
+    val personId: String? = null,
+    val style: WidgetStyle = WidgetStyle.default,
+)
+
+/** Per-widget state: which group (or person) a widget shows, and its style. */
 object WidgetBinding {
     val GROUP_ID = stringPreferencesKey("group_id")
     /** Bumped whenever the group's rendition changes, so a running Glance session recomposes. */
     val REVISION = longPreferencesKey("revision")
+    /** A group widget showing the newest item across every group (`widget.home.small.layout.allGroups`). */
+    val ALL_GROUPS = booleanPreferencesKey("all_groups")
+    /** The person a friend widget follows (`widget.friend`). */
+    val PERSON_ID = stringPreferencesKey("person_id")
+    /** The widget's style ([WidgetStyle.wire]; none: Photo). */
+    val STYLE = stringPreferencesKey("style")
 
-    suspend fun groupOf(context: Context, id: GlanceId): String? =
-        getAppWidgetState(context, PreferencesGlanceStateDefinition, id)[GROUP_ID]
+    private suspend fun stateOf(context: Context, id: GlanceId): Preferences =
+        getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
+
+    suspend fun groupOf(context: Context, id: GlanceId): String? = stateOf(context, id)[GROUP_ID]
 
     /** Binds the widget [appWidgetId] to [groupId] and renders it. */
-    suspend fun bind(context: Context, appWidgetId: Int, groupId: String) {
+    suspend fun bind(context: Context, appWidgetId: Int, groupId: String) = bind(context, appWidgetId, WidgetChoice(groupId = groupId))
+
+    /** Binds the widget [appWidgetId] to [choice] (replacing what it showed) and renders it. */
+    suspend fun bind(context: Context, appWidgetId: Int, choice: WidgetChoice) {
         val id = GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
         updateAppWidgetState(context, id) {
-            it[GROUP_ID] = groupId
+            if (choice.groupId != null && !choice.allGroups) it[GROUP_ID] = choice.groupId else it.remove(GROUP_ID)
+            if (choice.allGroups) it[ALL_GROUPS] = true else it.remove(ALL_GROUPS)
+            if (choice.personId != null) it[PERSON_ID] = choice.personId else it.remove(PERSON_ID)
+            it[STYLE] = choice.style.wire
             it[REVISION] = (it[REVISION] ?: 0L) + 1
         }
         WidgetLayouts.widgetFor(context, id).update(context, id)
     }
 
-    /** Every placed widget, of every layout, showing [groupId]. */
+    /** Every placed widget, of every layout, showing [groupId] — All Groups widgets show every group. */
     suspend fun widgetsShowing(context: Context, groupId: String): List<Pair<GlanceAppWidget, GlanceId>> {
         val manager = GlanceAppWidgetManager(context)
         return WidgetLayouts.all.flatMap { layout ->
-            manager.getGlanceIds(layout.widgetClass).filter { groupOf(context, it) == groupId }.map { layout.create() to it }
+            manager.getGlanceIds(layout.widgetClass).filter {
+                val state = stateOf(context, it)
+                state[GROUP_ID] == groupId || state[ALL_GROUPS] == true
+            }.map { layout.create() to it }
         }
     }
 
@@ -128,9 +179,24 @@ object WidgetBinding {
         return WidgetLayouts.all.flatMap { manager.getGlanceIds(it.widgetClass) }.mapNotNull { groupOf(context, it) }.toSet()
     }
 
-    /** Re-renders every placed widget of every layout (e.g. after sign-out or leaving groups). */
+    /** Whether an All Groups widget is placed (the app then keeps every group's item up to date). */
+    suspend fun hasAllGroups(context: Context): Boolean =
+        GlanceAppWidgetManager(context).getGlanceIds(GroupPhotoWidget::class.java).any { stateOf(context, it)[ALL_GROUPS] == true }
+
+    /** The people placed friend widgets follow. */
+    suspend fun followedPeople(context: Context): Set<String> =
+        GlanceAppWidgetManager(context).getGlanceIds(FriendPhotoWidget::class.java).mapNotNull { stateOf(context, it)[PERSON_ID] }.toSet()
+
+    /** Re-renders every placed widget of every layout (e.g. after sign-out, leaving groups, or premium changing). */
     suspend fun refreshAll(context: Context) {
-        WidgetLayouts.all.forEach { it.create().updateAll(context) }
+        val manager = GlanceAppWidgetManager(context)
+        for (layout in WidgetLayouts.all) {
+            val widget = layout.create()
+            for (id in manager.getGlanceIds(layout.widgetClass)) {
+                updateAppWidgetState(context, id) { it[REVISION] = (it[REVISION] ?: 0L) + 1 }
+            }
+            widget.updateAll(context)
+        }
     }
 
     /** Re-renders every widget showing [groupId]. */
@@ -140,18 +206,52 @@ object WidgetBinding {
             widget.update(context, id)
         }
     }
+
+    /** Re-renders every friend widget following [personId]. */
+    suspend fun refreshPerson(context: Context, personId: String) {
+        val manager = GlanceAppWidgetManager(context)
+        for (id in manager.getGlanceIds(FriendPhotoWidget::class.java)) {
+            if (stateOf(context, id)[PERSON_ID] != personId) continue
+            updateAppWidgetState(context, id) { it[REVISION] = (it[REVISION] ?: 0L) + 1 }
+            FriendPhotoWidget().update(context, id)
+        }
+    }
+
+    /** Re-renders every placed widget of [layout]. */
+    suspend fun refreshLayout(context: Context, layout: WidgetLayouts.Layout) {
+        val manager = GlanceAppWidgetManager(context)
+        val widget = layout.create()
+        for (id in manager.getGlanceIds(layout.widgetClass)) {
+            updateAppWidgetState(context, id) { it[REVISION] = (it[REVISION] ?: 0L) + 1 }
+            widget.update(context, id)
+        }
+    }
 }
 
 /** The widget layouts the app offers. Each has its own GlanceAppWidget + receiver. */
 object WidgetLayouts {
-    class Layout(val widgetClass: Class<out GlanceAppWidget>, val create: () -> GlanceAppWidget)
+    class Layout(
+        val widgetClass: Class<out GlanceAppWidget>,
+        val create: () -> GlanceAppWidget,
+        val kind: WidgetKind = WidgetKind.Group,
+        /** The receiver's class name: the provider the launcher names when it opens the configuration activity. */
+        val receiverClassName: String? = null,
+    )
 
-    val groupPhoto = Layout(GroupPhotoWidget::class.java, ::GroupPhotoWidget)
-    val all: List<Layout> = listOf(groupPhoto)
+    val groupPhoto = Layout(GroupPhotoWidget::class.java, ::GroupPhotoWidget, WidgetKind.Group, GroupPhotoWidgetReceiver::class.java.name)
+    val friendPhoto = Layout(FriendPhotoWidget::class.java, ::FriendPhotoWidget, WidgetKind.Friend, FriendPhotoWidgetReceiver::class.java.name)
+    val memories = Layout(MemoriesWidget::class.java, ::MemoriesWidget, WidgetKind.Memories, MemoriesWidgetReceiver::class.java.name)
+    val all: List<Layout> = listOf(groupPhoto, friendPhoto, memories)
 
     suspend fun widgetFor(context: Context, id: GlanceId): GlanceAppWidget {
         val manager = GlanceAppWidgetManager(context)
         return all.firstOrNull { id in manager.getGlanceIds(it.widgetClass) }?.create?.invoke() ?: GroupPhotoWidget()
+    }
+
+    /** Which kind of widget [appWidgetId] is (from its provider); a group widget when unknown. */
+    fun kindOf(context: Context, appWidgetId: Int): WidgetKind {
+        val provider = runCatching { AppWidgetManager.getInstance(context).getAppWidgetInfo(appWidgetId)?.provider?.className }.getOrNull()
+        return all.firstOrNull { it.receiverClassName != null && it.receiverClassName == provider }?.kind ?: WidgetKind.Group
     }
 }
 
@@ -174,6 +274,8 @@ class GroupPhotoWidget : GlanceAppWidget() {
                 groupId = state[WidgetBinding.GROUP_ID],
                 revision = state[WidgetBinding.REVISION] ?: 0L,
                 appWidgetId = appWidgetId,
+                allGroups = state[WidgetBinding.ALL_GROUPS] == true,
+                style = WidgetStyle.fromWire(state[WidgetBinding.STYLE]),
             )
         }
     }
@@ -195,26 +297,50 @@ class GroupPhotoWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = GroupPhotoWidget()
 }
 
+/**
+ * The group photo widget's content. [allGroups]: the newest item across every group this device holds
+ * (`widget.home.small.layout.allGroups`), the tap following that item's group. [style] is the widget's chosen style
+ * (`widget.styles`): a premium style without premium draws Photo, and the tap opens the paywall first.
+ */
 @Composable
-internal fun PhotoWidgetContent(store: WidgetFileStore, groupId: String?, revision: Long, appWidgetId: Int, preview: Boolean = false) {
+internal fun PhotoWidgetContent(
+    store: WidgetFileStore,
+    groupId: String?,
+    revision: Long,
+    appWidgetId: Int,
+    preview: Boolean = false,
+    allGroups: Boolean = false,
+    style: WidgetStyle = WidgetStyle.default,
+) {
     val context = LocalContext.current
     val size = LocalSize.current
     val sizeClass = WidgetSizeClass.of(size)
     val slots = PhotoWidgetSlots.current
+    val meta = WidgetGroupMeta.of(store)
+    val premium = meta.isPremium()
+    val drawn = style.drawn(premium)
     // Reads are keyed by revision: the worker bumps it after every committed write.
-    val snapshot = remember(groupId, revision) { groupId?.let { runCatching { store.read(it) }.getOrNull() } }
+    val snapshot = remember(groupId, allGroups, revision) {
+        if (allGroups) newestAcross(store) else groupId?.let { runCatching { store.read(it) }.getOrNull() }
+    }
+    // The group whose item is shown: for All Groups, the item's own group.
+    val shownGroup = if (allGroups) snapshot?.groupId else groupId
     val density = context.resources.displayMetrics.density
     val widthPx = (size.width.value * density).roundToInt()
     val heightPx = (size.height.value * density).roundToInt()
-    val bitmap = remember(snapshot, widthPx, heightPx) {
-        snapshot?.let { WidgetBitmaps.decodeCropped(store.photo(it), widthPx, heightPx) }?.let { slots.photo(context, it, widthPx) }
+    val bitmap = remember(snapshot, widthPx, heightPx, drawn) {
+        snapshot?.let { styledPhoto(context, slots, store.photo(it), widthPx, heightPx, drawn) }
     }
     // A preview (widget picker) shows the newest photo, or the loading placeholder; never "set up".
     val emptyGroup = if (preview && snapshot == null) null else groupId
 
     var modifier = GlanceModifier.fillMaxSize().appWidgetBackground()
-    if (!preview) modifier = modifier.clickable(tapAction(context, slots.tap(context, snapshot, groupId), appWidgetId))
-    slots.contentDescription(context, snapshot, groupId)?.let { label -> modifier = modifier.semantics { contentDescription = label } }
+    if (!preview) {
+        val tap = if (allGroups && snapshot == null) TokenPhotoWidgetSlots.allGroupsTap(context, meta) else slots.tap(context, snapshot, shownGroup)
+        modifier = modifier.clickable(widgetTapAction(context, tap, appWidgetId, locked = style.isLocked(premium) && !meta.isSignedOut()))
+    }
+    val label = if (allGroups && snapshot == null) TokenPhotoWidgetSlots.emptyLabel(context, WidgetEmptyState.ofAllGroups(meta)) else slots.contentDescription(context, snapshot, shownGroup)
+    label?.let { modifier = modifier.semantics { contentDescription = it } }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         // `widget.android.radius.widget` on the root (Android 12+ clips children to it); below 12
         // the slots cut the corners into their bitmaps.
@@ -230,12 +356,54 @@ internal fun PhotoWidgetContent(store: WidgetFileStore, groupId: String?, revisi
                 contentScale = ContentScale.Crop,
                 modifier = GlanceModifier.fillMaxSize(),
             )
-            slots.Overlay(snapshot, sizeClass)
+            StyleOverlay(drawn, snapshot) { slots.Overlay(snapshot, sizeClass) }
         } else if (preview) {
             PreviewPlaceholder(slots, sizeClass)
+        } else if (allGroups) {
+            TokenPhotoWidgetSlots.EmptyState(WidgetEmptyState.ofAllGroups(meta))
         } else {
             slots.Empty(emptyGroup, sizeClass)
         }
+    }
+}
+
+/** The newest item across every group the store holds (All Groups). */
+internal fun newestAcross(store: WidgetFileStore): WidgetSnapshot? =
+    store.groups().mapNotNull { runCatching { store.read(it) }.getOrNull() }.maxByOrNull { it.postedAtEpochMillis }
+
+/**
+ * The photo as [style] draws it at the widget's pixel size: Photo and Date — the photo cropped to the widget with the
+ * slots' treatment (the scrim); Frame — the print on its blurred backdrop ([WidgetStyleArt.frame]).
+ */
+internal fun styledPhoto(context: Context, slots: PhotoWidgetSlots, file: File, widthPx: Int, heightPx: Int, style: WidgetStyle): Bitmap? = when (style) {
+    WidgetStyle.Photo, WidgetStyle.Date -> WidgetBitmaps.decodeCropped(file, widthPx, heightPx)?.let { slots.photo(context, it, widthPx) }
+    WidgetStyle.Frame -> WidgetStyleArt.frame(context, file, widthPx, heightPx)
+}
+
+/**
+ * What a style draws over the photo: Photo — the name stack ([stack]); Date — the date title top-leading, then the stack;
+ * Frame — nothing (Retro's print carries no text).
+ */
+@Composable
+internal fun StyleOverlay(style: WidgetStyle, snapshot: WidgetSnapshot, stack: @Composable () -> Unit) {
+    when (style) {
+        WidgetStyle.Photo -> stack()
+        WidgetStyle.Date -> {
+            DateTitle(snapshot)
+            stack()
+        }
+        WidgetStyle.Frame -> Unit
+    }
+}
+
+/** The Date style's title (`widget.styles.layout.date`) at the widget's top-leading corner. */
+@Composable
+private fun DateTitle(snapshot: WidgetSnapshot) {
+    val context = LocalContext.current
+    val width = LocalSize.current.width
+    val title = remember(snapshot, width) { WidgetStyleArt.dateTitle(context, WidgetStyleArt.dateText(snapshot), width) } ?: return
+    Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
+        Image(ImageProvider(title.bitmap), contentDescription = null, modifier = GlanceModifier.size(title.widthDp, title.heightDp))
     }
 }
 
@@ -245,10 +413,23 @@ private fun PreviewPlaceholder(slots: PhotoWidgetSlots, sizeClass: WidgetSizeCla
     if (slots === TokenPhotoWidgetSlots) TokenPhotoWidgetSlots.Placeholder() else slots.Empty(null, sizeClass)
 }
 
-private fun tapAction(context: Context, tap: WidgetTap, appWidgetId: Int): Action {
+/**
+ * The click action of [tap]. [locked]: the widget's style needs premium the person does not have (`widget.styles` →
+ * Locked) — the link becomes `app://premium?perk=widgets&to=…`, which opens the paywall at the widgets perk when the
+ * session's one prompt is still available and the widget's own place otherwise. The configuration is never wrapped.
+ */
+internal fun widgetTapAction(context: Context, tap: WidgetTap, appWidgetId: Int, locked: Boolean = false): Action {
+    val link: DeepLink? = when (tap) {
+        is WidgetTap.Camera -> DeepLink.Camera(tap.groupId)
+        is WidgetTap.Collage -> DeepLink.Collage(tap.groupId, tap.collageId)
+        is WidgetTap.Post -> DeepLink.Post(tap.groupId, tap.postId)
+        WidgetTap.App, WidgetTap.Configure -> null
+    }
+    if (locked && tap != WidgetTap.Configure) {
+        DeepLinkIntents.intent(context, DeepLink.Premium(DeepLinkCodec.PERK_WIDGETS, link))?.let { return actionStartActivity(it) }
+    }
     when (tap) {
-        is WidgetTap.Camera -> DeepLinkIntents.intent(context, DeepLink.Camera(tap.groupId))?.let { return actionStartActivity(it) }
-        is WidgetTap.Collage -> DeepLinkIntents.intent(context, DeepLink.Collage(tap.groupId, tap.collageId))?.let { return actionStartActivity(it) }
+        is WidgetTap.Camera, is WidgetTap.Collage, is WidgetTap.Post -> link?.let { DeepLinkIntents.intent(context, it) }?.let { return actionStartActivity(it) }
         WidgetTap.App -> context.packageManager.getLaunchIntentForPackage(context.packageName)?.let { return actionStartActivity(it) }
         WidgetTap.Configure -> Unit
     }

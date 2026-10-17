@@ -133,6 +133,17 @@ Deletion: a deleted photo leaves the friend and memories slots with the group sn
 iOS; the Android widget store drops a slot whose photo the server no longer returns), and a left group's items leave with
 its group folder.
 
+Android pieces (core/widget, feature/capture): `FriendPhotoWidget` and `MemoriesWidget` render from `WidgetSlotStore`
+(`widgets-friends/<person>/`, `widgets-memories/<yyyy-mm-dd>/`; a `none` marker is the empty state, `gone` "not set up",
+nothing the loading state). The widget worker (`WidgetUpdateWorker`, from the FCM widget message) stores the group's
+rendition and then `FriendWidgets.copyFromGroup` copies it to a placed friend widget following its `sender_id`. The app's
+`WidgetPrefetch.refreshPlaced` (MainActivity.onStart) writes the premium marker (`WidgetGroupMeta.setPremium`), brings
+every group up to date while an All Groups widget is placed, and runs `PersonalWidgetSync` (each followed friend's
+`newest_photos_of`, `widget_people` for blocks and lost groups, `my_memories` for 7 days). Placing the first friend or
+memories widget runs the same look-up at once (`PersonalWidgets.onPlaced`); `MemoriesMidnight` re-renders at local
+midnight. The session glue's deletion and group-list paths clear matching slots (`PersonalWidgetStores`), and signing out
+clears them all.
+
 ## Limits (what can make a widget late or stale)
 
 - **Budgets.** iOS widget reloads (40–70/day per widget) and background pushes (throttled, not

@@ -46,6 +46,7 @@ import app.data.repo.SafetyRepository
 import app.data.repo.SelfieReactionRepository
 import app.data.repo.SettingsRepository
 import app.data.repo.TagRepository
+import app.data.repo.WidgetRepository
 import app.data.repo.YearStoryRepository
 import app.push.DeliveredAlerts
 import io.github.jan.supabase.SupabaseClient
@@ -123,6 +124,8 @@ class DataGraph(context: Context, val config: SupabaseConfig, val options: DataO
     val settings = SettingsRepository(api)
     val devices = DeviceRepository(api)
     val entitlements = EntitlementRepository(api, clock)
+    /** The friend and memories widgets' functions (migration 0036). */
+    val widgets = WidgetRepository(api)
     val appConfig = AppConfigRepository(api)
     val account = AccountRepository(api, auth)
 

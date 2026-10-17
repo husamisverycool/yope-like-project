@@ -19,6 +19,7 @@ import app.feature.account.invite.InviteJoinRoute
 import app.feature.account.onboarding.NotificationsPermissionRoute
 import app.feature.account.onboarding.WidgetRoute
 import app.feature.account.paywall.PaywallRoute
+import app.feature.account.paywall.Perk
 import app.feature.account.safety.BlockRoute
 import app.feature.account.safety.ReportRoute
 import app.feature.account.safety.reportTarget
@@ -32,6 +33,7 @@ import app.model.GroupEditRoute
 import app.model.GroupCreateKindRoute
 import app.model.GroupProfileRoute
 import app.model.OnboardingWidgetFromSettingsRoute
+import app.model.PaywallPerkRoute
 import app.model.SafetyReportMessageRoute
 import app.model.SafetyReportContentRoute
 import app.model.SafetyReportSelfieRoute
@@ -80,6 +82,8 @@ fun NavGraphBuilder.accountDestinations(navController: NavHostController) {
     composable<AppRoute.SettingsBlocked> { SettingsBlockedRoute(navController) }
     composable<AppRoute.SettingsHidden> { SettingsHiddenRoute(navController) }
     composable<AppRoute.Paywall> { PaywallRoute(navController) }
+    // A locked widget style's tap (widget.styles): the paywall at that perk's page.
+    composable<PaywallPerkRoute> { entry -> PaywallRoute(navController, initialPerk = Perk.fromWire(entry.toRoute<PaywallPerkRoute>().perk)) }
 
     // Safety flows draw over the calling surface (sheet / dialog), so they are dialog destinations.
     val overlay = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)

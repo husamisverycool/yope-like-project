@@ -28,6 +28,8 @@ import app.ui.components.ToastHost
 import app.ui.foundation.PageRoles
 import app.model.DeepLink
 import app.model.DeepLinkRouting
+import app.model.SessionPromptGate
+import app.data.DataGraph
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -63,9 +65,35 @@ fun AppNavHost(
             // navigation that follows them.
             ToastHost(env.toasts)
         }
+        val context = LocalContext.current
         LaunchedEffect(navController, deepLinks) {
-            deepLinks.collect { link -> navController.show(DeepLinkRouting.backStack(link)) }
+            deepLinks.collect { link ->
+                if (link is DeepLink.Premium) {
+                    // widget.styles → Locked: the paywall at the perk when the session's one prompt is still available
+                    // (`paywall.layout.promptRule`), over the widget's own place; otherwise that place alone.
+                    val prompt = !isPremium(context) && SessionPromptGate.process.tryClaim()
+                    when {
+                        prompt -> navController.show(DeepLinkRouting.withPaywall(link))
+                        link.then != null -> navController.show(DeepLinkRouting.backStack(link))
+                    }
+                } else {
+                    navController.show(DeepLinkRouting.backStack(link))
+                }
+            }
         }
+    }
+}
+
+/** Whether the signed-in person has premium now; false when signed out or unreadable (the paywall then offers it). */
+private suspend fun isPremium(context: android.content.Context): Boolean {
+    val graph = DataGraph.get(context) ?: return false
+    if (graph.auth.currentUserId == null) return false
+    return try {
+        graph.entitlements.isPremium()
+    } catch (e: kotlinx.coroutines.CancellationException) {
+        throw e
+    } catch (_: Exception) {
+        false
     }
 }
 

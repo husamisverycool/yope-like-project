@@ -111,6 +111,14 @@ enum class Perk(val title: Int, val subtitle: Int) {
     History(R.string.paywall_perk_history_title, R.string.paywall_perk_history_subtitle),
     Widgets(R.string.paywall_perk_widgets_title, R.string.paywall_perk_widgets_subtitle),
     Export(R.string.paywall_perk_export_title, R.string.paywall_perk_export_subtitle),
+    ;
+
+    /** The perk's name in links (`app://premium?perk=widgets`, `DeepLinkCodec.PERK_WIDGETS`; iOS `PaywallPerk` raw values). */
+    val wire: String get() = name.lowercase(java.util.Locale.ROOT)
+
+    companion object {
+        fun fromWire(value: String?): Perk? = entries.firstOrNull { it.wire == value }
+    }
 }
 
 @Immutable
@@ -125,6 +133,8 @@ data class PaywallUiState(
     val historyLimited: Boolean = false,
     /** The person's newest group photo: the media card and the backdrop (none → no card, black backdrop). */
     val media: Any? = null,
+    /** The benefit page shown first (a locked perk's paywall, `widget.styles`); null: the first page. */
+    val initialPerk: Perk? = null,
 ) {
     val perks: List<Perk> get() = Perk.entries.filter { it != Perk.History || historyLimited }
 
@@ -210,15 +220,16 @@ class PaywallViewModel(private val env: AccountEnvironment) : AccountViewModel()
     }
 }
 
+/** [initialPerk]: opened for a locked perk (`widget.styles`: a widget's premium style) — that perk's page first. */
 @Composable
-fun PaywallRoute(nav: NavController) {
+fun PaywallRoute(nav: NavController, initialPerk: Perk? = null) {
     val env = LocalAccountEnvironment.current
     val context = LocalContext.current
     val vm = viewModel { PaywallViewModel(env) }
     val state by vm.state.collectAsStateWithLifecycle()
     CollectEvents(vm.events, nav)
     PaywallScreen(
-        state = state,
+        state = if (initialPerk == null) state else state.copy(initialPerk = initialPerk),
         legal = env.legal,
         actions = PaywallActions(
             onClose = { nav.popBackStack() },
@@ -338,7 +349,7 @@ private fun Offer(state: PaywallUiState, legal: LegalLinks, actions: PaywallActi
 @Composable
 private fun Benefits(state: PaywallUiState, modifier: Modifier) {
     val perks = state.perks
-    val pager = rememberPagerState { perks.size }
+    val pager = rememberPagerState(initialPage = state.initialPerk?.let { perks.indexOf(it) }?.coerceAtLeast(0) ?: 0) { perks.size }
     TickOnStep(pager.currentPage)
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth()) { page ->

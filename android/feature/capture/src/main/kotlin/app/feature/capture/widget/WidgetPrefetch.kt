@@ -30,26 +30,80 @@ object WidgetPrefetch {
         val app = context.applicationContext
         val meta = WidgetGroupMeta.of(WidgetFileStore.default(app))
         meta.prepare(group.id)
-        val scope = DataGraph.get(app)?.scope ?: fallbackScope
-        scope.launch(Dispatchers.IO) { fill(app, data, group, meta) }
+        scope(app).launch(Dispatchers.IO) { fill(app, data, group, meta) }
     }
+
+    /**
+     * An All Groups widget (`widget.home.small.layout.allGroups`): every group is prepared and filled, so the widget shows
+     * the newest item across them at once. A group already prepared keeps what it shows.
+     */
+    fun prepareAll(context: Context, data: CaptureData, groups: List<Group>) {
+        val app = context.applicationContext
+        val meta = WidgetGroupMeta.of(WidgetFileStore.default(app))
+        val fresh = groups.filterNot { meta.isPrepared(it.id) }
+        fresh.forEach { meta.prepare(it.id) }
+        scope(app).launch(Dispatchers.IO) { fresh.forEach { fill(app, data, it, meta) } }
+    }
+
+    /** A friend widget set up for [personId]: their newest photo now (the widget shows its loading state meanwhile). */
+    fun prepareFriend(context: Context, data: CaptureData, personId: String) {
+        val app = context.applicationContext
+        scope(app).launch(Dispatchers.IO) { PersonalWidgetSync.refreshFriends(app, data, setOf(personId)) }
+    }
+
+    /** A memories widget set up: today's and the coming days' memories now. */
+    fun prepareMemories(context: Context, data: CaptureData) {
+        val app = context.applicationContext
+        scope(app).launch(Dispatchers.IO) { PersonalWidgetSync.refreshMemories(app, data, force = true) }
+    }
+
+    /** The first friend or memories widget placed (`PersonalWidgets.onPlaced`): their look-ups now. */
+    fun refreshPersonal(context: Context, data: CaptureData) {
+        val app = context.applicationContext
+        scope(app).launch(Dispatchers.IO) {
+            PersonalWidgetSync.refreshFriends(app, data)
+            PersonalWidgetSync.refreshMemories(app, data)
+        }
+    }
+
+    private fun scope(app: Context): CoroutineScope = DataGraph.get(app)?.scope ?: fallbackScope
 
     /**
      * Every placed widget's group brought up to date from the app itself when it comes to the front (iOS parity:
      * `WidgetContentSync`, docs/WIDGET_REFRESH.md "The app itself"): a group whose newest photo or collage is not the one
      * its widget shows is queued through the regular [WidgetUpdateScheduler] path; a group with nothing left shows its
-     * empty state. Offline or unreadable groups are left as they are.
+     * empty state. Offline or unreadable groups are left as they are. While an All Groups widget is placed every group is
+     * brought up to date (docs/WIDGET_REFRESH.md "Friend and memories widgets"). The app's own call ([placed] null) then
+     * writes the premium marker and looks the followed friends and the memories up ([PersonalWidgetSync]).
      */
     suspend fun refreshPlaced(context: Context, data: CaptureData, placed: Set<String>? = null) {
         val app = context.applicationContext
         val store = WidgetFileStore.default(app)
         val meta = WidgetGroupMeta.of(store)
-        val groups = placed ?: try {
+        if (placed == null) PersonalWidgetSync.refreshPremium(app, data)
+        val bound = placed ?: try {
             WidgetBinding.boundGroups(app)
         } catch (_: Exception) {
             return
         }
-        for (groupId in groups) {
+        val allGroups = placed == null && try {
+            WidgetBinding.hasAllGroups(app)
+        } catch (_: Exception) {
+            false
+        }
+        val extra = if (allGroups) (data.myGroupIds() ?: emptySet()) - bound else emptySet()
+        for (groupId in bound + extra) {
+            if (groupId in extra && !meta.isPrepared(groupId)) {
+                // A group an All Groups widget has not seen yet (joined since): prepared and filled.
+                val group = try {
+                    data.group(groupId)
+                } catch (_: Exception) {
+                    null
+                } ?: continue
+                meta.prepare(groupId)
+                fill(app, data, group, meta)
+                continue
+            }
             val newest = try {
                 data.newestForWidget(groupId)
             } catch (_: Exception) {
@@ -67,6 +121,10 @@ object WidgetPrefetch {
                 null
             } ?: continue
             fill(app, data, group, meta)
+        }
+        if (placed == null) {
+            PersonalWidgetSync.refreshFriends(app, data, prune = true)
+            PersonalWidgetSync.refreshMemories(app, data)
         }
     }
 

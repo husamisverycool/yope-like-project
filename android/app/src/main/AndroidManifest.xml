@@ -44,6 +44,11 @@
             </intent-filter>
             <!-- app:// links (widgets, notifications) are explicit intents to this activity, so
                  they need no exported filter. -->
+
+            <!-- camera.quickaccess: the static launcher shortcut "Camera" (app://camera). -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
     </application>
 </manifest>

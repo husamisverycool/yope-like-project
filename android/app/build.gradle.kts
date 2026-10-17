@@ -46,6 +46,9 @@ android {
         manifestPlaceholders["appLinkHost"] = appDomain ?: "unset.invalid"
         // The name under the icon: config/app.json displayName (owner decision 0.1); release builds refuse a missing one.
         manifestPlaceholders["appLabel"] = appDisplayName ?: "{app_name}"
+        // The static launcher shortcut (res/xml/shortcuts.xml, camera.quickaccess) names its activity's package, which is
+        // config/app.json's applicationId: resource XML has no manifest placeholders, so it reads this string.
+        resValue("string", "shortcut_target_package", appId)
         // On-device end-to-end journey (src/androidTest/kotlin/app/main/e2e/JourneyTest.kt): the runner points the app at the Supabase stack
         // named by the instrumentation arguments `supabaseUrl` / `supabaseAnonKey` before the app starts.
         testInstrumentationRunner = "app.main.e2e.E2eRunner"
@@ -57,6 +60,8 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        // defaultConfig.resValue (the shortcut's target package).
+        resValues = true
     }
     buildTypes {
         release {

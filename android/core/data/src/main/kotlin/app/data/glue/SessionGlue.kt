@@ -18,6 +18,7 @@ import app.push.DeliveredAlerts
 import app.push.PushTokenSink
 import app.push.PushTokens
 import app.push.QuietHoursSource
+import app.widget.PersonalWidgetStores
 import app.widget.WidgetBinding
 import app.widget.WidgetFileStore
 import kotlinx.coroutines.CancellationException
@@ -85,9 +86,13 @@ class GlanceWidgetBridge(private val context: Context, private val store: Widget
         val removed = store.groups() - groupIds
         store.retainGroups(groupIds)
         if (removed.isNotEmpty()) WidgetBinding.refreshAll(context)
+        // A left group's photos leave the friend and memories widgets too (docs/WIDGET_REFRESH.md → Deletion).
+        PersonalWidgetStores.retainGroups(context, groupIds)
     }
 
     override suspend fun removeIfShowing(groupId: String, sourceId: String) {
+        // A deleted photo leaves the friend and memories widgets at once (widget.friend, widget.memories).
+        PersonalWidgetStores.removeSource(context, sourceId)
         if (store.read(groupId)?.sourceId != sourceId) return
         store.remove(groupId)
         WidgetBinding.refresh(context, groupId)

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Friend Updates (surface widget.friend; Android form widget.android: Retro's Glance widget providers, APK 2026.10.1150,
+  whose Friend Updates widget shares its Albums widget's provider). minWidth / minHeight / minResize* / targetCell* /
+  resizeMode / reconfigurable = token widget.android.layout.provider (200 dp, resizable down to 100 dp, default 2 x 2,
+  both axes). updatePeriodMillis = token widget.android.duration.updatePeriod (3600000 ms, the hourly safety net; the
+  photo comes from the widget push and the app's own look-up, docs/WIDGET_REFRESH.md). widgetCategory = token
+  widget.android.layout.lockScreen (home_screen|keyguard, "as widget.android"). The configuration activity asks for the
+  person ("See photos from…", widget.friend.configuration.title), then the style (widget.styles). Description: copy
+  widget.friend.gallery.description; label: copy widget.friend.gallery.name (on the receiver).
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="app.widget.WidgetConfigureActivity"
+    android:description="@string/widget_friend_gallery_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="200dp"
+    android:minHeight="200dp"
+    android:minResizeWidth="100dp"
+    android:minResizeHeight="100dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="3600000"
+    android:widgetCategory="home_screen|keyguard"
+    android:widgetFeatures="reconfigurable" />

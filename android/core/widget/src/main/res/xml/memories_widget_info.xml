@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Your Memories (surface widget.memories; Android form widget.android: Retro's Glance widget providers, APK 2026.10.1150,
+  whose Your Memories widget shares its Albums widget's provider). minWidth / minHeight / minResize* / targetCell* /
+  resizeMode = token widget.android.layout.provider (200 dp, resizable down to 100 dp, default 2 x 2, both axes).
+  updatePeriodMillis = token widget.android.duration.updatePeriod (3600000 ms), the backstop of the midnight job
+  (MemoriesMidnight). widgetCategory = token widget.android.layout.lockScreen (home_screen|keyguard). The configuration
+  activity asks only for the style (widget.styles); configuration_optional (Android 12+) places the widget in the free
+  Photo style without asking, reconfigurable changes it later. Description: copy widget.memories.gallery.description;
+  label: copy widget.memories.gallery.name (on the receiver).
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="app.widget.WidgetConfigureActivity"
+    android:description="@string/widget_memories_gallery_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="200dp"
+    android:minHeight="200dp"
+    android:minResizeWidth="100dp"
+    android:minResizeHeight="100dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="3600000"
+    android:widgetCategory="home_screen|keyguard"
+    android:widgetFeatures="reconfigurable|configuration_optional" />
