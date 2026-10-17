@@ -237,6 +237,8 @@ class CheckSetupTest(unittest.TestCase):
         code, out = self.check("services", {"supabase.url": "https://abcdefghijklmnopqrst.supabase.co", "support.email": "help@example.com"},
                                FLY_API_TOKEN="t", SUPABASE_SERVICE_ROLE_KEY="k")
         self.assertNotIn("support.email", out)
+        code, out = self.check("testflight", self.ready, APPLE_TEAM_ID="ABCDE12345", ASC_KEY_ID="k", ASC_ISSUER_ID="i", ASC_KEY_P8="p")
+        self.assertIn("the App Store a Support URL", out)
 
     def test_play_checks_the_firebase_file_names_the_app(self):
         firebase = {"client": [{"client_info": {"android_client_info": {"package_name": "com.other.app"}}}]}

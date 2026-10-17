@@ -458,6 +458,23 @@ describe("GET /delete-account (account.delete.web, Google Play's deletion page)"
   });
 });
 
+describe("GET /support (support.web, the App Store's Support URL)", () => {
+  const SUPPORT = { ...FULL_APP_JSON, displayName: { value: "Jolt" }, support: { email: "help@example.com" } };
+
+  it("shows the support address once support.email is set", async () => {
+    const res = await get(testApp(null, {}, SUPPORT).app, "/support");
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain(`<h1 class="headline">${c["settings.root.contact"]}</h1>`);
+    expect(html).toContain(`<p class="line"><a href="mailto:help@example.com">help@example.com</a></p>`);
+    expect(visibleText(html)).not.toMatch(/\[BLOCKED/);
+  });
+
+  it("is not found while there is no support address", async () => {
+    expect((await get(testApp(null).app, "/support")).status).toBe(404);
+  });
+});
+
 describe("security headers", () => {
   it("sets a nonce-based CSP and the standard headers on pages", async () => {
     const res = await get(testApp(fake()).app, `/i/${TOKEN}`);

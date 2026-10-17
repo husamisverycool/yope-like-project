@@ -90,7 +90,8 @@ def main():
     with open("ios/AppClip/Resources/Assets.xcassets/Contents.json", "w") as out:
         json.dump({"info": {"author": "xcode", "version": 1}}, out, indent=2)
         out.write("\n")
-    chosen.resize((512, 512), Image.LANCZOS).save("design/icon/play-icon-512.png")
+    # Google Play's listing icon: "32-bit PNG (with alpha)", 512 x 512 (Play Console Help answer 9866151).
+    chosen.resize((512, 512), Image.LANCZOS).convert("RGBA").save("design/icon/play-icon-512.png")
 
     res = "android/app/src/main/res"
     for folder in ("mipmap-anydpi-v26", "drawable", "values"):

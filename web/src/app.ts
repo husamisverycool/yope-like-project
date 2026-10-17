@@ -9,6 +9,7 @@
 //   GET /.well-known/apple-app-site-association, /.well-known/assetlinks.json
 //   GET /privacy, /terms          redirect to the owner's documents (404 until configured)
 //   GET /delete-account           how to delete an account, in the app or by email (account.delete.web; Google Play)
+//   GET /support                  the support address (support.web; the App Store's Support URL), once support.email is set
 //   GET /healthz
 
 import { randomBytes } from "node:crypto";
@@ -19,7 +20,7 @@ import { fontFile } from "./fonts.js";
 import type { InviteService, LoadedInvite } from "./inviteService.js";
 import { appStoreUrl, detectPlatform, getAppUrl, letsGoUrl } from "./platform.js";
 import { clientAddress, RateLimiter } from "./rateLimit.js";
-import { deleteAccountPage, invitePage, statePage, type PageContext, type StateKind } from "./render/pages.js";
+import { deleteAccountPage, invitePage, statePage, supportPage, type PageContext, type StateKind } from "./render/pages.js";
 import { UpstreamError } from "./supabase.js";
 import { isTokenFormat } from "./token.js";
 import { appleAppSiteAssociation, assetLinks } from "./wellKnown.js";
@@ -233,6 +234,12 @@ export function createApp(deps: AppDeps): Hono {
   app.get("/delete-account", (c) => {
     const nonce = randomBytes(16).toString("base64");
     return html(c, 200, deleteAccountPage(context(c, null, nonce)), nonce, "public, max-age=3600");
+  });
+  app.get("/support", (c) => {
+    const email = config.app.support.email;
+    if (!email) return state(c, "not_found", 404);
+    const nonce = randomBytes(16).toString("base64");
+    return html(c, 200, supportPage(context(c, null, nonce), email), nonce, "public, max-age=3600");
   });
   app.get("/healthz", (c) => c.json({ status: "ok" }, 200, { "Cache-Control": "no-store" }));
 

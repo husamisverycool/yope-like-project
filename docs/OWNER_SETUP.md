@@ -18,8 +18,9 @@ Placeholders used below:
 
 ## 0. Decisions only you can make
 
-1. **App name** (`APP_DISPLAY_NAME`). Every string that names the app uses `{app_name}`; the app
-   cannot ship until this is set (it is the one BLOCKED copy value by design).
+1. **App name** — decided (decision 0.1, 16 October 2026): **Jolt** (`config/app.json` → `displayName`). Every string
+   that names the app uses `{app_name}` and is filled from there. If "Jolt" is taken on the App Store, App Store Connect
+   asks for another listing name when you create the app (§1.4); the name under the icon stays `displayName`.
 2. **App icon** — made by the lead (docs/OWNER_DECISIONS.md #32): the title serif's "J" in white on black, on iOS
    (app and App Clip), Android (adaptive, themed and status-bar icons) and the Play listing (`design/icon/play-icon-512.png`).
    Options B (black on white) and C (white on the premium purple) are in `design/icon/options.png`: switch with
@@ -98,9 +99,9 @@ Placeholders used below:
 4. **App Store Connect app**: https://appstoreconnect.apple.com → My Apps → + → New App,
    platform iOS, bundle ID `APP_BUNDLE_ID`, SKU of your choice.
 5. **App Clip**: after the first build with the App Clip is uploaded, App Store Connect →
-   your app → App Clip → set up the **Default App Clip Experience** (header image 1800×1200,
-   subtitle, action "Open") and an **Advanced App Clip Experience** for the URL prefix
-   `https://APP_DOMAIN/i/`. Header image and subtitle are owner-provided marketing assets.
+   your app → App Clip → set up the **Default App Clip Experience** (header image 1800 × 1200, §12; subtitle
+   "Photos with friends and family" and action **View**, `design/copy/invite.json` `invite.appclip.card.*`) and an
+   **Advanced App Clip Experience** for the URL prefix `https://APP_DOMAIN/i/`.
 6. **In-app purchases** (App Store Connect → your app → Subscriptions): create a subscription
    group "Premium" with two auto-renewable products: `premium_monthly` (1 month, **$3.99**) and
    `premium_yearly` (1 year, **$35.99**) — Subscription Prices → set the US price, let App Store
@@ -289,8 +290,8 @@ Any other container host works too (Render, Railway, Cloud Run): the images are 
 2. Age requirement decision: see `docs/PLATFORM_CONSTRAINTS.md` §9 and set
    `app_config.min_age_years` (the age gate fails closed until it is set).
 3. **Support address** (an email inbox you read): put it in `config/app.json` → `support` → `email`. It turns on
-   Settings → **Contact Us** on both apps, "Contact Us" in the web pages' footer, and the deletion request on
-   `/delete-account` (Google requires a way to ask without the app). The release runs warn while it is empty.
+   Settings → **Contact Us** on both apps, "Contact Us" in the web pages' footer, the page `/support` (the App Store's
+   Support URL, §12) and the deletion request on `/delete-account` (Google requires a way to ask without the app). The release runs warn while it is empty.
    **A deletion request by email**: Supabase → Authentication → Users → search the phone number → copy the user's UID;
    then SQL Editor → run (with that UID) the same deletion the app's Delete Account runs — everything goes, then the
    background service deletes the files and the sign-in account:
@@ -304,8 +305,8 @@ Any other container host works too (Render, Railway, Cloud Run): the images are 
 ## 9. Optional: design-reference site logins
 
 Mobbin (https://mobbin.com), Page Flows, Refero and Screenlane keep most flows behind paid
-logins. Not required: research used free sources. If you have an account, share a session for
-the researcher to capture the flows listed under "approximated" in the session report.
+logins. Not required: research used free sources. If you have an account, share a session so the values still
+waiting on a capture (`design/BLOCKED.md`) can be measured.
 
 ## 10. CI secrets (GitHub → repo → Settings → Secrets and variables → Actions)
 
@@ -402,4 +403,45 @@ Text for the notes (put in your number, code and invite link):
 > Enter any birthday of an adult (it is only used to check the age and is not saved) and tap Next. The account is in a
 > group with photos. To try joining a group from an invite (the App Clip on iPhone, the invite page elsewhere), open
 > https://jolt-husamisverycool.fly.dev/i/YOUR-INVITE-TOKEN on the device.
+
+## 12. Store listing checklist
+
+What each store asks for before the first release that the repository cannot make for you (screenshots need the real
+app with real photos). Read 2026-10-17.
+
+**App Store** (App Store Connect → your app → the iOS version):
+
+| Item | What | Source |
+|---|---|---|
+| Screenshots | At least one, up to 10, `.jpeg` / `.jpg` / `.png`, for **iPhone with Dynamic Island (medium display)**: 1179 × 2556 or 1206 × 2622 px portrait (e.g. iPhone 15, 16, 17 Pro). Optional set for the large display (1260 × 2736, 1290 × 2796 or 1320 × 2868 px); without it the medium set is scaled. No iPad screenshots: the app is iPhone only | https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications |
+| App Clip card header image | 1800 × 1200 px (3 : 2), `.jpg` / `.jpeg` / `.png`; no text in it (`invite.appclip.layout.cardLimits`) | https://developer.apple.com/help/app-store-connect/offer-app-clip-experiences/offer-a-default-app-clip-experience |
+| App icon | Nothing to upload: it comes from the build (§0.2) | — |
+| Support URL | `https://jolt-husamisverycool.fly.dev/support` (your domain once you have one, §4): the page shows your support address once `support.email` is set (§8.3). Apple: it "must lead to actual contact information" | https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information |
+| Privacy Policy URL | §8.1 | — |
+| App Privacy | `docs/PRIVACY_LABELS.md` (§1.7) | — |
+| Age rating | §1.8 | — |
+| App Review Information | Sign-in, notes (§11) | — |
+
+**Google Play** (Play Console → Grow users → Store presence → Main store listing, and Policy and programs → App content):
+
+| Item | What | Source |
+|---|---|---|
+| App icon | `design/icon/play-icon-512.png` — 512 × 512 px, 32-bit PNG with alpha, at most 1024 KB, as Google asks | https://support.google.com/googleplay/android-developer/answer/9866151 |
+| Feature graphic | 1024 × 500 px, JPEG or 24-bit PNG (no alpha); Google advises against "prominent branding that is similar to your app icon" | same page |
+| Phone screenshots | At least 2 (up to 8), JPEG or 24-bit PNG (no alpha), sides 320–3840 px, the long side at most twice the short one. For Google's recommendation formats: at least 4 portrait 9 : 16 at 1080 × 1920 px or more | same page |
+| Contact email | Your support address (§8.3): "A contact email address is required" (Store settings → Store listing contact details) | https://support.google.com/googleplay/android-developer/answer/9859152 |
+| Privacy policy | §8.1 | — |
+| Data safety, Delete account URL | `docs/PRIVACY_LABELS.md`, `https://jolt-husamisverycool.fly.dev/delete-account` (§2.4) | — |
+| Sign-in details | §11 | — |
+| Content rating, target audience | The questionnaires in App content (age: `docs/PLATFORM_CONSTRAINTS.md` §9) | — |
+
+**Before production on Google Play — the closed test.** "Developers with personal accounts created after November 13,
+2023, must run a closed test for their app with a minimum of 12 testers who have been opted in continuously for at least
+14 days" before they can apply for production access
+(https://support.google.com/googleplay/android-developer/answer/14151465). "send Jolt to Google Play" uploads to
+internal testing; for the closed test: Play Console → Test and release → Testing → **Closed testing** (a closed
+track is already there) → **Testers** → an email list with at least 12 Google accounts → **Create new release** → **Add
+from library** → the build "send Jolt to Google Play" uploaded → **Next** → **Save and publish**; send the testers the
+opt-in link and keep them opted in for 14 days, then Dashboard → **Apply for production**. The rule names personal
+accounts only.
 

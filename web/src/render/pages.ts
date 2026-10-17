@@ -171,6 +171,30 @@ ${footer(ctx, true)}
 }
 
 /**
+ * support.web (`GET /support`, design/surfaces/support.web.md): the App Store's Support URL, which "must lead to actual
+ * contact information"; only served once the owner set support.email. The state page's card / column: the headline
+ * "Contact Us" and the address as a mail link.
+ */
+export function supportPage(ctx: PageContext, email: string): string {
+  const heading = text("settings.root.contact");
+  return `${head(ctx, title(ctx, heading))}
+<body>
+<div class="page">
+<main class="card">
+<div class="hero"></div>
+<div class="text">
+<h1 class="headline">${esc(heading)}</h1>
+<p class="line"><a href="${esc(mailto(email))}">${esc(email)}</a></p>
+</div>
+${footer(ctx)}
+</main>
+</div>
+</body>
+</html>
+`;
+}
+
+/**
  * account.delete.web (`GET /delete-account`, design/surfaces/account.delete.web.md): the web page Google Play requires
  * for deleting an account without the app. The state page's card / column: the headline, how to delete in the app (the
  * rows' own names), what goes, the subscription note, and — once the owner set support.email — how to ask by email,

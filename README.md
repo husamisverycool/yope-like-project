@@ -11,7 +11,7 @@ logged in `design/SOURCES.md` and `design/COPY.md`.
 
 | Path | |
 |---|---|
-| `docs/` | Architecture, conventions, surfaces, API, platform constraints, owner setup, session reports |
+| `docs/` | Architecture, conventions, surfaces, API, platform constraints, owner setup, owner decisions |
 | `design/` | Research per reference app, canonical `tokens.json` / `copy.json`, generated ledgers, verification images, collage options |
 | `references/` | Owner-provided (`owner/`) and found (`auto/`) reference images with source indexes |
 | `tools/` | `designgen.mjs` (tokens/copy → Swift, Kotlin, TS + ledgers), `provenance-check.mjs` (lint), fetchers |
@@ -20,8 +20,8 @@ logged in `design/SOURCES.md` and `design/COPY.md`.
 | `ios/` | SwiftUI app, WidgetKit widgets + Live Activity, notification service extension, App Clip |
 | `android/` | Compose app, Glance widgets, CameraX, FCM |
 
-Start with `docs/OWNER_SETUP.md` for what the owner must provide, and the latest
-`docs/SESSION_REPORT*.md` for status.
+Start with `docs/OWNER_SETUP.md` for what the owner must provide, `docs/OWNER_DECISIONS.md` for what
+the owner has decided, and `design/BLOCKED.md` for design values still waiting on a capture.
 
 ## Everyday commands
 

@@ -105,6 +105,9 @@ def check_testflight() -> None:
     problem = domain_problem()
     if problem:
         missing.append(problem)
+    support = support_warning()
+    if support:
+        warnings.append(support)
     check_app_has_server()
 
 
@@ -133,7 +136,8 @@ def support_warning() -> str | None:
     if email:
         return None
     return ("config/app.json support.email is not set: Google Play requires a way to ask for account deletion without the "
-            "app — the page /delete-account shows the address, and Settings → Contact Us uses it (OWNER_SETUP.md §8.3)")
+            "app (the page /delete-account shows the address) and the App Store a Support URL with contact information "
+            "(the page /support); Settings → Contact Us uses it too (OWNER_SETUP.md §8.3)")
 
 
 def check_play() -> None:
