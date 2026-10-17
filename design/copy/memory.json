@@ -1488,6 +1488,16 @@
       "level": "SOURCED",
       "notes": "Title when another member opens the video."
     },
+    "birthday.tribute.entry.button": {
+      "text": "Play",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "birthday.tribute",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_play)",
+      "pattern": "retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Light pill on the birthday video's feed card on groups.screen (the honoree's and the contributors'; MERGE FV-3)."
+    },
     "birthday.tribute.download": {
       "text": "Save to Camera Roll",
       "origin": "verbatim",

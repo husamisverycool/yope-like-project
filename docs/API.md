@@ -431,8 +431,10 @@ Columns: `id` uuid, `request_id` uuid, `contributor_id` uuid, `post_id` uuid,
 
 ### 5.18 `tributes`
 
-The rendered tribute video. Read: members other than the honoree (and not blocked with
-the honoree) at any time; **the honoree only once `delivered_at` is set and past**.
+The rendered tribute video. Read: **nobody before `delivered_at` is set and past**; then the honoree and the
+members who contributed to its request (not blocked with the honoree) — VidDay: "The final video is private right
+from the start", shared with the contributors afterwards (migration 0034, MERGE_DECISIONS FV-3). The group screen
+lists the ones you can read with `group_tributes`.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -897,6 +899,13 @@ until `due_at`. The photo must be from that group and either posted by you or on
 are self-tagged in. `p_line` is trimmed, 1–280 chars. Errors: `request_not_found`,
 `tribute_closed`, `post_not_found`, `post_not_eligible`, `invalid_line`.
 
+#### `group_tributes`
+```
+group_tributes(p_group_id uuid) → table(id, group_id, honoree_id, poster_path, birthday_date, delivered_at, for_me)
+```
+The group's delivered, ready birthday videos you can watch ([5.18](#518-tributes)), newest delivery first;
+`for_me` is true on your own. The group screen's birthday video cards (migration 0034). Errors: `not_group_member` 403.
+
 ## 7. Storage
 
 One **private** bucket, `media`: max 100 MiB per object. Allowed types: `image/jpeg`,
@@ -915,7 +924,7 @@ One **private** bucket, `media`: max 100 MiB per object. Allowed types: `image/j
 | `u/<uid>/covers/<uuid>.jpg` (group cover) | owner | members of any group using it as `cover_path` |
 | `avatars/<uid>/<uuid>.jpg` | owner (and owner may delete) | the user and everyone sharing a group with them |
 | `g/<group_id>/collages/<collage_id>/<version>/…` (files: [5.13](#513-collages)) | worker | members |
-| `g/<group_id>/tributes/<tribute_id>/…` | worker | members except the honoree, who can read once the tribute is delivered |
+| `g/<group_id>/tributes/<tribute_id>/…` | worker | once the tribute is delivered: its honoree and its contributors (not blocked with the honoree) |
 | `g/<group_id>/year/<year>/…`, `g/<group_id>/recaps/…` | worker | members |
 
 Rules:

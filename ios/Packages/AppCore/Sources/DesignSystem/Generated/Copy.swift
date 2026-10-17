@@ -333,6 +333,8 @@ public enum Copy {
     public static var birthdayTributeDownload: String { CopyLookup.string("birthday.tribute.download", default: "Save to Camera Roll") }
     /// "We love you!" — VidDay · birthday.tribute · adapted · SOURCED
     public static var birthdayTributeEndCard: String { CopyLookup.string("birthday.tribute.endCard", default: "We love you!") }
+    /// "Play" — Retro · birthday.tribute · verbatim · SOURCED
+    public static var birthdayTributeEntryButton: String { CopyLookup.string("birthday.tribute.entry.button", default: "Play") }
     /// "There was a problem. Please try again." — Retro · birthday.tribute · verbatim · SOURCED
     public static var birthdayTributeErrorDetail: String { CopyLookup.string("birthday.tribute.error.detail", default: "There was a problem. Please try again.") }
     /// "Try Again" — Retro · birthday.tribute · verbatim · SOURCED

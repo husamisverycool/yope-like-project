@@ -47,7 +47,7 @@ data class TributeState(
     /**
      * The viewer is the honoree ("Your birthday video"). Only the honoree gets Save and Share: the video was made for them
      * and carries other members' photos, which leave the app only through the person they were given to (owner decision
-     * 12); members watch it in the app.
+     * 12); contributors watch it in the app.
      */
     val forMe: Boolean = false,
     val saving: Boolean = false,
@@ -83,9 +83,9 @@ class AndroidTributeFiles(context: Context) : TributeFiles {
 }
 
 /**
- * `birthday.tribute` (design/surfaces/birthday.tribute.md, B). The honoree reads the tribute only
- * once `delivered_at` is set and past (RLS, and checked here again); other members at any time.
- * No writes.
+ * `birthday.tribute` (design/surfaces/birthday.tribute.md, B). Nobody reads the tribute before `delivered_at` is set
+ * and past (RLS, and checked here again); then its honoree and the members who contributed to it (RLS, migration 0034,
+ * MERGE FV-3). No writes.
  */
 class TributeViewModel(
     private val tributeId: String,
@@ -140,7 +140,8 @@ class TributeViewModel(
         return attempt {
             val tribute = backend.tribute(tributeId) ?: return@attempt TributeContent.NotFound
             val delivered = tribute.deliveredAt?.let { !it.isAfter(clock.instant()) } == true
-            if (tribute.honoreeId == backend.currentUserId && !delivered) return@attempt TributeContent.NotFound
+            // VidDay: "The final video is private right from the start!" — for everyone, until it is given.
+            if (!delivered) return@attempt TributeContent.NotFound
             val forMe = tribute.honoreeId == backend.currentUserId
             val honoree = if (forMe) null else backend.profiles(listOf(tribute.honoreeId)).firstOrNull()?.firstName
             _state.update { it.copy(groupId = tribute.groupId, groupName = backend.group(tribute.groupId)?.name, honoreeName = honoree, forMe = forMe) }

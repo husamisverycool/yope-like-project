@@ -442,7 +442,7 @@ struct GroupFeedView: View {
     // MARK: Members' weeks and memories
 
     /// Retro's home feed pager: one C-18 friend card per member who shared this week (newest first), then the week's
-    /// question card, then the memory feed cards (on this day, the year story) while they have content. Each card
+    /// question card, then the memory feed cards (birthday videos, on this day, the year story) while they have content. Each card
     /// carries the `size.global.sectionGap` above it, so the row takes no space when there is nothing to show.
     private var cardsPager: some View {
         FriendCardPager {
@@ -461,6 +461,18 @@ struct GroupFeedView: View {
             }
             // question.weekly A: the week's question is the first feed card, after the friend cards.
             QuestionCardEntry(groupID: groupID)
+            // birthday.tribute entry: the birthday videos the viewer may watch (the honoree's own, a contributor's),
+            // newest first, before the older memories (MERGE FV-3).
+            TributeEntry(groupID: groupID) { content in
+                MemoryFeedCard(
+                    glyph: content.icon ?? Tokens.Icons.globalVideo,
+                    title: content.title,
+                    line: content.subtitle,
+                    action: content.buttonTitle ?? Copy.birthdayTributeEntryButton,
+                    photo: content.photoPath.map { PhotoSource.storage($0) }
+                )
+                .padding(.top, Tokens.Sizes.globalSectionGap)
+            }
             OnThisDayEntry(groupID: groupID) { content in
                 MemoryFeedCard(
                     glyph: content.icon ?? Tokens.Icons.globalRewind,

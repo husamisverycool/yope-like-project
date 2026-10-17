@@ -49,6 +49,9 @@ protocol MemoryDataSource: Sendable {
 
     // birthday.tribute
     func tribute(id: TributeID) async throws -> Tribute?
+    /// `group_tributes`: the group's delivered birthday videos the caller may watch (their own and the ones they
+    /// contributed to), newest delivery first — the group screen's cards.
+    func groupTributes(groupID: GroupID) async throws -> [GroupTribute]
     /// Downloads a (signed) file URL to a local file that stays until the next download of `name`.
     func downloadFile(from url: URL, name: String) async throws -> URL
 
@@ -189,6 +192,10 @@ struct LiveMemoryData: MemoryDataSource {
 
     func tribute(id: TributeID) async throws -> Tribute? {
         try await environment.birthdays.tribute(id: id)
+    }
+
+    func groupTributes(groupID: GroupID) async throws -> [GroupTribute] {
+        try await environment.birthdays.groupTributes(groupID: groupID)
     }
 
     func downloadFile(from url: URL, name: String) async throws -> URL {

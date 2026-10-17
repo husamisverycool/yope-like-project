@@ -59,6 +59,7 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     RenameAlbum("rename_album", setOf("p_album_id", "p_name")),
     DeleteAlbum("delete_album", setOf("p_album_id")),
     ContributeTribute("contribute_tribute", setOf("p_request_id", "p_post_id", "p_line")),
+    GroupTributes("group_tributes", setOf("p_group_id")),
 
     // §14.1 Selfie reactions
     ReactWithSelfie("react_with_selfie", setOf("p_post_id", "p_image_path")),

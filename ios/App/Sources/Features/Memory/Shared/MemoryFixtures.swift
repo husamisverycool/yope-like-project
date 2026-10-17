@@ -11,7 +11,7 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         case group, postsWithMedia, profiles, signedURLs, onThisDay, historyWeeks, deletePost, downloadData
         case myPrivateProfile, setBirthday
         case openRequests, request, myContribution, contribute, withdraw, eligiblePostIDs
-        case tribute, downloadFile, yearStory, collages, tags, isTagged, tagSelf, untagSelf
+        case tribute, groupTributes, downloadFile, yearStory, collages, tags, isTagged, tagSelf, untagSelf
     }
 
     struct State {
@@ -249,6 +249,29 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
 
     func tribute(id: TributeID) async throws -> Tribute? {
         try await record(.tribute).tributes.first { $0.id == id }
+    }
+
+    /// (as `group_tributes`, migration 0034): delivered and ready, the caller's own or one they contributed to, newest
+    /// delivery first. The birthday is the request's, else the delivery day (requests close at 00:00 on the birthday).
+    func groupTributes(groupID: GroupID) async throws -> [GroupTribute] {
+        let current = try await record(.groupTributes)
+        let contributed = Set(current.contributions.filter { $0.contributorID == current.me }.map(\.requestID))
+        return current.tributes
+            .filter { tribute in
+                guard tribute.groupID == groupID, tribute.status == .ready, let delivered = tribute.deliveredAt,
+                      delivered <= current.now else { return false }
+                return tribute.honoreeID == current.me || contributed.contains(tribute.requestID)
+            }
+            .sorted { ($0.deliveredAt ?? $0.createdAt) > ($1.deliveredAt ?? $1.createdAt) }
+            .map { tribute in
+                let delivered = tribute.deliveredAt ?? tribute.createdAt
+                let birthday = current.requests.first { $0.id == tribute.requestID }?.birthdayDate
+                    ?? LocalDate(delivered, in: MemoryFormat.utc)
+                return GroupTribute(
+                    id: tribute.id, groupID: tribute.groupID, honoreeID: tribute.honoreeID, posterPath: tribute.posterPath,
+                    birthdayDate: birthday, deliveredAt: delivered, forMe: tribute.honoreeID == current.me
+                )
+            }
     }
 
     func downloadFile(from url: URL, name: String) async throws -> URL {

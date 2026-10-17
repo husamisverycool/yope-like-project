@@ -84,6 +84,7 @@ import app.feature.account.common.CollectEvents
 import app.feature.account.common.TapLine
 import app.feature.account.common.dataError
 import app.feature.memory.birthday.BirthdayRequestEntries
+import app.feature.memory.birthday.TributeEntries
 import app.feature.memory.onthisday.OnThisDayEntry
 import app.feature.memory.openOnThisDay
 import app.feature.memory.yearstory.YearStoryEntry
@@ -405,6 +406,11 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
                 // The week's answers in this group, oldest first, in the viewer (question.weekly A, "See answers").
                 onOpenAnswers = { questionId, oldestPostId -> nav.navigate(PhotoViewerIn(groupId, oldestPostId, PhotoContext.Question, questionId)) },
             )
+            // birthday.tribute entry: the birthday videos you may watch (your own, one you contributed to), newest first,
+            // before the older memories (MERGE FV-3).
+            TributeEntries(groupId, onOpen = { tributeId -> nav.navigate(AppRoute.Tribute(groupId, tributeId)) }) { title, subtitle, button, photo, onClick ->
+                FeedEntryCard(Tokens.Icons.globalVideo, title, subtitle, button = button, photo = photo, onClick = onClick)
+            }
             OnThisDayEntry(groupId, onOpen = { nav.openOnThisDay(groupId) }) { title, subtitle, button, onClick ->
                 FeedEntryCard(Tokens.Icons.globalRewind, title, subtitle, button = button, photo = null, onClick = onClick)
             }

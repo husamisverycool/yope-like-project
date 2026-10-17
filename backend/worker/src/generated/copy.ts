@@ -167,6 +167,7 @@ const table = {
   "birthday.tribute.a11y.close": "Close", // Apple HIG / Material 3 · birthday.tribute · PLATFORM
   "birthday.tribute.download": "Save to Camera Roll", // Retro · birthday.tribute · SOURCED
   "birthday.tribute.endCard": "We love you!", // VidDay · birthday.tribute · SOURCED
+  "birthday.tribute.entry.button": "Play", // Retro · birthday.tribute · SOURCED
   "birthday.tribute.error.detail": "There was a problem. Please try again.", // Retro · birthday.tribute · SOURCED
   "birthday.tribute.error.retry": "Try Again", // Retro · birthday.tribute · SOURCED
   "birthday.tribute.error.title": "Something went wrong", // Retro · birthday.tribute · SOURCED

@@ -9,8 +9,11 @@ its geometry stays the references'. Voice: Retro set + `P-BT-1`. Tokens: `design
 (`birthday.tribute.*`). Decisions: `design/MERGE_DECISIONS.md` → "Redesign — Memory (RM-*)".
 
 Flow: requests close at 00:00 group-local on the birthday (`due_at`); if anyone contributed, the worker renders the
-video and, at or after `due_at`, delivers it (`delivered_at`) and sends the honoree one push. The honoree can read it
-only after delivery; other members (not blocked with the honoree) can read it at any time.
+video and, at or after `due_at`, delivers it (`delivered_at`) and sends the honoree one push. **Nobody can read it
+before delivery; then the honoree and the members who contributed to it (not blocked with the honoree)** — VidDay:
+"The final video is private right from the start!", then "Share with Friends" sends it to the contributors
+(`references/auto/vidday/INDEX.md`; migration 0034, MERGE_DECISIONS FV-3). Members who did not contribute never see it:
+it carries the contributors' photos and lines, made for one person.
 
 ## References
 
@@ -71,8 +74,30 @@ Full-screen cover; media page `color.global.backgroundDeep`, dark in both appear
    Roll"); trailing Share pill (`collage.share.layout.pill`, `radius.global.capsule`, `color.global.surfaceLight` /
    `color.global.onSurfaceLight`, text role `button`) `birthday.tribute.share` ("Share").
    **The bottom row is the honoree's only** (owner decision 12: a photo leaves the app only when it is the viewer's
-   own; the tribute is the honoree's gift, as Tribute / VidDay hand the finished video to the recipient). Other
-   members see the title, group, close and player, and no bottom row; the app downloads no local copy for them.
+   own; the tribute is the honoree's gift, as Tribute / VidDay hand the finished video to the recipient). Contributors
+   see the title, group, close and player, and no bottom row; the app downloads no local copy for them.
+
+## C. Entry on the group screen (MERGE FV-3)
+
+Where the honoree finds the video on the day and afterwards, and where a contributor finds it once it is given: one
+**feed card** per video in the members' pager of `groups.screen` (item 8), the same composition as the year story's
+card (C-18 geometry, `layout.global.photoScrim`, text role `displaySmall`, C-09 light pill), after the week's question
+card and before the on-this-day and year-story cards — the pager runs newest first, and a birthday video is newer than
+the memories of earlier years. Cards come from `group_tributes` (docs/API.md §6.4): delivered, `ready`, the caller's own
+or one they contributed to, newest delivery first. **Kept for good**, as the year story's cards (owner decision 31) —
+the group's memories. A muted group still shows it (mute silences pushes; the card sends nothing and asks for nothing).
+
+| element | tokens / component | copy | behaviour |
+|---|---|---|---|
+| header glyph | `icon.global.video` (Retro's video glyph) in the `size.global.avatarList` box | — | — |
+| card image | the video's poster (`poster_path`, the title card), aspect-fill; none → `color.global.backgroundDeep` | — | — |
+| title | `font.global.display`, text role `displaySmall`, `color.global.textOnMedia` | `birthday.tribute.title` (honoree) / `birthday.tribute.title.member` (contributor) | — |
+| line | text role `listSubtitle`, `color.global.textOnMedia` | the birthday (group-local) in `layout.onthisday.dateFormat` (the memory date, year shown: the card stays) | — |
+| pill | C-09 light pill | `birthday.tribute.entry.button` ("Play", Retro `video_editor_play`) | the whole card is one button → this screen, full screen |
+
+States: loading, error, offline and "no video" show no card (an invitation, never a placeholder); the last cards are
+cached per viewer so they do not pop in on each visit. VoiceOver / TalkBack: one button, "title, line, Play".
+Reduce Motion: the card fades in with the pager's `ComponentMotion.fade` (iOS) / appears without animation (Android).
 
 ## Elements
 
@@ -85,6 +110,7 @@ Full-screen cover; media page `color.global.backgroundDeep`, dark in both appear
 | save circle | C-11 on media: `size.global.circleButton`, `color.global.controlOnDeep`, `size.global.buttonMarginH`, `icon.global.download` | `birthday.tribute.download`, `.saved`, `.saveFailed`, `.saveDenied.*` | honoree only; saves the MP4 (add-only photo access) |
 | Share pill | `collage.share.layout.pill`, `color.global.surfaceLight`, `color.global.onSurfaceLight`, text role `button` | `birthday.tribute.share` | honoree only; share sheet with the MP4 |
 | push (honoree) | — | `notifications.push.tribute.title` / `.body` (owned by `notifications.push`, MERGE L-1) | once at delivery; tap → this screen |
+| group-screen card | C. above | `birthday.tribute.title`, `.title.member`, `.entry.button` | honoree and contributors, after delivery; tap → this screen |
 
 ## States
 
@@ -132,13 +158,14 @@ Close, save, Share → `haptic.global.tap` (Android). Saved → `haptic.global.s
 ## Data & actions
 
 - **Read:** `from("tributes").select().eq("id", tributeId).single()` → `video_path`, `poster_path`, `status`,
-  `delivered_at`, `group_id`, `honoree_id`; group name from `groups`; honoree first name from `profiles` (member view).
-  Signed URLs from `g/<group_id>/tributes/<id>/…`.
+  `delivered_at`, `group_id`, `honoree_id`; group name from `groups`; honoree first name from `profiles` (contributor
+  view). Signed URLs from `g/<group_id>/tributes/<id>/…`. The group screen's cards: `rpc("group_tributes", {p_group_id})`
+  (+ the honorees' first names, the posters' signed URLs).
 - **Writes:** none. **Worker:** `tribute.render` / `tribute.rerender`, then `push.tribute` (payload `type = tribute`,
   `tribute_id`, `group_id`).
 - **Navigation in:** push → `DeepLink.tribute(tributeID:groupID:)` / `app://tribute?tribute=<id>&group=<id>`
-  (`ios/Packages/AppCore/Sources/AppModels/DeepLink.swift`, `android/core/model/src/main/kotlin/app/model/DeepLink.kt`).
-  **Out:** close; share sheet.
+  (`ios/Packages/AppCore/Sources/AppModels/DeepLink.swift`, `android/core/model/src/main/kotlin/app/model/DeepLink.kt`);
+  the group screen's card (C.). **Out:** close; share sheet.
 
 ## Platform notes
 

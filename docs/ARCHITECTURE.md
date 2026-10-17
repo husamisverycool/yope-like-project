@@ -78,4 +78,5 @@
    widgets (refresh push), and storage.
 3. Account deletion deletes all of the user's data and the auth user.
 4. Blocking hides each person's content from the other in shared groups.
-5. A birthday honoree cannot see their own tribute request or contributions before the tribute is delivered.
+5. A birthday honoree cannot see their own tribute request or contributions before the tribute is delivered; nobody
+   watches the video before delivery, and afterwards only the honoree and its contributors (migration 0034).

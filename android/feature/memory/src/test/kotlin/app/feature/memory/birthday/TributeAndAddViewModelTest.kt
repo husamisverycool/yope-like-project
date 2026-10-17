@@ -40,6 +40,10 @@ class TributeViewModelTest {
     private fun vm(backend: FakeMemoryBackend, files: TributeFiles = Files(), cache: MemoryCache = MemoryCache()) =
         TributeViewModel("t-1", backend, files, Scenario.clock, cache)
 
+    private companion object {
+        val DELIVERED: java.time.Instant = Scenario.at("2026-12-05T08:00:00Z")
+    }
+
     @Test fun honoreeSeesTheTributeOnlyAfterDelivery() {
         val before = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ME, delivered = null) }
         assertEquals(TributeContent.NotFound, vm(before).state.value.content)
@@ -52,41 +56,63 @@ class TributeViewModelTest {
         assertTrue("the honoree's title is \"Your birthday video\"", ready.forMe)
     }
 
-    @Test fun membersSeeTheHonoreesName() {
-        val member = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null) }
+    @Test fun contributorsSeeTheHonoreesName() {
+        val member = Scenario.backend().apply {
+            tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = DELIVERED)
+            contributed()
+        }
         val state = vm(member).state.value
         assertFalse(state.forMe)
         assertEquals("Ana", state.honoreeName)
     }
 
-    @Test fun otherMembersSeeItAnyTimeUnlessBlockedWithTheHonoree() {
-        val member = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null) }
-        assertTrue(vm(member).state.value.content is TributeContent.Ready)
-        val blocked = Scenario.backend().apply {
+    /** VidDay: private until it is given, then shared with the contributors (migration 0034, MERGE FV-3). */
+    @Test fun contributorsSeeItOnceDeliveredUnlessBlockedWithTheHonoree() {
+        val early = Scenario.backend().apply {
             tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null)
+            contributed()
+        }
+        assertEquals("before delivery: nobody", TributeContent.NotFound, vm(early).state.value.content)
+        val contributor = Scenario.backend().apply {
+            tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = DELIVERED)
+            contributed()
+        }
+        assertTrue(vm(contributor).state.value.content is TributeContent.Ready)
+        val bystander = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = DELIVERED) }
+        assertEquals("did not contribute", TributeContent.NotFound, vm(bystander).state.value.content)
+        val blocked = Scenario.backend().apply {
+            tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = DELIVERED)
+            contributed()
             this.blocked += ANA
         }
         assertEquals(TributeContent.NotFound, vm(blocked).state.value.content)
     }
 
     @Test fun renderingOfflineAndErrorStates() {
-        val pending = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null, status = RenderStatus.Pending) }
+        val pending = Scenario.backend().apply {
+            tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = DELIVERED, status = RenderStatus.Pending)
+            contributed()
+        }
         val vm = vm(pending)
         assertEquals(TributeContent.Rendering, vm.state.value.content)
-        pending.tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null)
+        pending.tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = DELIVERED)
         vm.refreshIfRendering()
         assertTrue(vm.state.value.content is TributeContent.Ready)
         assertEquals(TributeContent.Offline, vm(Scenario.backend().apply { online = false }).state.value.content)
         val failing = Scenario.backend().apply {
-            tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null)
+            tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = DELIVERED)
+            contributed()
             failNext["tribute"] = DataError.Unexpected("x")
         }
         assertEquals(TributeContent.Failed, vm(failing).state.value.content)
     }
 
-    /** Owner decision 12: a member watches the video in the app; Save and Share are the honoree's. */
+    /** Owner decision 12: a contributor watches the video in the app; Save and Share are the honoree's. */
     @Test fun membersCannotSaveOrShare() {
-        val backend = Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null) }
+        val backend = Scenario.backend().apply {
+            tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = DELIVERED)
+            contributed()
+        }
         val files = Files()
         val vm = vm(backend, files)
         assertTrue(vm.state.value.content is TributeContent.Ready)
@@ -122,9 +148,9 @@ class TributeViewModelTest {
 
     @Test fun cachedTributeShowsWithoutALoadingFlash() = runTest {
         val cache = MemoryCache()
-        vm(Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null) }, cache = cache)
+        vm(Scenario.backend().apply { tributes["t-1"] = Rows.tribute(honoree = ME, delivered = DELIVERED) }, cache = cache)
         val backend = Scenario.backend().apply {
-            tributes["t-1"] = Rows.tribute(honoree = ANA, delivered = null)
+            tributes["t-1"] = Rows.tribute(honoree = ME, delivered = DELIVERED)
             gates["tribute"] = CompletableDeferred()
         }
         val vm = vm(backend, cache = cache)

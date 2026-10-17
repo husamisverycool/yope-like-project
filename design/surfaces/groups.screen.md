@@ -56,11 +56,13 @@ Tokens: `groups.screen.*` + `global.*`. Copy: `groups.screen.*`.
      "N new" / "Seen" are do-not-copy);
    - then the **feed cards** Retro puts in the same pager (its Rewind and "Year in Photos" cards, APK-S
      `home_rewind_upsell_feed_card_*`, `home_feed_card_annual_recap_title`), each while its feature has content:
-     on this day (`onthisday` entry) and the year story (`year.story` entry). Card = the feature's newest photo,
+     the birthday videos the viewer may watch (`birthday.tribute` entry C, newest first, MERGE FV-3), on this day
+     (`onthisday` entry) and the year story (`year.story` entry). Card = the feature's newest photo,
      aspect-fill, with the bottom scrim (`layout.global.photoScrim`); at the bottom inside `size.global.screenMargin`:
      title in `font.global.display` text role `displaySmall` (24) `color.global.textOnMedia`, line (`listSubtitle`,
      `color.global.textOnMedia`), then the light pill C-09 with the action; the header line above the card shows the
-     feature's glyph (`icon.global.rewind` / `icon.global.recap`, `size.global.avatarList` box) instead of an avatar.
+     feature's glyph (`icon.global.video` / `icon.global.rewind` / `icon.global.recap`, `size.global.avatarList` box)
+     instead of an avatar.
      Copy: `onthisday.entry.title` / `.subtitle` / `.button`; `year.story.entry.title` / `.subtitle` / `.button`
      (memory group). Retro's feed cards set their text in Roslindale Display Narrow (24 / 29 sp, RP §2.3); the card
      image itself was not captured — composition of C-18, C-09 and the display role.

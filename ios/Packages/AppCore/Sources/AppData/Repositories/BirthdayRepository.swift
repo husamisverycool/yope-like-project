@@ -87,6 +87,12 @@ public struct BirthdayRepository: Sendable {
         }
     }
 
+    /// `group_tributes` (migration 0034): the group's delivered birthday videos the caller may watch — their own and the
+    /// ones they contributed to — newest delivery first.
+    public func groupTributes(groupID: GroupID) async throws -> [GroupTribute] {
+        try await client.rpc("group_tributes", ["p_group_id": .id(groupID)])
+    }
+
     public func tribute(id: TributeID) async throws -> Tribute? {
         try await client.firstRow(Tribute.self) {
             client.supabase.from("tributes").select().eq("id", value: id.rawValue).limit(1)

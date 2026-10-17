@@ -1,5 +1,6 @@
 // Security invariant 5: a birthday honoree cannot see their own tribute request or
-// the contributions before the tribute is delivered.
+// the contributions before the tribute is delivered; once delivered, the video is the
+// honoree's and its contributors' (migration 0034), nobody else's.
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -81,7 +82,10 @@ describe('tribute privacy', () => {
 
     expect(await select(honoree.client, 'tributes')).toEqual([]);
     expect((await honoree.client.storage.from('media').createSignedUrl(video, 60)).error).not.toBeNull();
-    expect((await m2.client.storage.from('media').createSignedUrl(video, 60)).error).toBeNull();
+    // VidDay: "The final video is private right from the start!" — nobody reads it before delivery (0034)
+    expect(await select(m1.client, 'tributes')).toEqual([]);
+    expect((await m1.client.storage.from('media').createSignedUrl(video, 60)).error).not.toBeNull();
+    expect((await m2.client.storage.from('media').createSignedUrl(video, 60)).error).not.toBeNull();
 
     // contributions are closed now
     await expectRpcError(
@@ -98,6 +102,27 @@ describe('tribute privacy', () => {
     // the request and the contributions themselves stay hidden
     expect(await select(honoree.client, 'tribute_requests')).toEqual([]);
     expect(await select(honoree.client, 'tribute_contributions')).toEqual([]);
+    // VidDay's "Share with Friends" goes to the contributors: m1 (contributed) watches it now; m2 (did not) never does
+    expect((await select(m1.client, 'tributes')).map((x: any) => x.id)).toEqual([t.id]);
+    expect((await m1.client.storage.from('media').createSignedUrl(video, 60)).error).toBeNull();
+    expect(await select(m2.client, 'tributes')).toEqual([]);
+    expect((await m2.client.storage.from('media').createSignedUrl(video, 60)).error).not.toBeNull();
+    // group_tributes: the group screen's cards — the honoree's own video, and the contributor's
+    const forHonoree = await rpc<any[]>(honoree.client, 'group_tributes', { p_group_id: group.id });
+    expect(forHonoree.map((x) => [x.id, x.for_me, x.honoree_id])).toEqual([[t.id, true, honoree.id]]);
+    expect(forHonoree[0].birthday_date).toBeTruthy();
+    const forContributor = await rpc<any[]>(m1.client, 'group_tributes', { p_group_id: group.id });
+    expect(forContributor.map((x) => [x.id, x.for_me])).toEqual([[t.id, false]]);
+    expect(await rpc<any[]>(m2.client, 'group_tributes', { p_group_id: group.id })).toEqual([]);
+    // a block with the honoree hides it from the contributor
+    await rpc(m1.client, 'block_user', { p_user_id: honoree.id });
+    expect(await rpc<any[]>(m1.client, 'group_tributes', { p_group_id: group.id })).toEqual([]);
+    await rpc(m1.client, 'unblock_user', { p_user_id: honoree.id });
+  });
+
+  it('group_tributes is for members only', async () => {
+    const [outsider] = await createUsers(1, 'BdayOut');
+    await expectRpcError(rpc(outsider.client, 'group_tributes', { p_group_id: group.id }), 'not_group_member', 403);
   });
 
   it('a tribute stored under a different tribute id stays hidden', async () => {

@@ -1,4 +1,4 @@
-// birthday.tribute — view-model tests: who can see the video, and when.
+// birthday.tribute — view-model tests: who can see the video, and when; the group screen's video cards.
 @testable import App
 import AppData
 import AppModels
@@ -27,13 +27,12 @@ final class MemoryTributeTests: XCTestCase {
             id: MemoryIDs.tribute, requestID: TributeRequestID("00000000-0000-4000-8000-0000000000c9"), groupID: MemoryIDs.group,
             honoreeID: MemoryIDs.me, videoPath: "v", posterPath: nil, status: .ready, renderedAt: now, deliveredAt: nil, createdAt: now
         )
-        XCTAssertFalse(TributeModel.isVisible(tribute, to: MemoryIDs.me, now: now), "honoree, not delivered")
-        XCTAssertTrue(TributeModel.isVisible(tribute, to: MemoryIDs.friend, now: now), "members: any time")
+        XCTAssertFalse(TributeModel.isVisible(tribute, now: now), "not delivered: nobody (migration 0034)")
         var delivered = tribute
         delivered.deliveredAt = now.addingTimeInterval(60)
-        XCTAssertFalse(TributeModel.isVisible(delivered, to: MemoryIDs.me, now: now), "honoree, delivery still ahead")
+        XCTAssertFalse(TributeModel.isVisible(delivered, now: now), "delivery still ahead")
         delivered.deliveredAt = now.addingTimeInterval(-60)
-        XCTAssertTrue(TributeModel.isVisible(delivered, to: MemoryIDs.me, now: now), "honoree, delivered")
+        XCTAssertTrue(TributeModel.isVisible(delivered, now: now), "delivered: the honoree and the contributors (RLS)")
     }
 
     func testHonoreeBeforeDeliverySeesNothing() async {
@@ -59,8 +58,17 @@ final class MemoryTributeTests: XCTestCase {
         XCTAssertTrue(model.canUseFile)
     }
 
-    func testMembersCanWatchBeforeDelivery() async {
+    func testMembersCannotWatchBeforeDelivery() async {
         let context = tributeContext(honoree: MemoryIDs.friend, deliveredAt: nil)
+        let model = TributeModel(tributeID: MemoryIDs.tribute, dependencies: context.dependencies, saveVideo: { _ in })
+        await model.loadIfNeeded()
+        XCTAssertEqual(model.phase, .notFound, "VidDay: private right from the start (migration 0034)")
+        XCTAssertNil(model.videoURL)
+        XCTAssertEqual(context.data.calls(of: .signedURLs), 0)
+    }
+
+    func testContributorWatchesOnceDelivered() async {
+        let context = tributeContext(honoree: MemoryIDs.friend, deliveredAt: MemoryTestContext.referenceNow.addingTimeInterval(-3600))
         let model = TributeModel(tributeID: MemoryIDs.tribute, dependencies: context.dependencies, saveVideo: { _ in })
         await model.loadIfNeeded()
         XCTAssertEqual(model.phase, .ready)
@@ -72,7 +80,8 @@ final class MemoryTributeTests: XCTestCase {
     }
 
     func testRenderingFailedDeletedAndOffline() async {
-        let pending = tributeContext(honoree: MemoryIDs.friend, deliveredAt: nil, status: .pending)
+        let delivered = MemoryTestContext.referenceNow.addingTimeInterval(-3600)
+        let pending = tributeContext(honoree: MemoryIDs.friend, deliveredAt: delivered, status: .pending)
         let pendingModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: pending.dependencies, saveVideo: { _ in })
         await pendingModel.loadIfNeeded()
         XCTAssertEqual(pendingModel.phase, .rendering)
@@ -88,7 +97,7 @@ final class MemoryTributeTests: XCTestCase {
         await pendingModel.refreshIfRendering()
         XCTAssertEqual(pendingModel.phase, .ready)
 
-        let failed = tributeContext(honoree: MemoryIDs.friend, deliveredAt: nil, status: .failed)
+        let failed = tributeContext(honoree: MemoryIDs.friend, deliveredAt: delivered, status: .failed)
         let failedModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: failed.dependencies, saveVideo: { _ in })
         await failedModel.loadIfNeeded()
         XCTAssertEqual(failedModel.phase, .error)
@@ -103,6 +112,52 @@ final class MemoryTributeTests: XCTestCase {
         let offlineModel = TributeModel(tributeID: MemoryIDs.tribute, dependencies: offline.dependencies, saveVideo: { _ in })
         await offlineModel.loadIfNeeded()
         XCTAssertEqual(offlineModel.phase, .offline)
+    }
+
+    // MARK: The group screen's cards (group_tributes, MERGE FV-3)
+
+    func testTheHonoreeFindsTheirVideoInTheGroupAfterTheDay() async {
+        // delivered a day earlier, and still there (kept for good)
+        let context = tributeContext(honoree: MemoryIDs.me, deliveredAt: MemoryTestContext.referenceNow.addingTimeInterval(-86_400))
+        let model = TributeEntryModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        await model.refresh()
+        XCTAssertEqual(model.entries.map(\.tributeID), [MemoryIDs.tribute])
+        let content = model.entries.first?.content
+        XCTAssertEqual(content?.title, Copy.birthdayTributeTitle)
+        XCTAssertEqual(content?.buttonTitle, Copy.birthdayTributeEntryButton)
+        XCTAssertEqual(content?.icon, Tokens.Icons.globalVideo)
+        XCTAssertEqual(content?.photoPath, "g/\(MemoryIDs.group.rawValue)/tributes/\(MemoryIDs.tribute.rawValue)/poster.jpg")
+        XCTAssertFalse(content?.subtitle.isEmpty ?? true, "the birthday's date")
+    }
+
+    func testNoCardBeforeDelivery() async {
+        let context = tributeContext(honoree: MemoryIDs.me, deliveredAt: nil)
+        let model = TributeEntryModel(groupID: MemoryIDs.group, dependencies: context.dependencies)
+        await model.refresh()
+        XCTAssertTrue(model.entries.isEmpty)
+    }
+
+    func testAContributorGetsTheCardAndOtherMembersDoNot() async {
+        let delivered = MemoryTestContext.referenceNow.addingTimeInterval(-3600)
+        let member = tributeContext(honoree: MemoryIDs.friend, deliveredAt: delivered)
+        let model = TributeEntryModel(groupID: MemoryIDs.group, dependencies: member.dependencies)
+        await model.refresh()
+        XCTAssertTrue(model.entries.isEmpty, "did not contribute: no card (RLS, migration 0034)")
+
+        member.data.update { state in
+            state.tributes = state.tributes.map { tribute in
+                var tribute = tribute
+                tribute.requestID = MemoryIDs.request
+                return tribute
+            }
+            state.contributions = [TributeContribution(
+                id: TributeContributionID(UUID()), requestID: MemoryIDs.request, contributorID: MemoryIDs.me, postID: MemoryIDs.post(1),
+                line: "for every sunday", createdAt: delivered, updatedAt: delivered
+            )]
+        }
+        await model.refresh()
+        XCTAssertEqual(model.entries.map(\.tributeID), [MemoryIDs.tribute])
+        XCTAssertEqual(model.entries.first?.content.title, Copy.birthdayTributeTitleMember(name: "Bea"))
     }
 
     func testSaveSavesAndSaysSo() async {

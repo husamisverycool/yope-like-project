@@ -3,6 +3,7 @@ package app.feature.account
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -439,6 +440,16 @@ class ScreenSnapshotTest {
     @Test fun feedDefault() = snap("groups.screen", "default", content = feed(feedState))
     @Test fun feedDefaultDark() = snap("groups.screen", "default", dark = true, content = feed(feedState))
     @Test fun feedEntries() = snap("groups.screen", "default-memoryEntries", content = feed(feedState, entries = true))
+    // birthday.tribute entry (MERGE FV-3): the honoree's video card in the feed pager — `icon.global.video`, the poster
+    // (the title card), the birthday in the memory date format, the "Play" pill.
+    private fun tributeCard(title: @Composable () -> String) = @Composable {
+        Box(Modifier.fillMaxSize().background(app.ui.foundation.PageRoles.page).padding(start = Tokens.Sizes.globalScreenMargin)) {
+            FeedEntryCard(Tokens.Icons.globalVideo, title(), "Dec 12, 2026", stringResource(R.string.birthday_tribute_entry_button), photo("dinner-toast-candles-3x4"), noop)
+        }
+    }
+    @Test fun feedTributeCard() = snap("groups.screen", "tributeCard", content = tributeCard { stringResource(R.string.birthday_tribute_title) })
+    @Test fun feedTributeCardDark() = snap("groups.screen", "tributeCard", dark = true, content = tributeCard { stringResource(R.string.birthday_tribute_title) })
+    @Test fun feedTributeCardContributor() = snap("groups.screen", "tributeCard-contributor", content = tributeCard { stringResource(R.string.birthday_tribute_title_member, "Zoe") })
     @Test fun feedCreated() = snap("groups.screen", "created", content = feed(feedState.copy(photos = emptyList(), memberAvatars = members.take(1))))
     @Test fun feedEmpty() = snap("groups.screen", "empty", content = feed(feedState.copy(photos = emptyList(), isCreator = false)))
     @Test fun feedQuietWeek() = snap("groups.screen", "quietWeek", content = feed(feedState.copy(photos = photos.drop(4))))

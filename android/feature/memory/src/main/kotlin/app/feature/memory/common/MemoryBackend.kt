@@ -10,6 +10,7 @@ import app.data.error.DataError
 import app.data.error.DataException
 import app.data.model.Collage
 import app.data.model.Group
+import app.data.model.GroupTribute
 import app.data.model.HistoryWeek
 import app.data.model.Media
 import app.data.model.OnThisDayItem
@@ -75,6 +76,9 @@ interface MemoryBackend {
     /** Posts of [groupId] you posted ∪ posts you are self-tagged in; newest first, no duplicates. */
     suspend fun eligiblePosts(groupId: String): List<Post>
     suspend fun tribute(tributeId: String): Tribute?
+
+    /** `group_tributes`: the group's delivered birthday videos you may watch (yours, the ones you contributed to), newest first. */
+    suspend fun groupTributes(groupId: String): List<GroupTribute>
 
     // Year story (docs/API.md §5.19, §5.13).
     suspend fun yearStory(groupId: String, year: Int): YearStory?
@@ -145,6 +149,8 @@ class GraphMemoryBackend(private val graph: DataGraph) : MemoryBackend {
 
     override suspend fun tribute(tributeId: String): Tribute? = graph.birthdays.tribute(tributeId)
 
+    override suspend fun groupTributes(groupId: String): List<GroupTribute> = graph.birthdays.groupTributes(groupId)
+
     override suspend fun yearStory(groupId: String, year: Int): YearStory? = graph.yearStories.yearStory(groupId, year)
 
     override suspend fun yearStories(groupId: String): List<YearStory> = graph.yearStories.yearStories(groupId)
@@ -191,6 +197,7 @@ object UnconfiguredMemoryBackend : MemoryBackend {
     override suspend fun withdraw(requestId: String) = fail()
     override suspend fun eligiblePosts(groupId: String): List<Post> = fail()
     override suspend fun tribute(tributeId: String): Tribute? = fail()
+    override suspend fun groupTributes(groupId: String): List<GroupTribute> = fail()
     override suspend fun yearStory(groupId: String, year: Int): YearStory? = fail()
     override suspend fun yearStories(groupId: String): List<YearStory> = fail()
     override suspend fun collages(ids: List<String>): List<Collage> = fail()

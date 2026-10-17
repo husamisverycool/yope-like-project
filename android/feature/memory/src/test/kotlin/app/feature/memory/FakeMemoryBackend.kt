@@ -5,6 +5,7 @@ import app.data.error.DataError
 import app.data.error.DataException
 import app.data.model.Collage
 import app.data.model.Group
+import app.data.model.GroupTribute
 import app.data.model.HistoryWeek
 import app.data.model.GroupKind
 import app.data.model.Media
@@ -34,7 +35,7 @@ import java.time.LocalDate
 
 /**
  * An in-memory [MemoryBackend] that applies the same visibility rules as the database (RLS:
- * requests never visible to their honoree; tributes visible to the honoree only after delivery;
+ * requests never visible to their honoree; tributes visible after delivery to their honoree and contributors only;
  * blocked authors' posts hidden), records writes, and fails on demand.
  */
 class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBackend {
@@ -157,13 +158,38 @@ class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBacken
         return mergeEligible(mine, tagged)
     }
 
-    /** RLS: the honoree only once delivered_at is set and past; other members (not blocked) any time. */
+    /**
+     * RLS (migration 0034): nobody before delivered_at is set and past; then the honoree and the members who contributed
+     * to its request (not blocked with the honoree).
+     */
+    private fun canSee(t: Tribute): Boolean {
+        val delivered = t.deliveredAt?.let { !it.isAfter(now) } == true
+        if (!delivered) return false
+        if (t.honoreeId == currentUserId) return true
+        return t.honoreeId !in blocked && contributions.values.any { it.requestId == t.requestId && it.contributorId == currentUserId }
+    }
+
     override suspend fun tribute(tributeId: String): Tribute? {
         call("tribute")
-        val t = tributes[tributeId] ?: return null
-        if (t.honoreeId in blocked) return null
-        if (t.honoreeId == currentUserId && (t.deliveredAt == null || t.deliveredAt!!.isAfter(now))) return null
-        return t
+        return tributes[tributeId]?.takeIf(::canSee)
+    }
+
+    /** As `group_tributes`: delivered, ready and visible, newest delivery first; the birthday is the request's, else the delivery day. */
+    override suspend fun groupTributes(groupId: String): List<GroupTribute> {
+        call("groupTributes")
+        return tributes.values
+            .filter { it.groupId == groupId && it.status == RenderStatus.Ready && canSee(it) }
+            .sortedByDescending { it.deliveredAt }
+            .map { t ->
+                val delivered = t.deliveredAt!!
+                val birthday = requests[t.requestId]?.birthdayDate ?: delivered.atZone(java.time.ZoneOffset.UTC).toLocalDate()
+                GroupTribute(t.id, t.groupId, t.honoreeId, t.posterPath, birthday, delivered, t.honoreeId == currentUserId)
+            }
+    }
+
+    /** A contribution by [contributor] to [requestId] (another member's, or yours, written directly). */
+    fun contributed(requestId: String = "r-1", contributor: String = ME, postId: String = "p-1") {
+        contributions["c-$requestId-$contributor"] = TributeContribution("c-$requestId-$contributor", requestId, contributor, postId, "Happy day", now, now)
     }
 
     override suspend fun yearStory(groupId: String, year: Int): YearStory? = call("yearStory").let { yearStories[groupId to year] }

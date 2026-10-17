@@ -5,6 +5,7 @@ import app.data.model.Album
 import app.data.model.AlbumItem
 import app.data.model.Collage
 import app.data.model.DailyInvitation
+import app.data.model.GroupTribute
 import app.data.model.HistoryWeek
 import app.data.model.InstantSerializer
 import app.data.model.OnThisDayItem
@@ -256,9 +257,16 @@ class BirthdayRepository(private val api: Api, private val profiles: ProfileRepo
 
     suspend fun tribute(tributeId: String): Tribute? = api.selectSingleOrNull(Tables.TRIBUTES, Tribute.serializer()) { filter { eq("id", tributeId) } }
 
-    /** Tributes in [groupId] you may see (for members other than the honoree). */
+    /** Tributes in [groupId] you may see (once delivered: your own and the ones you contributed to; migration 0034). */
     suspend fun tributes(groupId: String): List<Tribute> = api.select(Tables.TRIBUTES, Tribute.serializer()) {
         filter { eq("group_id", groupId) }
         order("created_at", Order.DESCENDING)
     }
+
+    /**
+     * `group_tributes` (migration 0034): the group's delivered birthday videos you may watch — your own and the ones you
+     * contributed to — newest delivery first (the group screen's cards).
+     */
+    suspend fun groupTributes(groupId: String): List<GroupTribute> =
+        api.rpcList(Rpc.GroupTributes, GroupTribute.serializer()) { put("p_group_id", groupId) }
 }

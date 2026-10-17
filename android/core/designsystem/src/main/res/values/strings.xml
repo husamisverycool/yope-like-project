@@ -332,6 +332,8 @@
     <!-- VidDay · birthday.tribute · adapted · SOURCED -->
     <string name="birthday_tribute_endcard" formatted="false">We love you!</string>
     <!-- Retro · birthday.tribute · verbatim · SOURCED -->
+    <string name="birthday_tribute_entry_button" formatted="false">Play</string>
+    <!-- Retro · birthday.tribute · verbatim · SOURCED -->
     <string name="birthday_tribute_error_detail" formatted="false">There was a problem. Please try again.</string>
     <!-- Retro · birthday.tribute · verbatim · SOURCED -->
     <string name="birthday_tribute_error_retry" formatted="false">Try Again</string>

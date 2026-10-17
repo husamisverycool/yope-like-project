@@ -1,6 +1,6 @@
 // Surface: birthday.tribute — view model. Spec: design/surfaces/birthday.tribute.md.
-// The honoree can read the tribute only once it is delivered (`delivered_at` set and past; RLS
-// enforces it and this model checks it too); other members can read it at any time.
+// Nobody reads the tribute before it is delivered (`delivered_at` set and past; RLS enforces it and this model checks
+// it too); then its honoree and the members who contributed to it (RLS, migration 0034, MERGE FV-3).
 import AppData
 import AppServices
 import AVFoundation
@@ -17,7 +17,7 @@ final class TributeModel {
         /// `status = 'pending'` (first render or re-render after a photo was deleted): same as loading.
         case rendering
         case ready
-        /// The tribute was deleted, or it is not delivered to the honoree yet.
+        /// The tribute was deleted, it is not delivered yet, or the caller is neither its honoree nor a contributor.
         case notFound
         case error
         case offline
@@ -57,16 +57,16 @@ final class TributeModel {
         self.saveVideo = saveVideo
     }
 
-    /// Whether `user` may see `tribute` at `now`: everyone but the honoree at any time; the honoree
-    /// only once it was delivered.
-    static func isVisible(_ tribute: Tribute, to user: UserID?, now: Date) -> Bool {
-        guard tribute.honoreeID == user else { return true }
+    /// Whether `tribute` may show at `now`: only once it was delivered — VidDay: "The final video is private right from
+    /// the start!". Who may read it then (the honoree, the contributors) is the server's rule (RLS, migration 0034): any
+    /// other member never gets the row.
+    static func isVisible(_ tribute: Tribute, now: Date) -> Bool {
         guard let deliveredAt = tribute.deliveredAt else { return false }
         return deliveredAt <= now
     }
 
     /// Save and Share are the honoree's: the video was made for them, and it carries other members' photos, which leave the
-    /// app only through the person they were given to (owner decision 12). Members watch it in the app.
+    /// app only through the person they were given to (owner decision 12). Contributors watch it in the app.
     var offersExport: Bool { isHonoree }
 
     /// The report target of the video (kind `tribute`), once it is shown: no single person made it, so the next steps
@@ -108,7 +108,7 @@ final class TributeModel {
         do {
             let me = await data.currentUser()
             guard let tribute = try await data.tribute(id: tributeID),
-                  Self.isVisible(tribute, to: me, now: dependencies.now()) else {
+                  Self.isVisible(tribute, now: dependencies.now()) else {
                 phase = .notFound
                 return
             }

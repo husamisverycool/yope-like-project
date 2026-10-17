@@ -175,6 +175,7 @@ describe('group isolation: RPCs', () => {
     plan_photos: { args: () => ({ p_plan_id: seeded.planId }), expect: 'error' },
     next_plans: { args: () => ({}), expect: 'empty' },
     group_plans: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
+    group_tributes: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
     create_overnight_post: {
       args: () => ({ p_media_id: seeded.mediaIds[0], p_group_ids: [seeded.group.id] }),
       expect: 'error',
@@ -301,9 +302,11 @@ describe('group isolation: storage', () => {
   });
 
   it('(positive control) a member can sign the same objects', async () => {
-    const bucket = gUsers[1].client.storage.from('media');
+    // the birthday video is its honoree's and its contributors' once delivered (migration 0034): a contributed
+    await sql(`update public.tributes set delivered_at = now() - interval '1 minute' where id = $1`, [seeded.tributeId]);
     for (const path of seeded.objectPaths) {
-      const signed = await bucket.createSignedUrl(path, 60);
+      const member = path.includes('/tributes/') ? gUsers[0] : gUsers[1];
+      const signed = await member.client.storage.from('media').createSignedUrl(path, 60);
       expect(signed.error, path).toBeNull();
     }
   });
