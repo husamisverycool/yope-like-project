@@ -59,7 +59,7 @@ final class TributeEntryModel {
             let tributes = try await data.groupTributes(groupID: groupID)
             let others = Array(Set(tributes.filter { !$0.forMe }.map(\.honoreeID)))
             let names = others.isEmpty ? [:] : Dictionary(
-                try await data.profiles(ids: others).map { ($0.id, $0.firstName) }, uniquingKeysWith: { first, _ in first }
+                try await data.profiles(ids: others).map { ($0.id, $0.firstName ?? "") }, uniquingKeysWith: { first, _ in first }
             )
             let fresh = tributes.map { tribute in
                 Entry(tributeID: tribute.id, content: Self.content(tribute, honoreeName: names[tribute.honoreeID] ?? ""))
