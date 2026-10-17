@@ -3,6 +3,12 @@ name: ci
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      record_snapshots:
+        description: Re-record every Android Roborazzi baseline and commit the changed images to this branch
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -197,8 +203,8 @@ jobs:
           PY
           echo "::endgroup::"
       # A snapshot that no longer matches its baseline: Roborazzi's new image and the comparison, to review and, when the
-      # change is intended, commit as the baseline (recordRoborazziDebug needs the Android SDK; or push a commit whose
-      # message contains [record-snapshots], see android-record-snapshots below).
+      # change is intended, commit as the baseline (recordRoborazziDebug needs the Android SDK; or run the workflow by
+      # hand with record_snapshots, see android-record-snapshots below).
       - name: upload changed snapshots
         if: failure()
         uses: actions/upload-artifact@v4
@@ -210,14 +216,14 @@ jobs:
             android/**/src/test/snapshots/**/*_compare.png
           if-no-files-found: ignore
 
-  # Intended changes to Android screens: a commit whose message contains [record-snapshots] re-records every Roborazzi
-  # baseline and commits them to the same branch ("Android snapshot baselines re-recorded"), so they can be reviewed in
-  # the diff. Never runs otherwise; a commit pushed with GITHUB_TOKEN starts no new workflow run.
+  # Intended changes to Android screens: run this workflow by hand on a branch with record_snapshots on; it re-records
+  # every Roborazzi baseline and commits them to that branch ("Android snapshot baselines re-recorded"), to be reviewed in
+  # the diff. Never runs on a push; a commit pushed with GITHUB_TOKEN starts no new workflow run.
   android-record-snapshots:
     name: android snapshot baselines (on request)
     runs-on: ubuntu-24.04
     needs: detect
-    if: github.event_name == 'push' && needs.detect.outputs.android == 'true' && contains(github.event.head_commit.message, '[record-snapshots]')
+    if: github.event_name == 'workflow_dispatch' && inputs.record_snapshots && needs.detect.outputs.android == 'true'
     permissions:
       contents: write
     steps:
@@ -243,7 +249,7 @@ jobs:
           git add -A 'android/**/src/test/snapshots/**'
           if git diff --cached --quiet; then echo "no baseline changed"; exit 0; fi
           git diff --cached --stat
-          git commit -m "Android snapshot baselines re-recorded (CI, on request of ${GITHUB_SHA::7})"
+          git commit -m "Android snapshot baselines re-recorded (CI, at ${GITHUB_SHA::7})"
           git push origin "HEAD:${GITHUB_REF#refs/heads/}"
 
   android-e2e:

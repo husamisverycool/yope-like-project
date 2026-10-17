@@ -94,6 +94,8 @@ data class FavoritePhoto(
 /** One of your own `favorites` rows (RLS: own rows only; the viewer reads which of its photos are favorites). */
 @Serializable
 data class FavoriteRow(@SerialName("media_id") val mediaId: String)
+
+/**
  * One row of `search_photos` (migration 0040): a photo you can see that matches every criterion given, newest first.
  * [matched] says why (`caption`, `chat`, `author`, `tag`, `date`); it is never shown and no count is made of it.
  */

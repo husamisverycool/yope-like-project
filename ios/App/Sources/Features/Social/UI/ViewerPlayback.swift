@@ -3,6 +3,7 @@
 // References: Retro's web viewer (references/auto/retro/web/retro.app-viewer-and-hero-js-excerpts.txt §1: the video
 // autoplays muted and loops, shows once it can play, and taps still go forward / back); Apple HIG Playing audio (silent
 // mode plays only audio people start; pause when headphones go) and Live Photos (press to play, the system badge).
+import AppData
 import AVFoundation
 import Combine
 import Photos

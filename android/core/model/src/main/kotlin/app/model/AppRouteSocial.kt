@@ -47,6 +47,8 @@ enum class PhotoContext {
      * names each photo's group, as from a wall.
      */
     Favorites,
+
+    /**
      * The results of a `search.photos` search, in their order (newest first); `contextId` = the key the search page kept
      * them under (`SearchResults`); when they are gone (a new process), the opened photo alone.
      */
