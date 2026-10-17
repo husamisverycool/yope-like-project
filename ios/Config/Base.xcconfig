@@ -16,7 +16,9 @@ CODE_SIGN_STYLE = Automatic
 
 // ---- Platform ----
 IPHONEOS_DEPLOYMENT_TARGET = 17.2
-TARGETED_DEVICE_FAMILY = 1,2
+// iPhone only (docs/OWNER_DECISIONS.md #25): iPads run the iPhone app in compatibility mode, as they run Retro, Locket
+// and BeReal (iPhone-only in their App Store compatibility sections).
+TARGETED_DEVICE_FAMILY = 1
 MARKETING_VERSION = 1.0
 CURRENT_PROJECT_VERSION = 1
 
@@ -29,3 +31,7 @@ ENABLE_USER_SCRIPT_SANDBOXING = YES
 // Generated from build settings (INFOPLIST_KEY_*) merged with each target's small Info.plist
 // for keys that have no build setting (NSExtension, UIBackgroundModes, NSAppClip, AppGroupIdentifier).
 GENERATE_INFOPLIST_FILE = YES
+// Export compliance (App Store Connect asks on every upload without it): the only encryption is the HTTPS / TLS and
+// Keychain of iOS itself (URLSession through supabase-swift and RevenueCat), which is exempt — Apple, "Complying with
+// encryption export regulations" (developer.apple.com/documentation/security/complying-with-encryption-export-regulations).
+INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO

@@ -39,7 +39,8 @@ android {
     defaultConfig {
         applicationId = appId
         versionCode = releaseVersionCode ?: 1
-        versionName = "0.1.0"
+        // The same version as the iPhone app (ios/Config/Base.xcconfig MARKETING_VERSION); the build number is versionCode.
+        versionName = "1.0"
         // App Links host for https://<domain>/i/<token>. While `domain` is BLOCKED a reserved
         // never-resolving name (RFC 2606 .invalid) keeps the filter inert.
         manifestPlaceholders["appLinkHost"] = appDomain ?: "unset.invalid"

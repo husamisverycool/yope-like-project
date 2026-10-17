@@ -49,6 +49,9 @@ targets:
       # config/app.json is the single source of app configuration; bundled as app.json.
       - path: ../config/app.json
         buildPhase: resources
+      # Privacy manifest (required-reason APIs, collected data; docs/PRIVACY_LABELS.md).
+      - path: App/PrivacyInfo.xcprivacy
+        buildPhase: resources
     settings:
       base:
         # The app icon of owner decision 32 (tools/appicon.py); no accent colour set in the catalog.
@@ -81,6 +84,8 @@ targets:
       Release: Config/Widgets.xcconfig
     sources:
       - path: Widgets/Sources
+      - path: Widgets/PrivacyInfo.xcprivacy
+        buildPhase: resources
     dependencies:
       - package: AppCore
         product: AppModels
@@ -95,6 +100,8 @@ targets:
       Release: Config/NotificationService.xcconfig
     sources:
       - path: NotificationService/Sources
+      - path: NotificationService/PrivacyInfo.xcprivacy
+        buildPhase: resources
     dependencies:
       - package: AppCore
         product: AppModels
@@ -114,6 +121,8 @@ targets:
       - path: App/Sources/Components
       - path: App/Sources/Features/Account/Shared
       - path: ../config/app.json
+        buildPhase: resources
+      - path: AppClip/PrivacyInfo.xcprivacy
         buildPhase: resources
     dependencies:
       - package: AppCore
