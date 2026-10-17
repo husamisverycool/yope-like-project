@@ -61,6 +61,8 @@ export async function createUser(displayName: string): Promise<string> {
     phone_confirm: true,
     user_metadata: { display_name: displayName },
   });
+  // past the age gate: create_group / join_group / create_post require it (backend migration 0055)
+  await req("PATCH", `/rest/v1/profile_private?user_id=eq.${u.id}`, { age_confirmed_at: new Date().toISOString() }, { Prefer: "return=minimal" });
   return u.id as string;
 }
 

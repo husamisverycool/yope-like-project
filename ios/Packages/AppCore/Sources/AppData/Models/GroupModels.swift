@@ -116,7 +116,8 @@ public struct GroupMember: Codable, Hashable, Sendable, Identifiable {
     public var groupID: GroupID
     public var userID: UserID
     public var role: MemberRole
-    /// Per-group push mute (readable by co-members, §12.12).
+    /// The caller's own per-group push mute. Not a `group_members` column since migration 0056: the
+    /// repository fills it from `group_mutes` (own rows only) for the caller's row; false for everyone else.
     public var muted: Bool
     public var joinedAt: Date
 
@@ -128,6 +129,16 @@ public struct GroupMember: Codable, Hashable, Sendable, Identifiable {
         self.role = role
         self.muted = muted
         self.joinedAt = joinedAt
+    }
+
+    /// `muted` is absent from server rows (it stays in the offline cache's encoding).
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        groupID = try container.decode(GroupID.self, forKey: .groupID)
+        userID = try container.decode(UserID.self, forKey: .userID)
+        role = try container.decode(MemberRole.self, forKey: .role)
+        muted = try container.decodeIfPresent(Bool.self, forKey: .muted) ?? false
+        joinedAt = try container.decode(Date.self, forKey: .joinedAt)
     }
 
     enum CodingKeys: String, CodingKey {

@@ -214,8 +214,11 @@ enum LocalStack {
             "user_metadata": ["display_name": displayName],
         ])
         let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        guard let id = object?["id"] as? String else { throw HTTPFailure(status: 0, body: "no id") }
-        return id.lowercased()
+        guard let id = (object?["id"] as? String)?.lowercased() else { throw HTTPFailure(status: 0, body: "no id") }
+        // Past the age gate: create_group / join_group / create_post require it (backend migration 0055).
+        try await serviceRequest("PATCH", "/rest/v1/profile_private?user_id=eq.\(id)",
+                                 json: ["age_confirmed_at": ISO8601DateFormatter().string(from: Date())], prefer: "return=minimal")
+        return id
     }
 
     static func deleteAuthUser(_ id: String) async {

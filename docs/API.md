@@ -69,6 +69,9 @@ Contents
   `age_gate_not_configured` (503); the client must treat that as "cannot continue" and not
   skip the step. The birthdate is **not stored**. If the
   user also opts in to birthday tributes, call `set_birthday` with the same date.
+  The server enforces the gate (migration 0055): until `confirm_age` has succeeded
+  (`profile_private.age_confirmed_at` set), `create_group`, `join_group` and `create_post`
+  fail with `age_not_confirmed` (403). Everything else stays available.
 - **Avatar**: upload to `avatars/<uid>/<uuid>.jpg`, then update `profiles.avatar_path`.
 - **Push**: after permission is granted (and on every token change) call
   `register_device`. On sign-out call `unregister_device` before `auth.signOut()`.
@@ -100,6 +103,7 @@ RPC and table errors come back as HTTP errors with a PostgREST JSON body:
 | `not_allowed` | 403 | The caller may not do this to someone else's row (e.g. `remove_from_album` of a photo another member added, when not the album's creator or an admin). |
 | `post_not_eligible` | 403 | Tribute photo is neither yours nor one you are self-tagged in. |
 | `under_minimum_age` | 403 | Age gate refused. |
+| `age_not_confirmed` | 403 | `create_group`, `join_group`, `create_post`: the caller has not passed the age gate yet (`confirm_age`, migration 0055). |
 | `premium_required` | 402 | Video posts need an active premium entitlement. |
 | `video_too_long` | 400 | `create_post`: the video is longer than `app_config.video_max_ms` (`details` = `video_max_ms=…`). |
 | `post_not_found` | 404 | Post does not exist, or the caller cannot see it (not a member / block). |
@@ -224,8 +228,20 @@ Read: members of the same group. Written by RPCs only.
 |---|---|---|
 | `group_id`, `user_id` | uuid | primary key |
 | `role` | member_role | at least one admin while the group has members (`set_member_role`, migration 0054) |
-| `muted` | boolean | per-group mute (push); readable by co-members, see [12](#12-open-decisions) |
 | `joined_at` | timestamptz | order of joining (admin hand-off uses it) |
+
+The per-group mute is not here: it is private, in `group_mutes` (§5.4a). Until migration 0056
+this table had a `muted` column that co-members could read.
+
+### 5.4a `group_mutes`
+
+Migration 0056. One row per group you muted (`set_group_muted`). Read: **own rows only**; never
+published to Realtime. The row is removed with the membership (leaving, removal, account deletion).
+
+| Column | Type | Notes |
+|---|---|---|
+| `group_id`, `user_id` | uuid | primary key; references your `group_members` row |
+| `created_at` | timestamptz | |
 
 ### 5.5 `group_invites`
 
@@ -393,7 +409,10 @@ the group screen and the camera's send-to show these with their countdown (migra
 
 ### 5.13 `collages`
 
-The same-moment collage of a daily invitation, made by the worker. Read: members.
+The same-moment collage of a daily invitation, made by the worker. Read: members, except that a collage is
+**withheld** (row, `group_collages`, history, walls and its files) from a member who has a block, either way, with the
+author of any photo in it, or who reported one of its photos (migration 0057). It is rendered once for the group, so it
+cannot leave one photo out for one viewer.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -476,7 +495,9 @@ Columns: `id` uuid, `request_id` uuid, `contributor_id` uuid, `post_id` uuid,
 The rendered tribute video. Read: **nobody before `delivered_at` is set and past**; then the honoree and the
 members who contributed to its request (not blocked with the honoree) — VidDay: "The final video is private right
 from the start", shared with the contributors afterwards (migration 0034, MERGE_DECISIONS FV-3). The group screen
-lists the ones you can read with `group_tributes`.
+lists the ones you can read with `group_tributes`. A video is **withheld** (row and files), the honoree included, from
+anyone who has a block with one of its contributors or the author of one of its photos, or who reported one of its
+photos (migration 0057): it is rendered once for everyone.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -489,7 +510,9 @@ lists the ones you can read with `group_tributes`.
 
 ### 5.19 `year_stories`
 
-Read: members.
+Read: members. A year story is data, not a rendering: its post ids are filtered per viewer by the `posts` policy
+(blocks, reports), and the collages of its `everyone_days` are withheld like any collage (§5.13), so the apps skip
+those days (migration 0057).
 
 | Column | Type | Notes |
 |---|---|---|
@@ -528,7 +551,7 @@ Read / DELETE: own rows. Written by `register_device`.
 
 Read: own row. Written by `set_quiet_hours`. Columns: `user_id`, `quiet_start` time?,
 `quiet_end` time?, `time_zone` text?, `updated_at`. No row means no quiet hours.
-Per-group mute is `group_members.muted`. `paused_until` timestamptz? (migration 0037, Pause All, written by
+Per-group mute is a `group_mutes` row (§5.4a, migration 0056). `paused_until` timestamptz? (migration 0037, Pause All, written by
 `set_notifications_paused`): while it is in the future the person gets no notification at all — every group, the daily
 invitation included — exactly as if every group were muted (widgets still update); null or past = not paused.
 `memories` boolean (default **false**) and `memory_time_zone` text? (migration 0049, written by `set_memory_alerts`):
@@ -562,6 +585,11 @@ history browsing if the owner sets `free_history_days`.
 Insert only (no client reads). Prefer the `report` RPC. Columns: `id`, `reporter_id`,
 `target_kind`, `target_id`, `reason`, `status` (`open|reviewed|actioned|dismissed`,
 service role), `created_at`.
+
+A reported post or message is **hidden from its reporter** (migration 0057), as a block hides content: the `posts`
+and `messages` rows (and their Realtime events), the chat line of a reported photo, its reactions, media and files,
+replies to it, and every browse RPC (history, wall, memories, favorites, on this day, newest photos, plan photos,
+search). Collages and tribute videos with a reported photo are withheld from the reporter. Nobody else's view changes.
 
 ### 5.24 Service-role-only tables
 
@@ -704,7 +732,8 @@ gone. Errors: `not_group_member`.
 ```
 set_group_muted(p_group_id uuid, p_muted boolean) → void
 ```
-Your own per-group push mute. Errors: `not_group_member`.
+Your own per-group push mute, stored in `group_mutes` (own rows only, §5.4a; migration 0056). Read it back
+from `group_mutes`, not `group_members`. Idempotent. Errors: `not_group_member`.
 
 #### `set_group_invitation_hours`
 ```
@@ -952,7 +981,8 @@ Reports a post or message of one of your groups, a person you share a group with
 have a block with), or one of your groups; since 0018 a selfie reaction you can see; since 0032
 another member's plan (`plans.id`), a birthday video you can watch (`tributes.id`), a year story,
 a collage or a weekly recap of one of your groups (by their ids). Returns the report id. A block
-does not stop you reporting. Errors: `target_not_found`, `invalid_reason`. Jobs: `moderation.report`.
+does not stop you reporting. A post or message you report is hidden from you from then on (§5.23, migration
+0057); reporting it again still works. Errors: `target_not_found`, `invalid_reason`. Jobs: `moderation.report`.
 
 #### `register_device` / `unregister_device`
 ```
@@ -997,7 +1027,8 @@ confirm_age(p_birthdate date) → profile_private
 ```
 Errors: `age_gate_not_configured` (503, fails closed while `min_age_years` is null),
 `invalid_birthdate`, `under_minimum_age`. On success, sets `age_confirmed_at` once (it
-is kept on repeat calls). The birthdate is not stored.
+is kept on repeat calls). The birthdate is not stored. `create_group`, `join_group` and `create_post` require it
+(`age_not_confirmed`, migration 0055).
 
 ### 6.4 Browsing and remembering
 
@@ -1227,7 +1258,7 @@ Rules:
 
 Published tables: `messages`, `posts`, `reactions`, `message_reactions`, `chat_typing` (and the plans tables). **Inserts and updates only.** Each
 event is checked against the subscriber's RLS, so you only get rows you could select
-(your groups, minus blocks). Subscribe per open group:
+(your groups, minus blocks and what you reported). Subscribe per open group:
 
 ```swift
 let ch = supabase.channel("group-\(groupId)")
@@ -1405,9 +1436,10 @@ described here and is easy to change.
 3. **Albums**: any member can rename; only the creator or an admin can delete.
 4. **`free_history_days`**: NULL = unlimited history for everyone (premium decision pending).
 5. **Invite link lifetime**: decided (owner decision 27): no expiry (`invite_ttl_seconds` NULL).
-6. **Age gate values**: `min_age_years` = 13 (owner decision 26). The server does **not**
-   require `age_confirmed_at` for other RPCs. Decide whether `create_group` /
-   `join_group` / `create_post` should require it.
+6. **Age gate values**: `min_age_years` = 13 (owner decision 26). Decided: `create_group`,
+   `join_group` and `create_post` require `age_confirmed_at` (`age_not_confirmed`, 403,
+   migration 0055). Other RPCs (reading, chat, settings, `create_overnight_post`, `delete_account`)
+   do not check it; the apps run the gate before the first group.
 7. **Default waking window** (`default_waking_*` = 09:48–21:12, the only observed BeReal
    sample; BeReal publishes no hours) and **weekly recap time**: recaps are assembled at the
    end of each group's waking window on Sunday, the last waking moment of its week. The
@@ -1419,11 +1451,14 @@ described here and is easy to change.
     owner may prefer a later hour of the day.
 11. **Leaving or being removed keeps your photos in the group.** Alternative: remove the
     leaver's posts from that group.
-12. **`group_members.muted` is visible to co-members.** If muting should be private,
-    move it to an own-rows table.
-13. **Composited media and blocks**: collages, tribute videos and year stories are
-    rendered once per group, so a blocked person's photo can appear in them. Recaps and
-    albums are lists of post ids and are filtered per viewer.
+12. **Muting is private** (decided, migration 0056): the mute lives in `group_mutes`, own rows only.
+    Co-members can no longer read who muted the group.
+13. **Composited media and blocks** (decided, migration 0057): collages and tribute videos are
+    rendered once per group, so the server **withholds** the whole artifact (row, serving RPCs, files,
+    widget) from a viewer who has a block, either way, with the author of any photo in it (for a tribute
+    also with any contributor), or who reported one of its photos. Year stories are data (post ids),
+    filtered per viewer like recaps and albums; their everyone-answered days point at collages, which
+    follow the collage rule. Alternative: render per-viewer variants without the hidden photos.
 14. **Contributors don't see each other's tribute contributions** (tenet: invitations,
     never obligations). Alternative: show contributors to other contributors.
 15. **One in-window post per person per invitation** is not enforced. The collage worker
@@ -1436,7 +1471,9 @@ described here and is easy to change.
 18. **Text length limits** (name 80, caption 1000, message 4000, recap 2000, tribute line
     280, report 1000) are integrity bounds only. UI limits come from the design.
 19. **Reports**: there is no moderation tooling yet. `moderation.report` jobs need a
-    destination (email, dashboard).
+    destination (email, dashboard). A reported post or message is hidden from its reporter at once
+    (migration 0057, §5.23); reports of people, groups, plans, tributes, year stories, collages or
+    recaps hide nothing by themselves (block the person to hide their content).
 
 ## 13. Known limitations
 

@@ -14,6 +14,8 @@ public enum APIErrorCode: String, CaseIterable, Sendable {
     case notAllowed = "not_allowed"
     case postNotEligible = "post_not_eligible"
     case underMinimumAge = "under_minimum_age"
+    /// `create_group` / `join_group` / `create_post` before `confirm_age` succeeded (migration 0055).
+    case ageNotConfirmed = "age_not_confirmed"
     case premiumRequired = "premium_required"
     case videoTooLong = "video_too_long"
     case postNotFound = "post_not_found"

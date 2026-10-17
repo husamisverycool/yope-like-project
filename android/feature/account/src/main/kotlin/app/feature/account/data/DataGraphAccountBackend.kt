@@ -97,7 +97,9 @@ class DataGraphAccountBackend(private val graph: DataGraph) : AccountBackend {
 
     override suspend fun myMemberships(): List<GroupMember> {
         val uid = graph.api.requireUserId()
+        val muted = graph.groups.mutedGroupIds() // group_mutes, own rows (migration 0056)
         return graph.api.select(Tables.GROUP_MEMBERS, GroupMember.serializer()) { filter { eq("user_id", uid) } }
+            .map { it.copy(muted = it.groupId in muted) }
     }
 
     override suspend fun activeInvites(groupId: String): List<GroupInvite> = graph.groups.activeInvites(groupId)

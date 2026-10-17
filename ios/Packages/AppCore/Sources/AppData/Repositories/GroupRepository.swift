@@ -78,7 +78,14 @@ public struct GroupRepository: Sendable {
         }
         let profiles = try await ProfileRepository(client: client).profiles(ids: members.map(\.userID))
         let byID = Dictionary(profiles.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let result = members.map { MemberProfile(member: $0, profile: byID[$0.userID]) }
+        // Only the caller's own mute is readable (group_mutes, own rows); everyone else reads as not muted.
+        let me = try await client.requireUserID()
+        let mutedHere = try await isMuted(me: me, groupID: groupID)
+        let result = members.map { row -> MemberProfile in
+            var member = row
+            member.muted = member.userID == me && mutedHere
+            return MemberProfile(member: member, profile: byID[member.userID])
+        }
         await cache?.write(result, for: .members(groupID))
         return result
     }
@@ -90,12 +97,27 @@ public struct GroupRepository: Sendable {
     /// The caller's own membership row (role, mute).
     public func myMembership(groupID: GroupID) async throws -> GroupMember? {
         let me = try await client.requireUserID()
-        return try await client.firstRow(GroupMember.self) {
+        let row = try await client.firstRow(GroupMember.self) {
             client.supabase.from("group_members").select()
                 .eq("group_id", value: groupID.rawValue)
                 .eq("user_id", value: me.rawValue)
                 .limit(1)
         }
+        guard var member = row else { return nil }
+        member.muted = try await isMuted(me: me, groupID: groupID)
+        return member
+    }
+
+    /// `group_mutes` (migration 0056): whether the caller muted the group. RLS returns own rows only, so
+    /// a mute is never visible to co-members; `group_members` no longer carries it.
+    private func isMuted(me: UserID, groupID: GroupID) async throws -> Bool {
+        let rows = try await client.rows(GroupMuteRow.self) {
+            client.supabase.from("group_mutes").select("group_id")
+                .eq("group_id", value: groupID.rawValue)
+                .eq("user_id", value: me.rawValue)
+                .limit(1)
+        }
+        return !rows.isEmpty
     }
 
     // MARK: Creating and editing
@@ -232,5 +254,14 @@ public struct GroupRepository: Sendable {
         try await client.rpcVoid("leave_group", ["p_group_id": .id(groupID)])
         await cache?.removeGroup(groupID)
         await onGroupsChanged?()
+    }
+}
+
+/// A `group_mutes` row as `GroupRepository` reads it (only the group id is selected).
+private struct GroupMuteRow: Decodable {
+    let groupID: String
+
+    enum CodingKeys: String, CodingKey {
+        case groupID = "group_id"
     }
 }

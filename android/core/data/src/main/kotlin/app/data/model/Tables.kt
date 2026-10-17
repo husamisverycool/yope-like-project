@@ -4,6 +4,7 @@ package app.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.JsonElement
 import java.time.Instant
@@ -66,8 +67,20 @@ data class GroupMember(
     @SerialName("group_id") val groupId: String,
     @SerialName("user_id") val userId: String,
     val role: MemberRole,
-    val muted: Boolean,
+    /**
+     * Your own per-group push mute. Not a column (migration 0056 moved it to the own-rows table
+     * `group_mutes`): the repositories fill it for your row; false for everyone else.
+     */
+    @Transient val muted: Boolean = false,
     @SerialName("joined_at") val joinedAt: Instant,
+)
+
+/** §5.4a `group_mutes` (migration 0056): a group you muted; RLS returns your own rows only. */
+@Serializable
+data class GroupMute(
+    @SerialName("group_id") val groupId: String,
+    @SerialName("user_id") val userId: String,
+    @SerialName("created_at") val createdAt: Instant,
 )
 
 /** §5.5 `group_invites` */

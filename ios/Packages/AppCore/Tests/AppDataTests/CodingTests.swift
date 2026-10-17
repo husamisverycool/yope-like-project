@@ -212,7 +212,7 @@ final class CodingTests: XCTestCase {
         // docs/API.md §3 table (keep in sync).
         let documented = """
         not_authenticated not_group_member not_group_admin not_album_owner not_allowed post_not_eligible under_minimum_age
-        premium_required video_too_long post_not_found media_not_found message_not_found member_not_found user_not_found
+        age_not_confirmed premium_required video_too_long post_not_found media_not_found message_not_found member_not_found user_not_found
         invite_not_found recap_not_found album_not_found request_not_found target_not_found invite_revoked
         invite_expired group_full already_posted recap_not_ready media_not_ready last_admin edit_window_closed tribute_closed
         age_gate_not_configured

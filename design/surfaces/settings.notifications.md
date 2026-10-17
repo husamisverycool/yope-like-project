@@ -61,7 +61,7 @@ All groups follow `settings.root.layout.list` (C-14, rows ≥ `settings.root.siz
 | permission off (permission-denied) | off block at the top | `settings.notifications.off.*` |
 | no groups | Groups section hidden | — |
 | change failed / offline | the control returns; message-only alert | `settings.notifications.error` + `auth.phone.error.dismiss` |
-| empty / error (read) | the read uses cached `group_members.muted`; on failure the section shows the error alert on load | `settings.notifications.error` |
+| empty / error (read) | the read uses the cached mutes (`group_mutes`); on failure the section shows the error alert on load | `settings.notifications.error` |
 
 ## Motion
 
@@ -81,9 +81,9 @@ Switches: `settings.root.layout.toggleHaptic`. Presses → `haptic.global.tap` (
 
 ## Data & actions
 
-- `group_members.muted` (own rows) per group; `notification_settings` (own row, docs/API.md §5.21).
+- `group_mutes` (own rows only, migration 0056) per group; `notification_settings` (own row, docs/API.md §5.21).
 - Writes: `set_group_muted`, `set_quiet_hours`, `set_notifications_paused`, `set_overnight_alerts`, `set_memory_alerts` (§6.3).
-- "Mute This Group" on an alert (`notifications.push` Actions) writes the same `group_members.muted` as the group row.
+- "Mute This Group" on an alert (`notifications.push` Actions) writes the same `group_mutes` row as the group row.
 - In: `settings.root`; `groups.settings` ("Quiet Hours" row). Out: system notification settings.
 
 ## Platform notes

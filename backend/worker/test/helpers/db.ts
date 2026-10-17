@@ -100,6 +100,8 @@ export async function createUser(name = "Test User"): Promise<TestUser> {
   const { data, error } = await admin.auth.admin.createUser({ phone: nextPhone(), phone_confirm: true, user_metadata: { display_name: name } });
   if (error) throw error;
   const id = data.user!.id;
+  // past the age gate (create_group / join_group / create_post require it, migration 0055)
+  await sql(`update public.profile_private set age_confirmed_at = now() where user_id = $1`, [id]);
   const token = mintJwt(id);
   const client = createClient(API_URL, ANON_KEY, { ...noSession, accessToken: async () => token });
   const user = { id, name, client };

@@ -39,7 +39,8 @@ describe('create_group', () => {
     expect(g.waking_start).toBe('08:00:00');
     expect(g.invitation_paused).toBe(false);
     const members = await select(a.client, 'group_members', (q) => q.eq('group_id', g.id));
-    expect(members).toEqual([expect.objectContaining({ user_id: a.id, role: 'admin', muted: false })]);
+    expect(members).toEqual([expect.objectContaining({ user_id: a.id, role: 'admin' })]);
+    expect(members[0]).not.toHaveProperty('muted'); // private since 0056 (group_mutes)
   });
 
   it('accepts a cover uploaded under the caller prefix only', async () => {
@@ -240,13 +241,48 @@ describe('membership changes', () => {
     await expectRpcError(rpc(c.client, 'leave_group', { p_group_id: g.id }), 'not_group_member', 403);
   });
 
-  it('set_group_muted affects only the caller row', async () => {
+  it('set_group_muted affects only the caller, and nobody else can read it (group_mutes, 0056)', async () => {
     const g = await createGroup(a, [b]);
     await rpc(b.client, 'set_group_muted', { p_group_id: g.id, p_muted: true });
+    await rpc(b.client, 'set_group_muted', { p_group_id: g.id, p_muted: true }); // idempotent
+    expect(await select(b.client, 'group_mutes', (q) => q.eq('group_id', g.id))).toEqual([
+      expect.objectContaining({ group_id: g.id, user_id: b.id }),
+    ]);
+    // co-members see neither the mute row nor a muted column
+    expect(await select(a.client, 'group_mutes')).toEqual([]);
     const rows = await select(a.client, 'group_members', (q) => q.eq('group_id', g.id));
-    expect(rows.find((m: any) => m.user_id === b.id).muted).toBe(true);
-    expect(rows.find((m: any) => m.user_id === a.id).muted).toBe(false);
+    expect(rows.every((m: any) => !('muted' in m))).toBe(true);
+    await rpc(b.client, 'set_group_muted', { p_group_id: g.id, p_muted: false });
+    expect(await select(b.client, 'group_mutes', (q) => q.eq('group_id', g.id))).toEqual([]);
+    // leaving drops the mute with the membership
+    await rpc(b.client, 'set_group_muted', { p_group_id: g.id, p_muted: true });
+    await rpc(b.client, 'leave_group', { p_group_id: g.id });
+    expect(await sql(`select 1 from public.group_mutes where group_id = $1`, [g.id])).toEqual([]);
     await expectRpcError(rpc(stranger.client, 'set_group_muted', { p_group_id: g.id, p_muted: true }), 'not_group_member', 403);
+  });
+
+  it('the age gate is enforced: create_group, join_group and create_post need confirm_age first (0055)', async () => {
+    const young = await createUser('Not Yet', { ageConfirmed: false });
+    const g = await createGroup(a, []);
+    const invite = await rpc(a.client, 'create_invite', { p_group_id: g.id });
+    await expectRpcError(
+      rpc(young.client, 'create_group', { p_name: 'Mine', p_kind: 'friends', p_time_zone: 'UTC' }),
+      'age_not_confirmed',
+      403,
+    );
+    await expectRpcError(rpc(young.client, 'join_group', { p_token: invite.token }), 'age_not_confirmed', 403);
+    await expectRpcError(
+      rpc(young.client, 'create_post', { p_media_id: randomUUID(), p_group_ids: [g.id] }),
+      'age_not_confirmed',
+      403,
+    );
+    // reading what needs no age stays open
+    expect(await rpc(young.client, 'invite_preview', { p_token: invite.token })).toBeTruthy();
+    await rpc(young.client, 'confirm_age', { p_birthdate: '1990-01-01' });
+    const joined = await rpc(young.client, 'join_group', { p_token: invite.token });
+    expect(joined.id).toBe(g.id);
+    const own = await rpc(young.client, 'create_group', { p_name: 'Mine', p_kind: 'friends', p_time_zone: 'UTC' });
+    expect(own.created_by).toBe(young.id);
   });
 
   it('set_group_invitation_hours / set_group_invitation_paused are admin only', async () => {
@@ -329,7 +365,7 @@ describe('table policies: profiles, profile_private', () => {
   });
 
   it('profile_private: own row only, written through RPCs', async () => {
-    const u = await createUser('Priv Ate');
+    const u = await createUser('Priv Ate', { ageConfirmed: false });
     const rows = await select(u.client, 'profile_private');
     expect(rows).toEqual([expect.objectContaining({ user_id: u.id, birthday: null, birthday_opt_in: false, age_confirmed_at: null })]);
     expect((await select(a.client, 'profile_private')).map((r: any) => r.user_id)).toEqual([a.id]);

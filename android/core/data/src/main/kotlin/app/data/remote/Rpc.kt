@@ -153,6 +153,8 @@ object Tables {
     const val PROFILE_PRIVATE = "profile_private"
     const val GROUPS = "groups"
     const val GROUP_MEMBERS = "group_members"
+    /** Migration 0056: the groups you muted (own rows only). */
+    const val GROUP_MUTES = "group_mutes"
     const val GROUP_INVITES = "group_invites"
     const val BLOCKS = "blocks"
     const val MEDIA = "media"
