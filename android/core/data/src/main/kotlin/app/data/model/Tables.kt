@@ -196,6 +196,17 @@ data class Message(
     @SerialName("voice_levels") val voiceLevels: List<Int>? = null,
     /** Migration 0047: when the author last edited the text (`edit_message`); null when never edited ("Edited" under it). */
     @SerialName("edited_at") val editedAt: Instant? = null,
+    /** Migration 0053: the preview the sender's device built for a link in the text (`set_link_preview`); null when none. */
+    @SerialName("link_preview") val linkPreview: LinkPreview? = null,
+)
+
+/** `messages.link_preview` (migration 0053): built on the sender's device; recipients never contact the site. */
+@Serializable
+data class LinkPreview(
+    val url: String,
+    val title: String? = null,
+    val site: String? = null,
+    @SerialName("image_path") val imagePath: String? = null,
 )
 
 /** §5.10a `message_reactions` (migration 0047): one reaction per person per message, rows only, never a number. */

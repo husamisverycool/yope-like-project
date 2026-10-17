@@ -320,6 +320,7 @@ Group chat. Read: members, minus authors with a block with you.
 | `reply_to_post_id` | uuid? | reply to a specific photo; set to null if that photo is deleted (the reply stays) |
 | `reply_to_message_id` | uuid? | reply to a message; null if it was deleted |
 | `created_at` | timestamptz | |
+| `link_preview` | jsonb? | migration 0053: `{url, title?, site?, image_path?}` built on the **sender's** device (`set_link_preview`); show it under the text; the image is read like the message; recipients never fetch the page |
 | `edited_at` | timestamptz? | set by `edit_message` (migration 0047): show "Edited" under the message; null when never edited |
 
 Chat thread: `from("messages").select().eq("group_id", g).order("created_at", ascending: false).limit(50)`.
@@ -794,6 +795,16 @@ unreact_to_message(p_message_id uuid) → void
 Sets or replaces your one reaction on a text or voice message (migration 0047), or removes it. No push. Errors:
 `message_not_found` (not a member, a block either way), `invalid_kind` (photo, joined, left), `invalid_emoji`.
 A removal is broadcast as `message_reactions_changed`.
+
+#### `set_link_preview`
+```
+set_link_preview(p_message_id uuid, p_url text, p_title text = null, p_site text = null, p_image_path text = null) → messages
+```
+Link previews built on the sender's device (migration 0053; Apple LinkPresentation, iMessage). After `send_message`, the
+sender's app reads the page once, uploads its image under `u/<uid>/links/<uuid>.jpg` and calls this: your own text
+message whose text contains `p_url` (http/https, ≤ 2000); title ≤ 300, site ≤ 100. `p_url` null clears it. An edit that
+removes the url clears it; a replaced, cleared or deleted preview's image is deleted. Members get the Realtime UPDATE;
+no push. Errors: `message_not_found`, `invalid_kind`, `invalid_argument` (url), `invalid_text`, `invalid_path`.
 
 #### `set_typing`
 ```

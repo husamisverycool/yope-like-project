@@ -214,6 +214,7 @@ describe('group isolation: RPCs', () => {
     set_typing: { args: () => ({ p_group_id: seeded.group.id, p_typing: true }), expect: 'error' }, // typing line (0048)
     set_memory_alerts: { args: () => ({ p_on: false }), expect: 'own-account' }, // memory notification (0049): the caller's own row
     download_items: { args: () => ({ p_scope: 'album', p_album_id: seeded.albumId }), expect: 'error' }, // downloads (0052)
+    set_link_preview: { args: () => ({ p_message_id: seeded.messageIds[0], p_url: 'https://example.com' }), expect: 'error' }, // 0053
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {

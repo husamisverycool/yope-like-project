@@ -39,6 +39,8 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     EditCaption("edit_caption", setOf("p_post_id", "p_caption")),
     /** Migration 0048: "{name} is typing…" — on while typing (again every few seconds), off when stopped or sent. */
     SetTyping("set_typing", setOf("p_group_id", "p_typing")),
+    /** Migration 0053: the link preview the sender's device built (url in the text; own image upload). */
+    SetLinkPreview("set_link_preview", setOf("p_message_id", "p_url"), setOf("p_title", "p_site", "p_image_path")),
     React("react", setOf("p_post_id", "p_emoji")),
     Unreact("unreact", setOf("p_post_id", "p_emoji")),
     TagSelf("tag_self", setOf("p_post_id")),
