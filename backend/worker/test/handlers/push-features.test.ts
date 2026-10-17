@@ -133,6 +133,8 @@ describe("unlinked upload sweep", () => {
 describe("overnight photos", () => {
   it("the scheduler develops them; the group hears once per reveal, the senders included, unless alerts are off", async () => {
     await rpc(u[2]!.client, "set_overnight_alerts", { p_on: false });
+    // u1 has a block with the first photo's author: their alert names the first photo they can read.
+    await rpc(u[1]!.client, "block_user", { p_user_id: u[3]!.id });
     try {
       const m1 = await createMedia(u[3]!);
       const m2 = await createMedia(u[0]!);
@@ -141,21 +143,25 @@ describe("overnight photos", () => {
       const report = await w.scheduler.tick(new Date(d1.develops_at), { steps: ["developed"] });
       expect(report.errors).toEqual([]);
       expect(report.developed).toBeGreaterThanOrEqual(2);
-      const posts = await sql(`select id from public.posts where media_id = any($1::uuid[])`, [[m1.id, m2.id]]);
+      const posts = await sql(`select id, media_id from public.posts where media_id = any($1::uuid[])`, [[m1.id, m2.id]]);
       expect(posts).toHaveLength(2);
+      const postOf = (mediaId: string) => posts.find((p) => p.media_id === mediaId)!.id;
       expect(await jobs("push.photos_developed", { group_id: g.id })).toHaveLength(1);
       await w.runner.runUntilIdle({ kinds: ["push.photos_developed"] });
       for (const m of [u[0]!, u[1]!]) {
         const [a] = alertsTo(ios.get(m.id)!);
         expect(a!.payload).toMatchObject({ type: "new_post", group_id: g.id });
         expect(new Date(a!.payload.revealed_at).getTime()).toBe(new Date(d1.develops_at).getTime());
-        expect(posts.map((p) => p.id)).toContain(a!.payload.post_id);
         expect(a!.payload.aps.alert.title).toBe("[camera.overnight.push.title] group=Cusco crew");
       }
+      // oldest first: u3's photo, then u0's
+      expect(alertsTo(ios.get(u[0]!.id)!)[0]!.payload.post_id).toBe(postOf(m1.id));
+      expect(alertsTo(ios.get(u[1]!.id)!)[0]!.payload.post_id).toBe(postOf(m2.id));
       expect(fcmTo(android.get(u[3]!.id)!)).toHaveLength(1); // a sender hears too
       expect(fcmTo(android.get(u[2]!.id)!)).toHaveLength(0); // alerts off
     } finally {
       await rpc(u[2]!.client, "set_overnight_alerts", { p_on: true });
+      await rpc(u[1]!.client, "unblock_user", { p_user_id: u[3]!.id });
     }
   });
 });

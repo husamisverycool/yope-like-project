@@ -358,7 +358,8 @@ export async function pushPhotosDeveloped(ctx: JobContext): Promise<void> {
   const authors = [...new Set(posts.map((p) => p.author_id))];
   const blockedBy = new Map<string, Set<string>>();
   for (const a of authors) blockedBy.set(a, await blockedWith(ctx.db, [a]));
-  const seesOne = (userId: string) => authors.some((a) => a === userId || !blockedBy.get(a)!.has(userId));
+  const sees = (userId: string, authorId: string) => authorId === userId || !blockedBy.get(authorId)!.has(userId);
+  const seesOne = (userId: string) => authors.some((a) => sees(userId, a));
   const off = must(
     await ctx.db.from("notification_settings").select("user_id").eq("overnight", false).in("user_id", audience.members.map((m) => m.userId)),
     "overnight settings",
@@ -369,14 +370,16 @@ export async function pushPhotosDeveloped(ctx: JobContext): Promise<void> {
   );
   if (!recipients.length) return;
   const params = { group: audience.group.name };
-  const spec: Omit<AlertSpec, "quiet"> = {
+  // Each member's alert names the first revealed photo they can read: the apps open the viewer on it and the photos
+  // revealed with it (a photo from someone they have a block with would open on nothing).
+  const spec = (userId: string): Omit<AlertSpec, "quiet"> => ({
     type: "new_post",
     groupId,
     // revealed_at marks the alert as a reveal: the apps file it under Developed Photos and open every photo revealed with it
-    ids: { post_id: posts[0]!.id, revealed_at: developsAt },
+    ids: { post_id: posts.find((p) => sees(userId, p.author_id))!.id, revealed_at: developsAt },
     title: copyText("camera.overnight.push.title", params),
     body: copyText("camera.overnight.push.body", params),
     collapseKey: `developed:${groupId}:${developsAt}`,
-  };
-  await ctx.push.dispatch(recipients.flatMap((m) => alertSends(m, spec, now)), { label: "photos_developed", group_id: groupId, post_id: posts[0]!.id });
+  });
+  await ctx.push.dispatch(recipients.flatMap((m) => alertSends(m, spec(m.userId), now)), { label: "photos_developed", group_id: groupId, post_id: posts[0]!.id });
 }
