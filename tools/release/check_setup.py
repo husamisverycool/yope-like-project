@@ -271,8 +271,16 @@ def check_services() -> None:
         elif not all(fcm.get(k) for k in ("project_id", "client_email", "private_key")):
             missing.append("GitHub secret FCM_SERVICE_ACCOUNT_JSON is not a Firebase service account key — Firebase → Project "
                            "settings → Service accounts → Generate new private key, then paste that file's text (OWNER_SETUP.md §3.2)")
+    revenuecat = config.get("revenuecat") or {}
     if not env("REVENUECAT_WEBHOOK_AUTH"):
-        warnings.append("GitHub secret REVENUECAT_WEBHOOK_AUTH is not set: subscriptions bought in the app are not recorded yet (OWNER_SETUP.md §6.2)")
+        # The server grants Premium only from the webhook's records (public.entitlements, private.has_premium): once the
+        # apps can sell (a RevenueCat key in config/app.json), people would pay and still be refused videos.
+        if revenuecat.get("iosApiKey") or revenuecat.get("androidApiKey"):
+            missing.append("GitHub secret REVENUECAT_WEBHOOK_AUTH is not set, but config/app.json has a RevenueCat key: the "
+                           "apps can sell Premium and the server would not know who paid (people pay and still cannot post "
+                           "videos). Set the webhook in RevenueCat and this secret (OWNER_SETUP.md §6.2)")
+        else:
+            warnings.append("GitHub secret REVENUECAT_WEBHOOK_AUTH is not set: subscriptions bought in the app are not recorded yet (OWNER_SETUP.md §6.2)")
     if env("REVENUECAT_WEBHOOK_AUTH") and not env("REVENUECAT_SECRET_KEY"):
         warnings.append("GitHub secret REVENUECAT_SECRET_KEY is not set: a deleted account's purchase record stays at RevenueCat (OWNER_SETUP.md §6.2)")
     if not env("ANTHROPIC_API_KEY"):

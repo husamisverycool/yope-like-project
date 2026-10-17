@@ -298,6 +298,19 @@ class CheckSetupTest(unittest.TestCase):
         self.assertIn("web=wait", out)
         self.assertIn("The invite page waits: config/app.json ios.appStoreId", out)
 
+    def test_services_revenuecat_webhook_required_once_the_apps_sell(self):
+        base = {"supabase.url": "https://abcdefghijklmnopqrst.supabase.co"}
+        secrets = dict(FLY_API_TOKEN="t", SUPABASE_SERVICE_ROLE_KEY="k")
+        code, out = self.check("services", base, **secrets)
+        self.assertEqual(code, 0, out)
+        self.assertIn("::warning::GitHub secret REVENUECAT_WEBHOOK_AUTH is not set", out)
+        selling = dict(base, **{"revenuecat.iosApiKey": "appl_x"})
+        code, out = self.check("services", selling, **secrets)
+        self.assertEqual(code, 1)
+        self.assertIn("REVENUECAT_WEBHOOK_AUTH is not set, but config/app.json has a RevenueCat key", out)
+        code, out = self.check("services", selling, REVENUECAT_WEBHOOK_AUTH="w", **secrets)
+        self.assertEqual(code, 0, out)
+
     def test_services_ready_and_bad_push_keys(self):
         code, out = self.check("services", self.ready, FLY_API_TOKEN="t", SUPABASE_SERVICE_ROLE_KEY="k")
         self.assertEqual(code, 0, out)
