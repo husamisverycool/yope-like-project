@@ -924,6 +924,25 @@ group_tributes(p_group_id uuid) → table(id, group_id, honoree_id, poster_path,
 The group's delivered, ready birthday videos you can watch ([5.18](#518-tributes)), newest delivery first;
 `for_me` is true on your own. The group screen's birthday video cards (migration 0034). Errors: `not_group_member` 403.
 
+#### `widget_people` / `newest_photos_of` / `my_memories` (widgets, migration 0036)
+```
+widget_people() → table(user_id uuid, display_name text, avatar_path text)
+newest_photos_of(p_user_id uuid, p_limit int = 3)
+  → table(post_id, media_id, group_id, group_name, author_id, author_name, author_avatar_path, widget_path, caption,
+          visible_at, via text)
+my_memories(p_from date, p_days int, p_time_zone text)
+  → table(day date, post_id, media_id, group_id, group_name, author_id, author_name, widget_path, taken_at, years_ago int)
+```
+The data of the friend and memories widgets (docs/WIDGET_REFRESH.md "Friend and memories widgets").
+`widget_people`: the people the friend widget's picker lists — everyone who shares a group with you, except you and
+anyone with a block in either direction, by display name. `newest_photos_of`: one person's newest photos you can see
+(1–10, newest `visible_at` first), in the groups you both are in, either posted by them (`via = 'author'`) or ones they
+tagged themselves in ("I'm in this", `via = 'tag'`; never by face), by authors with no block with you; nothing for
+someone you share no group with or have a block with. Take the first row with a `widget_path` (a fresh post's rendition
+may not be made yet). `my_memories`: for each day from `p_from` for `p_days` (1–14), the newest photo you posted or
+tagged yourself in that was taken on that month and day in an earlier year, in `p_time_zone` (the device's IANA zone),
+in a group you are still in; a day with none has no row. Errors: `invalid_argument` 400.
+
 ## 7. Storage
 
 One **private** bucket, `media`: max 100 MiB per object. Allowed types: `image/jpeg`,

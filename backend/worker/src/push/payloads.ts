@@ -25,6 +25,7 @@ export const K = {
   revealedAt: "revealed_at",
   kind: "kind",
   renditionUrl: "rendition_url",
+  senderId: "sender_id",
   senderName: "sender_name",
   senderAvatarUrl: "sender_avatar_url",
   caption: "caption",
@@ -75,6 +76,8 @@ export interface WidgetFields {
   postId?: string;
   collageId?: string;
   renditionUrl: string;
+  /** The poster (a photo): devices with a friend widget for them update it too (docs/WIDGET_REFRESH.md). */
+  senderId?: string | null;
   senderName?: string | null;
   senderAvatarUrl?: string | null;
   caption?: string | null;
@@ -112,6 +115,7 @@ export function widgetFlat(w: WidgetFields): Record<string, string> {
     [K.postId]: w.postId,
     [K.collageId]: w.collageId,
     [K.renditionUrl]: w.renditionUrl,
+    [K.senderId]: w.senderId,
     [K.senderName]: w.senderName,
     [K.senderAvatarUrl]: w.senderAvatarUrl,
     [K.caption]: w.caption,
@@ -121,7 +125,7 @@ export function widgetFlat(w: WidgetFields): Record<string, string> {
 
 /** The nested "widget" object of an iOS alert (WidgetPushPayload, alert-push shape). */
 export function widgetNested(w: WidgetFields): Record<string, unknown> {
-  const sender: Record<string, string> = compact({ display_name: w.senderName, avatar_url: w.senderAvatarUrl });
+  const sender: Record<string, string> = compact({ id: w.senderId, display_name: w.senderName, avatar_url: w.senderAvatarUrl });
   const out: Record<string, unknown> = compact({
     [K.groupId]: w.groupId,
     [K.groupName]: w.groupName,

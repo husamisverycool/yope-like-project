@@ -14,6 +14,8 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
     public var sourceID: String?
     /// File name of the widget rendition inside the group's folder in `WidgetStore`.
     public var photoFileName: String
+    /// The poster's user id (a photo), when known: friend widgets keep the photos of the person they follow.
+    public var senderID: String?
     public var senderDisplayName: String?
     /// File name of the sender's avatar inside the group's folder, when one was delivered.
     public var senderAvatarFileName: String?
@@ -26,6 +28,7 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
         groupName: String? = nil,
         sourceID: String?,
         photoFileName: String,
+        senderID: String? = nil,
         senderDisplayName: String? = nil,
         senderAvatarFileName: String? = nil,
         caption: String? = nil,
@@ -36,6 +39,7 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
         self.groupName = groupName
         self.sourceID = sourceID
         self.photoFileName = photoFileName
+        self.senderID = senderID
         self.senderDisplayName = senderDisplayName
         self.senderAvatarFileName = senderAvatarFileName
         self.caption = caption
@@ -48,6 +52,7 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
         case groupName = "group_name"
         case sourceID = "source_id"
         case photoFileName = "photo_file"
+        case senderID = "sender_id"
         case senderDisplayName = "sender_name"
         case senderAvatarFileName = "sender_avatar_file"
         case caption

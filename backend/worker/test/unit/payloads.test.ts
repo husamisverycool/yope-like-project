@@ -45,6 +45,7 @@ const widget: WidgetFields = {
   kind: "photo",
   postId: "22222222-2222-4222-8222-222222222222",
   renditionUrl: "https://x.supabase.co/storage/v1/object/sign/media/u/a/b/r/widget.jpg?token=t",
+  senderId: "33333333-3333-4333-8333-333333333333",
   senderName: "Ana Lima",
   senderAvatarUrl: "https://x.supabase.co/storage/v1/object/sign/media/avatars/a/1.jpg?token=t",
   caption: "sunday",
@@ -96,7 +97,7 @@ describe("APNs payloads", () => {
         rendition_url: widget.renditionUrl,
         caption: "sunday",
         posted_at: widget.postedAt,
-        sender: { display_name: "Ana Lima", avatar_url: widget.senderAvatarUrl },
+        sender: { id: widget.senderId, display_name: "Ana Lima", avatar_url: widget.senderAvatarUrl },
       },
     });
   });
@@ -114,7 +115,7 @@ describe("APNs payloads", () => {
     expect(d.pushType).toBe("background");
     expect(d.priority).toBe(5);
     expect(d.expiration).toBe(Math.floor(now.getTime() / 1000) + 3600);
-    expect(d.payload).toMatchObject({ aps: { "content-available": 1 }, type: "widget", group_id: widget.groupId, rendition_url: widget.renditionUrl, sender_name: "Ana Lima", kind: "photo", post_id: widget.postId });
+    expect(d.payload).toMatchObject({ aps: { "content-available": 1 }, type: "widget", group_id: widget.groupId, rendition_url: widget.renditionUrl, sender_id: widget.senderId, sender_name: "Ana Lima", kind: "photo", post_id: widget.postId });
     expect((d.payload.aps as any).alert).toBeUndefined();
   });
 
@@ -192,7 +193,7 @@ describe("FCM data messages", () => {
     const m = fcmWidget(widget);
     expect(m.priority).toBe("normal");
     expect(m.collapseKey).toBe(`widget:${widget.groupId}`);
-    expect(m.data).toMatchObject({ type: "widget", group_id: widget.groupId, group_name: "Lima family", rendition_url: widget.renditionUrl, kind: "photo", posted_at: widget.postedAt, sender_name: "Ana Lima" });
+    expect(m.data).toMatchObject({ type: "widget", group_id: widget.groupId, group_name: "Lima family", rendition_url: widget.renditionUrl, kind: "photo", posted_at: widget.postedAt, sender_id: widget.senderId, sender_name: "Ana Lima" });
   });
 
   it("daily invitation: closes_at + sent_at ISO, high priority, TTL until close; ended: normal", () => {

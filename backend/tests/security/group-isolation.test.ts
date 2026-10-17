@@ -188,6 +188,10 @@ describe('group isolation: RPCs', () => {
     current_group_question: { args: () => ({ p_group_id: seeded.group.id }), expect: 'error' },
     hide_question: { args: () => ({ p_question_id: seeded.questionId }), expect: 'error' },
     answer_question: { args: () => ({ p_post_id: seeded.postIds[0], p_question_id: seeded.questionId }), expect: 'error' },
+    // widgets (0036): the caller's own picker and memories; a G member's photos are not the outsider's to see
+    widget_people: { args: () => ({}), expect: 'own-account' },
+    newest_photos_of: { args: () => ({ p_user_id: gUsers[0].id }), expect: 'empty' },
+    my_memories: { args: () => ({ p_from: '2027-01-01', p_days: 3, p_time_zone: 'UTC' }), expect: 'own-account' },
   };
 
   it('every RPC callable by authenticated users is covered here', async () => {

@@ -44,12 +44,13 @@ final class WidgetDeliveryTests: XCTestCase {
 
     func testNestedFullPayload() throws {
         var widget = base
-        widget["sender"] = ["display_name": "Ana", "avatar_url": "https://cdn.example.test/a.png"]
+        widget["sender"] = ["id": "u1", "display_name": "Ana", "avatar_url": "https://cdn.example.test/a.png"]
         widget["caption"] = "hi"
         widget["kind"] = "collage"
         widget["group_name"] = "Roommates"
         widget["posted_at"] = 1_760_000_000
         let parsed = try XCTUnwrap(nested(widget))
+        XCTAssertEqual(parsed.sender?.id, "u1")
         XCTAssertEqual(parsed.sender?.displayName, "Ana")
         XCTAssertEqual(parsed.sender?.avatarURL?.absoluteString, "https://cdn.example.test/a.png")
         XCTAssertEqual(parsed.caption, "hi")
@@ -70,12 +71,14 @@ final class WidgetDeliveryTests: XCTestCase {
         let parsed = try XCTUnwrap(flat([
             "group_id": "g1", "group_name": "Family", "collage_id": "c1", "kind": "collage",
             "rendition_url": "https://cdn.example.test/w.jpg?sig=1", "posted_at": "2025-10-15T12:00:00Z",
-            "sender_name": "Ana", "sender_avatar_url": "https://cdn.example.test/a.jpg", "caption": "same time",
+            "sender_id": "u1", "sender_name": "Ana", "sender_avatar_url": "https://cdn.example.test/a.jpg", "caption": "same time",
         ]))
         XCTAssertEqual(parsed.sourceID, "c1")
         XCTAssertEqual(parsed.kind, .collage)
         XCTAssertEqual(parsed.groupName, "Family")
-        XCTAssertEqual(parsed.sender, WidgetPushPayload.Sender(displayName: "Ana", avatarURL: URL(string: "https://cdn.example.test/a.jpg")))
+        XCTAssertEqual(parsed.sender, WidgetPushPayload.Sender(id: "u1", displayName: "Ana", avatarURL: URL(string: "https://cdn.example.test/a.jpg")))
+        // an unsafe sender id is dropped; the rest of the payload still counts
+        XCTAssertNil(try XCTUnwrap(flat(["group_id": "g1", "rendition_url": "https://x.test/y", "sender_id": "../u", "sender_name": "Ana"])).sender?.id)
         XCTAssertEqual(parsed.postedAt, Date(timeIntervalSince1970: 1_760_529_600))
         XCTAssertNil(WidgetPushPayload(userInfo: ["type": "new_post", "group_id": "g1", "rendition_url": "https://x.test/y"]),
                      "flat widget fields count only on a widget push")
@@ -155,6 +158,7 @@ final class WidgetDeliveryTests: XCTestCase {
         let delivery = WidgetDelivery(store: store) { _ in Data([1, 2, 3]) }
         let snapshot = try await delivery.deliver(parsed, receivedAt: Date())
         XCTAssertEqual(snapshot.senderAvatarFileName, "avatar-p1.png")
+        XCTAssertNil(snapshot.senderID, "no id in this payload")
         XCTAssertNotNil(store.avatarURL(for: snapshot))
     }
 

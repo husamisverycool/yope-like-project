@@ -54,6 +54,14 @@ class PushMessageTest {
         assertEquals(WidgetSnapshot.Kind.Collage, m.kind)
         assertEquals("c1", m.sourceId)
         assertEquals(Instant.parse("2026-10-15T12:00:00Z"), m.postedAt)
+        assertNull(m.senderId)
+    }
+
+    /** `sender_id`: the poster, for friend widgets; an unsafe id is dropped, the message still parses. */
+    @Test fun widgetUpdateCarriesTheSender() {
+        val base = mapOf("type" to "widget", "group_id" to "g1", "rendition_url" to "https://x/y", "posted_at" to "1760000000000", "post_id" to "p1")
+        assertEquals("u1", (PushMessage.parse(base + ("sender_id" to "u1"), codec) as PushMessage.WidgetUpdate).senderId)
+        assertNull((PushMessage.parse(base + ("sender_id" to "../x"), codec) as PushMessage.WidgetUpdate).senderId)
     }
 
     @Test fun widgetUpdateRequiresHttpsAndKnownKind() {

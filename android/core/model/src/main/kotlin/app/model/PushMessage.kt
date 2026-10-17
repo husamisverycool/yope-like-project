@@ -24,6 +24,8 @@ sealed interface PushMessage {
         val senderName: String?,
         val senderAvatarUrl: String?,
         val caption: String?,
+        /** The poster of a photo: a friend widget for them takes the photo too (docs/WIDGET_REFRESH.md). */
+        val senderId: String? = null,
     ) : PushMessage
 
     /** The daily same-moment invitation: an ongoing notification counting down to [closesAt]. */
@@ -85,6 +87,7 @@ sealed interface PushMessage {
                         senderName = s(PushKeys.SENDER_NAME),
                         senderAvatarUrl = s(PushKeys.SENDER_AVATAR_URL)?.takeIf { it.startsWith("https://") },
                         caption = s(PushKeys.CAPTION),
+                        senderId = id(PushKeys.SENDER_ID),
                     )
                 }
                 PushTypes.DAILY_INVITATION -> DailyInvitation(
@@ -170,6 +173,7 @@ object PushKeys {
     const val REVEALED_AT = "revealed_at"
     const val KIND = "kind"
     const val RENDITION_URL = "rendition_url"
+    const val SENDER_ID = "sender_id"
     const val SENDER_NAME = "sender_name"
     const val SENDER_AVATAR_URL = "sender_avatar_url"
     const val CAPTION = "caption"

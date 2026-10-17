@@ -127,6 +127,9 @@ describe("widget.refresh", () => {
       await w.runner.runUntilIdle({ kinds: ["widget.refresh"] });
       expect(w.fcm.messages().find((m) => m.token === a.push_token)!.data.post_id).toBe(newer.id);
       expect(w.fcm.messages().find((m) => m.token === b.push_token)!.data.post_id).toBe(older.id);
+      // the poster rides along for friend widgets (docs/WIDGET_REFRESH.md "Friend and memories widgets")
+      expect(w.fcm.messages().find((m) => m.token === a.push_token)!.data.sender_id).toBe(u[0]!.id);
+      expect(w.fcm.messages().find((m) => m.token === b.push_token)!.data.sender_id).toBe(u[3]!.id);
     } finally {
       await rpc(u[2]!.client, "unblock_user", { p_user_id: u[0]!.id });
       await sql(`delete from public.devices where id = any($1)`, [[a.id, b.id]]);

@@ -7,19 +7,22 @@ import FoundationNetworking
 ///
 /// - an iOS alert push (`mutable-content: 1`, handled by the Notification Service Extension)
 ///   carrying them as one object: `"widget": { "group_id": …, "post_id": …, "rendition_url": …,
-///   "sender": "Name" | { "display_name": …, "avatar_url": … }, "caption": …, "kind": … }`;
+///   "sender": "Name" | { "id": …, "display_name": …, "avatar_url": … }, "caption": …, "kind": … }`;
 /// - a silent push for muted groups (handled by the app delegate) with the flat keys of the
 ///   shared contract: `"type": "widget", "group_id", "post_id" | "collage_id", "rendition_url",
-///   "sender_name", "sender_avatar_url", "caption", "kind", "group_name", "posted_at"`.
+///   "sender_id", "sender_name", "sender_avatar_url", "caption", "kind", "group_name", "posted_at"`.
 ///
 /// Required: `group_id` and an HTTPS `rendition_url`. `kind` defaults to `photo`; `posted_at`
 /// (Unix seconds or milliseconds, or ISO 8601) defaults to the time of receipt.
 public struct WidgetPushPayload: Hashable, Sendable {
     public struct Sender: Hashable, Sendable {
+        /// The poster's user id (friend widgets follow it); nil when the push carries none.
+        public var id: String?
         public var displayName: String?
         public var avatarURL: URL?
 
-        public init(displayName: String?, avatarURL: URL?) {
+        public init(id: String? = nil, displayName: String?, avatarURL: URL?) {
+            self.id = id
             self.displayName = displayName
             self.avatarURL = avatarURL
         }
@@ -80,13 +83,15 @@ public struct WidgetPushPayload: Hashable, Sendable {
         switch fields["sender"] {
         case let object as [AnyHashable: Any]:
             sender = Sender(
+                id: PayloadValue.string(object["id"]).flatMap(Self.safeID),
                 displayName: PayloadValue.string(object["display_name"]) ?? PayloadValue.string(object["name"]),
                 avatarURL: PayloadValue.string(object["avatar_url"]).flatMap(Self.httpsURL)
             )
         default:
+            let id = text(PushKey.senderID).flatMap(Self.safeID)
             let name = PayloadValue.string(fields["sender"]) ?? text(PushKey.senderName)
             let avatar = text(PushKey.senderAvatarURL).flatMap(Self.httpsURL)
-            sender = (name == nil && avatar == nil) ? nil : Sender(displayName: name, avatarURL: avatar)
+            sender = (id == nil && name == nil && avatar == nil) ? nil : Sender(id: id, displayName: name, avatarURL: avatar)
         }
 
         caption = text(PushKey.caption)
@@ -108,6 +113,11 @@ public struct WidgetPushPayload: Hashable, Sendable {
 
     public func avatarFileName(fallbackID: String) -> String? {
         sender?.avatarURL.map { "avatar-\(sourceID ?? fallbackID).\(Self.imageExtension($0))" }
+    }
+
+    /// An id that may name a folder in the widget store; anything else is dropped (the rest of the payload still counts).
+    static func safeID(_ text: String) -> String? {
+        DeepLinkParser.isValidIdentifier(text) ? text : nil
     }
 
     static func httpsURL(_ text: String) -> URL? {
@@ -159,6 +169,7 @@ public struct WidgetDelivery: Sendable {
             groupName: payload.groupName ?? store.groups().first { $0.id == payload.groupID }?.name,
             sourceID: payload.sourceID,
             photoFileName: photoFileName,
+            senderID: payload.sender?.id,
             senderDisplayName: payload.sender?.displayName,
             senderAvatarFileName: avatarFileName,
             caption: payload.caption,

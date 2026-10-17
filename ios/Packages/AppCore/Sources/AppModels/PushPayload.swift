@@ -21,6 +21,8 @@ public enum PushKey {
     public static let revealedAt = "revealed_at"
     public static let kind = "kind"
     public static let renditionURL = "rendition_url"
+    /// The poster of a photo: a friend widget for them takes the photo too (docs/WIDGET_REFRESH.md).
+    public static let senderID = "sender_id"
     public static let senderName = "sender_name"
     public static let senderAvatarURL = "sender_avatar_url"
     /// iOS alert pushes may carry the widget fields as one object under this key instead of flat.

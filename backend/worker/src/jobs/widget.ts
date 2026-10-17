@@ -42,6 +42,7 @@ export async function widgetFieldsForPost(
     kind: "photo",
     postId: post.id,
     renditionUrl: urls.get(m.widget_path as string) as string,
+    senderId: post.author_id,
     senderName: author?.display_name || null,
     senderAvatarUrl: author?.avatar_path ? urls.get(author.avatar_path) ?? null : null,
     caption: post.caption,
