@@ -397,6 +397,10 @@ public enum Copy {
     public static var cameraCaptureA11yRecordVideo: String { CopyLookup.string("camera.capture.a11y.recordVideo", default: "Record video") }
     /// "Take photo" — Retro · camera.capture · verbatim · SOURCED
     public static var cameraCaptureA11yShutter: String { CopyLookup.string("camera.capture.a11y.shutter", default: "Take photo") }
+    /// "Zoom" — Apple Camera · camera.capture · new · SOURCED
+    public static var cameraCaptureA11yZoom: String { CopyLookup.string("camera.capture.a11y.zoom", default: "Zoom") }
+    /// "{factor}×" — Apple Camera · camera.capture · new · SOURCED
+    public static func cameraCaptureA11yZoomValue(factor: String) -> String { CopyLookup.format("camera.capture.a11y.zoomValue", default: "{factor}×", ["factor": factor]) }
     /// "Hold to record a video" — Retro · camera.capture · new · SOURCED
     public static var cameraCaptureCoachHoldToRecord: String { CopyLookup.string("camera.capture.coach.holdToRecord", default: "Hold to record a video") }
     /// "Open Settings" — Retro · camera.capture · new · SOURCED

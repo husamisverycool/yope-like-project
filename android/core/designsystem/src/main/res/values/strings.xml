@@ -395,6 +395,10 @@
     <string name="camera_capture_a11y_recordvideo" formatted="false">Record video</string>
     <!-- Retro · camera.capture · verbatim · SOURCED -->
     <string name="camera_capture_a11y_shutter" formatted="false">Take photo</string>
+    <!-- Apple Camera · camera.capture · new · SOURCED -->
+    <string name="camera_capture_a11y_zoom" formatted="false">Zoom</string>
+    <!-- Apple Camera · camera.capture · new · SOURCED · args: factor -->
+    <string name="camera_capture_a11y_zoomvalue">%1$s×</string>
     <!-- Retro · camera.capture · new · SOURCED -->
     <string name="camera_capture_coach_holdtorecord" formatted="false">Hold to record a video</string>
     <!-- Retro · camera.capture · new · SOURCED -->

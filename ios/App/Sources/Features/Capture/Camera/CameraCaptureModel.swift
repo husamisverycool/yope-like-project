@@ -55,6 +55,17 @@ final class CameraCaptureModel {
     var isVideoTooLong = false
     /// Increments when a recording starts (announcement trigger).
     private(set) var recordingStarts = 0
+    /// `camera.capture.layout.zoom`: the back camera's zoom factor (min after a flip; the front camera does not zoom).
+    private(set) var zoomFactor: CGFloat = CaptureZoom.minimum
+    /// The largest zoom offered for the active camera (min: no zoom).
+    private(set) var zoomLimit: CGFloat = CaptureZoom.minimum
+    /// Tap to focus: the focus square (`camera.capture.size.focusIndicator`) at a point in the viewfinder, while shown.
+    private(set) var focusIndicator: FocusIndicator?
+
+    struct FocusIndicator: Equatable {
+        let id: Int
+        let point: CGPoint
+    }
 
     /// The group from context (`app://camera?group=`, group screen, chat), preselected in send-to.
     let contextGroupID: String?
@@ -78,6 +89,11 @@ final class CameraCaptureModel {
     @ObservationIgnored private var isTouching = false
     @ObservationIgnored private var longPressBegan = false
     @ObservationIgnored private var hasPromptedThisScreen = false
+    /// The zoom factor when the current pinch began.
+    @ObservationIgnored private var pinchStart: CGFloat?
+    @ObservationIgnored private var focusTaps = 0
+    @ObservationIgnored private var focusIndicatorTask: Task<Void, Never>?
+    @ObservationIgnored private var focusResetTask: Task<Void, Never>?
 
     /// - Parameter longPressThreshold: hold time that turns a press into a long press; the
     ///   platform's default (`UILongPressGestureRecognizer.minimumPressDuration`).
@@ -169,6 +185,7 @@ final class CameraCaptureModel {
     func disappear() async {
         longPressTask?.cancel()
         maxDurationTask?.cancel()
+        cancelFocus()
         if isRecording { _ = try? await camera.stopRecording() }
         isRecording = false
         await camera.stop()
@@ -180,6 +197,10 @@ final class CameraCaptureModel {
             try await camera.configure(.photo(position))
             isFlashAvailable = camera.hasFlash(at: position)
             if !isFlashAvailable { isFlashOn = false }
+            // The camera joins the session unzoomed: the screen's zoom is applied again (after a flip it is min).
+            zoomLimit = CaptureZoom.limit(deviceMax: camera.maxZoomFactor, position: position)
+            zoomFactor = CaptureZoom.clamp(zoomFactor, limit: zoomLimit)
+            camera.setZoom(zoomFactor)
             phase = .live
             hasBeenLive = true
         } catch {
@@ -210,7 +231,69 @@ final class CameraCaptureModel {
         guard phase == .live, !isRecording else { return }
         position = position.flipped
         Self.sessionPosition = position
+        // Zoom resets when the camera flips; a tapped focus point does not carry over.
+        zoomFactor = CaptureZoom.minimum
+        pinchStart = nil
+        cancelFocus()
         await startSession()
+    }
+
+    // MARK: Zoom (back camera) and tap to focus
+
+    /// While zoom is available the viewfinder takes pinches and is an adjustable accessibility element.
+    var isZoomAvailable: Bool { phase == .live && zoomLimit > CaptureZoom.minimum }
+
+    /// A pinch on the viewfinder: `magnification` is the scale since the pinch began.
+    func pinchChanged(_ magnification: CGFloat) {
+        guard isZoomAvailable else { return }
+        let start = pinchStart ?? zoomFactor
+        pinchStart = start
+        applyZoom(CaptureZoom.pinched(from: start, magnification: magnification, limit: zoomLimit))
+    }
+
+    func pinchEnded() {
+        pinchStart = nil
+    }
+
+    /// VoiceOver adjustable action: the next whole zoom step.
+    func stepZoom(up: Bool) {
+        guard isZoomAvailable else { return }
+        applyZoom(CaptureZoom.stepped(from: zoomFactor, up: up, limit: zoomLimit))
+    }
+
+    private func applyZoom(_ factor: CGFloat) {
+        guard factor != zoomFactor else { return }
+        zoomFactor = factor
+        camera.setZoom(factor)
+    }
+
+    /// A tap on the viewfinder (`point` in its coordinates): focus and exposure there; the focus square shows for
+    /// `camera.capture.duration.focusIndicator`; continuous autofocus returns after `camera.capture.duration.focusReset`
+    /// (or as soon as the subject area changes — the live camera's own observer).
+    func focus(at point: CGPoint) {
+        guard phase == .live else { return }
+        camera.focus(at: point)
+        focusTaps += 1
+        let tap = focusTaps
+        focusIndicator = FocusIndicator(id: tap, point: point)
+        focusIndicatorTask?.cancel()
+        focusIndicatorTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(Tokens.Durations.cameraCaptureDurationFocusIndicator))
+            guard !Task.isCancelled, let self, self.focusIndicator?.id == tap else { return }
+            self.focusIndicator = nil
+        }
+        focusResetTask?.cancel()
+        focusResetTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(Tokens.Durations.cameraCaptureDurationFocusReset))
+            guard !Task.isCancelled, let self else { return }
+            self.camera.resetFocus()
+        }
+    }
+
+    private func cancelFocus() {
+        focusIndicatorTask?.cancel()
+        focusResetTask?.cancel()
+        focusIndicator = nil
     }
 
     func dismissCoach() {
@@ -309,6 +392,8 @@ final class CameraCaptureModel {
         }
         do {
             try await camera.configure(.video(position))
+            // The video graph adds the camera again, unzoomed: keep the zoom the photo had.
+            camera.setZoom(zoomFactor)
             try await camera.startRecording(maxDuration: Tokens.Durations.cameraCaptureDurationVideoMax)
             isRecording = true
             recordingStarts += 1

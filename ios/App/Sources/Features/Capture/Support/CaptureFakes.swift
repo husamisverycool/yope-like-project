@@ -198,6 +198,24 @@ final class FakeCaptureCamera: CaptureCamera {
     func interrupt(_ interrupted: Bool) {
         onInterruption?(interrupted)
     }
+
+    /// The device's largest zoom (camera.capture clamps it to `camera.capture.layout.zoom.max`).
+    var maxZoomFactor: CGFloat = 1
+    private(set) var zoomRequests: [CGFloat] = []
+    private(set) var focusRequests: [CGPoint] = []
+    private(set) var focusResets = 0
+
+    func setZoom(_ factor: CGFloat) {
+        zoomRequests.append(factor)
+    }
+
+    func focus(at point: CGPoint) {
+        focusRequests.append(point)
+    }
+
+    func resetFocus() {
+        focusResets += 1
+    }
 }
 
 /// The fake camera feed: a still image, or no frame yet (`color.global.backgroundDeep`).

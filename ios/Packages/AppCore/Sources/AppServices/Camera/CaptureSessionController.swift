@@ -165,6 +165,9 @@ final class CaptureSessionController: @unchecked Sendable {
         let connection = AVCaptureConnection(inputPorts: [port], output: output)
         guard session.canAddConnection(connection) else { throw CameraError.configurationFailed("photo connection") }
         session.addConnection(connection)
+        // A camera joins the graph unzoomed and on continuous autofocus / exposure (a tap-to-focus lock or a zoom from an
+        // earlier screen does not carry over); the screen re-applies its own zoom after configuring.
+        Self.resetZoomAndFocus(device)
         if livePhoto && output.isLivePhotoCaptureSupported {
             output.isLivePhotoCaptureEnabled = true
             livePhotoEnabled = true
@@ -214,6 +217,69 @@ final class CaptureSessionController: @unchecked Sendable {
     private static func pixelCount(_ format: AVCaptureDevice.Format) -> Int {
         let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
         return Int(dimensions.width) * Int(dimensions.height)
+    }
+
+    // MARK: Zoom and focus (camera.capture)
+
+    /// The largest zoom factor the camera at `position` offers now (1 when it is not in the graph).
+    func maxZoomFactor(_ position: CameraPosition) async -> CGFloat {
+        (try? await onQueue { [self] in inputs[position]?.device.maxAvailableVideoZoomFactor ?? 1 }) ?? 1
+    }
+
+    /// Sets the zoom of the camera at `position`, clamped to what the device offers. Fire and forget: a pinch sends one
+    /// per frame and the session queue applies them in order.
+    func setZoom(_ factor: CGFloat, position: CameraPosition) {
+        queue.async { [self] in
+            guard let device = inputs[position]?.device else { return }
+            let clamped = min(max(factor, device.minAvailableVideoZoomFactor), device.maxAvailableVideoZoomFactor)
+            guard (try? device.lockForConfiguration()) != nil else { return }
+            device.videoZoomFactor = clamped
+            device.unlockForConfiguration()
+        }
+    }
+
+    /// Focuses and exposes once at `devicePoint` (0…1, `captureDevicePointConverted`), then holds until `resetFocus`
+    /// (the screen's timer, or a subject-area change: monitoring is on while the point holds).
+    func focus(at devicePoint: CGPoint, position: CameraPosition) {
+        queue.async { [self] in
+            guard let device = inputs[position]?.device, (try? device.lockForConfiguration()) != nil else { return }
+            if device.isFocusPointOfInterestSupported, device.isFocusModeSupported(.autoFocus) {
+                device.focusPointOfInterest = devicePoint
+                device.focusMode = .autoFocus
+            }
+            if device.isExposurePointOfInterestSupported, device.isExposureModeSupported(.autoExpose) {
+                device.exposurePointOfInterest = devicePoint
+                device.exposureMode = .autoExpose
+            }
+            device.isSubjectAreaChangeMonitoringEnabled = true
+            device.unlockForConfiguration()
+        }
+    }
+
+    /// Back to continuous autofocus and auto exposure over the whole frame.
+    func resetFocus(position: CameraPosition) {
+        queue.async { [self] in
+            guard let device = inputs[position]?.device, (try? device.lockForConfiguration()) != nil else { return }
+            Self.applyContinuousFocus(device)
+            device.unlockForConfiguration()
+        }
+    }
+
+    private static func resetZoomAndFocus(_ device: AVCaptureDevice) {
+        guard (try? device.lockForConfiguration()) != nil else { return }
+        device.videoZoomFactor = 1
+        applyContinuousFocus(device)
+        device.unlockForConfiguration()
+    }
+
+    /// Call with the device locked for configuration.
+    private static func applyContinuousFocus(_ device: AVCaptureDevice) {
+        let centre = CGPoint(x: 0.5, y: 0.5)
+        if device.isFocusPointOfInterestSupported { device.focusPointOfInterest = centre }
+        if device.isFocusModeSupported(.continuousAutoFocus) { device.focusMode = .continuousAutoFocus }
+        if device.isExposurePointOfInterestSupported { device.exposurePointOfInterest = centre }
+        if device.isExposureModeSupported(.continuousAutoExposure) { device.exposureMode = .continuousAutoExposure }
+        device.isSubjectAreaChangeMonitoringEnabled = false
     }
 
     // MARK: Previews

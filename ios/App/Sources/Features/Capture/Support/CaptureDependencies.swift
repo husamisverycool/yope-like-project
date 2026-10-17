@@ -66,6 +66,14 @@ protocol CaptureCamera: AnyObject, Sendable {
     func stopRecording() async throws -> CaptureVideo
     /// Live preview of the camera at `position` (nil: the active camera), aspect-fill.
     func preview(position: CameraPosition?) -> AnyView
+    /// The largest zoom factor the configured single camera offers (1 for dual capture or before `configure`).
+    var maxZoomFactor: CGFloat { get }
+    /// Zooms the configured single camera (camera.capture pinch; clamped by the device).
+    func setZoom(_ factor: CGFloat)
+    /// Focuses and exposes once at `point`, in the coordinates of the `preview(position: nil)` view (tap to focus).
+    func focus(at point: CGPoint)
+    /// Continuous autofocus and auto exposure again (`camera.capture.duration.focusReset` after a tap).
+    func resetFocus()
     /// Called with true when the session is interrupted (camera in use elsewhere, runtime
     /// error) and false when the interruption ends.
     var onInterruption: ((Bool) -> Void)? { get set }
