@@ -103,9 +103,9 @@ protocol AccountDataSource: AnyObject, Sendable {
     /// `set_overnight_alerts`: the push when overnight photos develop (camera.overnight; docs/API.md §14.3).
     func setOvernightAlerts(_ on: Bool) async throws
     func hasPremium() async throws -> Bool
-}
     /// `set_notifications_paused` (Pause All) with the device's zone; returns the end of the pause (nil when off).
     func setNotificationsPaused(_ paused: Bool) async throws -> Date?
+}
 
 /// `AccountDataSource` over AppData. With a nil environment (config/app.json has no Supabase URL / anon key yet,
 /// BLOCKED) every call fails with `DataError.notConfigured` and the screens show their error states.
@@ -386,9 +386,10 @@ final class LiveAccountData: AccountDataSource {
         let account = try env().account
         return try await account.hasPremium()
     }
-}
+
     func setNotificationsPaused(_ paused: Bool) async throws -> Date? {
         let account = try env().account
         return try await account.setNotificationsPaused(paused).pausedUntil
     }
+}
 
