@@ -44,7 +44,7 @@ enum class Rpc(val function: String, val required: Set<String>, val optional: Se
     BlockUser("block_user", setOf("p_user_id")),
     UnblockUser("unblock_user", setOf("p_user_id")),
     Report("report", setOf("p_target_kind", "p_target_id", "p_reason")),
-    RegisterDevice("register_device", setOf("p_platform", "p_push_token"), setOf("p_push_to_start_token", "p_widget_push_token")),
+    RegisterDevice("register_device", setOf("p_platform", "p_push_token"), setOf("p_push_to_start_token", "p_live_activities_enabled")),
     UnregisterDevice("unregister_device", setOf("p_push_token")),
     SetQuietHours("set_quiet_hours", setOf("p_start", "p_end", "p_time_zone")),
     SetBirthday("set_birthday", setOf("p_birthday", "p_opt_in")),

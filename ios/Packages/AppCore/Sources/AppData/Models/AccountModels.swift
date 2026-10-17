@@ -10,21 +10,21 @@ public struct Device: Codable, Hashable, Sendable, Identifiable {
     public var pushToken: String
     /// iOS Live Activity push-to-start token.
     public var pushToStartToken: String?
-    /// iOS WidgetKit push token.
-    public var widgetPushToken: String?
+    /// iOS: whether the iPhone shows Live Activities (false: the daily invitation comes as an alert); nil: not reported.
+    public var liveActivitiesEnabled: Bool?
     public var createdAt: Date
     public var updatedAt: Date
 
     public init(
         id: DeviceID, userID: UserID, platform: DevicePlatform, pushToken: String, pushToStartToken: String?,
-        widgetPushToken: String?, createdAt: Date, updatedAt: Date
+        liveActivitiesEnabled: Bool?, createdAt: Date, updatedAt: Date
     ) {
         self.id = id
         self.userID = userID
         self.platform = platform
         self.pushToken = pushToken
         self.pushToStartToken = pushToStartToken
-        self.widgetPushToken = widgetPushToken
+        self.liveActivitiesEnabled = liveActivitiesEnabled
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -35,7 +35,7 @@ public struct Device: Codable, Hashable, Sendable, Identifiable {
         case platform
         case pushToken = "push_token"
         case pushToStartToken = "push_to_start_token"
-        case widgetPushToken = "widget_push_token"
+        case liveActivitiesEnabled = "live_activities_enabled"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }

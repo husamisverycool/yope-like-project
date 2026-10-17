@@ -197,14 +197,14 @@ export async function postPhoto(user: TestUser, groupIds: string[], extra: Recor
 }
 
 let tokenCounter = 0;
-export async function registerDevice(user: TestUser, platform: "ios" | "android", opts: Partial<{ token: string; pushToStart: string | null; widget: string | null }> = {}) {
+export async function registerDevice(user: TestUser, platform: "ios" | "android", opts: Partial<{ token: string; pushToStart: string | null; liveActivities: boolean | null }> = {}) {
   tokenCounter++;
   const token = opts.token ?? (platform === "ios" ? `a${String(tokenCounter).padStart(7, "0")}${randomUUID().replace(/-/g, "")}` : `fcm-${tokenCounter}-${randomUUID()}`);
   return rpc(user.client, "register_device", {
     p_platform: platform,
     p_push_token: token,
     p_push_to_start_token: platform === "ios" ? opts.pushToStart ?? null : null,
-    p_widget_push_token: platform === "ios" ? opts.widget ?? null : null,
+    p_live_activities_enabled: platform === "ios" ? opts.liveActivities ?? null : null,
   });
 }
 

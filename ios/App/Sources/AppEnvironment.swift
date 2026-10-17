@@ -41,8 +41,6 @@ final class AppEnvironment {
     let deviceTokens = DeviceTokens()
     /// The APNs token kept across launches (registered at sign-in, unregistered at sign-out before this launch's arrives).
     let pushTokenRecord: PushTokenRecord
-    /// The WidgetKit push token written by the widget extension (iOS 26 widget push handler).
-    let widgetPushTokens: WidgetPushTokenStore
     /// The backend (AppData). Nil while config/app.json has no Supabase URL / anon key (BLOCKED).
     let data: DataEnvironment?
     /// Session flow, account screens' data and platform seams (`RootView` injects them).
@@ -70,7 +68,6 @@ final class AppEnvironment {
         self.purchases = purchases
         let widgetStore = WidgetStore.forBundle(bundle)
         self.widgetStore = widgetStore
-        widgetPushTokens = WidgetPushTokenStore.forBundle(bundle)
         let pushTokenRecord = PushTokenRecord()
         self.pushTokenRecord = pushTokenRecord
         // Session glue: RevenueCat follows the signed-in user; widget reloads after the group
@@ -144,6 +141,8 @@ final class AppEnvironment {
             self?.syncDeviceTokens()
         }
         liveActivities.onActivityToken = { token in deviceTokens.record(token) }
+        // Live Activities turned on or off in Settings: the registration says so (alert vs push-to-start).
+        liveActivities.onEnablementChange = { [weak self] _ in self?.syncDeviceTokens() }
         liveActivities.startObserving()
 
         purchases.configure(apiKey: configuration.revenueCatAPIKey, appUserID: data?.auth.currentUserID?.rawValue)
@@ -195,7 +194,7 @@ final class AppEnvironment {
             WidgetReloader.reloadAll()
             // widget.countdown: the snapshot of `next_plans()` is rewritten on every foreground.
             PlanWidgetSync.shared.refresh()
-            // Picks up a widget push token the widget extension recorded meanwhile.
+            // Live Activities may have been turned on or off in Settings meanwhile.
             syncDeviceTokens()
             // Notifications turned on in Settings while the app was away: register now.
             let pushService = self.push
@@ -212,13 +211,15 @@ final class AppEnvironment {
 
     /// Hands the device's current push tokens to the session glue, which registers them
     /// (`register_device`) once someone is signed in. The Live Activity push-to-start token is left out while the
-    /// person turned Live Activities off (settings.notifications).
+    /// person turned Live Activities off in the app (settings.notifications); `liveActivitiesEnabled` also reports iOS
+    /// Settings (`areActivitiesEnabled`), so with either off the worker sends the daily invitation as an alert.
     func syncDeviceTokens() {
         guard let data else { return }
+        let inApp = accountDependencies.liveActivity.isEnabled
         let tokens = DevicePushTokens(
             apns: deviceTokens.apnsToken,
-            pushToStart: accountDependencies.liveActivity.isEnabled ? deviceTokens.pushToStartToken : nil,
-            widgetPush: widgetPushTokens.load()
+            pushToStart: inApp ? deviceTokens.pushToStartToken : nil,
+            liveActivitiesEnabled: inApp && liveActivities.areActivitiesEnabled
         )
         Task { await data.coordinator.updateDeviceTokens(tokens) }
     }

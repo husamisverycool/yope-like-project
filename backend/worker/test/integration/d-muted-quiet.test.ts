@@ -13,7 +13,7 @@ beforeAll(async () => {
   u = await createUsers(5, "Quiet");
   g = await createGroup(u[0]!, u.slice(1), { name: "Muted test", tz: "UTC" });
   d.mutedIos = await registerDevice(u[1]!, "ios"); // iOS < 26, muted
-  d.mutedIos26 = await registerDevice(u[2]!, "ios", { pushToStart: `ptsm${Date.now()}`, widget: `widm${Date.now()}` }); // iOS 26, muted
+  d.mutedIosLive = await registerDevice(u[2]!, "ios", { pushToStart: `ptsm${Date.now()}`, liveActivities: true }); // Live Activities on, muted
   d.mutedAndroid = await registerDevice(u[3]!, "android"); // muted
   d.quietIos = await registerDevice(u[4]!, "ios", { pushToStart: `ptsq${Date.now()}` }); // quiet hours
   for (const m of [u[1]!, u[2]!, u[3]!]) await rpc(m.client, "set_group_muted", { p_group_id: g.id, p_muted: true });
@@ -35,9 +35,9 @@ describe("a new photo", () => {
     // muted iOS < 26: a silent background push with the widget fields, no alert
     expect(to(d.mutedIos.push_token).map((s) => s.pushType)).toEqual(["background"]);
     expect(to(d.mutedIos.push_token)[0]!.payload).toMatchObject({ type: "widget", post_id: post.id });
-    // muted iOS 26: a WidgetKit push only
-    expect(to(d.mutedIos26.push_token)).toEqual([]);
-    expect(to(d.mutedIos26.widget_push_token).map((s) => s.pushType)).toEqual(["widgets"]);
+    // muted iOS with Live Activities: the same background push (the app writes the widget), nothing on the Live Activity token
+    expect(to(d.mutedIosLive.push_token).map((s) => s.pushType)).toEqual(["background"]);
+    expect(to(d.mutedIosLive.push_to_start_token)).toEqual([]);
     // muted Android: the widget data message (normal priority) only
     const andr = w.fcm.messages().filter((m) => m.token === d.mutedAndroid.push_token);
     expect(andr.map((m) => [m.data.type, m.android.priority])).toEqual([["widget", "NORMAL"]]);

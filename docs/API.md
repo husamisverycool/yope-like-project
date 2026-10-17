@@ -468,7 +468,7 @@ Read / DELETE: own rows. Written by `register_device`.
 | `platform` | device_platform | |
 | `push_token` | text | APNs device token (hex) or FCM registration token; unique |
 | `push_to_start_token` | text? | iOS Live Activity push-to-start token |
-| `widget_push_token` | text? | iOS WidgetKit push token |
+| `live_activities_enabled` | boolean? | iOS: whether the iPhone shows Live Activities (Settings and the in-app switch); `false` → the daily invitation is sent as an alert, not a push-to-start; `null` = not reported (Android, older builds). Migration 0030 (it also removed `widget_push_token`: the app has no WidgetKit push handler) |
 | `created_at`, `updated_at` | timestamptz | |
 
 ### 5.21 `notification_settings`
@@ -761,13 +761,15 @@ you reporting. Errors: `target_not_found`, `invalid_reason`. Jobs: `moderation.r
 #### `register_device` / `unregister_device`
 ```
 register_device(p_platform device_platform, p_push_token text,
-                p_push_to_start_token text = null, p_widget_push_token text = null) → devices
+                p_push_to_start_token text = null, p_live_activities_enabled boolean = null) → devices
 unregister_device(p_push_token text) → void
 ```
 Upsert by `push_token`. Registering a token that belonged to another account moves it to
-the caller. Re-register whenever any of the three tokens changes, sending all three: a
-`null` clears that token. Android must not send iOS-only tokens (`invalid_token`).
-Errors: `invalid_platform`, `invalid_token`.
+the caller. Re-register after every sign-in and whenever a token or the Live Activities state
+changes, sending everything: a `null` push-to-start token clears it. iOS reports
+`p_live_activities_enabled` (`ActivityAuthorizationInfo().areActivitiesEnabled` and the in-app
+switch); with `false` the worker sends the daily invitation as a standard alert. Android must
+not send the iOS-only values (`invalid_token`). Errors: `invalid_platform`, `invalid_token`.
 
 #### `set_quiet_hours`
 ```

@@ -219,16 +219,6 @@ function buildWidgetBackground(w: WidgetFields, now: Date): ApnsDraft {
   };
 }
 
-/** WidgetKit push (iOS 26+): reloads the push-enabled widgets on the device. */
-export function apnsWidgetKit(now: Date): ApnsDraft {
-  return {
-    pushType: "widgets",
-    // apns-priority omitted, as in Apple's sample request [WKP]
-    expiration: unixSeconds(now) + WIDGET_PUSH_TTL_SECONDS,
-    payload: { aps: { "content-changed": true } },
-  };
-}
-
 export function fcmWidget(w: WidgetFields): FcmDraft {
   return fitWidgetCaption(w, buildFcmWidget, dataBytes, FCM_MAX_DATA_BYTES);
 }

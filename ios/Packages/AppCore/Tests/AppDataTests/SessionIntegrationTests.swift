@@ -82,7 +82,7 @@ final class SessionIntegrationTests: XCTestCase {
     func testSignOutUnregistersTheStoredTokenAfterARelaunch() async throws {
         let stored = String(repeating: "d1", count: 32) + users.runID
         let rui = try await users.make("Rui", hooks: SessionHooks(storedPushToken: { stored }))
-        _ = try await rui.data.account.registerDevice(pushToken: stored, pushToStartToken: nil, widgetPushToken: nil)
+        _ = try await rui.data.account.registerDevice(pushToken: stored, pushToStartToken: nil, liveActivitiesEnabled: nil)
         await rui.data.coordinator.didSignIn(rui.id)
         let before = try await rui.data.account.myDevices()
         XCTAssertEqual(before.map(\.pushToken), [stored])
@@ -107,25 +107,25 @@ final class SessionIntegrationTests: XCTestCase {
         let group = try await ana.data.groups.create(name: "Glue \(users.runID)", kind: .family)
         _ = try await rui.data.groups.join(token: try await ana.data.groups.createInvite(groupID: group.id).token)
 
-        // Tokens collected before sign-in are registered at sign-in, with all three tokens.
+        // Tokens collected before sign-in are registered at sign-in, with the Live Activities state.
         let apns = String(repeating: "c0", count: 32) + users.runID
-        await rui.data.coordinator.updateDeviceTokens(DevicePushTokens(apns: apns, pushToStart: "p2s-\(users.runID)", widgetPush: "w-\(users.runID)"))
+        await rui.data.coordinator.updateDeviceTokens(DevicePushTokens(apns: apns, pushToStart: "p2s-\(users.runID)", liveActivitiesEnabled: true))
         var devices = try await rui.data.account.myDevices()
         XCTAssertTrue(devices.isEmpty, "nothing is registered before sign-in")
         await rui.data.coordinator.didSignIn(rui.id)
         devices = try await rui.data.account.myDevices()
         XCTAssertEqual(devices.map(\.pushToken), [apns])
         XCTAssertEqual(devices.first?.pushToStartToken, "p2s-\(users.runID)")
-        XCTAssertEqual(devices.first?.widgetPushToken, "w-\(users.runID)")
+        XCTAssertEqual(devices.first?.liveActivitiesEnabled, true)
         let linked = await hookLog.linked
         XCTAssertEqual(linked, [rui.id])
         XCTAssertEqual(widgetStore.groups(), [WidgetGroup(id: group.id.rawValue, name: group.name)])
 
-        // A token change re-registers (a nil token is cleared).
-        await rui.data.coordinator.updateDeviceTokens(DevicePushTokens(apns: apns, pushToStart: "p2s-2-\(users.runID)", widgetPush: nil))
+        // A token change re-registers; Live Activities turned off in Settings are reported (the worker sends an alert).
+        await rui.data.coordinator.updateDeviceTokens(DevicePushTokens(apns: apns, pushToStart: "p2s-2-\(users.runID)", liveActivitiesEnabled: false))
         devices = try await rui.data.account.myDevices()
         XCTAssertEqual(devices.first?.pushToStartToken, "p2s-2-\(users.runID)")
-        XCTAssertNil(devices.first?.widgetPushToken)
+        XCTAssertEqual(devices.first?.liveActivitiesEnabled, false)
 
         // Ana posts; Rui's widget shows it (as the Notification Service Extension would write)
         // and his feed is cached.

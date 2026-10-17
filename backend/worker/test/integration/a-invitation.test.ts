@@ -17,9 +17,10 @@ beforeAll(async () => {
   u = await createUsers(5, "Inv");
   // a waking window covering the whole day, so tomorrow's invitation is always schedulable
   g = await createGroup(u[0]!, u.slice(1), { name: "Lima family", tz: "UTC", start: "00:00", end: "23:59" });
-  dev.u0 = await registerDevice(u[0]!, "ios", { pushToStart: `pts0${Date.now()}`, widget: `wid0${Date.now()}` });
-  dev.u1 = await registerDevice(u[1]!, "ios", { pushToStart: `pts1${Date.now()}` });
-  dev.u2 = await registerDevice(u[2]!, "ios"); // Live Activities off / iOS < 17.2
+  dev.u0 = await registerDevice(u[0]!, "ios", { pushToStart: `pts0${Date.now()}`, liveActivities: true });
+  dev.u1 = await registerDevice(u[1]!, "ios", { pushToStart: `pts1${Date.now()}` }); // not reported (older build)
+  // Live Activities turned off in iOS Settings: the token is still there, iOS would start nothing (migration 0030)
+  dev.u2 = await registerDevice(u[2]!, "ios", { pushToStart: `pts2${Date.now()}`, liveActivities: false });
   dev.u3 = await registerDevice(u[3]!, "android");
   dev.u4 = await registerDevice(u[4]!, "android");
 
@@ -100,7 +101,8 @@ describe("daily invitation dispatch", () => {
     expect(typeof aps.timestamp).toBe("number");
   });
 
-  it("iOS without a push-to-start token gets an active (not time-sensitive) alert; Android a high-priority countdown data message", async () => {
+  it("iOS with Live Activities off gets an active (not time-sensitive) alert, never a push-to-start; Android a high-priority countdown data message", async () => {
+    expect(apnsDeviceSends(w.apns).filter((s) => s.token === dev.u2.push_to_start_token)).toEqual([]);
     const alert = apnsDeviceSends(w.apns).find((s) => s.token === dev.u2.push_token)!;
     expect(alert.pushType).toBe("alert");
     expect(alert.payload).toMatchObject({ type: "daily_invitation", group_id: g.id, invitation_id: inv.id });

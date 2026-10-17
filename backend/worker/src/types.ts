@@ -110,7 +110,8 @@ export interface DeviceRow {
   platform: "ios" | "android";
   push_token: string;
   push_to_start_token: string | null;
-  widget_push_token: string | null;
+  /** iOS: false when Live Activities are off on the iPhone (the invitation then goes as an alert); null: not reported */
+  live_activities_enabled: boolean | null;
 }
 
 export interface NotificationSettingsRow {

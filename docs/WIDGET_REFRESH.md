@@ -41,14 +41,14 @@ widget at @3x: 1092×1146 px, see `src/media/renditions.ts`) or the collage's `w
 | member's situation | what the worker sends | limit applied by the worker | what the device does |
 |---|---|---|---|
 | gets alerts for the group (not muted; also during quiet hours) and a **new photo** arrives | `push.new_post`: alert with `mutable-content: 1` and the nested `widget` object (below); quiet hours → `interruption-level: passive`, no sound, priority 5 | none (one alert per post; collapse id `post:<id>`) | Notification Service Extension downloads the rendition into the App Group (≤ 30 s), attaches it, calls `reloadTimelines` (budgeted, best effort: PLATFORM_CONSTRAINTS §1.2) |
-| device has a **WidgetKit push token** (iOS 26+), any event | `apns-push-type: widgets`, topic `<bundle>.push-type.widgets`, body `{"aps":{"content-changed":true}}`, expiry 1 h | **≤ 1 per device per 5 minutes**; throttled devices get a follow-up refresh when the window reopens; not repeated for an unchanged state | WidgetKit reloads all push-enabled widgets on the device (budgeted, opportunistic, separate budget from background pushes); the timeline provider reads the App Group cache or fetches |
-| no WidgetKit token, and **no alert carried this state** (muted group, deletion, collage) | background push: `apns-push-type: background`, priority 5, `{"aps":{"content-available":1}}` + the flat widget keys (below), expiry 1 h, collapse id `widget:<group>` | **≤ 2 per device per rolling hour** ([BG] "don't try to send more than two or three per hour"); follow-up refresh when allowed; skipped when the device already got this state | the app is woken (not if force-quit; the system may hold or drop it), downloads the rendition, reloads widget timelines |
+| **no alert carries this state** (muted group, a deletion, a collage) | background push: `apns-push-type: background`, priority 5, `{"aps":{"content-available":1}}` + the flat widget keys (below), expiry 1 h, collapse id `widget:<group>` | **≤ 2 per device per rolling hour** ([BG] "don't try to send more than two or three per hour"); follow-up refresh when allowed; skipped when the device already got this state (the worker remembers per device what each alert or background push carried) or while the item's new-post alert is still queued or being sent | the app is woken (not if force-quit; the system may hold or drop it), downloads the rendition, reloads widget timelines |
 | app in the foreground | — | — | the app reloads every widget kind on each foreground (not budgeted, PLATFORM_CONSTRAINTS §1.1) |
 | nothing arrives | — | — | the timeline's own `.after(now + 15…60 min)` reload (40–70 reloads/day budget) |
 
-Why 5 minutes: WidgetKit asks servers to throttle widget pushes because one push reloads every
-push-enabled widget on the device (WWDC25, [WKP]), timeline entries should be "at least about 5
-minutes apart" [KWU], and Locket documents up to 5 minutes. Apple publishes no number.
+No WidgetKit push (iOS 26 `WidgetPushHandler`): it only reloads timelines, and the widget extension
+would then have to fetch the photo with the person's session, which it does not hold. The photo
+reaches the App Group through the alert's Notification Service Extension, background pushes and the
+app itself (migration 0030 removed `devices.widget_push_token`; PLATFORM_CONSTRAINTS §1.6).
 
 ### iOS payloads
 
@@ -82,7 +82,6 @@ Background push (flat keys, `WidgetPushPayload` silent shape):
 }
 ```
 
-WidgetKit push: `{"aps":{"content-changed":true}}` (no data; the widget fetches).
 
 ## Android
 
@@ -98,18 +97,18 @@ message waits for a maintenance window when the device is in Doze ("delivery may
 
 ## Limits (what can make a widget late or stale)
 
-- **Budgets.** iOS widget reloads (40–70/day per widget), WidgetKit pushes (budget unpublished)
-  and background pushes (throttled, not guaranteed, dropped for force-quit apps) are all at the
-  system's discretion. Android Doze defers normal-priority messages and WorkManager jobs.
-- **Muted groups on iOS < 26** depend on background pushes: at most 2 per device per hour from the
+- **Budgets.** iOS widget reloads (40–70/day per widget) and background pushes (throttled, not
+  guaranteed, dropped for force-quit apps) are at the system's discretion. Android Doze defers
+  normal-priority messages and WorkManager jobs.
+- **Muted groups on iOS** depend on background pushes: at most 2 per device per hour from the
   worker, fewer if the system throttles. In a busy muted group, the widget can lag behind by up to
   an hour until the app is opened or the timeline reloads.
 - **Notification Service Extension reloads are budgeted** and their effect is UNCONFIRMED
   (PLATFORM_CONSTRAINTS §1.2); its real value is the downloaded rendition in the App Group.
-- **Nothing left to show.** When every photo of a group is deleted, only the WidgetKit push can
-  tell an iOS widget to reload into its empty state; the background-push and Android widget
-  messages require a `rendition_url` (shared contract), so those devices clear on their next
-  timeline / periodic update.
+- **Nothing left to show.** When every photo of a group is deleted, the background-push and
+  Android widget messages carry nothing (they require a `rendition_url`, shared contract): the app
+  clears the widget when it is running (the realtime deletion) or next opened, Android on its next
+  periodic update.
 - **Throttle state is in memory** in the worker (one instance, docs/OWNER_SETUP.md §7). A restart
   forgets it, which can let one extra push per device through; running several worker instances
   multiplies the per-device allowance.

@@ -37,7 +37,7 @@ export async function loadAudience(db: Db, groupId: string, now: Date): Promise<
     "group_members",
   ) as unknown as Array<{ user_id: string; muted: boolean; joined_at: string; profiles: { display_name: string; avatar_path: string | null } | null }>;
   const ids = rows.map((r) => r.user_id);
-  const devices = await selectIn<DeviceRow>(db, "devices", "id, user_id, platform, push_token, push_to_start_token, widget_push_token", "user_id", ids);
+  const devices = await selectIn<DeviceRow>(db, "devices", "id, user_id, platform, push_token, push_to_start_token, live_activities_enabled", "user_id", ids);
   const settings = await selectIn<NotificationSettingsRow>(db, "notification_settings", "user_id, quiet_start, quiet_end, time_zone", "user_id", ids);
   const quietBy = new Map(settings.map((s) => [s.user_id, isQuietAt(s.quiet_start, s.quiet_end, s.time_zone, now)]));
   const members: Member[] = rows.map((r) => ({

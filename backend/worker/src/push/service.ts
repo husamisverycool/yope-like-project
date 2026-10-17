@@ -7,7 +7,7 @@ import type { ApnsClient, ApnsResult } from "./apns.js";
 import type { FcmClient, FcmResult } from "./fcm.js";
 import type { ApnsDraft, FcmDraft } from "./payloads.js";
 
-export type TokenColumn = "push_token" | "push_to_start_token" | "widget_push_token";
+export type TokenColumn = "push_token" | "push_to_start_token";
 
 export interface DeviceSend {
   userId: string;

@@ -95,7 +95,7 @@ class SessionGlueTest {
             when {
                 seen.path.endsWith("/rpc/register_device") -> {
                     val token = Json.parseToJsonElement(seen.body).jsonObject["p_push_token"]!!.jsonPrimitive.content
-                    json("""{"id":"d1","user_id":"$userId","platform":"android","push_token":"$token","push_to_start_token":null,"widget_push_token":null,"created_at":"$now","updated_at":"$now"}""")
+                    json("""{"id":"d1","user_id":"$userId","platform":"android","push_token":"$token","push_to_start_token":null,"live_activities_enabled":null,"created_at":"$now","updated_at":"$now"}""")
                 }
                 seen.path.endsWith("/rpc/unregister_device") -> noContent()
                 seen.path.endsWith("/notification_settings") ->

@@ -1,18 +1,18 @@
 import AppModels
 import Foundation
 
-/// Push tokens collected on this device: APNs (`PushService.onDeviceToken`), the Live Activity
-/// push-to-start token (`LiveActivityService.onPushToStartToken`) and the WidgetKit push token
-/// (iOS 26 widget push handler, shared through `WidgetPushTokenStore`). All lowercase hex.
+/// Push tokens collected on this device: APNs (`PushService.onDeviceToken`) and the Live Activity push-to-start token
+/// (`LiveActivityService.onPushToStartToken`), both lowercase hex, with whether the iPhone shows Live Activities
+/// (`LiveActivityService.areActivitiesEnabled` and the in-app switch; nil: unknown).
 public struct DevicePushTokens: Codable, Hashable, Sendable {
     public var apns: String?
     public var pushToStart: String?
-    public var widgetPush: String?
+    public var liveActivitiesEnabled: Bool?
 
-    public init(apns: String? = nil, pushToStart: String? = nil, widgetPush: String? = nil) {
+    public init(apns: String? = nil, pushToStart: String? = nil, liveActivitiesEnabled: Bool? = nil) {
         self.apns = apns
         self.pushToStart = pushToStart
-        self.widgetPush = widgetPush
+        self.liveActivitiesEnabled = liveActivitiesEnabled
     }
 }
 
@@ -47,7 +47,7 @@ public struct SessionHooks: Sendable {
 ///
 /// - after sign-in: registers the device's push tokens (`register_device`), logs RevenueCat in
 ///   with the user id, syncs the widget's group list, resumes the post outbox;
-/// - whenever a token changes: registers again with all three tokens;
+/// - whenever a token or the Live Activities state changes: registers again with all of it;
 /// - while running: listens to every group's private deletion topic and removes deleted posts
 ///   from `WidgetStore` (widget snapshots), the offline cache and signed URLs (security invariant 2);
 /// - on sign-out / account deletion: unregisters the device first, then clears everything local.
@@ -165,7 +165,7 @@ public actor SessionCoordinator {
             try await environment.account.registerDevice(
                 pushToken: apns,
                 pushToStartToken: tokens.pushToStart,
-                widgetPushToken: tokens.widgetPush
+                liveActivitiesEnabled: tokens.liveActivitiesEnabled
             )
             registered = (user, tokens)
         } catch {

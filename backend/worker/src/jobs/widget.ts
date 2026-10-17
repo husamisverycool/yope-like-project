@@ -2,10 +2,9 @@
 // (docs/WIDGET_REFRESH.md). Per member, the newest item they may see — the newest post whose
 // author has no block with them, or the group's newest ready collage if it is newer — and per
 // device:
-//   iOS with a WidgetKit push token (iOS 26+): `widgets` push, ≤ 1 per device per 5 minutes;
-//   iOS otherwise: background push with the widget fields, ≤ 2 per device per hour, unless the
-//     device already has this item (the new-post alert carried it to the Notification Service
-//     Extension);
+//   iOS: background push with the widget fields, ≤ 2 per device per hour, unless the device
+//     already has this item (the new-post alert carried it to the Notification Service
+//     Extension); the app also writes the widgets itself whenever it loads groups and feeds;
 //   Android: normal-priority data message with the widget fields, unless already delivered.
 // Throttled devices get a follow-up widget.refresh when their window reopens. Nothing is sent
 // for a member when there is no change to show.
@@ -13,7 +12,7 @@
 import { must, selectIn, type Db } from "../db.js";
 import { blockedPairs } from "./util.js";
 import { loadAudience } from "../push/audience.js";
-import { apnsWidgetBackground, apnsWidgetKit, fcmWidget, type WidgetFields } from "../push/payloads.js";
+import { apnsWidgetBackground, fcmWidget, type WidgetFields } from "../push/payloads.js";
 import type { DeviceSend } from "../push/service.js";
 import { enqueue, str, type JobContext, type Services } from "../services.js";
 import { MEDIA_COLUMNS, POST_COLUMNS, type CollageRow, type MediaRow, type PostRow, type ProfileRow } from "../types.js";
@@ -103,11 +102,13 @@ export async function widgetRefresh(ctx: JobContext): Promise<void> {
   }
 
   // posts whose new-post alert (with the widget fields, for the Notification Service Extension)
-  // is queued, running or sent: members who get that alert need no background push for it
+  // is queued or running: members who get that alert need no background push for it. A sent alert
+  // is known per device instead (push.new_post records it with the throttle): after a deletion the
+  // widget showed the deleted photo, so an older photo whose alert went out long ago is sent again.
   const recentIds = posts.slice(0, 8).map((p) => p.id);
   const alerted = new Set(
     !recentIds.length ? [] : (must(
-      await ctx.db.from("jobs").select("payload").eq("kind", "push.new_post").in("status", ["queued", "running", "done"]).in("payload->>post_id", recentIds),
+      await ctx.db.from("jobs").select("payload").eq("kind", "push.new_post").in("status", ["queued", "running"]).in("payload->>post_id", recentIds),
       "new-post jobs",
     ) as Array<{ payload: { post_id?: string } }>).map((j) => j.payload.post_id),
   );
@@ -121,20 +122,8 @@ export async function widgetRefresh(ctx: JobContext): Promise<void> {
     const visible = posts.find((p) => !blocks.has(`${m.userId}|${p.author_id}`));
     const pItem = visible ? await postItem(visible) : null;
     const item = collageItem && (!pItem || new Date(collageItem.at) > new Date(pItem.at)) ? collageItem : pItem;
-    const stateKey = item?.key ?? "none";
     for (const d of m.devices) {
       if (d.platform === "ios") {
-        if (d.widget_push_token) {
-          // WidgetKit pushes carry no content: the widget reloads and fetches (also when nothing is left to show)
-          if (ctx.throttle.alreadyDelivered(d.widget_push_token, groupId, stateKey)) continue;
-          const next = ctx.throttle.widgetKitNextAt(d.widget_push_token, nowMs);
-          if (next === null) {
-            ctx.throttle.recordWidgetKit(d.widget_push_token, nowMs);
-            ctx.throttle.recordDelivered(d.widget_push_token, groupId, stateKey);
-            sends.push({ userId: m.userId, deviceId: d.id, platform: "ios", token: d.widget_push_token, tokenColumn: "widget_push_token", label: "widgetkit", apns: apnsWidgetKit(now) });
-          } else deferred.push(next);
-          continue;
-        }
         if (!item || ctx.throttle.alreadyDelivered(d.push_token, groupId, item.key)) continue;
         if (coveredByAlert(m.userId, m.muted, item)) continue;
         const next = ctx.throttle.backgroundNextAt(d.push_token, nowMs);

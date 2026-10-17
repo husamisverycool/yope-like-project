@@ -22,6 +22,9 @@ public final class LiveActivityService {
 
     public var onPushToStartToken: ((String) -> Void)?
     public var onActivityToken: ((ActivityToken) -> Void)?
+    /// Live Activities turned on or off for the app in Settings (`activityEnablementUpdates`): the device registration
+    /// reports it, so the worker sends the invitation as an alert while they are off.
+    public var onEnablementChange: ((Bool) -> Void)?
 
     private var observers: [Task<Void, Never>] = []
     private var activityTasks: [String: [Task<Void, Never>]] = [:]
@@ -48,6 +51,11 @@ public final class LiveActivityService {
         observers.append(Task { [weak self] in
             for await activity in Activity<DailyInvitationAttributes>.activityUpdates {
                 self?.track(activity)
+            }
+        })
+        observers.append(Task { [weak self] in
+            for await enabled in ActivityAuthorizationInfo().activityEnablementUpdates {
+                self?.onEnablementChange?(enabled)
             }
         })
         for activity in Activity<DailyInvitationAttributes>.activities {

@@ -14,7 +14,6 @@ import {
   apnsInvitationAlert,
   apnsLiveActivityStart,
   apnsWidgetBackground,
-  apnsWidgetKit,
   fcmAlert,
   fcmInvitation,
   fcmInvitationEnded,
@@ -117,13 +116,6 @@ describe("APNs payloads", () => {
     expect(d.expiration).toBe(Math.floor(now.getTime() / 1000) + 3600);
     expect(d.payload).toMatchObject({ aps: { "content-available": 1 }, type: "widget", group_id: widget.groupId, rendition_url: widget.renditionUrl, sender_name: "Ana Lima", kind: "photo", post_id: widget.postId });
     expect((d.payload.aps as any).alert).toBeUndefined();
-  });
-
-  it("WidgetKit push: push type widgets, content-changed only", () => {
-    const d = apnsWidgetKit(now);
-    expect(d.pushType).toBe("widgets");
-    expect(d.priority).toBeUndefined();
-    expect(d.payload).toEqual({ aps: { "content-changed": true } });
   });
 
   it("Live Activity start: event start, attributes, content-state in UNIX seconds, stale-date, alert, channel", () => {

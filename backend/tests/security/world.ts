@@ -204,7 +204,7 @@ export async function seedFullGroup(users: TestUser[], name = 'Seeded'): Promise
     p_platform: 'ios',
     p_push_token: `tok-${randomUUID()}`,
     p_push_to_start_token: `pts-${randomUUID()}`,
-    p_widget_push_token: `wid-${randomUUID()}`,
+    p_live_activities_enabled: true,
   });
   await rpc(a.client, 'set_quiet_hours', { p_start: '22:00', p_end: '07:00', p_time_zone: 'Europe/Paris' });
   await rpc(c.client, 'set_birthday', { p_birthday: '1990-05-01', p_opt_in: true });

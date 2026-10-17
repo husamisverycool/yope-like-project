@@ -45,10 +45,9 @@ describe("APNs client", () => {
     const c = apnsClient();
     const r1 = await c.send({ token: "abc", pushType: "alert", priority: 10, collapseId: "post:1", payload: { aps: { alert: { title: "t" } } } });
     const r2 = await c.send({ token: "pts", pushType: "liveactivity", priority: 10, expiration: 123, payload: { aps: { event: "start" } } });
-    const r3 = await c.send({ token: "wid", pushType: "widgets", payload: { aps: { "content-changed": true } } });
     const r4 = await c.send({ token: "bg", pushType: "background", priority: 5, expiration: 0, payload: { aps: { "content-available": 1 } } });
-    expect([r1.ok, r2.ok, r3.ok, r4.ok]).toEqual([true, true, true, true]);
-    const [a, b, w, bg] = apnsMock.requests;
+    expect([r1.ok, r2.ok, r4.ok]).toEqual([true, true, true]);
+    const [a, b, bg] = apnsMock.requests;
     expect(a!.path).toBe("/3/device/abc");
     expect(a!.headers["apns-push-type"]).toBe("alert");
     expect(a!.headers["apns-topic"]).toBe("com.example.app");
@@ -58,9 +57,7 @@ describe("APNs client", () => {
     expect(b!.headers["apns-topic"]).toBe("com.example.app.push-type.liveactivity");
     expect(b!.headers["apns-push-type"]).toBe("liveactivity");
     expect(b!.headers["apns-expiration"]).toBe("123");
-    expect(w!.headers["apns-topic"]).toBe("com.example.app.push-type.widgets");
-    expect(w!.headers["apns-push-type"]).toBe("widgets");
-    expect(w!.headers["apns-priority"]).toBeUndefined();
+    expect(bg!.headers["apns-topic"]).toBe("com.example.app");
     expect(bg!.headers["apns-priority"]).toBe("5");
     expect(bg!.headers["apns-expiration"]).toBe("0");
     c.close();

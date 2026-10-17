@@ -353,9 +353,10 @@ data class Device(
     val platform: DevicePlatform,
     @SerialName("push_token") val pushToken: String,
     @SerialName("push_to_start_token") val pushToStartToken: String?,
-    @SerialName("widget_push_token") val widgetPushToken: String?,
     @SerialName("created_at") val createdAt: Instant,
     @SerialName("updated_at") val updatedAt: Instant,
+    /** iOS only (whether the iPhone shows Live Activities, migration 0030); null on Android. */
+    @SerialName("live_activities_enabled") val liveActivitiesEnabled: Boolean? = null,
 )
 
 /** §5.21 `notification_settings` (no row = no quiet hours). */

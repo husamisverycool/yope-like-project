@@ -461,14 +461,14 @@ final class ScenarioIntegrationTests: XCTestCase {
         let value51 = try await ana.data.account.setQuietHours(start: nil, end: nil, timeZone: nil).quietHours
         XCTAssertNil(value51)
 
-        // Devices: register (all three tokens), re-register moves the token, unregister.
+        // Devices: register (tokens and the Live Activities state), re-register moves the token, unregister.
         let apns = String(repeating: "ab", count: 32) + users.runID
-        let device = try await ana.data.account.registerDevice(pushToken: apns, pushToStartToken: "p2s-\(users.runID)", widgetPushToken: "w-\(users.runID)")
+        let device = try await ana.data.account.registerDevice(pushToken: apns, pushToStartToken: "p2s-\(users.runID)", liveActivitiesEnabled: true)
         XCTAssertEqual(device.platform, .ios)
-        XCTAssertEqual(device.widgetPushToken, "w-\(users.runID)")
+        XCTAssertEqual(device.liveActivitiesEnabled, true)
         let value52 = try await ana.data.account.myDevices().map(\.pushToken)
         XCTAssertEqual(value52, [apns])
-        _ = try await rui.data.account.registerDevice(pushToken: apns, pushToStartToken: nil, widgetPushToken: nil)
+        _ = try await rui.data.account.registerDevice(pushToken: apns, pushToStartToken: nil, liveActivitiesEnabled: nil)
         let value53 = try await ana.data.account.myDevices().isEmpty
         XCTAssertTrue(value53, "a token belongs to one account")
         try await rui.data.account.unregisterDevice(pushToken: apns)

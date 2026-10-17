@@ -84,11 +84,11 @@ describe("before the deletion", () => {
 });
 
 describe("deleting photo A", () => {
-  let iosWidget: any;
+  let iosDev: any;
   let androidDev: any;
 
   beforeAll(async () => {
-    iosWidget = await registerDevice(u[1]!, "ios", { widget: `widdel${Date.now()}` });
+    iosDev = await registerDevice(u[1]!, "ios");
     androidDev = await registerDevice(u[2]!, "android");
     w.apns.reset();
     w.fcm.reset();
@@ -132,10 +132,12 @@ describe("deleting photo A", () => {
     expect(JSON.stringify(story.data)).not.toContain(A.post.id);
   });
 
-  it("sends widget refreshes: a WidgetKit push to iOS 26 and the new newest photo to Android", async () => {
-    const widgetPushes = apnsDeviceSends(w.apns).filter((s) => s.token === iosWidget.widget_push_token);
-    expect(widgetPushes.length).toBeGreaterThanOrEqual(1);
-    expect(widgetPushes[0]!.pushType).toBe("widgets");
+  it("sends widget refreshes: the new newest item to iOS (background push) and to Android", async () => {
+    // B's and C's alerts went out long ago: their done jobs no longer stand in for the widget, which showed A
+    const ios = apnsDeviceSends(w.apns).filter((s) => s.token === iosDev.push_token && s.payload.type === "widget");
+    expect(ios.length).toBeGreaterThanOrEqual(1);
+    expect(ios[0]!.pushType).toBe("background");
+    expect(JSON.stringify(ios)).not.toContain(A.post.id);
     const android = w.fcm.messages().filter((m) => m.token === androidDev.push_token && m.data.type === "widget");
     expect(android.length).toBeGreaterThanOrEqual(1);
     const last = android[android.length - 1]!;

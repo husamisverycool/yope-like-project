@@ -6,7 +6,7 @@ import { HANDLERS, WORKER_ENQUEUED_KINDS, lanes } from "../../src/jobs/index.js"
 import { isQuietAt, localMidnight, localParts } from "../../src/time.js";
 import { checkRecapText, MINIMUM_RULES } from "../../src/recap/validate.js";
 import { costUsd } from "../../src/recap/pricing.js";
-import { WidgetThrottle, WIDGETKIT_MIN_INTERVAL_MS } from "../../src/push/throttle.js";
+import { WidgetThrottle } from "../../src/push/throttle.js";
 import { DERIVED_RENDITIONS } from "../../src/media/renditions.js";
 
 describe("job registry", () => {
@@ -80,13 +80,9 @@ describe("AI pricing", () => {
 });
 
 describe("widget throttle", () => {
-  it("WidgetKit: one push per device per 5 minutes; background: two per rolling hour", () => {
+  it("background: two per rolling hour", () => {
     const t = new WidgetThrottle();
     const t0 = 1_000_000;
-    expect(t.widgetKitNextAt("w", t0)).toBeNull();
-    t.recordWidgetKit("w", t0);
-    expect(t.widgetKitNextAt("w", t0 + 1000)).toBe(t0 + WIDGETKIT_MIN_INTERVAL_MS);
-    expect(t.widgetKitNextAt("w", t0 + WIDGETKIT_MIN_INTERVAL_MS)).toBeNull();
     t.recordBackground("b", t0);
     expect(t.backgroundNextAt("b", t0 + 1)).toBeNull();
     t.recordBackground("b", t0 + 1);

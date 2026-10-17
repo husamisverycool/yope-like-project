@@ -76,12 +76,16 @@ describe('devices', () => {
       p_platform: 'ios',
       p_push_token: token,
       p_push_to_start_token: 'pts',
-      p_widget_push_token: 'wpt',
+      p_live_activities_enabled: true,
     });
-    expect(d).toMatchObject({ user_id: a.id, platform: 'ios', push_token: token, push_to_start_token: 'pts', widget_push_token: 'wpt' });
+    expect(d).toMatchObject({ user_id: a.id, platform: 'ios', push_token: token, push_to_start_token: 'pts', live_activities_enabled: true });
+    expect(d).not.toHaveProperty('widget_push_token'); // migration 0040: no WidgetKit push token
+    // Live Activities turned off in Settings: reported, the token kept (the worker sends the alert instead)
+    const off = await rpc(a.client, 'register_device', { p_platform: 'ios', p_push_token: token, p_push_to_start_token: 'pts', p_live_activities_enabled: false });
+    expect(off).toMatchObject({ id: d.id, push_to_start_token: 'pts', live_activities_enabled: false });
     const d2 = await rpc(a.client, 'register_device', { p_platform: 'ios', p_push_token: token, p_push_to_start_token: 'pts2' });
     expect(d2.id).toBe(d.id);
-    expect(d2.widget_push_token).toBeNull();
+    expect(d2.live_activities_enabled).toBeNull(); // not reported
     // same physical device, other account signs in
     const moved = await rpc(b.client, 'register_device', { p_platform: 'ios', p_push_token: token });
     expect(moved.user_id).toBe(b.id);
@@ -91,6 +95,7 @@ describe('devices', () => {
 
   it('validates tokens and platform; unregister and direct delete remove own rows only', async () => {
     await expectRpcError(rpc(a.client, 'register_device', { p_platform: 'android', p_push_token: 'fcm', p_push_to_start_token: 'x' }), 'invalid_token', 400);
+    await expectRpcError(rpc(a.client, 'register_device', { p_platform: 'android', p_push_token: 'fcm', p_live_activities_enabled: true }), 'invalid_token', 400);
     await expectRpcError(rpc(a.client, 'register_device', { p_platform: 'ios', p_push_token: '' }), 'invalid_token', 400);
     const fcm = `fcm-${randomUUID()}`;
     await rpc(a.client, 'register_device', { p_platform: 'android', p_push_token: fcm });

@@ -2,11 +2,13 @@
 //
 // Every member of the group gets the invitation in ONE concurrent batch (APNs requests share one
 // HTTP/2 connection; FCM likewise); the batch's dispatch spread is logged (docs/SPEC_FLAGS.md P4).
-//   iOS with a push-to-start token: Live Activity push-to-start with the alert, stale-date =
-//     closes_at, subscribed to a per-invitation broadcast channel (iOS 18+) for the end push
-//     (docs/PLATFORM_CONSTRAINTS.md §2: "The start alert *is* the daily invitation").
-//   iOS without one (Live Activities off, iOS < 17.2): a standard alert, interruption level
-//     `active` (never time-sensitive: tenet 5, design/surfaces/daily.notification.md, C-10).
+//   iOS with a push-to-start token and Live Activities on: Live Activity push-to-start with the
+//     alert, stale-date = closes_at, subscribed to a per-invitation broadcast channel (iOS 18+) for
+//     the end push (docs/PLATFORM_CONSTRAINTS.md §2: "The start alert *is* the daily invitation").
+//   iOS without one, or reporting Live Activities off (`devices.live_activities_enabled` false:
+//     turned off in Settings or in the app, where iOS would start nothing), iOS < 17.2: a standard
+//     alert, interruption level `active` (never time-sensitive: tenet 5,
+//     design/surfaces/daily.notification.md, C-10).
 //   Android: high-priority data message → ongoing chronometer countdown notification.
 // Muted members get nothing (no alert; their widgets update with the collage later). Quiet
 // hours: no sound (iOS passive alert; Android applies quiet hours on the device).
@@ -27,12 +29,16 @@ import {
 import type { DeviceSend } from "../push/service.js";
 import { enqueue, optStr, str, type JobContext } from "../services.js";
 import { unixSeconds } from "../time.js";
-import type { InvitationRow } from "../types.js";
+import type { DeviceRow, InvitationRow } from "../types.js";
 
 /** Channel creation must not hold up the dispatch at fires_at for long. */
 export const CHANNEL_CREATE_BUDGET_MS = 3000;
 /** A Live Activity is "active for up to eight hours" [LAD]; the end push is useful that long. */
 export const LIVE_ACTIVITY_MAX_ACTIVE_S = 8 * 3600;
+
+/** The iPhone starts a Live Activity from a push-to-start (null = not reported: older builds, which only sent the token when on). */
+export const startsLiveActivity = (d: DeviceRow): boolean =>
+  d.platform === "ios" && !!d.push_to_start_token && d.live_activities_enabled !== false;
 
 async function loadInvitation(ctx: JobContext, id: string): Promise<InvitationRow | null> {
   return maybe(await ctx.db.from("daily_invitations").select("id, group_id, local_date, fires_at, closes_at, status").eq("id", id).maybeSingle(), "invitation") as InvitationRow | null;
@@ -58,7 +64,7 @@ export async function invitationFire(ctx: JobContext): Promise<void> {
   const body = copyText("notifications.push.dailyInvitation.body", { group: audience.group.name });
 
   const recipients = audience.members.filter((m) => !m.muted);
-  const wantsLiveActivity = recipients.some((m) => m.devices.some((d) => d.platform === "ios" && d.push_to_start_token));
+  const wantsLiveActivity = recipients.some((m) => m.devices.some(startsLiveActivity));
 
   // claim the dispatch (at-most-once)
   const claimed = must(await ctx.db.from("daily_invitations").update({ status: "fired" }).eq("id", id).eq("status", "scheduled").select("id"), "fire") as Array<{ id: string }>;
@@ -90,8 +96,8 @@ export async function invitationFire(ctx: JobContext): Promise<void> {
       channelId,
     };
     for (const d of m.devices) {
-      if (d.platform === "ios" && d.push_to_start_token) {
-        sends.push({ userId: m.userId, deviceId: d.id, platform: "ios", token: d.push_to_start_token, tokenColumn: "push_to_start_token", label: "liveactivity.start", apns: apnsLiveActivityStart(spec, now) });
+      if (startsLiveActivity(d)) {
+        sends.push({ userId: m.userId, deviceId: d.id, platform: "ios", token: d.push_to_start_token as string, tokenColumn: "push_to_start_token", label: "liveactivity.start", apns: apnsLiveActivityStart(spec, now) });
       } else if (d.platform === "ios") {
         sends.push({ userId: m.userId, deviceId: d.id, platform: "ios", token: d.push_token, tokenColumn: "push_token", label: "invitation.alert", apns: apnsInvitationAlert(spec) });
       } else {

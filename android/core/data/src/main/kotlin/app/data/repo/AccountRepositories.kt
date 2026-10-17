@@ -93,7 +93,6 @@ class DeviceRepository(private val api: Api) {
         put("p_platform", DevicePlatform.Android.wire)
         put("p_push_token", fcmToken)
         put("p_push_to_start_token", null as String?)
-        put("p_widget_push_token", null as String?)
     }
 
     /** Call before signing out (§2). */

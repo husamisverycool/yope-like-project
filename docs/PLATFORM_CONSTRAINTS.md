@@ -129,6 +129,11 @@ Short names used below:
 
 ### 1.6 Recommended path (fastest compliant; layered, server-driven)
 
+> **As built (2026-10-17):** step 1 is not used. A WidgetKit push only reloads timelines; the widget would then have to
+> fetch the photo itself with the person's session, which the widget extension does not hold. Instead the app writes
+> each group's newest photo or collage into the App Group whenever it loads groups and feeds, and the alert (NSE) and
+> background pushes carry the photo (docs/WIDGET_REFRESH.md, migration 0030 removed `devices.widget_push_token`).
+
 Server, on each new post, for each recipient device:
 
 1. **Widget push (iOS 26+)** to every recipient device's widget token: `apns-push-type: widgets`. Coalesce

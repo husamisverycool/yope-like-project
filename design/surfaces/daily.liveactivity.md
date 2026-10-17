@@ -76,7 +76,9 @@ VoiceOver reads the group name and the system timer text; the camera glyph is hi
 
 - Push-to-start (iOS 17.2+) at `fires_at` with `attributes` (group id, group name, invitation id) and
   `content-state` (`closesAt`); `input-push-channel` on iOS 18+ for the end broadcast (backend/worker/src/jobs/invitation.ts).
-- `register_device(p_push_to_start_token)` keeps the token current.
+- `register_device(p_push_to_start_token, p_live_activities_enabled)` keeps the token current and reports whether the
+  iPhone shows Live Activities (iOS Settings `areActivitiesEnabled` and the in-app switch); with them off the worker
+  sends the `daily.notification` alert instead of a push-to-start that iOS would not show (migration 0030).
 - The in-app switch to turn invitation Live Activities off belongs to `settings.notifications` / `groups.settings`.
 
 ## Platform notes

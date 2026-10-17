@@ -7,7 +7,6 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { WIDGETKIT_MIN_INTERVAL_MS } from "../../src/push/throttle.js";
 import { admin, closeDb, createGroup, createUsers, jobs, objectExists, objectsUnder, postPhoto, registerDevice, rpc, sql, testJpeg, uploadAs, type TestGroup, type TestUser } from "../helpers/db.js";
 import { apnsDeviceSends, startWorld, type World } from "../helpers/world.js";
 
@@ -79,29 +78,6 @@ describe("media.renditions", () => {
 });
 
 describe("widget.refresh", () => {
-  it("iOS 26 widget token: one WidgetKit push per device per 5 minutes, with a follow-up refresh queued", async () => {
-    const dev = await registerDevice(u[1]!, "ios", { widget: `wid${Date.now()}` });
-    await postPhoto(u[0]!, [g.id]);
-    await w.runner.runUntilIdle({ kinds: ["widget.refresh"] });
-    const first = apnsDeviceSends(w.apns).filter((s) => s.token === dev.widget_push_token);
-    expect(first).toHaveLength(1);
-    expect(first[0]!.pushType).toBe("widgets");
-    expect(first[0]!.topic).toBe("com.example.groupphotos.push-type.widgets");
-    expect(first[0]!.payload).toEqual({ aps: { "content-changed": true } });
-
-    w.apns.reset();
-    await postPhoto(u[2]!, [g.id]);
-    await w.runner.runUntilIdle({ kinds: ["widget.refresh"] });
-    expect(apnsDeviceSends(w.apns).filter((s) => s.token === dev.widget_push_token)).toHaveLength(0); // throttled
-    const queued = (await jobs("widget.refresh", { group_id: g.id })).filter((j) => j.status === "queued");
-    expect(queued).toHaveLength(1);
-    const delay = new Date(queued[0].run_at).getTime() - Date.now();
-    expect(delay).toBeGreaterThan(WIDGETKIT_MIN_INTERVAL_MS - 60_000);
-    expect(delay).toBeLessThanOrEqual(WIDGETKIT_MIN_INTERVAL_MS);
-    await sql(`update public.jobs set status = 'cancelled' where id = $1`, [queued[0].id]);
-    await sql(`delete from public.devices where id = $1`, [dev.id]);
-  });
-
   it("muted members: background push (iOS < 26) and normal-priority data message (Android) with the newest photo; no alert", async () => {
     await rpc(u[3]!.client, "set_group_muted", { p_group_id: g.id, p_muted: true });
     const iosDev = await registerDevice(u[3]!, "ios");

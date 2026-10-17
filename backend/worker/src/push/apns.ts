@@ -15,7 +15,7 @@ import type { ApnsConfig } from "../config.js";
 import { H2Pool, type H2Response } from "./h2.js";
 import { signEs256 } from "./jwt.js";
 
-export type ApnsPushType = "alert" | "background" | "liveactivity" | "widgets";
+export type ApnsPushType = "alert" | "background" | "liveactivity";
 
 export interface ApnsNotification {
   token: string;
@@ -92,7 +92,6 @@ export class ApnsClient {
 
   topicFor(pushType: ApnsPushType): string {
     if (pushType === "liveactivity") return `${this.cfg.bundleId}.push-type.liveactivity`;
-    if (pushType === "widgets") return `${this.cfg.bundleId}.push-type.widgets`;
     return this.cfg.bundleId;
   }
 

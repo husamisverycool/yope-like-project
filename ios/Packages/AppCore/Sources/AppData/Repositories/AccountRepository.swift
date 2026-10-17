@@ -78,16 +78,18 @@ public struct AccountRepository: Sendable {
 
     // MARK: Devices
 
-    /// `register_device` (iOS): upsert by APNs token. Send all three tokens every time any of
-    /// them changes; nil clears that token.
+    /// `register_device` (iOS): upsert by APNs token. Send everything every time any of it changes; nil clears the
+    /// push-to-start token. `liveActivitiesEnabled` false: Live Activities are off on this iPhone, so the worker sends the
+    /// daily invitation as an alert instead of a push-to-start (migration 0030).
     @discardableResult
-    public func registerDevice(pushToken: String, pushToStartToken: String?, widgetPushToken: String?) async throws -> Device {
-        try await client.rpc("register_device", [
+    public func registerDevice(pushToken: String, pushToStartToken: String?, liveActivitiesEnabled: Bool?) async throws -> Device {
+        var parameters: [String: AnyJSON] = [
             "p_platform": .string(DevicePlatform.ios.rawValue),
             "p_push_token": .string(pushToken),
             "p_push_to_start_token": .text(pushToStartToken),
-            "p_widget_push_token": .text(widgetPushToken),
-        ])
+        ]
+        if let liveActivitiesEnabled { parameters["p_live_activities_enabled"] = .bool(liveActivitiesEnabled) }
+        return try await client.rpc("register_device", parameters)
     }
 
     /// `unregister_device` (before signing out).
