@@ -64,6 +64,8 @@ export interface PostRow {
   in_window: boolean;
   reply_to_post_id: string | null;
   created_at: string;
+  /** when the group could first see it: revealed_at for an overnight photo, else created_at (migration 0027) */
+  visible_at: string;
 }
 
 export interface MessageRow {
@@ -186,7 +188,7 @@ export interface PlanRow {
 
 export const PLAN_COLUMNS = "id, group_id, created_by, title, starts_at, ends_at, all_day, local_date, place, canceled_at, updated_at";
 
-export const POST_COLUMNS = "id, media_id, group_id, author_id, caption, invitation_id, in_window, reply_to_post_id, created_at";
+export const POST_COLUMNS = "id, media_id, group_id, author_id, caption, invitation_id, in_window, reply_to_post_id, created_at, visible_at";
 
 /** First word of a display name (same rule as private.first_name in SQL); null when empty. */
 export function firstName(displayName: string | null | undefined): string | null {

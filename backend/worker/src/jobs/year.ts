@@ -36,7 +36,7 @@ export async function yearCompute(ctx: JobContext): Promise<void> {
   const posts: PostRow[] = [];
   for (let offset = 0; ; offset += 1000) {
     const page = must(
-      await ctx.db.from("posts").select(POST_COLUMNS).eq("group_id", story.group_id).gte("created_at", from).lt("created_at", to).order("created_at").order("id").range(offset, offset + 999),
+      await ctx.db.from("posts").select(POST_COLUMNS).eq("group_id", story.group_id).gte("visible_at", from).lt("visible_at", to).order("visible_at").order("id").range(offset, offset + 999),
       "year posts",
     ) as PostRow[];
     posts.push(...page);
@@ -45,7 +45,7 @@ export async function yearCompute(ctx: JobContext): Promise<void> {
 
   const perMonth = new Map<number, number>();
   for (const p of posts) {
-    const m = localParts(new Date(p.created_at), tz).month;
+    const m = localParts(new Date(p.visible_at), tz).month;
     perMonth.set(m, (perMonth.get(m) ?? 0) + 1);
   }
   let busiest: number | null = null;

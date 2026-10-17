@@ -287,7 +287,9 @@ block with you.
 | `invitation_id` | uuid? | set only when posted inside that group's open daily invitation |
 | `in_window` | boolean | true only for posts made during an open invitation. There is no "late" state: a post after the window is an ordinary post with `invitation_id = null`. |
 | `reply_to_post_id` | uuid? | a photo replying to a photo; null if the original was deleted |
-| `created_at` | timestamptz | feed order |
+| `created_at` | timestamptz | feed order; the time the photo was taken |
+| `revealed_at` | timestamptz? | an overnight photo (§14.3): the reveal time it joined the group at; null otherwise |
+| `visible_at` | timestamptz | generated: `coalesce(revealed_at, created_at)`, when the group could first see the photo (migration 0027). **Weeks and years follow it**: history weeks, recaps, walls' week sections, year stories. Place a photo in a week or in a week strip's day by `visible_at`, never by `created_at` |
 
 Feed: `from("posts").select().eq("group_id", g).order("created_at", ascending: false).limit(30)`,
 then page with `.lt("created_at", last)`.
@@ -804,7 +806,8 @@ wall(p_user_id uuid, p_before timestamptz = null, p_limit int = 50) → table(
 ```
 A person's photos as seen by the caller: only groups you both belong to. A photo sent to
 several shared groups appears once. Also returns collages in those groups that contain
-one of their photos. Newest first. Page with `p_before = <last created_at>`; `p_limit`
+one of their photos. Newest first by `created_at`, which for a photo is its `visible_at` (when it
+became visible; migration 0027) — draw week sections from it. Page with `p_before = <last created_at>`; `p_limit`
 is clamped to 1–200. Your own wall: `p_user_id` = your id. Empty for a person with a
 block with you or who shares no group with you. Errors: `invalid_argument`.
 
@@ -814,7 +817,8 @@ group_history_weeks(p_group_id uuid, p_before_week date = null, p_limit int = 8)
   → table(week_start date, post_ids uuid[])
 ```
 Weeks (group time zone, starting on `week_start_isodow`, Monday) that have posts, newest
-first. `post_ids` are in chronological order. Page with `p_before_week =` the last
+first. A post belongs to the week of its `visible_at` (an overnight photo taken on Sunday night
+is in the week it developed in, migration 0027). `post_ids` are in `visible_at` order. Page with `p_before_week =` the last
 `week_start` (exclusive). `p_limit` is clamped to 1–52. If `free_history_days` is set
 and the caller has no premium, older posts are left out. Errors: `not_group_member`.
 
@@ -823,7 +827,8 @@ and the caller has no premium, older posts are left out. Errors: `not_group_memb
 on_this_day(p_group_id uuid, p_local_date date)
   → table(post_id uuid, media_id uuid, author_id uuid, created_at timestamptz, years_ago int)
 ```
-Posts from the same month and day (group time zone) in earlier years, newest first. Not
+Posts from the same month and day (group time zone) in earlier years, newest first, by the
+day each photo was **taken** (`created_at`; an overnight photo keeps its own day). Not
 limited by `free_history_days`. Errors: `not_group_member`, `invalid_argument`.
 
 #### `update_recap`
@@ -832,7 +837,7 @@ update_recap(p_recap_id uuid, p_items uuid[] = null, p_text text = null) → wee
 ```
 Any member, once `status = 'ready'`. `p_items` is the new order: drop ids to remove, and
 re-add any post of that group from that week. `null` = unchanged; `p_text = ""` clears
-the text. Posts hidden from you by a block are kept, after your order. Sets `edited_by`
+the text. "That week" means the posts whose `visible_at` is in the recap's week. Posts hidden from you by a block are kept, after your order. Sets `edited_by`
 and `updated_at`. Errors: `recap_not_found`, `recap_not_ready`, `invalid_items`,
 `invalid_text`.
 
@@ -990,7 +995,7 @@ whose target no longer exists must be completed as a no-op.
 | `fail_job(p_job_id bigint, p_worker_id text, p_error text, p_retry boolean = true) → jobs` | Requeue at `now + min(max, base·2^(attempts−1))` (30 s, 60 s, … ≤ 1 h), or `failed` when out of attempts or `p_retry = false`. If a newer queued duplicate (same dedupe key) exists it becomes `cancelled`. Error `job_not_found`. |
 | `enqueue_job(p_kind text, p_payload jsonb = {}, p_run_at timestamptz = null, p_max_attempts int = 5, p_dedupe_key text = null) → bigint` | Same-key queued jobs are merged. Errors `invalid_kind`, `invalid_argument`. |
 | `schedule_daily_invitations(p_for_utc_date date) → table(group_id, local_date, invitation_id, fires_at, closes_at, created, skipped_reason)` | Call hourly for today and tomorrow (UTC). Treats the date as each group's local date. `fires_at` is a deterministic instant (seeded by md5(group, date)) inside the waking window, DST-safe, with `closes_at` inside it too. Idempotent. Skips paused/empty groups; reports `waking_window_not_set`, `window_too_short`, `window_passed`. Enqueues `invitation.fire` (run_at = fires_at) and `collage.compose` (run_at = closes_at). Error `config_missing`. |
-| `due_weekly_recaps(p_now timestamptz = now()) → setof weekly_recaps` | Call every few minutes. Creates the recap of the week that ended by the latest recap moment for groups that posted that week. The recap moment is `weekly_recap_isodow` (Sunday) at the **end of the group's waking window** (its own hours, else `default_waking_end`; a window that wraps past midnight ends early on Monday): the last waking moment of its week, group-local and DST-safe. `weekly_recap_local_time`, when set, overrides that time for every group. A group with no known window and no override gets no recap. Enqueues `recap.generate`. Returns only rows it created. |
+| `due_weekly_recaps(p_now timestamptz = now()) → setof weekly_recaps` | Call every few minutes. Creates the recap of the week that ended by the latest recap moment for groups with photos visible that week (`posts.visible_at`, migration 0027). The recap moment is `weekly_recap_isodow` (Sunday) at the **end of the group's waking window** (its own hours, else `default_waking_end`; a window that wraps past midnight ends early on Monday): the last waking moment of its week, group-local and DST-safe. `weekly_recap_local_time`, when set, overrides that time for every group. A group with no known window and no override gets no recap. Enqueues `recap.generate`. Returns only rows it created. |
 | `due_birthday_requests(p_now) → setof tribute_requests` | Creates requests `birthday_request_lead_days` (7) before an opted-in member's birthday (group-local; Feb 29 → Feb 28 in common years), in groups with another member. Enqueues `push.birthday_request`. |
 | `due_tributes(p_now) → setof tributes` | Closes due requests; creates a tribute (+ `tribute.render`) only if someone contributed. |
 | `due_year_stories(p_now) → setof year_stories` | From `year_story_release_month_day` (12-01) local, once per group that posted that year. Enqueues `year.compute`. |
@@ -1199,6 +1204,8 @@ At the reveal the scheduler (`due_developed_posts`) turns each into an ordinary 
 (`push.photos_developed`, type `new_post` with the first photo's `post_id` and `revealed_at` = the reveal time, which
 marks it as a reveal: Android files it under Developed Photos), the senders included, unless they muted the group or
 turned overnight alerts off. Broadcast `developing_changed` (no payload) on create and reveal.
+The developed post belongs to the week (and year) of its reveal: `visible_at` = `revealed_at` (migration 0027), so a
+photo taken on Sunday night joins Monday's week and its recap instead of a week already recapped.
 
 ### 14.4 Weekly question (Retro prompt cards, Apple Journal)
 

@@ -166,6 +166,16 @@ describe('due_weekly_recaps', () => {
     });
   });
 
+  it('a week whose only photo developed after it (overnight, migration 0027) gets no recap; the next week does', async () => {
+    const g = await groupWithPostAt('2026-11-08T22:30:00Z', { tz: 'Europe/Paris' }); // taken Sun 23:30 local
+    await sql(`update public.posts set revealed_at = '2026-11-09T08:00:00Z' where group_id = $1`, [g.id]); // Mon 09:00 local
+    await inRolledBackTransaction(async (q) => {
+      await sourcedDefaults(q);
+      expect((await due(q, '2026-11-08T20:13:00Z')).filter((r) => r.group_id === g.id)).toEqual([]);
+      expect((await due(q, '2026-11-15T20:13:00Z')).filter((r) => r.group_id === g.id)).toEqual([{ group_id: g.id, week_start: '2026-11-09' }]);
+    });
+  });
+
   it("uses the group's own waking-window end", async () => {
     const g = await groupWithPostAt('2026-11-04T15:00:00Z', { tz: 'America/New_York', start: '08:00', end: '20:00' });
     await inRolledBackTransaction(async (q) => {

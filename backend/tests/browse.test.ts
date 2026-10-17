@@ -137,6 +137,59 @@ describe('group_history_weeks', () => {
   });
 });
 
+describe('weeks follow when a photo became visible (overnight photos, migration 0027)', () => {
+  // Los Angeles (PST in January 2026): taken Sun 2026-01-11 22:00 local, developed Mon 2026-01-12 09:00 local.
+  const takenSunday = '2026-01-12T06:00:00Z';
+  const developedMonday = '2026-01-12T17:00:00Z';
+  const develop = (postId: string, takenIso: string, revealedIso: string) =>
+    sql(`update public.posts set created_at = $2::timestamptz, revealed_at = $3::timestamptz where id = $1`, [postId, takenIso, revealedIso]);
+
+  it('group_history_weeks files an overnight photo under the week it developed in', async () => {
+    const g = await createGroup(a, [b], { tz: 'America/Los_Angeles' });
+    const sunday = (await postPhoto(a, [g.id])).posts[0].id;
+    await setCreatedAt(sunday, '2026-01-12T05:00:00Z'); // Sun 21:00 local, an ordinary post
+    const overnight = (await postPhoto(b, [g.id])).posts[0].id;
+    await develop(overnight, takenSunday, developedMonday);
+    const [row] = await sql(`select visible_at from public.posts where id = $1`, [overnight]);
+    expect(new Date(row.visible_at).toISOString()).toBe(new Date(developedMonday).toISOString());
+    expect(await rpc<any[]>(b.client, 'group_history_weeks', { p_group_id: g.id })).toEqual([
+      { week_start: '2026-01-12', post_ids: [overnight] },
+      { week_start: '2026-01-05', post_ids: [sunday] },
+    ]);
+    await expectRpcError(rpc(stranger.client, 'group_history_weeks', { p_group_id: g.id }), 'not_group_member', 403);
+  });
+
+  it("update_recap takes an overnight photo into the week it developed in, not the week it was taken in", async () => {
+    const g = await createGroup(a, [b], { tz: 'America/Los_Angeles' });
+    const inWeek = (await postPhoto(a, [g.id])).posts[0].id;
+    await develop(inWeek, takenSunday, developedMonday);
+    const ordinary = (await postPhoto(a, [g.id])).posts[0].id;
+    await setCreatedAt(ordinary, '2026-01-14T20:00:00Z');
+    const [next] = await sql<{ id: string }>(
+      `insert into public.weekly_recaps (group_id, week_start, items, status, generated_at)
+       values ($1, '2026-01-12', $2::uuid[], 'ready', now()) returning id`, [g.id, [ordinary]]);
+    const [prev] = await sql<{ id: string }>(
+      `insert into public.weekly_recaps (group_id, week_start, items, status, generated_at)
+       values ($1, '2026-01-05', '{}', 'ready', now()) returning id`, [g.id]);
+    expect((await rpc(b.client, 'update_recap', { p_recap_id: next.id, p_items: [inWeek, ordinary] })).items).toEqual([inWeek, ordinary]);
+    await expectRpcError(rpc(b.client, 'update_recap', { p_recap_id: prev.id, p_items: [inWeek] }), 'invalid_items', 400);
+  });
+
+  it("wall orders an overnight photo by when it developed", async () => {
+    const [x, y] = await createUsers(2, 'WallNight');
+    const g = await createGroup(x, [y], { tz: 'America/Los_Angeles' });
+    const overnight = (await postPhoto(x, [g.id])).posts[0].id;
+    await develop(overnight, takenSunday, developedMonday);
+    const later = (await postPhoto(x, [g.id])).posts[0].id;
+    await setCreatedAt(later, '2026-01-12T12:00:00Z'); // Mon 04:00 local: after it was taken, before it developed
+    const wall = await rpc<any[]>(y.client, 'wall', { p_user_id: x.id, p_before: '2026-01-13T00:00:00Z', p_limit: 5 });
+    expect(wall.map((x) => [x.post_id, new Date(x.created_at).toISOString()])).toEqual([
+      [overnight, new Date(developedMonday).toISOString()],
+      [later, new Date('2026-01-12T12:00:00Z').toISOString()],
+    ]);
+  });
+});
+
 describe('on_this_day', () => {
   it('returns posts from the same local month/day in previous years', async () => {
     const g = await createGroup(a, [b], { tz: 'Asia/Tokyo' });

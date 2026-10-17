@@ -72,6 +72,28 @@ describe("without an API key", () => {
   });
 });
 
+describe("weeks follow when a photo became visible (migration 0027)", () => {
+  let w: World;
+  beforeAll(async () => {
+    w = await startWorld({ recapModel: null });
+  });
+  afterAll(async () => w.close({ keepData: true }));
+
+  it("an overnight photo taken on the Sunday before and developed on Monday is in this week; one developing after the week is not", async () => {
+    const { g, moment, reacted, plain } = await weekGroup("Recap overnight");
+    const before = (await postPhoto(u[2]!, [g.id], {}, { seed: 30 })).post.id;
+    const after = (await postPhoto(u[2]!, [g.id], {}, { seed: 31 })).post.id;
+    await sql(`update public.posts set created_at = timestamptz '2026-09-06 23:30:00+02', revealed_at = timestamptz '2026-09-07 09:00:00+02' where id = $1`, [before]);
+    await sql(`update public.posts set created_at = timestamptz '2026-09-13 23:00:00+02', revealed_at = timestamptz '2026-09-14 09:00:00+02' where id = $1`, [after]);
+    const recapId = await createRecap(g.id);
+    await w.runner.runUntilIdle({ kinds: ["recap.generate", "push.recap_ready"] });
+    const [r] = await sql(`select items from public.weekly_recaps where id = $1`, [recapId]);
+    // the rest by reactions, then by the time taken: the overnight photo (Sunday) before Tuesday's plain one
+    expect(r.items).toEqual([...moment, reacted, before, plain]);
+    expect(r.items).not.toContain(after);
+  });
+});
+
 describe("with a (mocked) model", () => {
   let calls: RecapInput[] = [];
   let next: (input: RecapInput) => RecapModelResult;

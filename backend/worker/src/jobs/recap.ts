@@ -1,6 +1,7 @@
 // recap.generate {recap_id, group_id, week_start} (the SQL kind; the brief calls it recap.assemble):
-// gathers the group's week (group time zone), orders it, drafts the text, writes the recap and
-// queues push.recap_ready.
+// gathers the group's week (group time zone; a photo belongs to the week in which the group could
+// first see it, posts.visible_at — an overnight photo taken on Sunday night joins Monday's week,
+// migration 0027), orders it, drafts the text, writes the recap and queues push.recap_ready.
 //
 // Deterministic order (also the fallback when AI is off or fails):
 //   1. moments everyone shared (their on-time photos, by moment time, then capture order),
@@ -54,7 +55,7 @@ export async function gatherWeek(ctx: JobContext, groupId: string, weekStart: st
   const from = localMidnight(weekStart, tz).toISOString();
   const to = localMidnight(addDays(weekStart, 7), tz).toISOString();
   const posts = must(
-    await ctx.db.from("posts").select(POST_COLUMNS).eq("group_id", groupId).gte("created_at", from).lt("created_at", to).order("created_at").order("id"),
+    await ctx.db.from("posts").select(POST_COLUMNS).eq("group_id", groupId).gte("visible_at", from).lt("visible_at", to).order("visible_at").order("id"),
     "week posts",
   ) as PostRow[];
   const media = new Map((await selectIn<MediaRow>(ctx.db, "media", MEDIA_COLUMNS, "id", posts.map((p) => p.media_id))).map((x) => [x.id, x]));
