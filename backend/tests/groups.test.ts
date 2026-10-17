@@ -261,7 +261,7 @@ describe('membership changes', () => {
     await expectRpcError(rpc(stranger.client, 'set_group_muted', { p_group_id: g.id, p_muted: true }), 'not_group_member', 403);
   });
 
-  it('the age gate is enforced: create_group, join_group and create_post need confirm_age first (0055)', async () => {
+  it('the age gate is enforced: create_group, join_group and create_post need confirm_age first (0055, 0058)', async () => {
     const young = await createUser('Not Yet', { ageConfirmed: false });
     const g = await createGroup(a, []);
     const invite = await rpc(a.client, 'create_invite', { p_group_id: g.id });
@@ -273,6 +273,11 @@ describe('membership changes', () => {
     await expectRpcError(rpc(young.client, 'join_group', { p_token: invite.token }), 'age_not_confirmed', 403);
     await expectRpcError(
       rpc(young.client, 'create_post', { p_media_id: randomUUID(), p_group_ids: [g.id] }),
+      'age_not_confirmed',
+      403,
+    );
+    await expectRpcError(
+      rpc(young.client, 'create_overnight_post', { p_media_id: randomUUID(), p_group_ids: [g.id] }),
       'age_not_confirmed',
       403,
     );
