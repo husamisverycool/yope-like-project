@@ -148,7 +148,7 @@ class OnThisDaySnapshotTest : SnapshotTest() {
         compose.mainClock.advanceTimeBy(settleMillis)
         compose.onNodeWithText("On this day…").assertExists()
         compose.onNodeWithText("Shuffle").assertExists()
-        compose.onNodeWithText("Pick a date…").assertDoesNotExist()
+        compose.onNodeWithText("Pick a date…").assertExists()
         compose.waitForIdle()
         repeat(4) { compose.mainClock.advanceTimeByFrame() }
         com.github.takahirom.roborazzi.captureScreenRoboImage("src/test/snapshots/onthisday/mode-menu-light.png")
