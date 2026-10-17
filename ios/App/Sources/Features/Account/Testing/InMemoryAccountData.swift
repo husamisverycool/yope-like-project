@@ -292,7 +292,7 @@ final class InMemoryAccountData: AccountDataSource {
     func createInvite(groupID: GroupID) async throws -> GroupInvite {
         try await record("createInvite")
         let invite = GroupInvite(id: InviteID(makeID()), groupID: groupID, token: "tok" + String(nextID), createdBy: try requireUser(), // provenance-ok: test fixture token
-                                 createdAt: now, expiresAt: now.addingTimeInterval(7 * 24 * 3600), revokedAt: nil)
+                                 createdAt: now, expiresAt: nil, revokedAt: nil)
         invites.append(invite)
         return invite
     }

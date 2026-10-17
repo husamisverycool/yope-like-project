@@ -76,10 +76,11 @@ data class GroupInvite(
     val token: String,
     @SerialName("created_by") val createdBy: String,
     @SerialName("created_at") val createdAt: Instant,
-    @SerialName("expires_at") val expiresAt: Instant,
+    /** Null = the link never expires (owner decision 27: `invite_ttl_seconds` is NULL); it works until revoked. */
+    @SerialName("expires_at") val expiresAt: Instant?,
     @SerialName("revoked_at") val revokedAt: Instant?,
 ) {
-    fun isUsable(now: Instant): Boolean = revokedAt == null && expiresAt.isAfter(now)
+    fun isUsable(now: Instant): Boolean = revokedAt == null && (expiresAt == null || expiresAt.isAfter(now))
 }
 
 /** §5.6 `blocks` (rows where you are the blocker). */

@@ -147,8 +147,8 @@ struct GroupInviteView: View {
     // MARK: Note
 
     /// `groups.invite.icon.note` (`size.global.iconSmall`) + `groups.invite.size.noteGlyphGap` + "Anyone with this link can
-    /// join {group_name}" (text role `meta`); with the link on, its expiry on a second line (same style). Read as one
-    /// sentence.
+    /// join {group_name}" (text role `meta`), as Retro's sheet. No expiry line: links work until they are reset or link
+    /// sharing is turned off (owner decision 27).
     private var note: some View {
         VStack {
             HStack(alignment: .firstTextBaseline, spacing: Tokens.Sizes.groupsInviteSizeNoteGlyphGap) {
@@ -156,10 +156,6 @@ struct GroupInviteView: View {
                     .font(Tokens.Fonts.globalFamily.font(size: Tokens.Sizes.globalIconSmall, weight: Font.Weight.regular))
                     .accessibilityHidden(true)
                 Text(Copy.groupsInviteLinkLabel(groupName: model.group?.name ?? ""))
-                    .dsTextStyle(TextRole.meta)
-            }
-            if let invite = model.invite {
-                Text(Copy.groupsInviteLinkExpiry(date: AccountFormats.expiryDate(invite.expiresAt)))
                     .dsTextStyle(TextRole.meta)
             }
         }

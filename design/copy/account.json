@@ -1426,16 +1426,6 @@
       "level": "SOURCED",
       "notes": "Noun swap the album → {group_name}; no final period, as Retro writes it."
     },
-    "groups.invite.link.expiry": {
-      "text": "This link works until {date}.",
-      "origin": "new",
-      "source_app": "Retro",
-      "surface": "groups.invite",
-      "evidence": "design/copy-patterns.md retro.voice.formats (dates as 'January 25, 2024'); docs/API.md §5.5 (expires_at, 7 days)",
-      "pattern": "retro.voice.formats",
-      "level": "SOURCED",
-      "notes": "A date, never a countdown (Retro's 'Expires in N days' is do-not-copy)."
-    },
     "groups.invite.link.turnOn": {
       "text": "Turn on link sharing",
       "origin": "verbatim",

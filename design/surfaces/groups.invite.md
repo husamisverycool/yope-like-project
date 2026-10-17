@@ -29,7 +29,8 @@ system share sheet, SMS compose, contacts, photo library (PLATFORM). Tokens: `gr
    `groups.screen.shadow.cover`; no cover → `color.global.control` fill.
 3. `groups.invite.size.coverToNote` (29) below: **note**, centred: `groups.invite.icon.note` (`size.global.iconSmall`)
    + `groups.invite.size.noteGlyphGap` + `groups.invite.link.label` (text role `meta`); colour `groups.invite.color.note`
-   (light) / `color.global.textSecondary` (dark). Link on: second line `groups.invite.link.expiry` (same style).
+   (light) / `color.global.textSecondary` (dark). No expiry line: a link works until it is reset or link sharing is
+   turned off (owner decision 27, docs/OWNER_DECISIONS.md 2026-10-17; `invite_ttl_seconds` NULL).
 4. **Link off** (no live invite of yours): primary capsule C-05 `groups.invite.link.turnOn` at `size.global.buttonMarginH`,
    `size.global.titleToContent` below the note.
    **Link on**: `size.global.titleToContent` below the note —
@@ -92,7 +93,7 @@ year; this card is a group's), any logo or avatar over the code.
 |---|---|---|---|
 | header | C-29, C-11 | `groups.invite.title` ({group_name}), `groups.invite.close.accessibilityLabel` | close |
 | cover | `groups.invite.size.coverWidth` / `.coverHeight`, `groups.screen.shadow.cover` | `groups.invite.cover.accessibilityLabel` | decorative image |
-| note | `groups.invite.icon.note`, `groups.invite.size.noteGlyphGap`, `meta`, `groups.invite.color.note` / `color.global.textSecondary` | `groups.invite.link.label`, `groups.invite.link.expiry` ({date} long date, `retro.voice.formats`) | static |
+| note | `groups.invite.icon.note`, `groups.invite.size.noteGlyphGap`, `meta`, `groups.invite.color.note` / `color.global.textSecondary` | `groups.invite.link.label` | static |
 | Turn on link sharing | C-05 | `groups.invite.link.turnOn` | `create_invite(p_group_id)` → link on |
 | Reset link | C-14 row | `groups.invite.link.reset` | `revoke_invite(old)` then `create_invite` (a new link; the old stops working) |
 | Turn off link sharing | C-14 row, C-10 red | `groups.invite.link.turnOff`; alert `.turnOff.title`, `.turnOff.message`, `.turnOff.confirm`, `.turnOff.cancel` | native alert (`settings.account.layout.alert`) → `revoke_invite` → link off; confirmation `groups.invite.link.turnedOff` (C-26) |
@@ -112,7 +113,7 @@ year; this card is a group's), any logo or avatar over the code.
 |---|---|---|---|
 | loading | reading `group_invites` | C-28 platform indicator under the note in place of 4 | — |
 | link off | no live invite created by you | capsule | `groups.invite.link.turnOn` |
-| link on | live invite (not revoked, not expired) | menu + targets | as above |
+| link on | live invite (not revoked; links have no expiry) | menu + targets | as above |
 | creating | `create_invite` in flight | capsule busy (C-05) | — |
 | group full | members = `max_group_members` | 4 and 5 replaced by the C-27 block (no glyph, no action) | `groups.invite.full.title`, `.full.detail` |
 | error | invite read / create failed | C-27 block with outline capsule C-06 | `groups.invite.error.title`, `.detail`, `.retry` |
@@ -137,7 +138,7 @@ SMS sent (compose result `.sent`) → `haptic.global.send` (PLATFORM outcomes, R
 
 ## Accessibility
 
-- Cover hidden behind its label; note read as one sentence (+ expiry). Menu rows: buttons ("Turn off link sharing" is
+- Cover hidden behind its label; note read as one sentence. Menu rows: buttons ("Turn off link sharing" is
   announced as destructive by its alert, not by colour). Targets: one button each, label = visible text.
 - QR card: one image, "QR code for joining {group_name}" (`groups.invite.qr.accessibilityLabel`); the name and tagline are
   not read separately. Save (circle) and Share (pill) are buttons with their copy; close "Close". Focus order: card →
@@ -163,7 +164,7 @@ SMS sent (compose result `.sent`) → `haptic.global.send` (PLATFORM outcomes, R
 ## Data & actions
 
 - `group_invites` (members read, docs/API.md §5.5): reuse a live invite created by the caller; else nothing is live
-  (link off). `create_invite(p_group_id)` → `{token, expires_at}`; link `https://<domain>/i/<token>` (domain = owner).
+  (link off). `create_invite(p_group_id)` → `{token, expires_at: null}`; link `https://<domain>/i/<token>` (domain = owner).
 - `revoke_invite(p_token)` (creator or admin; `not_group_admin` otherwise) for Reset / Turn off.
 - `group_members` count only to decide the full state (never shown as a number).
 - In: `groups.screen` ("Invite" capsule, created state), `groups.settings` (Invite row). Out: back.

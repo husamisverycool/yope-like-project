@@ -16,6 +16,7 @@ import {
   createInvite,
   EXIF_MARKER,
   expireInvite,
+  inviteExpiry,
   revokeInvite,
   SERVICE_ROLE_KEY,
   seedGroup,
@@ -161,7 +162,13 @@ describe("other states (local stack)", () => {
     expect(calls).toEqual({ preview: 0, sign: 0, fetch: 0 });
   });
 
-  it("expired invite → 410", async () => {
+  it("a new link has no expiry (owner decision 27) and keeps working", async () => {
+    const token = await createInvite(g.groupId, g.memberIds.ana);
+    expect(await inviteExpiry(token)).toBeNull();
+    expect((await get(app().app, `/i/${token}`)).status).toBe(200);
+  });
+
+  it("a link given an expiry (only if invite_ttl_seconds is set) → 410 once past it", async () => {
     const token = await createInvite(g.groupId, g.memberIds.ana);
     await expireInvite(token);
     const res = await get(app().app, `/i/${token}`);

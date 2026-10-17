@@ -257,8 +257,16 @@ const table = {
   "chat.reactions.empty": "Nothing to see here yet", // Retro · chat.reactions · SOURCED
   "chat.reactions.error": "Couldn't send reaction", // Retro · chat.reactions · SOURCED
   "chat.reactions.list.removeHint": "Tap to remove", // WhatsApp · chat.reactions · SOURCED
-  "chat.reactions.picker.all": "All", // Retro · chat.reactions · SOURCED
   "chat.reactions.picker.frequent": "Frequently Used", // Locket · chat.reactions · SOURCED
+  "chat.reactions.picker.group.activities": "Activities", // Unicode (UTS #51) · chat.reactions · VERIFIED
+  "chat.reactions.picker.group.animalsNature": "Animals & Nature", // Unicode (UTS #51) · chat.reactions · VERIFIED
+  "chat.reactions.picker.group.flags": "Flags", // Unicode (UTS #51) · chat.reactions · VERIFIED
+  "chat.reactions.picker.group.foodDrink": "Food & Drink", // Unicode (UTS #51) · chat.reactions · VERIFIED
+  "chat.reactions.picker.group.objects": "Objects", // Unicode (UTS #51) · chat.reactions · VERIFIED
+  "chat.reactions.picker.group.peopleBody": "People & Body", // Unicode (UTS #51) · chat.reactions · VERIFIED
+  "chat.reactions.picker.group.smileysEmotion": "Smileys & Emotion", // Unicode (UTS #51) · chat.reactions · VERIFIED
+  "chat.reactions.picker.group.symbols": "Symbols", // Unicode (UTS #51) · chat.reactions · VERIFIED
+  "chat.reactions.picker.group.travelPlaces": "Travel & Places", // Unicode (UTS #51) · chat.reactions · VERIFIED
   "chat.reactions.picker.search": "Search", // Retro · chat.reactions · SOURCED
   "chat.thread.a11y.back": "Back", // Apple HIG / Material 3 · chat.thread · SOURCED
   "chat.thread.a11y.cancelReply": "Cancel reply", // Retro · chat.thread · SOURCED
@@ -379,7 +387,6 @@ const table = {
   "groups.invite.full.title": "{group_name} is full", // Retro · groups.invite · SOURCED
   "groups.invite.link.copied": "Invite link copied to clipboard", // Retro · groups.invite · SOURCED
   "groups.invite.link.copy": "Copy Link", // Retro · groups.invite · SOURCED
-  "groups.invite.link.expiry": "This link works until {date}.", // Retro · groups.invite · SOURCED
   "groups.invite.link.label": "Anyone with this link can join {group_name}", // Retro · groups.invite · SOURCED
   "groups.invite.link.message": "Check out {group_name} on Jolt: {link}", // Retro · groups.invite · SOURCED
   "groups.invite.link.messageTarget": "Message", // Retro · groups.invite · SOURCED
@@ -767,6 +774,7 @@ const table = {
   "plans.page.offline": "Could not connect. Check your connection and try again.", // Retro · plans.page · SOURCED
   "plans.page.people.cantGo": "Can't go", // Partiful · plans.page · SOURCED
   "plans.page.people.title": "Who's Coming", // Retro · plans.page · SOURCED
+  "plans.page.went": "Went", // Partiful · plans.page · SOURCED
   "question.weekly.camera.a11y": "Answering: {question}", // Retro · question.weekly · SOURCED
   "question.weekly.card.a11y": "This week's question: {question}", // Retro · question.weekly · SOURCED
   "question.weekly.card.a11y.answers": "See answers", // Retro · question.weekly · SOURCED
@@ -1017,6 +1025,7 @@ const table = {
   "widget.countdown.configuration.allGroups": "All Groups", // Retro · widget.countdown · SOURCED
   "widget.countdown.configuration.group": "Group", // Retro · widget.countdown · SOURCED
   "widget.countdown.configuration.title": "Show plans from…", // Retro · widget.countdown · SOURCED
+  "widget.countdown.empty.noPlans": "No plans yet", // Retro · widget.countdown · SOURCED
   "widget.countdown.gallery.description": "See how many days until your group's next plan.", // Retro · widget.countdown · SOURCED
   "widget.countdown.gallery.name": "Next Plan", // Retro · widget.countdown · SOURCED
   "widget.home.small.a11y.collage": "Photos from {group}, {date}", // Retro · widget.home.small · SOURCED

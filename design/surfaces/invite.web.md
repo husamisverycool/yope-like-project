@@ -91,7 +91,7 @@ its explanation, and the pill its action when one exists; no avatar, no members,
 | state | HTTP | copy | notes |
 |---|---|---|---|
 | valid | 200 | as above | `Cache-Control: private, max-age=INVITE_CACHE_SECONDS` (60 s) |
-| link no longer works (expired or revoked) | 410 | `invite.web.unavailable.title`, `invite.web.unavailable.body`; no pill | same page for both (does not reveal which) |
+| link no longer works (revoked: reset or link sharing turned off; or past an expiry, which links no longer have — owner decision 27) | 410 | `invite.web.unavailable.title`, `invite.web.unavailable.body`; no pill | same page for both (does not reveal which) |
 | not found (unknown / malformed token) | 404 | `invite.web.notFound.title`; `<title>` `invite.web.notFound.documentTitle`; no pill | malformed tokens never reach the database |
 | error (Supabase unreachable) | 503 | `invite.web.error.title`, `invite.web.error.body`, pill `invite.web.error.retry` (reloads) | never cached |
 | too many requests | 429 | `invite.web.error.title`, `invite.web.rateLimited.body`; no pill | `Retry-After` |

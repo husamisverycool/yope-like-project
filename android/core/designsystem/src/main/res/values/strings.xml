@@ -511,10 +511,26 @@
     <string name="chat_reactions_error" formatted="false">Couldn\'t send reaction</string>
     <!-- WhatsApp · chat.reactions · new · SOURCED -->
     <string name="chat_reactions_list_removehint" formatted="false">Tap to remove</string>
-    <!-- Retro · chat.reactions · verbatim · SOURCED -->
-    <string name="chat_reactions_picker_all" formatted="false">All</string>
     <!-- Locket · chat.reactions · verbatim · SOURCED -->
     <string name="chat_reactions_picker_frequent" formatted="false">Frequently Used</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_activities" formatted="false">Activities</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_animalsnature" formatted="false">Animals &amp; Nature</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_flags" formatted="false">Flags</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_fooddrink" formatted="false">Food &amp; Drink</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_objects" formatted="false">Objects</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_peoplebody" formatted="false">People &amp; Body</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_smileysemotion" formatted="false">Smileys &amp; Emotion</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_symbols" formatted="false">Symbols</string>
+    <!-- Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED -->
+    <string name="chat_reactions_picker_group_travelplaces" formatted="false">Travel &amp; Places</string>
     <!-- Retro · chat.reactions · verbatim · SOURCED -->
     <string name="chat_reactions_picker_search" formatted="false">Search</string>
     <!-- Apple HIG / Material 3 · chat.thread · new · SOURCED -->
@@ -755,8 +771,6 @@
     <string name="groups_invite_link_copied" formatted="false">Invite link copied to clipboard</string>
     <!-- Retro · groups.invite · verbatim · SOURCED -->
     <string name="groups_invite_link_copy" formatted="false">Copy Link</string>
-    <!-- Retro · groups.invite · new · SOURCED · args: date -->
-    <string name="groups_invite_link_expiry">This link works until %1$s.</string>
     <!-- Retro · groups.invite · adapted · SOURCED · args: group_name -->
     <string name="groups_invite_link_label">Anyone with this link can join %1$s</string>
     <!-- Retro · groups.invite · adapted · SOURCED · args: group_name, link -->
@@ -1531,6 +1545,8 @@
     <string name="plans_page_people_cantgo" formatted="false">Can\'t go</string>
     <!-- Retro · plans.page · new · SOURCED -->
     <string name="plans_page_people_title" formatted="false">Who\'s Coming</string>
+    <!-- Partiful · plans.page · adapted · SOURCED -->
+    <string name="plans_page_went" formatted="false">Went</string>
     <!-- Retro · question.weekly · new · SOURCED · args: question -->
     <string name="question_weekly_camera_a11y">Answering: %1$s</string>
     <!-- Retro · question.weekly · new · SOURCED · args: question -->
@@ -2031,6 +2047,8 @@
     <string name="widget_countdown_configuration_group" formatted="false">Group</string>
     <!-- Retro · widget.countdown · adapted · SOURCED -->
     <string name="widget_countdown_configuration_title" formatted="false">Show plans from…</string>
+    <!-- Retro · widget.countdown · adapted · SOURCED -->
+    <string name="widget_countdown_empty_noplans" formatted="false">No plans yet</string>
     <!-- Retro · widget.countdown · new · SOURCED -->
     <string name="widget_countdown_gallery_description" formatted="false">See how many days until your group\'s next plan.</string>
     <!-- Retro · widget.countdown · new · SOURCED -->

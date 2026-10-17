@@ -97,7 +97,13 @@ export async function joinGroup(token: string, userId: string) {
   await req("POST", "/rest/v1/rpc/join_group", { p_token: token }, {}, asUser(userId));
 }
 
-/** Service role: move an invite's expiry into the past. */
+/** Service role: the invite's expires_at (null = never expires, owner decision 27). */
+export async function inviteExpiry(token: string): Promise<string | null> {
+  const rows = await req("GET", `/rest/v1/group_invites?token=eq.${token}&select=expires_at`);
+  return (rows as Array<{ expires_at: string | null }>)[0]!.expires_at;
+}
+
+/** Service role: give an invite an expiry in the past (links have none unless invite_ttl_seconds is set). */
 export async function expireInvite(token: string) {
   await req("PATCH", `/rest/v1/group_invites?token=eq.${token}`, { expires_at: new Date(Date.now() - 60_000).toISOString() }, { Prefer: "return=minimal" });
 }

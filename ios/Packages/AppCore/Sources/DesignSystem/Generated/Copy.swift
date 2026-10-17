@@ -513,10 +513,26 @@ public enum Copy {
     public static var chatReactionsError: String { CopyLookup.string("chat.reactions.error", default: "Couldn't send reaction") }
     /// "Tap to remove" — WhatsApp · chat.reactions · new · SOURCED
     public static var chatReactionsListRemoveHint: String { CopyLookup.string("chat.reactions.list.removeHint", default: "Tap to remove") }
-    /// "All" — Retro · chat.reactions · verbatim · SOURCED
-    public static var chatReactionsPickerAll: String { CopyLookup.string("chat.reactions.picker.all", default: "All") }
     /// "Frequently Used" — Locket · chat.reactions · verbatim · SOURCED
     public static var chatReactionsPickerFrequent: String { CopyLookup.string("chat.reactions.picker.frequent", default: "Frequently Used") }
+    /// "Activities" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupActivities: String { CopyLookup.string("chat.reactions.picker.group.activities", default: "Activities") }
+    /// "Animals & Nature" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupAnimalsNature: String { CopyLookup.string("chat.reactions.picker.group.animalsNature", default: "Animals & Nature") }
+    /// "Flags" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupFlags: String { CopyLookup.string("chat.reactions.picker.group.flags", default: "Flags") }
+    /// "Food & Drink" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupFoodDrink: String { CopyLookup.string("chat.reactions.picker.group.foodDrink", default: "Food & Drink") }
+    /// "Objects" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupObjects: String { CopyLookup.string("chat.reactions.picker.group.objects", default: "Objects") }
+    /// "People & Body" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupPeopleBody: String { CopyLookup.string("chat.reactions.picker.group.peopleBody", default: "People & Body") }
+    /// "Smileys & Emotion" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupSmileysEmotion: String { CopyLookup.string("chat.reactions.picker.group.smileysEmotion", default: "Smileys & Emotion") }
+    /// "Symbols" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupSymbols: String { CopyLookup.string("chat.reactions.picker.group.symbols", default: "Symbols") }
+    /// "Travel & Places" — Unicode (UTS #51) · chat.reactions · verbatim · VERIFIED
+    public static var chatReactionsPickerGroupTravelPlaces: String { CopyLookup.string("chat.reactions.picker.group.travelPlaces", default: "Travel & Places") }
     /// "Search" — Retro · chat.reactions · verbatim · SOURCED
     public static var chatReactionsPickerSearch: String { CopyLookup.string("chat.reactions.picker.search", default: "Search") }
     /// "Back" — Apple HIG / Material 3 · chat.thread · new · SOURCED
@@ -757,8 +773,6 @@ public enum Copy {
     public static var groupsInviteLinkCopied: String { CopyLookup.string("groups.invite.link.copied", default: "Invite link copied to clipboard") }
     /// "Copy Link" — Retro · groups.invite · verbatim · SOURCED
     public static var groupsInviteLinkCopy: String { CopyLookup.string("groups.invite.link.copy", default: "Copy Link") }
-    /// "This link works until {date}." — Retro · groups.invite · new · SOURCED
-    public static func groupsInviteLinkExpiry(date: String) -> String { CopyLookup.format("groups.invite.link.expiry", default: "This link works until {date}.", ["date": date]) }
     /// "Anyone with this link can join {group_name}" — Retro · groups.invite · adapted · SOURCED
     public static func groupsInviteLinkLabel(groupName: String) -> String { CopyLookup.format("groups.invite.link.label", default: "Anyone with this link can join {group_name}", ["group_name": groupName]) }
     /// "Check out {group_name} on Jolt: {link}" — Retro · groups.invite · adapted · SOURCED
@@ -1533,6 +1547,8 @@ public enum Copy {
     public static var plansPagePeopleCantGo: String { CopyLookup.string("plans.page.people.cantGo", default: "Can't go") }
     /// "Who's Coming" — Retro · plans.page · new · SOURCED
     public static var plansPagePeopleTitle: String { CopyLookup.string("plans.page.people.title", default: "Who's Coming") }
+    /// "Went" — Partiful · plans.page · adapted · SOURCED
+    public static var plansPageWent: String { CopyLookup.string("plans.page.went", default: "Went") }
     /// "Answering: {question}" — Retro · question.weekly · new · SOURCED
     public static func questionWeeklyCameraA11y(question: String) -> String { CopyLookup.format("question.weekly.camera.a11y", default: "Answering: {question}", ["question": question]) }
     /// "This week's question: {question}" — Retro · question.weekly · new · SOURCED
@@ -2033,6 +2049,8 @@ public enum Copy {
     public static var widgetCountdownConfigurationGroup: String { CopyLookup.string("widget.countdown.configuration.group", default: "Group") }
     /// "Show plans from…" — Retro · widget.countdown · adapted · SOURCED
     public static var widgetCountdownConfigurationTitle: String { CopyLookup.string("widget.countdown.configuration.title", default: "Show plans from…") }
+    /// "No plans yet" — Retro · widget.countdown · adapted · SOURCED
+    public static var widgetCountdownEmptyNoPlans: String { CopyLookup.string("widget.countdown.empty.noPlans", default: "No plans yet") }
     /// "See how many days until your group's next plan." — Retro · widget.countdown · new · SOURCED
     public static var widgetCountdownGalleryDescription: String { CopyLookup.string("widget.countdown.gallery.description", default: "See how many days until your group's next plan.") }
     /// "Next Plan" — Retro · widget.countdown · new · SOURCED

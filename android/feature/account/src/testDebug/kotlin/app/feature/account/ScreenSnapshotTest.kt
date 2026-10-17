@@ -368,7 +368,7 @@ class ScreenSnapshotTest {
     @Test fun createSaveFailed() = snap("groups.create", "saveFailed", content = create(edit.copy(error = CreateError.SaveFailed)))
 
     // groups.invite ---------------------------------------------------------------------------------
-    private val liveInvite = GroupInvite("i1", "g1", "AbCdEfGhIjKlMnOpQrStUvWx", "u-me", now, now.plusSeconds(14 * 86400L), null)
+    private val liveInvite = GroupInvite("i1", "g1", "AbCdEfGhIjKlMnOpQrStUvWx", "u-me", now, null, null)
     private val invite = GroupInviteUiState(groupName = "Sunday Dinners", coverUrl = photo("dinner-long-table-3x4"), loading = false, maxMembers = 30)
     private val linkOn = invite.copy(invite = liveInvite)
     private val withContacts = linkOn.copy(
@@ -381,7 +381,7 @@ class ScreenSnapshotTest {
         ),
         invited = setOf("2"),
     )
-    private fun inviteScreen(state: GroupInviteUiState) = @Composable { GroupInviteScreen(state, zone, GroupInviteActions()) }
+    private fun inviteScreen(state: GroupInviteUiState) = @Composable { GroupInviteScreen(state, GroupInviteActions()) }
     @Test fun inviteLoading() = snap("groups.invite", "loading", content = inviteScreen(invite.copy(loading = true)))
     @Test fun inviteLinkOff() = snap("groups.invite", "linkOff", content = inviteScreen(invite))
     @Test fun inviteLinkOn() = snap("groups.invite", "linkOn", content = inviteScreen(linkOn))
@@ -395,7 +395,7 @@ class ScreenSnapshotTest {
 
     // The QR card (owner decision 17): the recap preview over the sheet — the group's cover blurred, the card, Save, Share.
     private val qrLink = "https://example.test/i/AbCdEfGhIjKlMnOpQrStUvWx"
-    private fun qrScreen(state: GroupInviteUiState) = @Composable { GroupInviteScreen(state, zone, GroupInviteActions(), qrLink = qrLink) }
+    private fun qrScreen(state: GroupInviteUiState) = @Composable { GroupInviteScreen(state, GroupInviteActions(), qrLink = qrLink) }
     @Test fun inviteQr() = snap("groups.invite", "qr", content = qrScreen(linkOn))
     @Test fun inviteQrDark() = snap("groups.invite", "qr", dark = true, content = qrScreen(linkOn))
     @Test fun inviteQrNoCover() = snap("groups.invite", "qr-noCover", content = qrScreen(linkOn.copy(coverUrl = null, groupName = "Lima Family")))

@@ -202,7 +202,7 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
 
     override suspend fun createInvite(groupId: String): GroupInvite {
         call("createInvite")
-        return GroupInvite(id("i"), groupId, "AbCdEfGhIjKlMnOpQrStUvWx", meId, now, now.plusSeconds(TWO_WEEKS), null).also { invites += it }
+        return GroupInvite(id("i"), groupId, "AbCdEfGhIjKlMnOpQrStUvWx", meId, now, null, null).also { invites += it }
     }
 
     override suspend fun revokeInvite(token: String) {
@@ -295,8 +295,4 @@ class FakeAccountBackend(val now: Instant = Instant.parse("2026-10-15T17:00:00Z"
     }
 
     override suspend fun isPremium(): Boolean = premium
-
-    private companion object {
-        const val TWO_WEEKS = 14L * 24 * 3600
-    }
 }

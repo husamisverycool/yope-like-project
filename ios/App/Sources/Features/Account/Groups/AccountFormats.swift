@@ -9,14 +9,6 @@ enum AccountFormats {
         date.formatted(date: .omitted, time: .shortened)
     }
 
-    /// `groups.invite.link.expiry` `{date}`: "Mmm d yyyy" in the locale's order.
-    static func expiryDate(_ date: Date, locale: Locale = .current) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.setLocalizedDateFormatFromTemplate("MMMdyyyy") // provenance-ok: date template named by the copy note
-        return formatter.string(from: date)
-    }
-
     /// A wall-clock time (`LocalTime`) as "h:mm AM/PM" (invitation hours, quiet hours).
     static func time(_ time: LocalTime, calendar: Calendar = .current) -> String {
         Self.time(date(for: time, calendar: calendar))

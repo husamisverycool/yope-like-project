@@ -164,13 +164,14 @@ public struct GroupRepository: Sendable {
 
     // MARK: Invites
 
-    /// Unrevoked, unexpired invites of the group (to share a link again).
+    /// Unrevoked invites of the group that have no expiry (owner decision 27) or have not reached it (to share a link
+    /// again).
     public func activeInvites(groupID: GroupID, now: Date = Date()) async throws -> [GroupInvite] {
         try await client.rows(GroupInvite.self) {
             client.supabase.from("group_invites").select()
                 .eq("group_id", value: groupID.rawValue)
                 .is("revoked_at", value: nil)
-                .gt("expires_at", value: Timestamp.format(now))
+                .or("expires_at.is.null,expires_at.gt.\"\(Timestamp.format(now))\"")
                 .order("created_at", ascending: false)
         }
     }

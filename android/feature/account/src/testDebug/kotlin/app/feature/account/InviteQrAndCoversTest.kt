@@ -49,7 +49,6 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.time.Instant
-import java.time.ZoneId
 
 /**
  * The in-app QR invite card (groups.invite, owner decision 17; `groups.invite.layout.qrCard`): the symbol ZXing encodes,
@@ -135,7 +134,7 @@ class InviteQrAndCoversTest {
         compose.setContent {
             CompositionLocalProvider(LocalAccountEnvironment provides fakeEnvironment()) {
                 AppTheme {
-                    GroupInviteScreen(state, ZoneId.of("UTC"), GroupInviteActions(onQr = { opened = true; qrLink = link }), qrLink = qrLink)
+                    GroupInviteScreen(state, GroupInviteActions(onQr = { opened = true; qrLink = link }), qrLink = qrLink)
                 }
             }
         }

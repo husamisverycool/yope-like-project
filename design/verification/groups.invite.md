@@ -32,7 +32,7 @@ correction H, Save's outcomes.)
 | matched | `groups.invite.link.label` | “Anyone with this link can join {group_name}” (SOURCED) | `Copy.groupsInviteLinkLabel` in GroupInviteScreen.swift |
 | matched | `groups.invite.color.note` | #767676 (SOURCED) | `Tokens.Colors.groupsInviteColorNote` in GroupInviteScreen.swift |
 | matched | `color.global.textSecondary` | #999999 (SOURCED) | `Tokens.Colors.globalTextSecondary` in AccountGroupedRows.swift, Avatar.swift, CheckRow.swift, CodeScreen.swift … |
-| matched | `groups.invite.link.expiry` | “This link works until {date}.” (SOURCED) | `Copy.groupsInviteLinkExpiry` in GroupInviteScreen.swift |
+| removed 2026-10-17 | `groups.invite.link.expiry` | — | links never expire (owner decision 27); the line and its key are gone |
 | matched | `groups.invite.link.turnOn` | “Turn on link sharing” (SOURCED) | `Copy.groupsInviteLinkTurnOn` in GroupInviteScreen.swift |
 | matched | `size.global.buttonMarginH` | 20 pt (SOURCED) | `Tokens.Sizes.globalButtonMarginH` in BackdropCard.swift, GroupCreateScreen.swift, GroupInviteScreen.swift, OnboardingTitle.swift … |
 | matched | `size.global.titleToContent` | 30 pt (SOURCED) | `Tokens.Sizes.globalTitleToContent` in AccountGroupedRows.swift, AgeGateForm.swift, GroupCreateScreen.swift, GroupInviteScreen.swift … |

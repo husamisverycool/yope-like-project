@@ -160,10 +160,11 @@ public struct GroupInvite: Codable, Hashable, Sendable, Identifiable {
     public var token: String
     public var createdBy: UserID
     public var createdAt: Date
-    public var expiresAt: Date
+    /// Nil = the link never expires (owner decision 27: `invite_ttl_seconds` is NULL); it works until revoked.
+    public var expiresAt: Date?
     public var revokedAt: Date?
 
-    public init(id: InviteID, groupID: GroupID, token: String, createdBy: UserID, createdAt: Date, expiresAt: Date, revokedAt: Date?) {
+    public init(id: InviteID, groupID: GroupID, token: String, createdBy: UserID, createdAt: Date, expiresAt: Date? = nil, revokedAt: Date?) {
         self.id = id
         self.groupID = groupID
         self.token = token
@@ -184,7 +185,7 @@ public struct GroupInvite: Codable, Hashable, Sendable, Identifiable {
     }
 
     public func isUsable(at date: Date = Date()) -> Bool {
-        revokedAt == nil && expiresAt > date
+        revokedAt == nil && (expiresAt.map { $0 > date } ?? true)
     }
 
     /// `https://<domain>/i/<token>`; nil while the domain is not configured.

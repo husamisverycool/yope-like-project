@@ -96,7 +96,7 @@ States rendered (`android/feature/account/src/test/snapshots/groups.invite/`): `
 |---|---|---|---|---|---|
 | match (copy) | `groups.invite.title` | Invite to {group_name} | R.string.groups_invite_title |  |  |
 | match (copy) | `groups.invite.link.label` | Anyone with this link can join {group_name} | R.string.groups_invite_link_label |  |  |
-| match (copy) | `groups.invite.link.expiry` | This link works until {date}. | R.string.groups_invite_link_expiry |  |  |
+| removed 2026-10-17 | `groups.invite.link.expiry` | — | — | links never expire (owner decision 27) |  |
 | match (copy) | `groups.invite.link.turnOn` | Turn on link sharing | R.string.groups_invite_link_turnon |  |  |
 | match (copy) | `groups.invite.link.reset` | Reset link | R.string.groups_invite_link_reset |  |  |
 | match (copy) | `groups.invite.link.turnOff` | Turn off link sharing | R.string.groups_invite_link_turnoff |  |  |

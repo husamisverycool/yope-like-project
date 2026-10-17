@@ -95,7 +95,6 @@ import app.ui.components.SectionHeader
 import app.ui.foundation.DsMotion
 import app.ui.foundation.PageRoles
 import app.ui.foundation.tapClickable
-import app.ui.format.Formats
 import app.ui.haptics.rememberHaptics
 import app.ui.permissions.PermissionRationale
 import app.ui.permissions.rememberPermissionRequest
@@ -107,7 +106,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.ZoneId
 
 @Immutable
 data class GroupInviteUiState(
@@ -264,7 +262,6 @@ fun GroupInviteRoute(nav: NavController, groupId: String) {
     )
     GroupInviteScreen(
         state = state,
-        zone = env.zone(),
         qrLink = qrLink,
         actions = GroupInviteActions(
             onClose = { nav.popBackStack() },
@@ -386,8 +383,8 @@ data class GroupInviteActions(
  * The invite sheet (C-29 page sheet: centred "Invite to {group_name}" + close; scrolls): the cover
  * (`groups.invite.size.coverWidth` × `.coverHeight`, `groups.screen.shadow.cover`), centred; the note
  * `groups.invite.size.coverToNote` under it (eye `groups.invite.icon.note` at `size.global.iconSmall`,
- * `groups.invite.size.noteGlyphGap`, text role `meta`, `groups.invite.color.note` light / secondary text dark; with a live
- * link a second line with its expiry date). `size.global.titleToContent` below: link off → C-05 "Turn on link sharing";
+ * `groups.invite.size.noteGlyphGap`, text role `meta`, `groups.invite.color.note` light / secondary text dark; no expiry
+ * line: a link works until it is reset or link sharing is turned off, owner decision 27). `size.global.titleToContent` below: link off → C-05 "Turn on link sharing";
  * link on → the grouped menu (Reset link; Turn off link sharing in red) and the four 64-pt share targets (QR Code · Copy
  * Link · Message · Share to…, TC-J5's order with Message in Instagram's place). The two cross-fade
  * (`duration.global.fade`). `size.global.sectionGap` below: the Contacts section (C-20 header; Android: people rows with
@@ -395,11 +392,11 @@ data class GroupInviteActions(
  * ([GroupInviteQrScreen], a media surface) covers the sheet, fading in and out (`duration.global.fade`).
  */
 @Composable
-fun GroupInviteScreen(state: GroupInviteUiState, zone: ZoneId, actions: GroupInviteActions, qrLink: String? = null) {
+fun GroupInviteScreen(state: GroupInviteUiState, actions: GroupInviteActions, qrLink: String? = null) {
     Box(Modifier.fillMaxSize()) {
         // Under the QR card the sheet is neither read by TalkBack nor touchable.
         Box(if (qrLink != null) Modifier.clearAndSetSemantics {} else Modifier) {
-            GroupInviteSheet(state, zone, actions)
+            GroupInviteSheet(state, actions)
         }
         AnimatedVisibility(visible = qrLink != null, enter = DsMotion.fadeIn, exit = DsMotion.fadeOut) {
             // Keeps the last link while fading out.
@@ -419,7 +416,7 @@ fun GroupInviteScreen(state: GroupInviteUiState, zone: ZoneId, actions: GroupInv
 }
 
 @Composable
-private fun GroupInviteSheet(state: GroupInviteUiState, zone: ZoneId, actions: GroupInviteActions) {
+private fun GroupInviteSheet(state: GroupInviteUiState, actions: GroupInviteActions) {
     SheetPage(
         title = stringResource(R.string.groups_invite_title, state.groupName),
         close = HeaderAction(Tokens.Icons.globalClose, stringResource(R.string.groups_invite_close_accessibilitylabel), actions.onClose),
@@ -435,7 +432,7 @@ private fun GroupInviteSheet(state: GroupInviteUiState, zone: ZoneId, actions: G
                     glyph = null,
                 )
             }
-            item(key = "note") { Note(state, zone) }
+            item(key = "note") { Note(state) }
             item(key = "link") {
                 Box(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.globalTitleToContent), contentAlignment = Alignment.TopCenter) {
                     when {
@@ -478,9 +475,9 @@ private fun GroupInviteSheet(state: GroupInviteUiState, zone: ZoneId, actions: G
     }
 }
 
-/** The eye note (and the expiry line while a link is live), centred. */
+/** The eye note, centred. */
 @Composable
-private fun Note(state: GroupInviteUiState, zone: ZoneId) {
+private fun Note(state: GroupInviteUiState) {
     val color = if (LocalDsDarkTheme.current) PageRoles.secondaryText() else Tokens.Colors.groupsInviteColorNote
     Column(
         Modifier.fillMaxWidth().padding(top = Tokens.Sizes.groupsInviteSizeCoverToNote, start = Tokens.Sizes.globalScreenMargin, end = Tokens.Sizes.globalScreenMargin).semantics(mergeDescendants = true) {},
@@ -490,10 +487,6 @@ private fun Note(state: GroupInviteUiState, zone: ZoneId) {
             Icon(Tokens.Icons.groupsInviteIconNote, contentDescription = null, tint = color, modifier = Modifier.size(Tokens.Sizes.globalIconSmall))
             Spacer(Modifier.width(Tokens.Sizes.groupsInviteSizeNoteGlyphGap))
             Text(stringResource(R.string.groups_invite_link_label, state.groupName), style = TextRoles.meta, color = color, textAlign = TextAlign.Center)
-        }
-        state.invite?.let { invite ->
-            val date = Formats.longDate(invite.expiresAt.atZone(zone).toLocalDate())
-            Text(stringResource(R.string.groups_invite_link_expiry, date), style = TextRoles.meta, color = color, textAlign = TextAlign.Center)
         }
     }
 }
