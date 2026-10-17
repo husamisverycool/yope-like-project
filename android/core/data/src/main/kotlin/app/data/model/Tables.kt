@@ -116,6 +116,8 @@ data class Media(
     @SerialName("created_at") val createdAt: Instant,
     /** Migration 0050: the day a library photo was taken (date only, from the library); null for camera photos. */
     @SerialName("taken_on") val takenOn: LocalDate? = null,
+    /** Migration 0051: the photos of one selection share it (one post of several photos); null for a single photo. */
+    @SerialName("batch_id") val batchId: String? = null,
 ) {
     /**
      * §7 "Which image to show": the rendition once ready, the original until then. A video's original is the movie: its
@@ -166,6 +168,8 @@ data class Post(
     @SerialName("caption_edited_at") val captionEditedAt: Instant? = null,
     /** Migration 0050: the day the photo was taken, copied from its media; it places the post's week (visible_at). */
     @SerialName("taken_on") val takenOn: LocalDate? = null,
+    /** Migration 0051: the batch (several photos posted together) this photo belongs to; show the batch together. */
+    @SerialName("batch_id") val batchId: String? = null,
 ) {
     /**
      * When the group could first see the photo (`posts.visible_at` = `revealed_at ?: created_at`, migration 0027): the week

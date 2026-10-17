@@ -215,6 +215,7 @@ describe('app_config / public_app_config', () => {
     expect(error).toBeNull();
     const keys = (data ?? []).map((r: any) => r.key).sort();
     expect(keys).toEqual([
+      'batch_max_photos',
       'free_history_days',
       'invitation_window_seconds',
       'max_group_members',

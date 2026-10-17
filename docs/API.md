@@ -167,7 +167,7 @@ Everything else is written by RPCs or by the service role.
 | Table | Operation | Columns the client may send | Rule |
 |---|---|---|---|
 | `profiles` | UPDATE | `display_name`, `avatar_path` | own row; `avatar_path` must start with `avatars/<uid>/` |
-| `media` | INSERT | `id`, `owner_id`, `kind`, `original_path`, `front_original_path`, `motion_path`, `width`, `height`, `front_width`, `front_height`, `duration_ms`, `taken_on` | `owner_id` = you (defaults to you); every path under `u/<uid>/<id>/` |
+| `media` | INSERT | `id`, `owner_id`, `kind`, `original_path`, `front_original_path`, `motion_path`, `width`, `height`, `front_width`, `front_height`, `duration_ms`, `taken_on`, `batch_id` | `owner_id` = you (defaults to you); every path under `u/<uid>/<id>/` |
 | `post_tags` | INSERT / DELETE | `post_id`, `user_id` | `user_id` = you and you can see the post (the RPCs `tag_self`/`untag_self` do the same) |
 | `reports` | INSERT | `reporter_id`, `target_kind`, `target_id`, `reason` | `reporter_id` = you (prefer the `report` RPC, which validates the target) |
 | `devices` | DELETE | — | own rows |
@@ -270,6 +270,7 @@ block between viewer and owner).
 | `front_width`, `front_height` | int? | client | |
 | `duration_ms` | int? | client (worker for video) | **required** for `video`; Live Photo motion length. For a video the worker replaces it with the stored file's real length after transcoding (≤ `app_config.video_max_ms`) |
 | `renditions_ready_at` | timestamptz? | worker | null until the renditions exist; show `original_path` until then |
+| `batch_id` | uuid? | client | migration 0051: one id for every photo of one composer selection (several photos in one post; at most `batch_max_photos`, 20); null for a single photo |
 | `taken_on` | date? | client | migration 0050: the calendar day a **library** photo was taken (device zone; `PHAsset.creationDate` / MediaStore `DATE_TAKEN`) — the date only, never a time or a place; null for camera photos; 1900-01-01 … today |
 | `created_at` | timestamptz | | |
 
@@ -288,6 +289,7 @@ block with you.
 | `group_id` | uuid | |
 | `author_id` | uuid | = media owner |
 | `caption` | text? | ≤ 1000 chars; the author changes it with `edit_caption` |
+| `batch_id` | uuid? | copied from `media.batch_id` (migration 0051): photos posted together. Show a batch's posts (same author and `batch_id`) together — one chat bubble, swiped through in the viewer, one strip tile — in `created_at` order. Each stays its own post (reactions, replies, tags, delete). One `push.new_post` per batch and group, `batch_push_delay_s` (10) after the last photo; never a number of photos |
 | `taken_on` | date? | copied from `media.taken_on` (migration 0050): a backfilled library photo's day; `visible_at` is then noon of it in the group's zone, so it lands in that week (Retro's backfill); On This Day and memories match it |
 | `caption_edited_at` | timestamptz? | set by `edit_caption` (migration 0047): the viewer shows "{date} · Edited"; null when never edited |
 | `voice_path`, `voice_duration_ms` | text?, int? | optional voice note (both or neither) |
@@ -1319,6 +1321,7 @@ A NULL value means "not sourced yet", and the dependent feature fails closed (ex
 | `invite_ttl_seconds` | NULL = links never expire (owner decision 27; migration 0026) | no | `create_invite` |
 | `birthday_request_lead_days` | 7 | no | `due_birthday_requests` |
 | `year_story_release_month_day` | "12-01" | no | `due_year_stories` |
+| `batch_max_photos` / `batch_push_delay_s` | 20 (Instagram carousels) / 10 (migration 0051) | yes / no | photos per batch (`invalid_items` beyond); the batch's one push waits for its other photos |
 | `memory_alert_local_time` | "09:48" (the default waking start, BeReal; migration 0049) | no | `due_memory_alerts`; NULL = no memory notification |
 | `typing_ttl_s` | 6 (WhatsApp; migration 0048) | yes | `set_typing`; the apps resend every `typing_ttl_s / 2` while typing |
 | `message_edit_window_s` / `message_edit_max` | 900 / 5 (Apple Messages; migration 0047) | yes | `edit_message` (fails closed if NULL); the apps offer Edit only inside them |
