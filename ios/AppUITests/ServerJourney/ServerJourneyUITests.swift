@@ -170,7 +170,8 @@ final class ServerJourneyUITests: XCTestCase {
             try self.stack.rpc("send_message", ["p_group_id": invite.groupID, "p_kind": "text", "p_body": Self.theoMessage], token: theo.accessToken)
         }
 
-        // Maya's app: Theo under Going (the plan page refetches on the answer), his message in the chat.
+        // Maya's app, open on the plan page: Theo under Going (the page follows the group's plan changes over Realtime),
+        // then his message in the chat.
         soft("friend-going", app) {
             if !self.element(app, "plans.page").exists {
                 try self.ensureGroup(app)
@@ -196,6 +197,11 @@ final class ServerJourneyUITests: XCTestCase {
 
         // ---- Maya: settings → sign out ----
         closeOverlays(app)
+        // The tab bar is the groups list's: back from the group screen first.
+        if element(app, "groups.screen").exists {
+            back(app)
+            try expect("groups.list", in: app, timeout: 15)
+        }
         try openTab(app, Self.profileTab)
         try expect("walls.mine", in: app, timeout: 20)
         step(app, "maya-wall")
