@@ -143,6 +143,8 @@ class Admin : AutoCloseable {
         }
         val text = ok(HttpMethod.Post, "/auth/v1/admin/users", body)
         val id = json.parseToJsonElement(text).jsonObject["id"]!!.jsonPrimitive.content
+        // Past the age gate: create_group / join_group / create_post require it (backend migration 0055).
+        update("profile_private", "user_id=eq.$id", buildJsonObject { put("age_confirmed_at", java.time.Instant.now().toString()) })
         return TestAccount(id, "+$phone", password, name).also { created += it }
     }
 

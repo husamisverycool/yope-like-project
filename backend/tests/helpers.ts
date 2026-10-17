@@ -88,8 +88,12 @@ function nextPhone(): string {
   return `1555${String(Date.now() % 1000).padStart(3, '0')}${String(phoneCounter).padStart(7, '0')}`;
 }
 
-/** Creates an auth user with the admin API (phone, confirmed) and a client acting as them. */
-export async function createUser(name = 'Test User'): Promise<TestUser> {
+/**
+ * Creates an auth user with the admin API (phone, confirmed) and a client acting as them. The user has
+ * passed the age gate (profile_private.age_confirmed_at, required by create_group / join_group /
+ * create_post since migration 0055) unless `ageConfirmed` is false.
+ */
+export async function createUser(name = 'Test User', { ageConfirmed = true }: { ageConfirmed?: boolean } = {}): Promise<TestUser> {
   const { data, error } = await admin.auth.admin.createUser({
     phone: nextPhone(),
     phone_confirm: true,
@@ -97,6 +101,7 @@ export async function createUser(name = 'Test User'): Promise<TestUser> {
   });
   if (error) throw error;
   const id = data.user!.id;
+  if (ageConfirmed) await sql(`update public.profile_private set age_confirmed_at = now() where user_id = $1`, [id]);
   const token = mintJwt(id);
   const client = createClient(API_URL, ANON_KEY, {
     ...noSession,

@@ -34,10 +34,14 @@ export async function loadAudience(db: Db, groupId: string, now: Date): Promise<
   const group = await loadGroup(db, groupId);
   if (!group) return null;
   const rows = must(
-    await db.from("group_members").select("user_id, muted, joined_at, profiles(display_name, avatar_path)").eq("group_id", groupId),
+    await db.from("group_members").select("user_id, joined_at, profiles(display_name, avatar_path)").eq("group_id", groupId),
     "group_members",
-  ) as unknown as Array<{ user_id: string; muted: boolean; joined_at: string; profiles: { display_name: string; avatar_path: string | null } | null }>;
+  ) as unknown as Array<{ user_id: string; joined_at: string; profiles: { display_name: string; avatar_path: string | null } | null }>;
   const ids = rows.map((r) => r.user_id);
+  // per-group mute: own-rows table, private to each person (migration 0056)
+  const mutedBy = new Set(
+    (must(await db.from("group_mutes").select("user_id").eq("group_id", groupId), "group_mutes") as Array<{ user_id: string }>).map((r) => r.user_id),
+  );
   const devices = await selectIn<DeviceRow>(db, "devices", "id, user_id, platform, push_token, push_to_start_token, live_activities_enabled", "user_id", ids);
   const settings = await selectIn<NotificationSettingsRow>(db, "notification_settings", "user_id, quiet_start, quiet_end, time_zone, paused_until", "user_id", ids);
   const quietBy = new Map(settings.map((s) => [s.user_id, isQuietAt(s.quiet_start, s.quiet_end, s.time_zone, now)]));
@@ -45,7 +49,7 @@ export async function loadAudience(db: Db, groupId: string, now: Date): Promise<
   const pausedBy = new Set(settings.filter((s) => isPausedAt(s.paused_until, now)).map((s) => s.user_id));
   const members: Member[] = rows.map((r) => ({
     userId: r.user_id,
-    muted: r.muted || pausedBy.has(r.user_id),
+    muted: mutedBy.has(r.user_id) || pausedBy.has(r.user_id),
     quiet: quietBy.get(r.user_id) ?? false,
     displayName: r.profiles?.display_name ?? "",
     firstName: firstName(r.profiles?.display_name),

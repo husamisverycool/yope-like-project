@@ -6,6 +6,7 @@ import app.data.model.Group
 import app.data.model.GroupInvite
 import app.data.model.GroupKind
 import app.data.model.GroupMember
+import app.data.model.GroupMute
 import app.data.model.InvitePreview
 import app.data.model.Profile
 import app.data.offline.CacheKey
@@ -128,7 +129,16 @@ class GroupRepository(
         if (members.isEmpty()) return emptyList()
         val profiles = api.select(Tables.PROFILES, Profile.serializer()) { filter { isIn("id", members.map { it.userId }) } }
             .associateBy { it.id }
-        return members.map { Member(it, profiles[it.userId]) }
+        // Only your own mute is readable (group_mutes, own rows); everyone else reads as not muted.
+        val me = api.requireUserId()
+        val mutedHere = groupId in mutedGroupIds()
+        return members.map { Member(if (it.userId == me) it.copy(muted = mutedHere) else it, profiles[it.userId]) }
+    }
+
+    /** Ids of the groups you muted (`group_mutes`, migration 0056; RLS returns your own rows only). */
+    suspend fun mutedGroupIds(): Set<String> {
+        val me = api.requireUserId()
+        return api.select(Tables.GROUP_MUTES, GroupMute.serializer()) { filter { eq("user_id", me) } }.map { it.groupId }.toSet()
     }
 
     fun observeMembers(groupId: String): Flow<DataState<List<Member>>> =

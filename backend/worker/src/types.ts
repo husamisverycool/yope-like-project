@@ -23,7 +23,6 @@ export interface MemberRow {
   group_id: string;
   user_id: string;
   role: string;
-  muted: boolean;
   joined_at: string;
 }
 

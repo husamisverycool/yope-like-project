@@ -12,6 +12,7 @@ import app.data.model.Entitlement
 import app.data.model.Group
 import app.data.model.GroupInvite
 import app.data.model.GroupMember
+import app.data.model.GroupMute
 import app.data.model.Media
 import app.data.model.Message
 import app.data.model.MessageReaction
@@ -72,6 +73,7 @@ class SchemaConformanceIntegrationTest {
         "profile_private" to ProfilePrivate.serializer().descriptor,
         "groups" to Group.serializer().descriptor,
         "group_members" to GroupMember.serializer().descriptor,
+        "group_mutes" to GroupMute.serializer().descriptor,
         "group_invites" to GroupInvite.serializer().descriptor,
         "blocks" to Block.serializer().descriptor,
         "media" to Media.serializer().descriptor,

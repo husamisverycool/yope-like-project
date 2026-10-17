@@ -45,6 +45,8 @@ enum class ApiError(val wire: String, val httpStatus: Int) {
     NotAllowed("not_allowed", 403),
     PostNotEligible("post_not_eligible", 403),
     UnderMinimumAge("under_minimum_age", 403),
+    /** `create_group` / `join_group` / `create_post` before `confirm_age` succeeded (migration 0055). */
+    AgeNotConfirmed("age_not_confirmed", 403),
     PremiumRequired("premium_required", 402),
     VideoTooLong("video_too_long", 400),
     PostNotFound("post_not_found", 404),

@@ -1,7 +1,8 @@
 // widget.refresh {group_id}: brings every member's widget for the group up to date
 // (docs/WIDGET_REFRESH.md). Per member, the newest item they may see — the newest post whose
-// author has no block with them, or the group's newest ready collage if it is newer — and per
-// device:
+// author has no block with them and that they did not report, or the group's newest ready collage if
+// it is newer and they may see it (no block with the author of any photo in it, none of them reported
+// by them: a collage is rendered once for everyone, migration 0057) — and per device:
 //   iOS: background push with the widget fields, ≤ 2 per device per hour, unless the device
 //     already has this item (the new-post alert carried it to the Notification Service
 //     Extension); the app also writes the widgets itself whenever it loads groups and feeds;
@@ -52,7 +53,7 @@ export async function widgetFieldsForPost(
 
 async function latestCollage(db: Db, groupId: string): Promise<CollageRow | null> {
   const rows = must(
-    await db.from("collages").select("id, group_id, widget_path, composed_at, status").eq("group_id", groupId).eq("status", "ready").not("widget_path", "is", null).order("composed_at", { ascending: false }).limit(1),
+    await db.from("collages").select("id, group_id, post_ids, widget_path, composed_at, status").eq("group_id", groupId).eq("status", "ready").not("widget_path", "is", null).order("composed_at", { ascending: false }).limit(1),
     "collages",
   ) as CollageRow[];
   return rows[0] ?? null;
@@ -70,7 +71,21 @@ export async function widgetRefresh(ctx: JobContext): Promise<void> {
     "posts",
   ) as PostRow[];
   const collage = await latestCollage(ctx.db, groupId);
-  const blocks = await blockedPairs(ctx.db, [...new Set([...memberIds, ...posts.map((p) => p.author_id)])]);
+  const collagePostIds = collage?.post_ids ?? [];
+  const collageAuthors = collagePostIds.length
+    ? [...new Set((await selectIn<{ id: string; author_id: string }>(ctx.db, "posts", "id, author_id", "id", collagePostIds)).map((p) => p.author_id))]
+    : [];
+  const blocks = await blockedPairs(ctx.db, [...new Set([...memberIds, ...posts.map((p) => p.author_id), ...collageAuthors])]);
+  // posts each member reported: hidden from that member only (migration 0057)
+  const reported = new Set(
+    (await selectIn<{ reporter_id: string; target_id: string; target_kind: string }>(
+      ctx.db, "reports", "reporter_id, target_id, target_kind", "target_id", [...new Set([...posts.map((p) => p.id), ...collagePostIds])],
+    ))
+      .filter((r) => r.target_kind === "post")
+      .map((r) => `${r.reporter_id}|${r.target_id}`),
+  );
+  const seesCollage = (memberId: string) =>
+    !collageAuthors.some((a) => blocks.has(`${memberId}|${a}`)) && !collagePostIds.some((id) => reported.has(`${memberId}|${id}`));
   const mediaRows = await selectIn<MediaRow>(ctx.db, "media", MEDIA_COLUMNS, "id", posts.map((p) => p.media_id));
   const mediaById = new Map(mediaRows.map((m) => [m.id, m]));
   const authors = await selectIn<ProfileRow>(ctx.db, "profiles", "id, display_name, avatar_path", "id", posts.map((p) => p.author_id));
@@ -120,9 +135,10 @@ export async function widgetRefresh(ctx: JobContext): Promise<void> {
   const deferred: number[] = [];
   const nowMs = now.getTime();
   for (const m of audience.members) {
-    const visible = posts.find((p) => !blocks.has(`${m.userId}|${p.author_id}`));
+    const visible = posts.find((p) => !blocks.has(`${m.userId}|${p.author_id}`) && !reported.has(`${m.userId}|${p.id}`));
     const pItem = visible ? await postItem(visible) : null;
-    const item = collageItem && (!pItem || new Date(collageItem.at) > new Date(pItem.at)) ? collageItem : pItem;
+    const cItem = collageItem && seesCollage(m.userId) ? collageItem : null;
+    const item = cItem && (!pItem || new Date(cItem.at) > new Date(pItem.at)) ? cItem : pItem;
     for (const d of m.devices) {
       if (d.platform === "ios") {
         if (!item || ctx.throttle.alreadyDelivered(d.push_token, groupId, item.key)) continue;

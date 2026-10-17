@@ -216,8 +216,11 @@ export async function seedFullGroup(users: TestUser[], name = 'Seeded'): Promise
   });
   await rpc(a.client, 'set_quiet_hours', { p_start: '22:00', p_end: '07:00', p_time_zone: 'Europe/Paris' });
   await rpc(c.client, 'set_birthday', { p_birthday: '1990-05-01', p_opt_in: true });
+  await rpc(d.client, 'set_group_muted', { p_group_id: group.id, p_muted: true }); // group_mutes (0056)
   await rpc(b.client, 'block_user', { p_user_id: d.id });
-  await rpc(b.client, 'report', { p_target_kind: 'post', p_target_id: p1[0].id, p_reason: 'test report' });
+  // d reports b's photo: a reported post is hidden from its reporter (0057), and b's photos are already hidden
+  // from d by b's block, so this hides nothing new (tests/security/reported-content.test.ts covers reports)
+  await rpc(d.client, 'report', { p_target_kind: 'post', p_target_id: p2[0].id, p_reason: 'test report' });
   await grantPremium(a.id);
   await sql(
     `insert into public.ai_cost_log (group_id, purpose, model, input_tokens, output_tokens, cost_usd)
