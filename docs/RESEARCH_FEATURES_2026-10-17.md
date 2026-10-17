@@ -30,6 +30,36 @@ Each feature's design values and words are still sourced per the evidence rule w
 | 21 | Jump to a date in the history | BeReal Memories calendar (https://help.bereal.com/hc/en-us/articles/7531349180829) | 4 |
 | 22 | Save other members' photos (decision 28) | Apple Shared Albums: save shared items to your library (support 108314) | 4 |
 
+## Build status (2026-10-17)
+
+Server = migrations and worker, tested against a local stack; apps = iOS and Android, merged and compiled in CI.
+"Building" = in progress on a builder branch.
+
+| # | feature | server | apps |
+|---|---|---|---|
+| 1 | Several photos in one post | 0051 (batch_id, one push per batch) | composer: building; grouped display: next |
+| 2 | Downloads | 0052 download_items | building |
+| 3 | More widgets, premium styles | 0036 | iOS 2082b58; Android merged |
+| 4 | Share to Jolt | — (create_post) | building |
+| 5 | Library photos on the day taken | 0050 (taken_on, visible_at trigger) | building (with #1) |
+| 6 | Search | 0040 | merged |
+| 7 | Reactions on chat messages | 0047 | merged |
+| 8 | Edit a message or caption | 0047 | messages merged; captions building |
+| 9 | Reply / react / mute from the notification | — (existing RPCs) | building |
+| 10 | Albums anyone can add to | 0039 | merged |
+| 11 | Quick camera access | — | iOS 2082b58; Android merged |
+| 12 | Hide a memory | 0038 | merged |
+| 13 | Reply to a memory ("then & now") | — (create_post reply) | building |
+| 14 | A photo as the group cover | 0039 | merged |
+| 15 | Opt-in memory notification | 0049 + worker push.memory | building |
+| 16 | Tappable links in chat | — | merged (previews on the sender's device: later) |
+| 17 | Pause all for today | 0037 | done |
+| 18 | "{name} joined" line | 0041–0042 | done |
+| 19 | Private favorites | 0038 | merged |
+| 20 | Typing line with names | 0048 (chat_typing, RLS across blocks) | merged |
+| 21 | Jump to a date | 0045 | merged |
+| 22 | Save other members' photos | — | merged (decision 28) |
+
 ## Not built, and why
 
 - Read receipts, "seen by", online / last-seen dots: tenet 5 and counts.
