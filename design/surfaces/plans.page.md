@@ -19,6 +19,7 @@ Apple Invites' event-page order"`.
 | AI-S 04 / 05 / 07 | `references/auto/apple-invites/store/apple-invites-store-04.png`, `-05.png`, `-07.png` (3.000 px/pt) | order; RSVP control (80-pt capsule, selected segment); host tile; guests tile; Shared Album tile + "Add Photos"; guest-list sections and 48-pt rows |
 | AI-N | `references/auto/apple-invites/newsroom/ai-newsroom-2025-02-event-view*.jpg`, `-guest-list.jpg` | same, second event; guest notes under names |
 | AI-G | support.apple.com guide: rsvp-to-an-event, cancel-or-delete-an-event, edit-an-event | answer, cancel (crossed-out, no RSVP, restorable), edit entry |
+| AI-C | support.apple.com/guide/apple-invites/view-your-events-dev18a008ffb/ios ("Add an event to the Calendar app: Select an event, then select the Add to Calendar button"); AI-S 04 (the calendar glyph beside "•••" at the top of the event page) | Add to Calendar |
 | PF-S 01 / 07 | `references/auto/partiful/store/partiful-store-01.png`, `-07.png` | in-app page: title, poster, date / time, "Hosted by", place, one-tap round "Going"; "Photo Album" + "Upload" |
 | PF-W | `references/auto/partiful/web/pf-web-public-light-rsvp-sheet.png` (+ computed styles) | answer order Going · Maybe · Can't Go |
 | PF-H | help.partiful.com 15525438, 15525507, 15525451, 15525446 | list visibility; no answer change after the event; cancel; photos |
@@ -26,8 +27,9 @@ Apple Invites' event-page order"`.
 
 ## Structure (pushed from `groups.screen` / a push / the widget; page `color.global.background`; one vertical scroll)
 
-1. **Header row** — C-02 back (`icon.global.back` at `size.global.backInset`); trailing C-01 glyph `icon.global.more`
-   → native menu: for the maker and admins while the plan is on `plans.page.menu.edit`, `plans.page.menu.cancel` (C-10
+1. **Header row** — C-02 back (`icon.global.back` at `size.global.backInset`); trailing C-01 glyphs
+   (`size.global.headerIconPitch` apart): `icon.global.calendar` "Add to Calendar" (`plans.page.addToCalendar.accessibilityLabel`)
+   while the plan is on (not canceled, its day not ended; AI-C), then `icon.global.more` → native menu: for the maker and admins while the plan is on `plans.page.menu.edit`, `plans.page.menu.cancel` (C-10
    red) / `plans.page.menu.restore` when canceled; on another member's plan `safety.report.menuItem.plan` and
    `safety.block.menuItemNamed` ("Block {first_name}", the maker), both C-10 red (safety.report kind `plan`, MERGE FV-4).
 2. **Cover** (only when the plan has one) — `size.global.titleToContent` below the header line, centred,
@@ -68,6 +70,7 @@ Apple Invites' event-page order"`.
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
 | back | C-02 | `plans.page.back.accessibilityLabel` | pop |
+| Add to Calendar | C-01 glyph `icon.global.calendar` | `plans.page.addToCalendar.accessibilityLabel` | the system's new-event editor, prefilled: title; timed → start, and end when the plan has one (iOS needs an end: start + 1 h, the person changes it; Android leaves it to the calendar app); all-day → the plan's day; place → location. iOS: EventKitUI `EKEventEditViewController` in a sheet (out of process since iOS 17: no calendar access asked, no usage string — developer.apple.com/documentation/eventkit/accessing-the-event-store); Android: `Intent.ACTION_INSERT` on `CalendarContract.Events.CONTENT_URI` (no `WRITE_CALENDAR` — developer.android.com/identity/providers/calendar-provider#intents); no calendar app → nothing happens. Nothing is written back to the plan |
 | more | C-01 glyph `icon.global.more`, native menu (C-29) | `plans.page.more.accessibilityLabel`, `.menu.edit`, `.menu.cancel`, `.menu.restore` | edit → `plans.create` (edit mode); cancel → native confirm `plans.page.cancel.*` → `cancel_plan`; restore → `restore_plan` |
 | cover | cover tokens as `groups.screen` | `plans.page.cover.accessibilityLabel` | → `photo.viewer` (single image) |
 | title | `font.global.display` `displayMedium` | data | header trait |
@@ -124,12 +127,14 @@ posts of the plan's local days; none for a cancelled plan; there is no `albums` 
 open — MERGE_DECISIONS "New features" → Problems found). Writes `answer_plan`, `clear_answer`, `cancel_plan`,
 `restore_plan`. Realtime: inserts and updates of `plans` and `plan_answers` → refetch.
 In: `groups.screen` plan row, `widget.countdown` (deep link), pushes `notifications.push.plan*`. Out: `plans.create`
-(edit), `albums.view`, `photo.viewer`.
+(edit), `albums.view`, `photo.viewer`, the system calendar editor (Add to Calendar).
 
 ## Platform notes
 
-iOS: `ScrollView` + `LazyVGrid`; strikethrough via `AttributedString.strikethroughStyle`; `ListFormatter.localizedString(byJoining:)`.
-Android: `LazyColumn`; `TextDecoration.LineThrough`; `android.icu.text.ListFormatter.getInstance().format(names)`.
+iOS: `ScrollView` + `LazyVGrid`; strikethrough via `AttributedString.strikethroughStyle`; `ListFormatter.localizedString(byJoining:)`;
+Add to Calendar `PlanCalendarEditor.swift`.
+Android: `LazyColumn`; `TextDecoration.LineThrough`; `android.icu.text.ListFormatter.getInstance().format(names)`; Add to
+Calendar `PlanCalendar.kt`.
 
 ## Do-not-copy
 

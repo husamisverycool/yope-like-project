@@ -1689,6 +1689,8 @@
     <string name="plans_list_section_upcoming" formatted="false">Upcoming</string>
     <!-- Retro · plans.list · adapted · SOURCED -->
     <string name="plans_list_title" formatted="false">Plans</string>
+    <!-- Apple Invites · plans.page · verbatim · SOURCED -->
+    <string name="plans_page_addtocalendar_accessibilitylabel" formatted="false">Add to Calendar</string>
     <!-- Retro · plans.page · new · SOURCED -->
     <string name="plans_page_album" formatted="false">Photos</string>
     <!-- Partiful · plans.page · adapted · SOURCED -->
@@ -1899,6 +1901,8 @@
     <string name="settings_account_delete" formatted="false">Delete Account</string>
     <!-- Retro · settings.account · verbatim · SOURCED -->
     <string name="settings_account_delete_confirm" formatted="false">Yes, delete</string>
+    <!-- Instagram + Google · settings.account · adapted · SOURCED -->
+    <string name="settings_account_delete_download" formatted="false">Download My Photos</string>
     <!-- Retro · settings.account · new · SOURCED -->
     <string name="settings_account_delete_error" formatted="false">Your account wasn\'t deleted. Please try again.</string>
     <!-- Retro · settings.account · new · SOURCED -->

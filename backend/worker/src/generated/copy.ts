@@ -846,6 +846,7 @@ const table = {
   "plans.list.section.past": "Past Plans", // Apple Invites · plans.list · SOURCED
   "plans.list.section.upcoming": "Upcoming", // Apple Invites · plans.list · SOURCED
   "plans.list.title": "Plans", // Retro · plans.list · SOURCED
+  "plans.page.addToCalendar.accessibilityLabel": "Add to Calendar", // Apple Invites · plans.page · SOURCED
   "plans.page.album": "Photos", // Retro · plans.page · SOURCED
   "plans.page.answer.cantGo": "Can't go", // Partiful · plans.page · SOURCED
   "plans.page.answer.clear": "Clear answer", // Retro · plans.page · SOURCED
@@ -951,6 +952,7 @@ const table = {
   "settings.account.birthday": "Birthday", // Retro · settings.account · SOURCED
   "settings.account.delete": "Delete Account", // Retro · settings.account · SOURCED
   "settings.account.delete.confirm": "Yes, delete", // Retro · settings.account · SOURCED
+  "settings.account.delete.download": "Download My Photos", // Instagram + Google · settings.account · SOURCED
   "settings.account.delete.error": "Your account wasn't deleted. Please try again.", // Retro · settings.account · SOURCED
   "settings.account.delete.footer": "Deleting your account removes your photos, voice notes and messages from every group.", // Retro · settings.account · SOURCED
   "settings.account.delete.message": "This cannot be undone. You will not be able to recover your photos, voice notes or messages.", // Retro · settings.account · SOURCED

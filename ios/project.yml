@@ -35,6 +35,11 @@ packages:
   SnapshotTesting:
     url: https://github.com/pointfreeco/swift-snapshot-testing.git
     from: 1.19.6
+  # auth.phone as-you-type formatting (PartialFormatter, the Swift port of libphonenumber's AsYouTypeFormatter that
+  # Android uses). 4.2.13 is the last release before the repository's 4.3.0 deprecation notice.
+  PhoneNumberKit:
+    url: https://github.com/marmelroy/PhoneNumberKit.git
+    exactVersion: 4.2.13
 
 targets:
   App:
@@ -81,6 +86,9 @@ targets:
       # The paywall reads RevenueCat's offerings and packages (PurchasesService's public API exposes them).
       - package: RevenueCat
         product: RevenueCat
+      # auth.phone formatting (Features/Account/Shared/PhoneNumberInput.swift).
+      - package: PhoneNumberKit
+        product: PhoneNumberKit
 
   Widgets:
     type: app-extension
@@ -158,6 +166,9 @@ targets:
       # background networking).
       - package: AppCore
         product: AppData
+      # auth.phone formatting in the shared phone form (Features/Account/Shared/PhoneNumberInput.swift).
+      - package: PhoneNumberKit
+        product: PhoneNumberKit
 
   AppTests:
     type: bundle.unit-test

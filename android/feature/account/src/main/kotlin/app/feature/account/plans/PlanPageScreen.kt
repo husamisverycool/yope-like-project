@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -99,6 +100,7 @@ import app.ui.foundation.GlyphInk
 import app.ui.foundation.PageRoles
 import app.ui.foundation.endAtLastBaseline
 import app.ui.foundation.tapClickable
+import app.ui.permissions.PermissionChecks
 import app.ui.system.DsBottomSheet
 import app.ui.system.DsDropdownMenu
 import app.ui.system.DsMenuItem
@@ -355,6 +357,8 @@ class PlanPageActions(
     val onReport: () -> Unit = {},
     /** "Block {first_name}" of the plan's maker (safety.block). */
     val onBlockMaker: () -> Unit = {},
+    /** "Add to Calendar": the calendar app's new-event screen for the plan (PlanCalendar.kt). */
+    val onAddToCalendar: () -> Unit = {},
     val onAnswer: (PlanAnswerKind?) -> Unit = {},
     val onPhoto: (Post) -> Unit = {},
     val onRetry: () -> Unit = {},
@@ -366,6 +370,7 @@ fun PlanPageRoute(nav: NavController, planId: String) {
     val backend = rememberPlansBackend()
     val vm = viewModel(key = "plan:$planId") { PlanPageViewModel(env, backend, planId) }
     val state by vm.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     CollectEvents(vm.events, nav)
     PlanPageScreen(
         state = state,
@@ -381,6 +386,7 @@ fun PlanPageRoute(nav: NavController, planId: String) {
                 state.plan?.let { plan -> nav.navigate(SafetyReportContentRoute("plan", plan.id, plan.groupId, plan.createdBy)) }
             },
             onBlockMaker = { state.plan?.createdBy?.let { maker -> nav.navigate(AppRoute.SafetyBlock(maker)) } },
+            onAddToCalendar = { state.plan?.let { plan -> PermissionChecks.openSafely(context, PlanCalendarFields.of(plan).intent()) } },
             onAnswer = vm::answer,
             onPhoto = { post -> nav.navigate(AppRoute.PhotoViewer(post.groupId, post.id)) },
             onRetry = vm::load,
@@ -391,7 +397,8 @@ fun PlanPageRoute(nav: NavController, planId: String) {
 /**
  * The plan (pushed; page `color.global.background.android`; one vertical scroll), Apple Invites' order on Retro's album
  * page:
- * 1. C-02 header row without a title — back; trailing C-01 `icon.global.more` for the maker and admins while the plan is
+ * 1. C-02 header row without a title — back; trailing C-01 `icon.global.calendar` "Add to Calendar" while the plan is on
+ *    (Apple Invites' calendar button beside "•••"), then `icon.global.more` for the maker and admins while the plan is
  *    not over → native menu "Edit Plan" · "Cancel Plan" (C-10 red), or "Restore Plan" once cancelled;
  * 2. the cover (when the plan has one), as `groups.screen`'s (`groups.screen.size.cover*`, `radius.global.thumbnail`,
  *    `groups.screen.shadow.cover`);
@@ -491,12 +498,18 @@ private fun Header(state: PlanPageUiState, past: Boolean, actions: PlanPageActio
         emptyList()
     }
     val items = manage + report
+    val calendar = if (plan != null && !plan.canceled && !past) {
+        listOf(HeaderAction(Tokens.Icons.globalCalendar, stringResource(R.string.plans_page_addtocalendar_accessibilitylabel), actions.onAddToCalendar))
+    } else {
+        emptyList()
+    }
+    val more = if (items.isEmpty()) emptyList() else listOf(HeaderAction(Tokens.Icons.globalMore, stringResource(R.string.plans_page_more_accessibilitylabel)) { menuOpen = true })
     Box(Modifier.fillMaxWidth()) {
         PushedHeader(
             title = "",
             onBack = actions.onBack,
             backContentDescription = stringResource(R.string.plans_page_back_accessibilitylabel),
-            actions = if (items.isEmpty()) emptyList() else listOf(HeaderAction(Tokens.Icons.globalMore, stringResource(R.string.plans_page_more_accessibilitylabel)) { menuOpen = true }),
+            actions = calendar + more,
         )
         Box(Modifier.align(Alignment.TopEnd).padding(end = Tokens.Sizes.globalHeaderInset)) {
             DsDropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, items = items)

@@ -2,7 +2,9 @@
 """App icon (owner decision 32): the "J" of the title serif (Roboto Serif Title, SIL OFL; the typography role Retro's
 titles fill, MERGE L-8) on the media black (color.global.backgroundDeep #000000), white glyph (color.global.textOnMedia).
 
-Writes the iOS app and App Clip icon sets (one 1024 px image each, opaque), the Android adaptive launcher icon (black
+Writes the iOS app and App Clip icon sets (a 1024 px opaque image each, plus the dark and tinted appearances of
+iOS 18: the same glyph, white on a transparent background, as the Android monochrome layer), the Android adaptive
+launcher icon (black
 background, white glyph inside the 66 dp safe zone, the same glyph as the themed-icon monochrome layer), the Android
 status-bar icon (white on transparent, Material 3), the Play listing 512 px icon, and the option sheet the owner chose
 from (design/icon/). The owner may replace any of these. Run from the repo root: python3 tools/appicon.py [A|B|C]
@@ -46,12 +48,26 @@ def glyph_path(canvas, frac):
 
 
 def render(canvas, bg, fg, supersample=4):
+    """The J centred on `bg`; `bg` None draws it on a transparent background (RGBA)."""
     big = canvas * supersample
     font = ImageFont.truetype(FONT, int(round(GLYPH_HEIGHT * big * 1000 / 720)))  # the J is 720 units tall
     left, top, right, bottom = font.getbbox("J")
-    img = Image.new("RGB", (big, big), bg)
-    ImageDraw.Draw(img).text(((big - (right - left)) / 2 - left, (big - (bottom - top)) / 2 - top), "J", font=font, fill=fg)
+    origin = ((big - (right - left)) / 2 - left, (big - (bottom - top)) / 2 - top)
+    if bg is None:
+        mask = Image.new("L", (big, big), 0)
+        ImageDraw.Draw(mask).text(origin, "J", font=font, fill=255)
+        img = Image.new("RGBA", (big, big), fg)
+        img.putalpha(mask)
+    else:
+        img = Image.new("RGB", (big, big), bg)
+        ImageDraw.Draw(img).text(origin, "J", font=font, fill=fg)
     return img.resize((canvas, canvas), Image.LANCZOS)
+
+
+# iOS 18 appearances (Apple HIG, App icons: "a dark icon" whose background the system supplies, and "a tinted icon"
+# made from a grayscale image the system tints). Both are the mark alone, white on transparent, the shape of the
+# Android themed-icon monochrome layer (the same J at the same height). Xcode's luminosity values: dark, tinted.
+APPEARANCES = (("dark", "AppIcon-Dark.png"), ("tinted", "AppIcon-Tinted.png"))
 
 
 def vector(size, color, path):
@@ -79,13 +95,22 @@ def main():
     sheet.save("design/icon/options.png")
 
     chosen = render(1024, bg, fg)
+    # Dark: the glyph's own colour where it is light (option A, C), else white (option B's black J would vanish on the
+    # system's dark background). Tinted: grayscale, white = full tint.
+    mark_dark = render(1024, None, fg if fg.upper() == "#FFFFFF" else "#FFFFFF")
+    mark_tinted = render(1024, None, "#FFFFFF").convert("LA").convert("RGBA")
     for catalog in ("ios/App/Resources/Assets.xcassets", "ios/AppClip/Resources/Assets.xcassets"):
         iconset = f"{catalog}/AppIcon.appiconset"
         os.makedirs(iconset, exist_ok=True)
         chosen.save(f"{iconset}/AppIcon.png")
+        mark_dark.save(f"{iconset}/AppIcon-Dark.png")
+        mark_tinted.save(f"{iconset}/AppIcon-Tinted.png")
+        images = [{"filename": "AppIcon.png", "idiom": "universal", "platform": "ios", "size": "1024x1024"}]
+        for value, filename in APPEARANCES:
+            images.append({"appearances": [{"appearance": "luminosity", "value": value}], "filename": filename,
+                           "idiom": "universal", "platform": "ios", "size": "1024x1024"})
         with open(f"{iconset}/Contents.json", "w") as out:
-            json.dump({"images": [{"filename": "AppIcon.png", "idiom": "universal", "platform": "ios", "size": "1024x1024"}],
-                       "info": {"author": "xcode", "version": 1}}, out, indent=2)
+            json.dump({"images": images, "info": {"author": "xcode", "version": 1}}, out, indent=2)
             out.write("\n")
     with open("ios/AppClip/Resources/Assets.xcassets/Contents.json", "w") as out:
         json.dump({"info": {"author": "xcode", "version": 1}}, out, indent=2)

@@ -1,5 +1,6 @@
 package app.ui.system
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -15,8 +16,9 @@ import androidx.compose.ui.window.DialogProperties
  * C-29 alert / dialog: the native M3 `AlertDialog` (PLATFORM), coloured by the theme's Retro scheme
  * (`color.global.system.*`: container surfaceContainerHigh, headline onSurface, text onSurfaceVariant, actions
  * primary #0A84FF; a [destructive] confirm label in error #EA3337 — Retro's "Yes, delete"). Shape, type and
- * motion are the platform's (`MaterialTheme.typography` with Retro's overrides). At most two actions,
- * dismissive leading, confirming trailing. While [confirmBusy] the confirm action shows the platform progress
+ * motion are the platform's (`MaterialTheme.typography` with Retro's overrides). Dismissive leading, confirming
+ * trailing; an optional [neutralLabel] sits before the dismissive one, as the platform `AlertDialog`'s neutral
+ * button does (`AlertDialog.Builder.setNeutralButton`). While [confirmBusy] the confirm action shows the platform progress
  * indicator and is disabled. [dismissible] false: tapping outside and Back do not close it. M3 dialog actions in
  * Retro blue are a recorded contrast failure (CONTRAST failure 6).
  */
@@ -32,8 +34,11 @@ fun SystemAlertDialog(
     destructive: Boolean = false,
     confirmBusy: Boolean = false,
     dismissible: Boolean = true,
+    neutralLabel: String? = null,
+    onNeutral: () -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
+    val dismiss: (@Composable () -> Unit)? = dismissLabel?.let { { TextButton(onClick = onDismiss, enabled = !confirmBusy) { Text(it, color = scheme.primary) } } }
     AlertDialog(
         onDismissRequest = { if (!confirmBusy) onDismiss() },
         modifier = modifier,
@@ -49,7 +54,16 @@ fun SystemAlertDialog(
                 }
             }
         },
-        dismissButton = dismissLabel?.let { { TextButton(onClick = onDismiss, enabled = !confirmBusy) { Text(it, color = scheme.primary) } } },
+        dismissButton = if (neutralLabel == null) {
+            dismiss
+        } else {
+            {
+                Row {
+                    TextButton(onClick = onNeutral, enabled = !confirmBusy) { Text(neutralLabel, color = scheme.primary) }
+                    dismiss?.invoke()
+                }
+            }
+        },
     )
 }
 

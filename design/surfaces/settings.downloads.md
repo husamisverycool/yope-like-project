@@ -18,6 +18,7 @@ the C-02 back glyph on Android, as settings.hidden) composed of Retro components
 | from | item | scope | notes |
 |---|---|---|---|
 | `settings.root` → Privacy | `settings.root.downloads` ("Download My Photos") | `download_items('mine')` | free; the page waits for Download |
+| `settings.account` delete alert | `settings.account.delete.download` ("Download My Photos") | `download_items('mine')` | free; the alert closes and this page opens (Instagram's and Google's download-before-delete step) |
 | `albums.view` "•••" | `albums.view.menu.download` ("Download Album") | `download_items('album', id)` | premium; with premium the page opens and starts at once; without, the item shows `icon.global.lock` and opens the paywall at the full-quality downloads perk (`paywall.layout.promptRule`: once per session; iOS presents it from the album sheet, Android `PaywallPerkRoute("export")`); a late `premium_required` does the same |
 
 ## Structure (top → bottom)

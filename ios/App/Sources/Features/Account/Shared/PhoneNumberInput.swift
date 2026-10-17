@@ -1,6 +1,8 @@
 // Account group — phone number entry rules for auth.phone and the App Clip join sheet (data, not design):
-// prefill with the device region's country calling code, normalise to E.164 before sending (docs/API.md §2).
+// prefill with the device region's country calling code, format as typed (`auth.phone.layout.countryCode` autoFormat),
+// normalise to E.164 before sending (docs/API.md §2).
 import Foundation
+import PhoneNumberKit
 
 enum PhoneNumberInput {
     /// The text the field starts with: "+" and the calling code of `region` (ISO 3166-1 alpha-2), or "+" alone
@@ -106,6 +108,51 @@ enum PhoneNumberInput {
         }
         guard (2...15).contains(result.count), result.first != "0" else { return nil }
         return "+" + result
+    }
+}
+
+/// As-you-type formatting of the phone field (`auth.phone.layout.countryCode` autoFormat): PhoneNumberKit's
+/// `PartialFormatter`, the Swift port of libphonenumber's `AsYouTypeFormatter` that Android uses
+/// (android/feature/account/.../auth/PhoneNumbers.kt). Only the shown text is formatted; what is sent stays the E.164
+/// form (`PhoneNumberInput.normalized`, which drops the spaces, dashes and parentheses the formatter adds).
+/// Main actor: PhoneNumberKit's types are not `Sendable`, and the field is edited on the main actor.
+@MainActor
+enum PhoneNumberFormatting {
+    /// Loads PhoneNumberKit's metadata once, on first use.
+    private static let formatter = PartialFormatter(utility: PhoneNumberUtility(), defaultRegion: "US", withPrefix: true) // provenance-ok: ISO region code, only for numbers typed without "+" (never formatted here)
+
+    /// `text` formatted for its calling code ("+15551234567" → "+1 555-123-4567"). Text without a leading "+" is left
+    /// as typed: the field is always international, and a national format would misread it.
+    static func formatted(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard trimmed.hasPrefix("+") else { return text }
+        let digits = PhoneNumberInput.digits(of: trimmed)
+        guard !digits.isEmpty else { return "+" }
+        return formatter.formatPartial("+" + digits)
+    }
+
+    /// The field text after an edit from `old` to `new`.
+    /// - Typing or deleting at the end (and pasting or AutoFill over the whole text): re-formatted; the cursor stays at
+    ///   the end, where the edit was.
+    /// - Deleting a separator at the end ("+1 555-" → "+1 555"): the digit before it goes too, as Android's formatter
+    ///   field does (otherwise the separator would come straight back).
+    /// - An edit inside the number (the text after it is unchanged): kept as typed, so the cursor does not jump; the
+    ///   next edit at the end formats it again. The submitted number is the same either way.
+    static func edit(from old: String, to new: String) -> String {
+        guard new != old else { return new }
+        let oldDigits = PhoneNumberInput.digits(of: old)
+        let newDigits = PhoneNumberInput.digits(of: new)
+        if new.count < old.count, old.hasPrefix(new), newDigits == oldDigits, !newDigits.isEmpty {
+            return formatted("+" + String(newDigits.dropLast()))
+        }
+        let atEnd = new.hasPrefix(old) || old.hasPrefix(new)
+        let wholeText = commonSuffixLength(old, new) == 0
+        guard atEnd || wholeText else { return new }
+        return formatted(new)
+    }
+
+    private static func commonSuffixLength(_ a: String, _ b: String) -> Int {
+        zip(a.reversed(), b.reversed()).prefix { pair in pair.0 == pair.1 }.count
     }
 }
 
