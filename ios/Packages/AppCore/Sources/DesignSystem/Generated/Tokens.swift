@@ -595,12 +595,18 @@ public enum Tokens {
         /// Retro · global · close / dismiss (in a circle on modals and over photos) · PLATFORM
         /// token: `icon.global.close`
         public static let globalClose: String = "xmark"
+        /// Apple HIG / Material 3 · global · use as cover (menu item) · PLATFORM
+        /// token: `icon.global.cover`
+        public static let globalCover: String = "photo"
         /// Apple HIG / Material 3 · global · save to device · PLATFORM
         /// token: `icon.global.download`
         public static let globalDownload: String = "arrow.down.to.line"
         /// Retro · global · edit ('Add a message' pill, address edit circle) · PLATFORM
         /// token: `icon.global.edit`
         public static let globalEdit: String = "pencil"
+        /// Apple HIG / Material 3 · global · favorite (menu item; the Favorites capsule on walls.mine) · PLATFORM
+        /// token: `icon.global.favorite`
+        public static let globalFavorite: String = "heart"
         /// Apple HIG / Material 3 · global · flash off (mechanics: camera; outline style) · PLATFORM
         /// token: `icon.global.flashOff`
         public static let globalFlashOff: String = "bolt.slash"
@@ -658,6 +664,9 @@ public enum Tokens {
         /// Apple HIG / Material 3 · global · recap entry where a glyph is needed (Retro's profile shows a text pill 'Recaps' — no Retro glyph) · PLATFORM
         /// token: `icon.global.recap`
         public static let globalRecap: String = "film.stack"
+        /// Apple HIG / Material 3 · global · remove from album (menu item) · PLATFORM
+        /// token: `icon.global.remove`
+        public static let globalRemove: String = "minus.circle"
         /// Apple HIG / Material 3 · global · report (menu item; outline per the icon style) · PLATFORM
         /// token: `icon.global.report`
         public static let globalReport: String = "flag"
@@ -682,6 +691,9 @@ public enum Tokens {
         /// Apple HIG / Material 3 · global · not selected (empty ring) · PLATFORM
         /// token: `icon.global.uncheck`
         public static let globalUncheck: String = "circle"
+        /// Apple HIG / Material 3 · global · unfavorite (menu item) · PLATFORM
+        /// token: `icon.global.unfavorite`
+        public static let globalUnfavorite: String = "heart.slash"
         /// Retro · global · video duration pill · PLATFORM
         /// token: `icon.global.video`
         public static let globalVideo: String = "video.fill"

@@ -29,6 +29,8 @@ struct PhotoViewerView: View {
     @State private var reactionsOpen = false
     @State private var tagSheetOpen = false
     @State private var confirmingDelete = false
+    /// "Add to Album": the album picker for this photo (`photo.viewer.layout.albumPicker`).
+    @State private var albumPicker: AlbumPickerTarget?
     @State private var unsendCandidate: Message?
     @State private var reportTarget: ReportTarget?
     @State private var blockTarget: BlockTarget?
@@ -142,6 +144,12 @@ struct PhotoViewerView: View {
             }
             .sheet(item: $reportTarget) { target in
                 reportSheet(target)
+            }
+            .sheet(item: $albumPicker) { target in
+                AlbumPickerSheet(
+                    model: AlbumPickerModel(groupID: target.groupID, postID: target.postID, data: SocialServices.shared.data),
+                    onDone: { model.addedToAlbum() }
+                )
             }
             .confirmationDialog(Copy.photoViewerDeleteTitle, isPresented: $confirmingDelete, titleVisibility: .visible) {
                 Button(Copy.photoViewerDeleteConfirm, role: .destructive) {
@@ -430,13 +438,31 @@ struct PhotoViewerView: View {
 
     // MARK: Menu (`photo.viewer.layout.menu`)
 
-    /// Save to Camera Roll on every photo (owner decision 28: any member saves any photo they can see), then mine:
-    /// Delete (destructive); others': Report Post (destructive) · Block {name}.
+    /// Save to Camera Roll on every photo (owner decision 28: any member saves any photo they can see), Favorite /
+    /// Unfavorite (private, Apple Photos), Add to Album, Use as Cover (group admins), then mine: Delete (destructive);
+    /// others': Report Post (destructive) · Block {name}.
     @ViewBuilder
     private var menuItems: some View {
-        if model.current != nil {
+        if let post = model.current {
             Button { Task { await model.saveCurrent(using: SocialServices.shared.saver) } } label: {
                 Label(Copy.photoViewerMenuSave, systemImage: Tokens.Icons.globalDownload)
+            }
+            if !model.isCurrentGone {
+                Button { Task { await model.toggleFavorite() } } label: {
+                    if model.isCurrentFavorite {
+                        Label(Copy.photoViewerMenuUnfavorite, systemImage: Tokens.Icons.globalUnfavorite)
+                    } else {
+                        Label(Copy.photoViewerMenuFavorite, systemImage: Tokens.Icons.globalFavorite)
+                    }
+                }
+                Button { albumPicker = AlbumPickerTarget(groupID: post.post.groupID, postID: post.id) } label: {
+                    Label(Copy.photoViewerMenuAddToAlbum, systemImage: Tokens.Icons.globalAlbums)
+                }
+            }
+            if model.canUseCurrentAsCover {
+                Button { Task { await model.useCurrentAsCover() } } label: {
+                    Label(Copy.photoViewerMenuUseAsCover, systemImage: Tokens.Icons.globalCover)
+                }
             }
         }
         if model.isCurrentOwn {
@@ -1207,4 +1233,11 @@ extension View {
             self
         }
     }
+}
+
+/// The photo the album picker adds (`photo.viewer.layout.albumPicker`).
+struct AlbumPickerTarget: Identifiable, Hashable {
+    let groupID: GroupID
+    let postID: PostID
+    var id: String { postID.rawValue }
 }

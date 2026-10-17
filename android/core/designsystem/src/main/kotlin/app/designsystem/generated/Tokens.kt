@@ -38,12 +38,14 @@ import androidx.compose.material.icons.outlined.FlashOn as OutlinedFlashOn
 import androidx.compose.material.icons.outlined.Group as OutlinedGroup
 import androidx.compose.material.icons.outlined.History as OutlinedHistory
 import androidx.compose.material.icons.outlined.Home as OutlinedHome
+import androidx.compose.material.icons.outlined.Image as OutlinedImage
 import androidx.compose.material.icons.outlined.LibraryAdd as OutlinedLibraryAdd
 import androidx.compose.material.icons.outlined.Mic as OutlinedMic
 import androidx.compose.material.icons.outlined.NearMe as OutlinedNearMe
 import androidx.compose.material.icons.outlined.Notifications as OutlinedNotifications
 import androidx.compose.material.icons.outlined.PhotoCamera as OutlinedPhotoCamera
 import androidx.compose.material.icons.outlined.PhotoLibrary as OutlinedPhotoLibrary
+import androidx.compose.material.icons.outlined.RemoveCircleOutline as OutlinedRemoveCircleOutline
 import androidx.compose.material.icons.outlined.Settings as OutlinedSettings
 import androidx.compose.material.icons.outlined.VideoLibrary as OutlinedVideoLibrary
 import androidx.compose.material.icons.outlined.Visibility as OutlinedVisibility
@@ -55,6 +57,8 @@ import androidx.compose.material.icons.rounded.CheckCircle as RoundedCheckCircle
 import androidx.compose.material.icons.rounded.Close as RoundedClose
 import androidx.compose.material.icons.rounded.Download as RoundedDownload
 import androidx.compose.material.icons.rounded.ExpandMore as RoundedExpandMore
+import androidx.compose.material.icons.rounded.Favorite as RoundedFavorite
+import androidx.compose.material.icons.rounded.FavoriteBorder as RoundedFavoriteBorder
 import androidx.compose.material.icons.rounded.IosShare as RoundedIosShare
 import androidx.compose.material.icons.rounded.Link as RoundedLink
 import androidx.compose.material.icons.rounded.Lock as RoundedLock
@@ -503,10 +507,14 @@ object Tokens {
         val globalChevronDown: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedExpandMore
         /** Retro · global · close / dismiss (in a circle on modals and over photos) · PLATFORM — token `icon.global.close` */
         val globalClose: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedClose
+        /** Apple HIG / Material 3 · global · use as cover (menu item) · PLATFORM — token `icon.global.cover` */
+        val globalCover: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedImage
         /** Apple HIG / Material 3 · global · save to device · PLATFORM — token `icon.global.download` */
         val globalDownload: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedDownload
         /** Retro · global · edit ('Add a message' pill, address edit circle) · PLATFORM — token `icon.global.edit` */
         val globalEdit: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedEdit
+        /** Apple HIG / Material 3 · global · favorite (menu item; the Favorites capsule on walls.mine) · PLATFORM — token `icon.global.favorite` */
+        val globalFavorite: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFavoriteBorder
         /** Apple HIG / Material 3 · global · flash off (mechanics: camera; outline style) · PLATFORM — token `icon.global.flashOff` */
         val globalFlashOff: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedFlashOff
         /** Apple HIG / Material 3 · global · flash on (mechanics: camera; outline style) · PLATFORM — token `icon.global.flashOn` */
@@ -545,6 +553,8 @@ object Tokens {
         val globalRandom: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedCasino
         /** Apple HIG / Material 3 · global · recap entry where a glyph is needed (Retro's profile shows a text pill 'Recaps' — no Retro glyph) · PLATFORM — token `icon.global.recap` */
         val globalRecap: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedVideoLibrary
+        /** Apple HIG / Material 3 · global · remove from album (menu item) · PLATFORM — token `icon.global.remove` */
+        val globalRemove: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedRemoveCircleOutline
         /** Apple HIG / Material 3 · global · report (menu item; outline per the icon style) · PLATFORM — token `icon.global.report` */
         val globalReport: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedFlag
         /** Retro · global · Rewind / on-this-day tab · PLATFORM — token `icon.global.rewind` */
@@ -561,6 +571,8 @@ object Tokens {
         val globalTrash: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedDelete
         /** Apple HIG / Material 3 · global · not selected (empty ring) · PLATFORM — token `icon.global.uncheck` */
         val globalUncheck: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedRadioButtonUnchecked
+        /** Apple HIG / Material 3 · global · unfavorite (menu item) · PLATFORM — token `icon.global.unfavorite` */
+        val globalUnfavorite: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedFavorite
         /** Retro · global · video duration pill · PLATFORM — token `icon.global.video` */
         val globalVideo: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideocam
         /** Retro · global · profile tab — your weeks (= walls) · PLATFORM — token `icon.global.wall` */

@@ -41,6 +41,12 @@ enum class PhotoContext {
      * the reveal push names the first); `contextId` = the post id.
      */
     Reveal,
+
+    /**
+     * Your private favorites (`favorites`, `my_favorites`), newest favorite first; `contextId` = your user id. The header
+     * names each photo's group, as from a wall.
+     */
+    Favorites,
 }
 
 /**
@@ -56,6 +62,12 @@ data class PhotoViewerIn(
     val weekStart: String? = null,
 ) : AppRoute {
     override val surface get() = "photo.viewer"
+}
+
+/** `favorites`: your private favorites (walls.mine's heart capsule; owner decision 34). */
+@Serializable
+data object FavoritesRoute : AppRoute {
+    override val surface get() = "favorites"
 }
 
 /**

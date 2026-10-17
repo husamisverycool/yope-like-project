@@ -96,6 +96,22 @@ protocol SocialDataSource: Sendable {
     func saveAlbum(groupID: GroupID, name: String, postIDs: [PostID]) async throws -> Album
     func renameAlbum(id: AlbumID, name: String) async throws -> Album
     func deleteAlbum(id: AlbumID, groupID: GroupID) async throws
+    /// `add_to_album` (any member; photos already there are skipped).
+    func addToAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws -> Album
+    /// `remove_from_album`: what you added; the album's creator and group admins remove any (`not_allowed` otherwise).
+    func removeFromAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws
+
+    // MARK: Favorites and the group cover (migrations 0038, 0039)
+    /// `set_favorite`: a heart only you see.
+    func setFavorite(_ on: Bool, mediaID: MediaID) async throws
+    /// Which of `mediaIDs` you favorited (your own `favorites` rows).
+    func favoriteMediaIDs(among mediaIDs: [MediaID]) async throws -> Set<MediaID>
+    /// `my_favorites`, newest favorite first; `before` pages back (the last `favoritedAt`).
+    func favorites(before: Date?, limit: Int) async throws -> [FavoritePhoto]
+    /// The first page of favorites as loaded this session (memory only: a deleted photo never stays on the device).
+    func cachedFavorites() async -> [FavoritePhoto]?
+    /// `set_group_cover_from_post` (group admins).
+    func setGroupCover(groupID: GroupID, postID: PostID) async throws
 
     // MARK: Files (§7)
     /// A short-lived signed URL for a private storage path.
@@ -123,6 +139,8 @@ enum SocialPaging {
     static let wall = 50
     /// `week.history`: `group_history_weeks(p_limit: 8)`.
     static let historyWeeks = 8
+    /// `favorites`: `my_favorites(p_limit: 60)`.
+    static let favorites = 60
 }
 
 /// How a failed call is shown: every screen maps these to its own error / offline / gone copy.
@@ -131,6 +149,20 @@ enum SocialFailure: Equatable, Sendable {
     case notFound
     case notReady
     case other
+
+    /// `not_allowed` (PT403): someone else's row (`remove_from_album` of a photo another member added). Not in AppData's
+    /// `APIErrorCode` list, so it arrives as `DataError.database` with the code as message.
+    static func isNotAllowed(_ error: Error) -> Bool {
+        if case let .database(_, message) = DataError.from(error) { return message == notAllowedCode }
+        return false
+    }
+
+    /// `media_not_ready` (PT409): the photo's display rendition is not made yet (`set_group_cover_from_post`).
+    static func isMediaNotReady(_ error: Error) -> Bool {
+        DataError.from(error).apiCode == .mediaNotReady
+    }
+
+    static let notAllowedCode = "not_allowed" // provenance-ok: API error code (docs/API.md §3)
 
     init(_ error: Error) {
         guard let error = error as? DataError else {

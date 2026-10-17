@@ -79,6 +79,9 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 | item | shown | glyph | copy | action |
 |---|---|---|---|---|
 | Save to Camera Roll | every photo (owner decision 28) | `icon.global.download` | `photo.viewer.menu.save` | saves the original (Live Photo: still + motion) → Android Toast `photo.viewer.toast.saved` / iOS announcement; `haptic.global.success` |
+| Favorite / Unfavorite | every photo; the item says what a tap does (Apple Photos) | `icon.global.favorite` / `icon.global.unfavorite` | `photo.viewer.menu.favorite` / `.menu.unfavorite` | `set_favorite(p_media_id, p_on)`: applied at once, `haptic.global.select`; failed → back as it was, `haptic.global.error`, Android Toast / iOS announcement `photo.viewer.error.favorite` |
+| Add to Album | every photo | `icon.global.albums` | `photo.viewer.menu.addToAlbum` | the album picker (below) |
+| Use as Cover | group admins (update_group's rule) | `icon.global.cover` | `photo.viewer.menu.useAsCover` | `set_group_cover_from_post(p_group_id, p_post_id)` → `haptic.global.success`, Android Toast / iOS announcement `week.edit.toast.saved` ("Saved!"); `media_not_ready` → `photo.viewer.error.coverNotReady`; other failures → `photo.viewer.error.cover`; both `haptic.global.error` |
 | Delete | your photo | `icon.global.trash`, destructive | `photo.viewer.menu.delete` | confirmation → `delete_media` |
 | Report Post | someone else's | `icon.global.report`, destructive | `photo.viewer.menu.report` | `safety.report` (kind `post`) |
 | Block {name} | someone else's | none | `photo.viewer.menu.block` | `safety.block` for the author |
@@ -86,6 +89,32 @@ Full-screen, presented over the opener. The viewer renders in the **dark appeara
 Save is on every photo the viewer can see (owner decision 28: any member saves any photo to their own library, as
 Apple Shared Albums lets subscribers save shared items, support.apple.com/108314). Sharing to other apps stays your own
 photos only (decision 12). Someone else's photo shows Save, Report and Block.
+
+Order: Save to Camera Roll · Favorite · Add to Album · Use as Cover · then Delete (yours) or Report Post · Block {name}.
+
+**Favorites are private** (Apple Photos Favorites; owner decision 34, docs/RESEARCH_FEATURES_2026-10-17.md #19): only the
+person who favorites a photo ever sees it — no heart on the photo for anyone else, no count, no notification. The
+viewer reads which of its photos are yours from your own `favorites` rows (docs/API.md §6.4: `select()` on the table,
+RLS own rows) when the photos load, and keeps what `set_favorite` changed this session. The list is `favorites` (reached
+from `walls.mine`).
+
+**Use as Cover** (Google Photos "Use As → Album cover", support.google.com/photos/answer/6128849; #14): shown only when
+you are an admin of the photo's group (`group_members.role`, read with the photo's group). The cover is the photo's
+display rendition (migration 0039); deleting the photo removes it as the cover.
+
+**Album picker** (`photo.viewer.layout.albumPicker`; Add to Album; #10, Apple Shared Albums "Add to Shared Album",
+support.apple.com/108314): a C-29 sheet over the viewer, titled `photo.viewer.menu.addToAlbum` (`sheetTitle`, C-11 close
+circle at the leading margin); first a "New Album" row (`week.edit.album.title`, a C-15 row whose cover is the empty
+`color.global.control` placeholder) that opens the name sheet of `week.edit` (`week.edit.album.title`,
+`week.edit.album.namePlaceholder`, `week.edit.album.create`; empty name → `week.edit.error.albumName`) and saves a new
+album holding this photo (`save_album(p_group_id, p_name, [post])`); then the group's albums as C-15 rows (the
+`albums.list` rows: first item as a 3:4 cover, the name, `albums.list.row.subtitle` / `.row.subtitleMine`), newest
+first. Tapping an album → `add_to_album(p_album_id, [post])` (a photo already there is skipped by the server) → the
+sheet closes, `haptic.global.success`, Android Toast / iOS announcement `week.edit.toast.albumSaved` ("Added to Album!").
+Failures keep the sheet open with `haptic.global.error` + `week.edit.error.save`. States: loading — three C-28
+placeholder rows under the New Album row; no albums — the New Album row alone; error / offline with nothing loaded — the
+`albums.list.error.title` line under the New Album row (tap retries); offline with the group's albums cached — the cached
+rows (adding fails with `week.edit.error.save`).
 
 **Delete confirmation** (`photo.viewer.layout.deleteConfirm`: iOS action sheet, Android AlertDialog): title
 `photo.viewer.delete.title`, message `photo.viewer.delete.message` (removed everywhere), destructive
@@ -214,17 +243,21 @@ photos only (decision 12). Someone else's photo shows Save, Report and Block.
   `original_path`, `motion_path`, `front_*`), `profiles` (author, commenters), `groups` (name for the wall form),
   `reactions` (§5.10), `post_tags` (§5.11: names for "with …", your row = toggle on), `messages` with
   `reply_to_post_id = post` (§5.9, comments). Week number: ISO week of `created_at` in `groups.time_zone`. The context list
-  (advance order) comes from the opener: thread photos, `wall()` items, a week's `post_ids`, recap items, an album's items.
+  (advance order) comes from the opener: thread photos, `wall()` items, a week's `post_ids`, recap items, an album's items,
+  your favorites (`my_favorites`, newest favorite first).
 - **RPCs**: `send_message(p_kind: text, p_reply_to_post_id)`; `create_post(…, p_reply_to_post_id)` (exactly this group);
   `react` / `unreact`; `tag_self` / `untag_self`; `delete_media` (owner: removes it from every group, chats, reactions, tags,
-  albums, recaps, tribute contributions); `report(post)`, `block_user` via `safety.report` / `safety.block`.
-- **Save** (your own photo only): signed URL of `original_path` (+ `motion_path`) → photo library.
+  albums, recaps, tribute contributions); `report(post)`, `block_user` via `safety.report` / `safety.block`;
+  `set_favorite(p_media_id, p_on)` (your own `favorites` rows say which photos are yours); `set_group_cover_from_post`
+  (admins; `not_group_admin`, `media_not_ready`; `group_members.role` decides whether the item shows); `albums` +
+  `album_items` of the photo's group, `add_to_album(p_album_id, p_post_ids)`, `save_album` (the album picker).
+- **Save** (every photo you can see, owner decision 28): signed URL of `original_path` (+ `motion_path`) → photo library.
 - **Play**: a video streams the signed URL of `original_path` (the worker's H.264 / AAC MP4, at most `video_max_ms`;
   `media.duration_ms` for the label); a Live Photo's motion is `motion_path` (iOS downloads still + motion into the
   `PHLivePhoto`; Android streams the motion when held).
 - **Realtime**: `post_deleted` → gone state / move on; `reactions_changed` → refetch; `messages` INSERT with this
   `reply_to_post_id` → new comment row.
-- **Navigation in**: `chat.thread`, `walls.*`, `week.recap`, `week.history`, `albums.view`; `DeepLink.post(groupID:postID:)`
+- **Navigation in**: `chat.thread`, `walls.*`, `week.recap`, `week.history`, `albums.view`, `favorites`; `DeepLink.post(groupID:postID:)`
   (`app://post?group=…&post=…`, push types `new_post`, `reaction`).
 - **Navigation out**: `walls.member` / `walls.mine`, `camera.capture`, `safety.report`, `safety.block`, back to the opener.
 

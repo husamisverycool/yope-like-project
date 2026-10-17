@@ -138,13 +138,16 @@ struct AlbumSheetTarget: Identifiable, Hashable {
 /// `albums.view.shadow.cover`); the
 /// name in the display serif (`displayMedium`, up to two lines) with its cap top `.coverToTitle` below the cover; the
 /// meta line (`listSubtitle`, `color.global.textSecondary`) with its baseline `.titleToMeta` below the name's; the
-/// capsule row `.metaToActions` below the meta baseline — "Rename" filling the row and, for the creator and group admins,
-/// the "•••" icon capsule (→ "Delete Album", red); the grid `walls.mine.dimension.actionsToWeeks` below the capsules.
+/// capsule row `.metaToActions` below the meta baseline — "Rename" filling the row and the "•••" icon capsule ("Add
+/// Photos" for every member; "Delete Album", red, for the creator and group admins); the grid
+/// `walls.mine.dimension.actionsToWeeks` below the capsules (a cell's long press: "Remove from Album" where allowed).
 struct AlbumScreen: View {
     @State private var model: AlbumModel
     var initialName: String?
     @State private var viewer: PhotoViewerContext?
     @State private var confirmingDelete = false
+    /// "Add Photos" (`albums.view.layout.add`).
+    @State private var adding = false
     @State private var toasts = ToastCenter()
     @Environment(\.dismiss) private var dismiss
 
@@ -185,6 +188,12 @@ struct AlbumScreen: View {
             Button(Copy.photoViewerDeleteCancel, role: .cancel) {}
         } message: {
             Text(Copy.albumsViewDeleteMessage)
+        }
+        .sheet(isPresented: $adding) {
+            AlbumAddSheet(
+                model: AlbumAddModel(groupID: model.groupID, albumID: model.albumID, excluding: model.postIDs, data: SocialServices.shared.data),
+                onDone: { Task { await model.photosAdded() } }
+            )
         }
         .sheet(isPresented: $model.isRenaming) {
             SocialNameSheet(
@@ -250,20 +259,24 @@ struct AlbumScreen: View {
         .accessibilityLabel(Text(Copy.albumsViewA11yCover(albumName: name)))
     }
 
-    /// "Rename" (C-06 outline, fills the row) and, for the creator and admins, the "•••" icon capsule.
+    /// "Rename" (C-06 outline, fills the row) and the "•••" icon capsule: "Add Photos" (every member — albums anyone can
+    /// add to) and, for the creator and admins, "Delete Album".
     @ViewBuilder
     private var actions: some View {
         if model.album != nil {
             CapsuleRow {
                 CapsuleButton(Copy.albumsViewMenuRename, fillsWidth: true) { model.startRename() }
-                if model.canDelete {
-                    Menu {
-                        Button(Copy.albumsViewMenuDelete, role: .destructive) { confirmingDelete = true }
-                    } label: {
-                        CapsuleLabel(icon: Tokens.Icons.globalMore)
+                Menu {
+                    Button { adding = true } label: {
+                        Label(Copy.albumsViewMenuAdd, systemImage: Tokens.Icons.globalAdd)
                     }
-                    .accessibilityLabel(Text(Copy.albumsViewA11yMore))
+                    if model.canDelete {
+                        Button(Copy.albumsViewMenuDelete, role: .destructive) { confirmingDelete = true }
+                    }
+                } label: {
+                    CapsuleLabel(icon: Tokens.Icons.globalMore)
                 }
+                .accessibilityLabel(Text(Copy.albumsViewA11yMore))
             }
             .padding(.horizontal, Tokens.Sizes.globalScreenMargin)
         }
@@ -284,7 +297,9 @@ struct AlbumScreen: View {
         case .ready:
             AlbumGrid(
                 cells: model.posts.map { $0 },
-                label: { SocialA11y.photo($0, author: model.profiles[$0.post.authorID], me: model.me) }
+                label: { SocialA11y.photo($0, author: model.profiles[$0.post.authorID], me: model.me) },
+                canRemove: { model.canRemove($0.id) },
+                onRemove: { post in Task { await model.remove(post.id) } }
             ) { post in
                 if let post { open(post.id) }
             }
@@ -307,6 +322,10 @@ struct AlbumScreen: View {
 struct AlbumGrid: View {
     let cells: [PostWithMedia?]
     var label: (PostWithMedia) -> String = { _ in "" }
+    /// "Remove from Album" in the cell's long-press menu (`albums.view` "Remove a photo"): what you added; the album's
+    /// creator and admins: every photo.
+    var canRemove: (PostWithMedia) -> Bool = { _ in false }
+    var onRemove: (PostWithMedia) -> Void = { _ in }
     let open: (PostWithMedia?) -> Void
 
     private var columns: Int { max(1, Int(Tokens.Counts.albumsViewCountGridColumns)) }
@@ -329,6 +348,13 @@ struct AlbumGrid: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(post == nil)
+                .viewerPhotoMenu(enabled: post.map(canRemove) ?? false) {
+                    if let post {
+                        Button(role: .destructive) { onRemove(post) } label: {
+                            Label(Copy.albumsViewMenuRemove, systemImage: Tokens.Icons.globalRemove)
+                        }
+                    }
+                }
                 .accessibilityLabel(Text(post.map { SocialA11y.withVideo(label($0), media: $0.media) } ?? ""))
                 .accessibilityHidden(post == nil)
             }

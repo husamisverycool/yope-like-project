@@ -45,6 +45,13 @@ extension SocialNotice {
         case .recordFailed: return Copy.chatVoiceErrorRecord
         case .selfieFailed: return Copy.viewerSelfiereactionError
         case .selfieSent: return Copy.viewerSelfiereactionA11ySent
+        case .favoriteFailed: return Copy.photoViewerErrorFavorite
+        case .coverSet: return Copy.weekEditToastSaved
+        case .coverNotReady: return Copy.photoViewerErrorCoverNotReady
+        case .coverFailed: return Copy.photoViewerErrorCover
+        case .albumAdded: return Copy.weekEditToastAlbumSaved
+        case .albumPhotoRemoved: return Copy.albumsViewToastRemoved
+        case .removeNotAllowed: return Copy.albumsViewErrorNotAllowed
         }
     }
 }

@@ -113,7 +113,10 @@ public struct MemoriesRepository: Sendable {
         let items = try await albumItems(albumIDs: albums.map(\.id))
         let grouped = Dictionary(grouping: items, by: \.albumID)
         let result = albums.map { album in
-            AlbumWithItems(album: album, postIDs: (grouped[album.id] ?? []).sorted { $0.position < $1.position }.map(\.postID))
+            let rows = (grouped[album.id] ?? []).sorted { $0.position < $1.position }
+            var adders: [PostID: UserID] = [:]
+            for row in rows { if let adder = row.addedBy { adders[row.postID] = adder } }
+            return AlbumWithItems(album: album, postIDs: rows.map(\.postID), addedBy: adders)
         }
         await cache?.write(result, for: .albums(groupID))
         return result
@@ -148,10 +151,57 @@ public struct MemoriesRepository: Sendable {
         try await client.rpc("rename_album", ["p_album_id": .id(id), "p_name": .string(name)])
     }
 
+    /// `add_to_album` (any member, migration 0039): visible posts of the album's group, after its last item in this order;
+    /// photos already in the album are skipped. Errors: `album_not_found`, `invalid_items`.
+    public func addToAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws -> Album {
+        let album: Album = try await client.rpc("add_to_album", ["p_album_id": .id(id), "p_post_ids": .ids(postIDs)])
+        await cache?.remove(.albums(groupID))
+        return album
+    }
+
+    /// `remove_from_album` (migration 0039): photos you added; the album's creator and group admins remove any. The
+    /// photos stay in the group. Errors: `album_not_found`, `not_allowed` (PT403, arrives as `DataError.database`).
+    public func removeFromAlbum(id: AlbumID, groupID: GroupID, postIDs: [PostID]) async throws {
+        try await client.rpcVoid("remove_from_album", ["p_album_id": .id(id), "p_post_ids": .ids(postIDs)])
+        let removed = Set(postIDs)
+        await cache?.update([AlbumWithItems].self, for: .albums(groupID)) { albums in
+            for index in albums.indices where albums[index].album.id == id {
+                albums[index].postIDs.removeAll { removed.contains($0) }
+            }
+        }
+    }
+
     /// `delete_album` (its creator or a group admin).
     public func deleteAlbum(id: AlbumID, groupID: GroupID) async throws {
         try await client.rpcVoid("delete_album", ["p_album_id": .id(id)])
         await cache?.update([AlbumWithItems].self, for: .albums(groupID)) { $0.removeAll { $0.album.id == id } }
+    }
+
+    // MARK: Favorites (migration 0038)
+
+    /// `set_favorite`: a heart only the caller sees, on any photo they can see (`on` false removes it).
+    public func setFavorite(mediaID: MediaID, on: Bool) async throws {
+        try await client.rpcVoid("set_favorite", ["p_media_id": .id(mediaID), "p_on": .bool(on)])
+    }
+
+    /// `my_favorites`: the caller's favorites they can still see, newest favorite first; page with the last
+    /// `favoritedAt`. Never cached on disk (a deleted photo must not survive on the device).
+    public func favorites(before: Date? = nil, limit: Int = 60) async throws -> Page<FavoritePhoto> {
+        let rows: [FavoritePhoto] = try await client.rpc("my_favorites", [
+            "p_before": .timestamp(before),
+            "p_limit": .integer(limit),
+        ])
+        return Page(items: rows, nextCursor: rows.count == limit ? rows.last?.favoritedAt : nil)
+    }
+
+    /// Which of `mediaIDs` the caller favorited (their own `favorites` rows, §6.4: what the viewer's menu says).
+    public func favoriteMediaIDs(among mediaIDs: [MediaID]) async throws -> Set<MediaID> {
+        guard !mediaIDs.isEmpty else { return [] }
+        let rows = try await client.rows(FavoriteRow.self) {
+            client.supabase.from("favorites").select("media_id")
+                .in("media_id", values: mediaIDs.map(\.rawValue))
+        }
+        return Set(rows.map(\.mediaID))
     }
 
     // MARK: Collages

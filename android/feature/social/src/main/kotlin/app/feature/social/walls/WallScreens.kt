@@ -92,6 +92,8 @@ data class WallNav(
     val member: (userId: String) -> Unit,
     val report: (userId: String) -> Unit,
     val block: (userId: String) -> Unit,
+    /** `favorites`: your private favorites (walls.mine's heart capsule). */
+    val favorites: () -> Unit = {},
 )
 
 /** One week section of a wall. */
@@ -151,7 +153,13 @@ fun WallMineContent(
                 name = person?.displayName.orEmpty(),
                 avatarPath = person?.avatarPath,
                 back = null,
-                action = { IconCapsule(Tokens.Icons.globalSettings, stringRes(R.string.walls_mine_a11y_settings), nav.settings) },
+                action = {
+                    // The heart (→ favorites, private: only you see them; owner decision 34), then the gear (→ settings.root).
+                    Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillGap)) {
+                        IconCapsule(Tokens.Icons.globalFavorite, stringRes(R.string.favorites_title), nav.favorites)
+                        IconCapsule(Tokens.Icons.globalSettings, stringRes(R.string.walls_mine_a11y_settings), nav.settings)
+                    }
+                },
             )
         },
         empty = { week ->

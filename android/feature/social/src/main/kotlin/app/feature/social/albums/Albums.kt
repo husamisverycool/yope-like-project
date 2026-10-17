@@ -90,6 +90,7 @@ import app.ui.components.subtitleWithActor
 import app.ui.foundation.PageRoles
 import app.ui.foundation.endAtLastBaseline
 import app.ui.foundation.tapClickable
+import app.ui.foundation.tapLongPressable
 import app.ui.haptics.rememberHaptics
 import app.ui.system.DsBottomSheet
 import app.ui.system.DsDropdownMenu
@@ -178,7 +179,7 @@ private fun albumSubtitle(name: String?, mine: Boolean): androidx.compose.ui.tex
     else subtitleWithActor(stringRes(R.string.albums_list_row_subtitle, name.orEmpty()), name.orEmpty())
 
 @Composable
-private fun AlbumRow(card: AlbumCard, onClick: () -> Unit) {
+internal fun AlbumRow(card: AlbumCard, onClick: () -> Unit) {
     val subtitle = albumSubtitle(card.savedBy, card.mine)
     ThumbnailRow(
         title = card.album.name,
@@ -190,9 +191,18 @@ private fun AlbumRow(card: AlbumCard, onClick: () -> Unit) {
 }
 
 /** Transient UI state of the album sheet (menu, rename sheet, delete alert). */
-class AlbumUiState(menu: Boolean = false, confirmDelete: Boolean = false) {
+class AlbumUiState(menu: Boolean = false, confirmDelete: Boolean = false, adding: Boolean = false) {
     var menu by mutableStateOf(menu)
     var confirmDelete by mutableStateOf(confirmDelete)
+
+    /** "Add Photos": the add sheet (`albums.view.layout.add`). */
+    var adding by mutableStateOf(adding)
+
+    /** Each opening of the add sheet gets its own view model (a finished one would close the next at once). */
+    var addSession by mutableStateOf(0)
+
+    /** The grid cell (post id) whose long-press menu ("Remove from Album") is open. */
+    var cellMenu by mutableStateOf<String?>(null)
 }
 
 /** `albums.view` as a page sheet (C-29) over `albums.list`. */
@@ -204,6 +214,9 @@ fun AlbumViewSheet(vm: AlbumViewModel, onClose: () -> Unit, onPhoto: (String) ->
     val renamed = stringRes(R.string.albums_view_toast_renamed)
     val deleted = stringRes(R.string.albums_view_toast_deleted)
     val failed = stringRes(R.string.week_edit_error_save)
+    val removedText = stringRes(R.string.albums_view_toast_removed)
+    val notAllowed = stringRes(R.string.albums_view_error_notallowed)
+    val added = stringRes(R.string.week_edit_toast_albumsaved)
     val latest by rememberUpdatedState(state)
     LaunchedEffect(vm) {
         vm.effects.collect { effect ->
@@ -214,12 +227,26 @@ fun AlbumViewSheet(vm: AlbumViewModel, onClose: () -> Unit, onPhoto: (String) ->
                     haptics.perform(Tokens.Haptics.globalError)
                     if (latest.renameError != RenameError.Empty) PlatformToast.show(context, failed)
                 }
+                AlbumEffect.Removed -> PlatformToast.show(context, removedText)
+                AlbumEffect.RemoveNotAllowed -> { haptics.perform(Tokens.Haptics.globalError); PlatformToast.show(context, notAllowed) }
+                AlbumEffect.Added -> { haptics.perform(Tokens.Haptics.globalSuccess); PlatformToast.show(context, added) }
             }
         }
     }
     val ui = remember { AlbumUiState() }
     DsBottomSheet(onDismissRequest = onClose) {
-        AlbumViewContent(state, ui, onPhoto, onRename = vm::startRename, onRetry = vm::load)
+        AlbumViewContent(
+            state, ui, onPhoto, onRename = vm::startRename, onRetry = vm::load,
+            onRemove = { postId -> haptics.perform(Tokens.Haptics.globalWarning); vm.remove(postId) },
+        )
+    }
+    if (ui.adding) {
+        val data = app.feature.social.common.LocalSocialData.current
+        val excluded = state.photos.map { it.post.id }.toSet()
+        val addVm = androidx.lifecycle.viewmodel.compose.viewModel(key = "albumAdd:${state.album?.id}:${ui.addSession}") {
+            AlbumAddViewModel(data, state.album?.groupId.orEmpty(), state.album?.id.orEmpty(), excluded)
+        }
+        AlbumAddSheet(addVm, onDone = { ui.adding = false; vm.photosAdded() }, onClose = { ui.adding = false })
     }
     if (state.renaming) {
         DsBottomSheet(onDismissRequest = vm::cancelRename) { RenameSheetContent(state, vm::setRenameName, vm::rename, vm::cancelRename) }
@@ -250,7 +277,14 @@ fun AlbumViewSheet(vm: AlbumViewModel, onClose: () -> Unit, onPhoto: (String) ->
  * (`albums.view.aspectRatio.gridCell`), `size.global.stripGap` gaps, outer corners `albums.view.radius.grid`.
  */
 @Composable
-fun AlbumViewContent(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String) -> Unit, onRename: () -> Unit, onRetry: () -> Unit) {
+fun AlbumViewContent(
+    state: AlbumViewState,
+    ui: AlbumUiState,
+    onPhoto: (String) -> Unit,
+    onRename: () -> Unit,
+    onRetry: () -> Unit,
+    onRemove: (String) -> Unit = {},
+) {
     val margin = Tokens.Sizes.globalScreenMargin
     val gap = Tokens.Sizes.globalStripGap
     val columns = Tokens.Counts.albumsViewCountGridColumns
@@ -293,18 +327,33 @@ fun AlbumViewContent(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String) 
             else -> itemsIndexed(photos, key = { _, p -> p.post.id }) { i, p ->
                 val date = Formats.viewerDate(p.post.createdAt)
                 val label = withVideoLabel(LocalContext.current, stringRes(R.string.photo_viewer_a11y_photo, p.authorName.orEmpty(), date), p.videoDurationMs)
-                Box(
-                    Modifier
-                        .aspectRatio(Tokens.AspectRatios.albumsViewAspectRatioGridCell)
-                        .clip(gridCellShape(i, photos.size, columns))
-                        .tapClickable { onPhoto(p.post.id) }
-                        .clearAndSetSemantics {
-                            contentDescription = label
-                            role = Role.Button
-                        },
-                ) {
-                    RemotePhoto(p.thumbPath, null, Modifier.fillMaxSize())
-                    p.videoDurationMs?.let { VideoTileMarker(it) }
+                // "Remove from Album" on a long press where allowed (what you added; the creator and admins: every photo).
+                val removable = state.canRemove(p.post.id)
+                val removeLabel = stringRes(R.string.albums_view_menu_remove)
+                Box {
+                    Box(
+                        Modifier
+                            .aspectRatio(Tokens.AspectRatios.albumsViewAspectRatioGridCell)
+                            .clip(gridCellShape(i, photos.size, columns))
+                            .then(
+                                if (removable) Modifier.tapLongPressable({ onPhoto(p.post.id) }, { ui.cellMenu = p.post.id }, listOf(removeLabel to { onRemove(p.post.id) }))
+                                else Modifier.tapClickable { onPhoto(p.post.id) },
+                            )
+                            .clearAndSetSemantics {
+                                contentDescription = label
+                                role = Role.Button
+                            },
+                    ) {
+                        RemotePhoto(p.thumbPath, null, Modifier.fillMaxSize())
+                        p.videoDurationMs?.let { VideoTileMarker(it) }
+                    }
+                    if (removable) {
+                        DsDropdownMenu(
+                            ui.cellMenu == p.post.id,
+                            { ui.cellMenu = null },
+                            listOf(DsMenuItem(removeLabel, { ui.cellMenu = null; onRemove(p.post.id) }, icon = Tokens.Icons.globalRemove, destructive = true)),
+                        )
+                    }
                 }
             }
         }
@@ -354,11 +403,12 @@ private fun AlbumHead(state: AlbumViewState, ui: AlbumUiState, onPhoto: (String)
             )
             Row(Modifier.fillMaxWidth().padding(top = Tokens.Sizes.albumsViewDimensionMetaToActions), horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalPillGap)) {
                 Capsule(stringRes(R.string.albums_view_menu_rename), onRename, Modifier.weight(1f), style = CapsuleStyle.Outline)
-                if (state.canDelete) {
-                    Box {
-                        IconCapsule(Tokens.Icons.globalMore, stringRes(R.string.albums_view_a11y_more), { ui.menu = true })
-                        DsDropdownMenu(ui.menu, { ui.menu = false }, listOf(DsMenuItem(stringRes(R.string.albums_view_menu_delete), { ui.confirmDelete = true }, destructive = true)))
-                    }
+                // "Add Photos" for every member (albums anyone can add to); "Delete Album" for the creator and admins.
+                val add = DsMenuItem(stringRes(R.string.albums_view_menu_add), { ui.menu = false; ui.addSession++; ui.adding = true }, icon = Tokens.Icons.globalAdd)
+                val delete = DsMenuItem(stringRes(R.string.albums_view_menu_delete), { ui.confirmDelete = true }, destructive = true)
+                Box {
+                    IconCapsule(Tokens.Icons.globalMore, stringRes(R.string.albums_view_a11y_more), { ui.menu = true })
+                    DsDropdownMenu(ui.menu, { ui.menu = false }, if (state.canDelete) listOf(add, delete) else listOf(add))
                 }
             }
         }

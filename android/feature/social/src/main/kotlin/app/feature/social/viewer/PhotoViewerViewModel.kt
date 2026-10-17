@@ -71,6 +71,10 @@ data class ViewerState(
     val fromWall: Boolean = false,
     /** Every photo is gone, or the last one was passed: the viewer closes. */
     val closed: Boolean = false,
+    /** Your private favorites among the photos, by media (your own `favorites` rows, then this session's changes). */
+    val favorites: Set<String> = emptySet(),
+    /** The groups of the photos where you are an admin ("Use as Cover", update_group's rule). */
+    val adminGroups: Set<String> = emptySet(),
 ) {
     enum class Phase { Loading, Ready }
 
@@ -80,6 +84,12 @@ data class ViewerState(
     /** A selfie can be sent to the current photo: it is loaded and not yours ("You cannot react to your own BeReal"). */
     val canReactWithSelfie: Boolean get() = me != null && current?.post != null && current?.gone != true && !mine
     val taggedByMe: Boolean get() = me != null && current?.tagged?.contains(me) == true
+
+    /** The photo on screen is one of your favorites: the menu offers Unfavorite. */
+    val favorite: Boolean get() = current?.post?.mediaId?.let { it in favorites } == true
+
+    /** "Use as Cover": you are an admin of the photo's group and the photo is still there. */
+    val canUseAsCover: Boolean get() = current?.gone != true && current?.post?.groupId?.let { it in adminGroups } == true
 }
 
 /** What the viewer keeps of a photo for offline (`photo.viewer` → States → offline). */
@@ -107,6 +117,16 @@ sealed interface ViewerEffect {
     data object DeleteFailed : ViewerEffect
     data object Saved : ViewerEffect
     data object SaveFailed : ViewerEffect
+    /** `set_favorite` failed: the heart went back (`photo.viewer.error.favorite`). */
+    data object FavoriteFailed : ViewerEffect
+    /** "Use as Cover" saved ("Saved!", `week.edit.toast.saved`). */
+    data object CoverSet : ViewerEffect
+    /** `media_not_ready` (`photo.viewer.error.coverNotReady`). */
+    data object CoverNotReady : ViewerEffect
+    /** `photo.viewer.error.cover`. */
+    data object CoverFailed : ViewerEffect
+    /** The album picker put the photo in an album ("Added to Album!", `week.edit.toast.albumSaved`). */
+    data object AddedToAlbum : ViewerEffect
 }
 
 /**
@@ -122,7 +142,7 @@ class PhotoViewerViewModel(
     private val contextId: String,
     private val weekStart: LocalDate?,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(ViewerState(me = data.currentUserId(), fromWall = context == PhotoContext.Wall))
+    private val _state = MutableStateFlow(ViewerState(me = data.currentUserId(), fromWall = context == PhotoContext.Wall || context == PhotoContext.Favorites))
     val state: StateFlow<ViewerState> = _state.asStateFlow()
     private val _effects = MutableSharedFlow<ViewerEffect>(extraBufferCapacity = 16, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val effects: SharedFlow<ViewerEffect> = _effects.asSharedFlow()
@@ -133,6 +153,10 @@ class PhotoViewerViewModel(
     private val tempFiles = ArrayList<File>()
     private val subscriptions = HashMap<String, Job>()
     private val loading = HashSet<String>()
+    /** Whether you are an admin, per group (read once with the group). */
+    private val roles = HashMap<String, Boolean>()
+    /** ≤ one `set_favorite` in flight per photo (by media). */
+    private val favoritePending = HashSet<String>()
 
     init {
         viewModelScope.launch { load() }
@@ -207,6 +231,8 @@ class PhotoViewerViewModel(
         PhotoContext.Recap -> data.recap(contextId)?.items.orEmpty()
         PhotoContext.Album -> data.albumItems(contextId).sortedBy { it.position }.map { it.postId }
         PhotoContext.Question -> data.questionAnswers(contextId)
+        // favorites: your favorites in their order (newest favorite first), one post per photo.
+        PhotoContext.Favorites -> data.myFavorites(null, FAVORITES_PAGE).map { it.postId }.distinct()
         PhotoContext.Reveal -> {
             // camera.overnight C: the photos revealed together, oldest first; a photo shared at once stays alone.
             val post = data.posts(listOf(postId)).firstOrNull()
@@ -250,6 +276,7 @@ class PhotoViewerViewModel(
             subscribe(post.groupId)
             val media = data.media(listOf(post.mediaId)).firstOrNull()
             val group = if (groups.containsKey(post.groupId)) groups[post.groupId] else data.group(post.groupId).also { groups[post.groupId] = it }
+            loadFavoriteAndRole(post)
             val reactions = data.reactions(listOf(id))[id].orEmpty()
             val comments = runCatching { data.replies(post.groupId, id) }.getOrDefault(emptyList())
             val tags = runCatching { data.tags(id) }.getOrDefault(emptyList()).map { it.userId }
@@ -282,6 +309,77 @@ class PhotoViewerViewModel(
         } finally {
             loading.remove(id)
         }
+    }
+
+    /** Whether the photo is one of your favorites, and whether you are an admin of its group (kept on failure). */
+    private suspend fun loadFavoriteAndRole(post: Post) {
+        if (post.mediaId !in favoritePending) {
+            runCatching { data.favoriteMediaIds(listOf(post.mediaId)) }.getOrNull()?.let { found ->
+                if (post.mediaId !in favoritePending) {
+                    _state.update { s -> s.copy(favorites = if (post.mediaId in found) s.favorites + post.mediaId else s.favorites - post.mediaId) }
+                }
+            }
+        }
+        if (!roles.containsKey(post.groupId)) {
+            val me = data.currentUserId()
+            runCatching { data.members(post.groupId) }.getOrNull()?.let { members ->
+                val admin = members.any { it.member.userId == me && it.member.role == app.data.model.MemberRole.Admin }
+                roles[post.groupId] = admin
+                if (admin) _state.update { s -> s.copy(adminGroups = s.adminGroups + post.groupId) }
+            }
+        }
+    }
+
+    /**
+     * Favorite / Unfavorite (`set_favorite`, private): applied at once; back as it was with [ViewerEffect.FavoriteFailed] if
+     * the call fails. Taps wait while one is in flight.
+     */
+    fun toggleFavorite() {
+        val photo = _state.value.current ?: return
+        if (photo.gone) return
+        val mediaId = photo.post?.mediaId ?: return
+        if (!favoritePending.add(mediaId)) return
+        val was = mediaId in _state.value.favorites
+        _state.update { s -> s.copy(favorites = if (was) s.favorites - mediaId else s.favorites + mediaId) }
+        viewModelScope.launch {
+            try {
+                data.setFavorite(mediaId, !was)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                _state.update { s -> s.copy(favorites = if (was) s.favorites + mediaId else s.favorites - mediaId) }
+                _effects.emit(ViewerEffect.FavoriteFailed)
+            } finally {
+                favoritePending.remove(mediaId)
+            }
+        }
+    }
+
+    /** "Use as Cover" (`set_group_cover_from_post`, admins): [ViewerEffect.CoverSet]; `media_not_ready` → [ViewerEffect.CoverNotReady]. */
+    fun useAsCover() {
+        val s = _state.value
+        if (!s.canUseAsCover) return
+        val post = s.current?.post ?: return
+        viewModelScope.launch {
+            try {
+                data.setGroupCover(post.groupId, post.id)
+                _effects.emit(ViewerEffect.CoverSet)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                val error = e.dataError()
+                if (error is DataError.Api && error.code == ApiError.NotGroupAdmin) {
+                    roles[post.groupId] = false
+                    _state.update { it.copy(adminGroups = it.adminGroups - post.groupId) }
+                }
+                _effects.emit(if (error is DataError.Api && error.code == ApiError.MediaNotReady) ViewerEffect.CoverNotReady else ViewerEffect.CoverFailed)
+            }
+        }
+    }
+
+    /** The album picker added the photo or saved a new album with it. */
+    fun addedToAlbum() {
+        _effects.tryEmit(ViewerEffect.AddedToAlbum)
     }
 
     private fun subscribe(group: String) {
@@ -562,5 +660,6 @@ class PhotoViewerViewModel(
         const val MAX_PAGES = 20
         const val FEED_PAGE = 30
         const val WALL_PAGE = 50
+        const val FAVORITES_PAGE = 200
     }
 }

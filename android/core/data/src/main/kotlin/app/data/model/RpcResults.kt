@@ -69,6 +69,32 @@ data class GroupCollage(
     val tilePath: String? get() = widgetPath ?: imagePath
 }
 
+/**
+ * One row of `my_favorites` (migration 0038, docs/API.md §6.4): one of your private favorites you can still see, by photo.
+ * [postId] / [groupId] are the photo's first post in your groups (the group it opens in). [thumbPath] / [displayPath] fall
+ * back to the original until renditions exist; [widgetPath] is null until then.
+ */
+@Serializable
+data class FavoritePhoto(
+    @SerialName("media_id") val mediaId: String,
+    @SerialName("post_id") val postId: String,
+    @SerialName("group_id") val groupId: String,
+    @SerialName("group_name") val groupName: String,
+    @SerialName("author_id") val authorId: String,
+    val kind: MediaKind,
+    @SerialName("thumb_path") val thumbPath: String,
+    @SerialName("display_path") val displayPath: String,
+    @SerialName("widget_path") val widgetPath: String? = null,
+    /** When the photo was posted (`posts.created_at` of [postId]). */
+    @SerialName("taken_at") val takenAt: Instant,
+    /** The paging cursor (`p_before`). */
+    @SerialName("favorited_at") val favoritedAt: Instant,
+)
+
+/** One of your own `favorites` rows (RLS: own rows only; the viewer reads which of its photos are favorites). */
+@Serializable
+data class FavoriteRow(@SerialName("media_id") val mediaId: String)
+
 /** One row of `on_this_day`. */
 @Serializable
 data class OnThisDayItem(

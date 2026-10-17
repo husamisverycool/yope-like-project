@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import app.data.error.ApiError
 import app.data.error.DataError
 import app.data.model.Album
+import app.data.model.AlbumItem
 import app.data.model.Media
 import app.feature.social.common.videoDurationMs
 import app.data.model.MemberRole
@@ -95,22 +96,51 @@ data class AlbumViewState(
     /** The album's creator (`albums.list.row.subtitle`) and whether that is me (`.subtitleMine`). */
     val creatorName: String? = null,
     val mine: Boolean = false,
+    val me: String? = null,
 ) {
     enum class Phase { Loading, Ready, NotFound, Error, OfflineEmpty }
+
+    /** "Remove from Album" on [postId]: you added it, or you are the album's creator or a group admin ([canDelete]). */
+    fun canRemove(postId: String): Boolean {
+        if (me == null || album == null) return false
+        if (canDelete) return true
+        return photos.firstOrNull { it.post.id == postId }?.addedBy == me
+    }
 }
 
 enum class RenameError { Empty, Save }
 
-data class AlbumPhoto(val post: Post, val thumbPath: String?, val authorName: String?, val videoDurationMs: Long? = null)
+data class AlbumPhoto(
+    val post: Post,
+    val thumbPath: String?,
+    val authorName: String?,
+    val videoDurationMs: Long? = null,
+    /** Who added it (`album_items.added_by`, migration 0039); null once that account is gone. */
+    val addedBy: String? = null,
+)
 
 sealed interface AlbumEffect {
     data object Renamed : AlbumEffect
     data object Deleted : AlbumEffect
     data object Failed : AlbumEffect
+    /** "Remove from Album" done (`albums.view.toast.removed`). */
+    data object Removed : AlbumEffect
+    /** `remove_from_album` refused: someone else added it (`albums.view.error.notAllowed`). */
+    data object RemoveNotAllowed : AlbumEffect
+    /** The add sheet put photos in the album ("Added to Album!"). */
+    data object Added : AlbumEffect
 }
 
 @Serializable
-internal data class AlbumPayload(val album: Album? = null, val posts: List<Post> = emptyList(), val media: List<Media> = emptyList(), val profiles: List<Profile> = emptyList(), val canDelete: Boolean = false)
+internal data class AlbumPayload(
+    val album: Album? = null,
+    val posts: List<Post> = emptyList(),
+    val media: List<Media> = emptyList(),
+    val profiles: List<Profile> = emptyList(),
+    val canDelete: Boolean = false,
+    /** The album's rows (who added each photo); empty in copies cached before migration 0039. */
+    val items: List<AlbumItem> = emptyList(),
+)
 
 /**
  * `albums.view`: the album's items in `position` order, rename (optimistic: the title changes at
@@ -124,6 +154,8 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
     val effects: SharedFlow<AlbumEffect> = _effects.asSharedFlow()
     private var payload: AlbumPayload? = null
     private val removed = HashSet<String>()
+    /** Photos taken out of the album here (`remove_from_album`); cleared when photos are added again. */
+    private val takenOut = HashSet<String>()
 
     init {
         load()
@@ -163,7 +195,7 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
         val profiles = data.profiles((posts.map { it.authorId } + listOfNotNull(album.createdBy)).distinct())
         val me = data.currentUserId()
         val admin = runCatching { data.members(groupId) }.getOrDefault(emptyList()).any { it.member.userId == me && it.member.role == MemberRole.Admin }
-        return AlbumPayload(album, posts, media, profiles, canDelete = admin || (me != null && album.createdBy == me))
+        return AlbumPayload(album, posts, media, profiles, canDelete = admin || (me != null && album.createdBy == me), items = items)
     }
 
     private fun publish(p: AlbumPayload, offline: Boolean) {
@@ -175,7 +207,14 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
         }
         val media = p.media.associateBy { it.id }
         val names = p.profiles.associate { it.id to it.firstName }
-        val photos = p.posts.filter { it.id !in removed }.map { AlbumPhoto(it, media[it.mediaId]?.imagePath(Media.Rendition.Thumb), names[it.authorId], media[it.mediaId]?.videoDurationMs) }
+        // Copies cached before migration 0039 have no rows: the creator added every photo.
+        val adders = if (p.items.isEmpty()) null else p.items.associate { it.postId to it.addedBy }
+        val photos = p.posts.filter { it.id !in removed && it.id !in takenOut }.map {
+            AlbumPhoto(
+                it, media[it.mediaId]?.imagePath(Media.Rendition.Thumb), names[it.authorId], media[it.mediaId]?.videoDurationMs,
+                addedBy = if (adders == null) album.createdBy else adders[it.id],
+            )
+        }
         val me = data.currentUserId()
         _state.update {
             it.copy(
@@ -186,6 +225,7 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
                 offline = offline,
                 creatorName = album.createdBy?.let { id -> p.profiles.firstOrNull { pr -> pr.id == id }?.firstName },
                 mine = me != null && album.createdBy == me,
+                me = me,
             )
         }
     }
@@ -195,6 +235,44 @@ class AlbumViewModel(private val data: SocialData, private val groupId: String, 
             removed += event.postId
             payload?.let { publish(it, _state.value.offline) }
         }
+    }
+
+    /**
+     * "Remove from Album" (`remove_from_album`): the cell leaves at once → [AlbumEffect.Removed]; `not_allowed` → back +
+     * [AlbumEffect.RemoveNotAllowed]; other failures → back + [AlbumEffect.Failed]. The photo stays in the group.
+     */
+    fun remove(postId: String) {
+        val s = _state.value
+        val album = s.album ?: return
+        if (!s.canRemove(postId)) return
+        val index = s.photos.indexOfFirst { it.post.id == postId }
+        if (index < 0) return
+        val photo = s.photos[index]
+        takenOut += postId
+        _state.update { it.copy(photos = it.photos.filterNot { p -> p.post.id == postId }) }
+        viewModelScope.launch {
+            try {
+                data.removeFromAlbum(album.id, listOf(postId))
+                _effects.emit(AlbumEffect.Removed)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                takenOut -= postId
+                _state.update { st ->
+                    if (st.photos.any { it.post.id == postId }) st
+                    else st.copy(photos = st.photos.toMutableList().apply { add(index.coerceAtMost(size), photo) })
+                }
+                val error = e.dataError()
+                _effects.emit(if (error is DataError.Api && error.code == ApiError.NotAllowed) AlbumEffect.RemoveNotAllowed else AlbumEffect.Failed)
+            }
+        }
+    }
+
+    /** The add sheet saved photos: "Added to Album!" and the grid reloads. */
+    fun photosAdded() {
+        takenOut.clear()
+        _effects.tryEmit(AlbumEffect.Added)
+        load()
     }
 
     fun startRename() = _state.update { it.copy(renaming = true, renameName = it.album?.name.orEmpty(), renameError = null) }

@@ -5,6 +5,7 @@
 // The `AppRoute` cases `.chat`, `.post` and `.recap` (Screens/ChatScreen, PhotoViewerScreen; `.recap` is built by the shell's RouteDestination) are
 // social surfaces too (`.recap` = one recap's preview). Entry points other groups use:
 //   walls.mine    .social(.wallMine)                         (profile tab)
+//   favorites     .social(.favorites)                        (walls.mine's heart capsule)
 //   walls.browse  .social(.wallsBrowse(groupID: nil))        (Friends tab; with a group id: that group's members)
 //   walls.member  .social(.wallMember(userID:))              (groups.settings member row)
 //   week.history  .social(.weekHistory(groupID:))            (groups.screen: the group's weeks)
@@ -31,6 +32,8 @@ enum SocialRoute: Hashable {
     case albums(groupID: String)
     /// `albums.view`
     case album(groupID: String, albumID: String)
+    /// `favorites`: your private favorites (walls.mine's heart capsule).
+    case favorites
     /// `collage.view` by the collage's id (a widget showing the group's collage of the day): resolves its invitation,
     /// then shows capture's collage screen.
     case collage(groupID: String, collageID: String)
@@ -67,6 +70,8 @@ struct SocialDestination: View {
             AlbumsListScreen(groupID: groupID)
         case let .album(groupID, albumID):
             AlbumScreen(groupID: groupID, albumID: albumID)
+        case .favorites:
+            FavoritesScreen()
         case let .collage(groupID, collageID):
             CollageLinkScreen(groupID: groupID, collageID: CollageID(collageID))
         }

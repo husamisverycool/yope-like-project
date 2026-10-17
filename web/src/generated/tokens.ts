@@ -311,8 +311,10 @@ export const tokens = {
   "icon.global.chevron": {"ios":"chevron.right","android":"AutoMirrored.Rounded.KeyboardArrowRight"}, // Retro · global · PLATFORM
   "icon.global.chevronDown": {"ios":"chevron.down","android":"Rounded.ExpandMore"}, // Retro · global · PLATFORM
   "icon.global.close": {"ios":"xmark","android":"Rounded.Close"}, // Retro · global · PLATFORM
+  "icon.global.cover": {"ios":"photo","android":"Outlined.Image"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.download": {"ios":"arrow.down.to.line","android":"Rounded.Download"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.edit": {"ios":"pencil","android":"Outlined.Edit"}, // Retro · global · PLATFORM
+  "icon.global.favorite": {"ios":"heart","android":"Rounded.FavoriteBorder"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.flashOff": {"ios":"bolt.slash","android":"Outlined.FlashOff"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.flashOn": {"ios":"bolt","android":"Outlined.FlashOn"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.flip": {"ios":"arrow.triangle.2.circlepath","android":"Rounded.Sync"}, // Apple HIG / Material 3 · global · PLATFORM
@@ -332,6 +334,7 @@ export const tokens = {
   "icon.global.play": {"ios":"play.fill","android":"Rounded.PlayArrow"}, // Retro · global · PLATFORM
   "icon.global.random": {"ios":"dice","android":"Outlined.Casino"}, // Retro · global · PLATFORM
   "icon.global.recap": {"ios":"film.stack","android":"Outlined.VideoLibrary"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.remove": {"ios":"minus.circle","android":"Outlined.RemoveCircleOutline"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.report": {"ios":"flag","android":"Outlined.Flag"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.rewind": {"ios":"clock.arrow.circlepath","android":"Outlined.History"}, // Retro · global · PLATFORM
   "icon.global.search": {"ios":"magnifyingglass","android":"Rounded.Search"}, // Retro · global · PLATFORM
@@ -340,6 +343,7 @@ export const tokens = {
   "icon.global.share": {"ios":"square.and.arrow.up","android":"Rounded.IosShare"}, // Retro · global · PLATFORM
   "icon.global.trash": {"ios":"trash","android":"Outlined.Delete"}, // Retro · global · PLATFORM
   "icon.global.uncheck": {"ios":"circle","android":"Rounded.RadioButtonUnchecked"}, // Apple HIG / Material 3 · global · PLATFORM
+  "icon.global.unfavorite": {"ios":"heart.slash","android":"Rounded.Favorite"}, // Apple HIG / Material 3 · global · PLATFORM
   "icon.global.variantRule": {"tabBar":"outline variant; selection shown by colour only (color.global.textPrimary vs color.global.tabInactive)","header":"outline variant","states":"fill variant only for a state (selected check, play / pause, lock)"}, // Retro · global · PLATFORM
   "icon.global.video": {"ios":"video.fill","android":"Rounded.Videocam"}, // Retro · global · PLATFORM
   "icon.global.wall": {"ios":"person.crop.circle","android":"Outlined.AccountCircle"}, // Retro · global · PLATFORM

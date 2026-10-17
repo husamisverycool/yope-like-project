@@ -30,6 +30,7 @@ public enum APIErrorCode: String, CaseIterable, Sendable {
     case groupFull = "group_full"
     case alreadyPosted = "already_posted"
     case recapNotReady = "recap_not_ready"
+    case mediaNotReady = "media_not_ready"
     case tributeClosed = "tribute_closed"
     case ageGateNotConfigured = "age_gate_not_configured"
     case invalidName = "invalid_name"

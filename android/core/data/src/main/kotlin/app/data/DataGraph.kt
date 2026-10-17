@@ -32,6 +32,7 @@ import app.data.repo.ChatRepository
 import app.data.repo.DevelopingRepository
 import app.data.repo.DeviceRepository
 import app.data.repo.EntitlementRepository
+import app.data.repo.FavoriteRepository
 import app.data.repo.GroupRepository
 import app.data.repo.InvitationRepository
 import app.data.repo.PostOptions
@@ -114,6 +115,7 @@ class DataGraph(context: Context, val config: SupabaseConfig, val options: DataO
     val browse = BrowseRepository(api, cache, clock)
     val recaps = RecapRepository(api, cache, clock)
     val albums = AlbumRepository(api, cache, clock)
+    val favorites = FavoriteRepository(api)
     val yearStories = YearStoryRepository(api)
     val invitations = InvitationRepository(api, clock)
     val birthdays = BirthdayRepository(api, profiles, clock)

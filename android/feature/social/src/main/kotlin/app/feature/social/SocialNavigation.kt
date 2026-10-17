@@ -30,6 +30,9 @@ import app.feature.social.viewer.PhotoViewerScreen
 import app.feature.social.viewer.PhotoViewerViewModel
 import app.feature.social.viewer.ViewerNav
 import app.feature.social.walls.BrowseViewModel
+import app.feature.social.walls.FavoritesNav
+import app.feature.social.walls.FavoritesScreen
+import app.feature.social.walls.FavoritesViewModel
 import app.feature.social.walls.WallMemberScreen
 import app.feature.social.walls.WallMineScreen
 import app.feature.social.walls.WallNav
@@ -46,6 +49,7 @@ import app.feature.social.week.WeekHistoryScreen
 import app.feature.social.week.WeekRecapListSheet
 import app.feature.social.week.WeekRecapScreen
 import app.model.AppRoute
+import app.model.FavoritesRoute
 import app.model.PhotoContext
 import app.model.PhotoViewerIn
 import app.model.SafetyReportMessageRoute
@@ -107,6 +111,12 @@ fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
             val me = data.currentUserId().orEmpty()
             val vm = viewModel(key = "wall:$me") { WallViewModel(data, me) }
             WallMineScreen(vm, nav.walls())
+        }
+    }
+    composable<FavoritesRoute> {
+        SocialHost { data ->
+            val vm = viewModel(key = "favorites") { FavoritesViewModel(data) }
+            FavoritesScreen(vm, nav.favorites(data))
         }
     }
     composable<AppRoute.WallMember> { entry ->
@@ -249,6 +259,12 @@ private class SocialNavigator(private val nav: NavHostController) {
         member = { userId -> nav.navigate(AppRoute.WallMember(userId)) },
         report = { userId -> nav.navigate(AppRoute.SafetyReport(userId = userId)) },
         block = { userId -> nav.navigate(AppRoute.SafetyBlock(userId)) },
+        favorites = { nav.navigate(FavoritesRoute) },
+    )
+
+    fun favorites(data: SocialData) = FavoritesNav(
+        back = ::back,
+        photo = { groupId, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Favorites, data.currentUserId().orEmpty())) },
     )
 
     fun recap(groupId: String) = RecapNav(

@@ -301,7 +301,7 @@ private fun GridCell(photo: WeekPhoto, checked: Boolean, state: EditState, onTog
  * carries the state).
  */
 @Composable
-private fun SelectionCheck(modifier: Modifier) {
+internal fun SelectionCheck(modifier: Modifier) {
     val box = Tokens.Sizes.globalCheckCircle
     // Material icons draw their glyph in a 24-unit box with 2 units of padding: the check circle's ink is 20 / 24 of the box.
     val ink = box * GLYPH_INK

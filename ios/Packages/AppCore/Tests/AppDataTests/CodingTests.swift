@@ -121,6 +121,43 @@ final class CodingTests: XCTestCase {
         XCTAssertEqual(try DataCoding.makeDecoder().decode(Collage.self, from: Data(older.utf8)).pageCount, 1)
     }
 
+    /// `my_favorites` rows (migration 0038) and `album_items.added_by` (0039); older album copies have no adders.
+    func testFavoritesAndAlbumAddersDecode() throws {
+        let json = """
+        [{"media_id":"7c9e6679-7425-40de-944b-e07fc1f90ae7","post_id":"0f8fad5b-d9cb-469f-a165-70867728950e",
+          "group_id":"9f1c1d2e-0000-4000-8000-000000000001","group_name":"Lima","author_id":"9f1c1d2e-0000-4000-8000-000000000002",
+          "kind":"live_photo","thumb_path":"u/a/m/thumb.jpg","display_path":"u/a/m/display.jpg","widget_path":null,
+          "taken_at":"2026-10-15T13:35:09+00:00","favorited_at":"2026-10-16T08:00:00.123456+00:00"}]
+        """
+        let rows = try DataCoding.makeDecoder().decode([FavoritePhoto].self, from: Data(json.utf8))
+        XCTAssertEqual(rows.count, 1)
+        XCTAssertEqual(rows[0].id, MediaID("7c9e6679-7425-40de-944b-e07fc1f90ae7"))
+        XCTAssertEqual(rows[0].kind, .livePhoto)
+        XCTAssertEqual(rows[0].groupName, "Lima")
+        XCTAssertNil(rows[0].widgetPath)
+        XCTAssertEqual(Timestamp.format(rows[0].favoritedAt), "2026-10-16T08:00:00.123456Z")
+
+        let item = """
+        {"album_id":"a1","post_id":"p1","position":0,"added_by":"9f1c1d2e-0000-4000-8000-000000000002","added_at":"2026-10-16T08:00:00+00:00"}
+        """
+        XCTAssertEqual(try DataCoding.makeDecoder().decode(AlbumItem.self, from: Data(item.utf8)).addedBy,
+                       UserID("9f1c1d2e-0000-4000-8000-000000000002"))
+        let gone = item.replacingOccurrences(of: #""added_by":"9f1c1d2e-0000-4000-8000-000000000002""#, with: #""added_by":null"#)
+        XCTAssertNil(try DataCoding.makeDecoder().decode(AlbumItem.self, from: Data(gone.utf8)).addedBy)
+
+        let creator = UserID("9f1c1d2e-0000-4000-8000-000000000003")
+        let saved = Date(timeIntervalSince1970: 1_792_000_000)
+        let album = Album(id: AlbumID("a1"), groupID: GroupID("g1"), name: "A", createdBy: creator, createdAt: saved, updatedAt: saved)
+        XCTAssertEqual(AlbumWithItems(album: album, postIDs: [PostID("p1")]).adder(of: PostID("p1")), creator,
+                       "a copy cached before migration 0039: the creator added every item")
+        let adder = UserID("9f1c1d2e-0000-4000-8000-000000000004")
+        let withAdders = AlbumWithItems(album: album, postIDs: [PostID("p1"), PostID("p2")], addedBy: [PostID("p1"): adder])
+        XCTAssertEqual(withAdders.adder(of: PostID("p1")), adder)
+        XCTAssertNil(withAdders.adder(of: PostID("p2")), "the adder's account is gone")
+        let cached = try DataCoding.makeEncoder().encode([withAdders])
+        XCTAssertEqual(try DataCoding.makeDecoder().decode([AlbumWithItems].self, from: cached), [withAdders])
+    }
+
     func testEnumsDecodeUnknownValuesLeniently() throws {
         let kinds = try JSONDecoder().decode([MessageKind].self, from: Data(#"["text","sticker"]"#.utf8))
         XCTAssertEqual(kinds, [.text, .unknown])
@@ -152,7 +189,7 @@ final class CodingTests: XCTestCase {
         not_authenticated not_group_member not_group_admin not_album_owner post_not_eligible under_minimum_age
         premium_required video_too_long post_not_found media_not_found message_not_found member_not_found user_not_found
         invite_not_found recap_not_found album_not_found request_not_found target_not_found invite_revoked
-        invite_expired group_full already_posted recap_not_ready tribute_closed age_gate_not_configured
+        invite_expired group_full already_posted recap_not_ready media_not_ready tribute_closed age_gate_not_configured
         invalid_name invalid_kind invalid_time_zone invalid_waking_window invalid_path invalid_caption invalid_voice
         invalid_body invalid_emoji invalid_items invalid_text invalid_line invalid_reason invalid_platform
         invalid_token invalid_quiet_hours invalid_birthday invalid_birthdate reply_group_mismatch cannot_target_self

@@ -5,6 +5,8 @@ import app.data.model.Album
 import app.data.model.AlbumItem
 import app.data.model.Collage
 import app.data.model.DailyInvitation
+import app.data.model.FavoritePhoto
+import app.data.model.FavoriteRow
 import app.data.model.GroupCollage
 import app.data.model.GroupTribute
 import app.data.model.HistoryWeek
@@ -150,6 +152,57 @@ class AlbumRepository(private val api: Api, private val cache: OfflineCache, pri
 
     /** The creator or a group admin. */
     suspend fun deleteAlbum(albumId: String) = api.rpcUnit(Rpc.DeleteAlbum) { put("p_album_id", albumId) }
+
+    /**
+     * `add_to_album` (any member, migration 0039): visible posts of the album's group, after its last item in this order;
+     * photos already there are skipped. Errors: `album_not_found`, `invalid_items`.
+     */
+    suspend fun addToAlbum(albumId: String, postIds: List<String>): Album = api.rpc(Rpc.AddToAlbum, Album.serializer()) {
+        put("p_album_id", albumId)
+        put("p_post_ids", postIds)
+    }
+
+    /**
+     * `remove_from_album` (migration 0039): photos you added; the album's creator and group admins remove any. The photos
+     * stay in the group. Errors: `album_not_found`, `not_allowed` (403).
+     */
+    suspend fun removeFromAlbum(albumId: String, postIds: List<String>) = api.rpcUnit(Rpc.RemoveFromAlbum) {
+        put("p_album_id", albumId)
+        put("p_post_ids", postIds)
+    }
+}
+
+/**
+ * Private favorites (migration 0038, docs/API.md §6.4): a heart only you see, on any photo you can see. Nobody else reads
+ * them; never a count. Not cached on disk (a deleted photo must not survive on the device).
+ */
+class FavoriteRepository(private val api: Api) {
+
+    /** `set_favorite`: [on] adds (idempotent), false removes. Errors: `media_not_found`. */
+    suspend fun setFavorite(mediaId: String, on: Boolean) = api.rpcUnit(Rpc.SetFavorite) {
+        put("p_media_id", mediaId)
+        put("p_on", on)
+    }
+
+    /** `my_favorites`: newest favorite first; page with [before] = the last `favorited_at`; [limit] 1–200. */
+    suspend fun myFavorites(before: Instant? = null, limit: Int = PAGE): List<FavoritePhoto> =
+        api.rpcList(Rpc.MyFavorites, FavoritePhoto.serializer()) {
+            opt("p_before", before)
+            put("p_limit", limit)
+        }
+
+    /** Which of [mediaIds] you favorited (your own `favorites` rows: what the viewer's menu says). */
+    suspend fun favoriteMediaIds(mediaIds: Collection<String>): Set<String> {
+        if (mediaIds.isEmpty()) return emptySet()
+        return api.select(Tables.FAVORITES, FavoriteRow.serializer()) {
+            filter { isIn("media_id", mediaIds.distinct()) }
+        }.mapTo(HashSet()) { it.mediaId }
+    }
+
+    companion object {
+        /** `favorites`: `my_favorites(p_limit: 60)`. */
+        const val PAGE = 60
+    }
 }
 
 /** The December year story (docs/API.md §5.19). */
