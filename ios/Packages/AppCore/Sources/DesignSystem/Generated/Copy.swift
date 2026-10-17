@@ -1405,6 +1405,8 @@ public enum Copy {
     public static var onthisdayMenuSave: String { CopyLookup.string("onthisday.menu.save", default: "Save to Camera Roll") }
     /// "On this day…" — Retro · onthisday · adapted · SOURCED
     public static var onthisdayModeDay: String { CopyLookup.string("onthisday.mode.day", default: "On this day…") }
+    /// "Pick a date…" — Retro · onthisday · verbatim · SOURCED
+    public static var onthisdayModePickDate: String { CopyLookup.string("onthisday.mode.pickDate", default: "Pick a date…") }
     /// "Shuffle" — Retro · onthisday · verbatim · SOURCED
     public static var onthisdayModeShuffle: String { CopyLookup.string("onthisday.mode.shuffle", default: "Shuffle") }
     /// "Try it out" — Retro · onthisday · verbatim · SOURCED

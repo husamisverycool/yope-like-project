@@ -169,6 +169,8 @@ fun OnThisDayDestination(
     val hidden = stringResource(R.string.onthisday_toast_hidden)
     val hideFailed = stringResource(R.string.onthisday_error_detail)
     val hideOffline = stringResource(R.string.onthisday_offline_detail)
+    val nothingOnDate = stringResource(R.string.onthisday_empty_title)
+    val calendar by vm.calendar.collectAsStateWithLifecycle()
     LaunchedEffect(vm) {
         vm.requests.collect { event ->
             when (event) {
@@ -182,6 +184,9 @@ fun OnThisDayDestination(
                         OnThisDayEvent.Toast.Kind.Hidden -> hidden
                         OnThisDayEvent.Toast.Kind.HideFailed -> hideFailed
                         OnThisDayEvent.Toast.Kind.HideOffline -> hideOffline
+                        OnThisDayEvent.Toast.Kind.NothingOnDate -> nothingOnDate
+                        OnThisDayEvent.Toast.Kind.LoadFailed -> hideFailed
+                        OnThisDayEvent.Toast.Kind.LoadOffline -> hideOffline
                     },
                 )
                 OnThisDayEvent.SaveDenied -> saveDenied = true
@@ -202,6 +207,9 @@ fun OnThisDayDestination(
             onAdvance = vm::advance,
             onShuffle = vm::shuffle,
             onShowDay = vm::showDay,
+            onOpenCalendar = vm::openCalendar,
+            onPickDate = vm::pickDate,
+            onCloseCalendar = vm::closeCalendar,
             onShare = vm::share,
             onReply = { vm.replyTarget()?.let(onReply) },
             onSave = {
@@ -231,6 +239,7 @@ fun OnThisDayDestination(
         isMine = vm::isMine,
         showIntro = !introDone,
         saveDenied = saveDenied,
+        calendar = calendar,
     )
 }
 

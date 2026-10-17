@@ -87,7 +87,17 @@
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt rewind_mode_selection_sheet_shuffle 'Shuffle'",
       "pattern": "retro.voice.rewind",
       "level": "SOURCED",
-      "notes": "Mode menu item: random memories from the group’s history, as the dice. Retro’s third item ‘Pick a date…’ is not built (onthisday.md Do-not-copy / Gaps)."
+      "notes": "Mode menu item: random memories from the group’s history, as the dice."
+    },
+    "onthisday.mode.pickDate": {
+      "text": "Pick a date…",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "onthisday",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt rewind_mode_selection_sheet_* 'Pick a date…' (the mode sheet's third item, design/MERGE_DECISIONS.md RM-18)",
+      "pattern": "retro.voice.rewind",
+      "level": "SOURCED",
+      "notes": "Mode menu item, third: opens week.history's calendar (week.history.layout.calendar: only the days with photos open); the picked month and day across the years. Retro's own date picker was never captured, so ours is the calendar the app already has."
     },
     "onthisday.share.subtitle": {
       "text": "Memory",

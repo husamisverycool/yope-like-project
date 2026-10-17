@@ -49,10 +49,12 @@ final class OnThisDayModel {
         case offline
     }
 
-    /// The day's memories, or random ones from the group's history after the dice (RM-5).
+    /// The day's memories, random ones from the group's history after the dice (RM-5), or a day picked in the calendar
+    /// ("Pick a date…": that month and day across the years).
     enum Mode: Equatable {
         case day
         case shuffle
+        case date(LocalDate)
     }
 
     /// How the memory in view last changed: by the dial (`duration.global.crossfade`) or by playing
@@ -67,6 +69,12 @@ final class OnThisDayModel {
     private(set) var memories: [Memory] = []
     /// Shuffle: the random picks shown so far, in order (previous = back through them).
     private(set) var picks: [Memory] = []
+    /// "Pick a date…": the picked month and day's memories across the years, newest first.
+    private(set) var dateMemories: [Memory] = []
+    /// "Pick a date…": the calendar's months (`group_history_months`, the days you hid left out), read when it opens.
+    private(set) var calendarMonths: [HistoryMonth] = []
+    /// The calendar sheet is open.
+    var showsCalendar = false
     private(set) var mode: Mode = .day
     private(set) var index = 0
     private(set) var lastChange: Change = .dial
@@ -115,7 +123,13 @@ final class OnThisDayModel {
     // MARK: What the page shows
 
     /// The memories the dial steps through.
-    var list: [Memory] { mode == .day ? memories : picks }
+    var list: [Memory] {
+        switch mode {
+        case .day: return memories
+        case .shuffle: return picks
+        case .date: return dateMemories
+        }
+    }
 
     var current: Memory? { list.indices.contains(index) ? list[index] : nil }
 
@@ -130,7 +144,8 @@ final class OnThisDayModel {
         current.map { MemoryFormat.memoryDate($0.createdAt, timeZone: timeZone) } ?? ""
     }
 
-    /// `onthisday.subtitle.day` / `.subtitle.shuffle` with the poster's first name.
+    /// `onthisday.subtitle.day` / `.subtitle.shuffle` with the poster's first name (a picked date: `.subtitle.shuffle`,
+    /// Retro's "Memories" outside 'On this week' mode).
     var subtitle: String? {
         guard let current else { return nil }
         return mode == .day ? Copy.onthisdaySubtitleDay(name: current.authorName) : Copy.onthisdaySubtitleShuffle(name: current.authorName)
@@ -151,7 +166,7 @@ final class OnThisDayModel {
 
     var canGoNext: Bool {
         switch mode {
-        case .day: return index + 1 < memories.count
+        case .day, .date: return index + 1 < list.count
         case .shuffle: return !isPicking && (index + 1 < picks.count || hasUnshownHistory)
         }
     }
@@ -274,8 +289,8 @@ final class OnThisDayModel {
     func next(change: Change = .dial) -> Bool {
         guard phase == .loaded else { return false }
         switch mode {
-        case .day:
-            guard index + 1 < memories.count else { return false }
+        case .day, .date:
+            guard index + 1 < list.count else { return false }
             move(to: index + 1, change: change)
             return true
         case .shuffle:
@@ -315,7 +330,7 @@ final class OnThisDayModel {
             return
         }
         guard phase == .loaded, !list.isEmpty else { return }
-        if mode == .day, index + 1 >= memories.count, memories.count > 1 {
+        if mode != .shuffle, index + 1 >= list.count, list.count > 1 {
             move(to: 0, change: .play)
         }
         isPlaying = true
@@ -340,7 +355,7 @@ final class OnThisDayModel {
                     self.stopPlaying()
                     return
                 }
-                if self.mode == .day, self.index + 1 >= self.memories.count {
+                if self.mode != .shuffle, self.index + 1 >= self.list.count {
                     // The last memory stays in view for its time, then play stops (play glyph again).
                     try? await sleep(hold)
                     self.stopPlaying()
@@ -375,16 +390,79 @@ final class OnThisDayModel {
         await pickRandom(change: .dial, startsShuffle: true)
     }
 
-    /// Mode menu "On this day…" (Retro's Rewind mode menu): from shuffle back to the day's memories, at the newest one.
-    /// In day mode nothing changes. No haptic of its own (the menu is native).
+    /// Mode menu "On this day…" (Retro's Rewind mode menu): from shuffle or a picked date back to the day's memories, at
+    /// the newest one. In day mode nothing changes. No haptic of its own (the menu is native).
     func showDay() {
-        guard phase == .loaded, mode == .shuffle, !memories.isEmpty, !isPicking else { return }
+        guard phase == .loaded, mode != .day, !memories.isEmpty, !isPicking else { return }
         stopPlaying()
         mode = .day
         picks = []
+        dateMemories = []
         lastChange = .dial
         index = 0
         preloadNeighbours()
+    }
+
+    // MARK: Pick a date (the mode menu's third item)
+
+    /// Mode menu "Pick a date…" (Retro's Rewind mode menu): reads the calendar — week.history's sheet,
+    /// `group_history_months` — and opens it with only the days that have photos enabled (your hidden days left out).
+    /// Playing stops. A failure: `haptic.global.error` and the error / offline line.
+    func openCalendar() async {
+        guard phase == .loaded, !isPicking, let data = dependencies.data else { return }
+        stopPlaying()
+        do {
+            let months = try await data.historyMonths(groupID: groupID)
+            try await loadHidden(data: data)
+            let hidden = hiddenDays
+            calendarMonths = months.compactMap { month in
+                let days = month.days.filter { !hidden.contains($0) }
+                return days.isEmpty ? nil : HistoryMonth(month: month.month, days: days, newestWeek: month.newestWeek)
+            }
+            showsCalendar = true
+        } catch {
+            dependencies.haptics(Tokens.Haptics.globalError)
+            dependencies.toasts.show(MemoryFailure(error) == .offline ? Copy.onthisdayOfflineDetail : Copy.onthisdayErrorDetail)
+        }
+    }
+
+    /// A day picked in the calendar: that month and day across the years, newest first, at the newest one (subtitle
+    /// "Memories · {name}"). `on_this_day` returns the years before the date it is given, so it is asked for the same
+    /// month and day in the first year after this one that has it (`queryDate`). Nothing there (every photo of it hidden,
+    /// or a day the calendar shows for a collage only): the page stays and the toast `onthisday.empty.title`.
+    func pickDate(_ day: LocalDate) async {
+        showsCalendar = false
+        guard phase == .loaded, !isPicking, let data = dependencies.data else { return }
+        stopPlaying()
+        isPicking = true
+        defer { isPicking = false }
+        do {
+            let today = LocalDate(dependencies.now(), in: timeZone)
+            let rows = try await data.onThisDay(groupID: groupID, localDate: Self.queryDate(for: day, today: today))
+            let fresh = try await resolve(rows.map(\.postID), data: data)
+            guard !fresh.isEmpty else {
+                dependencies.toasts.show(Copy.onthisdayEmptyTitle)
+                return
+            }
+            dateMemories = fresh
+            picks = []
+            mode = .date(day)
+            lastChange = .dial
+            index = 0
+            preloadNeighbours()
+        } catch {
+            dependencies.haptics(Tokens.Haptics.globalError)
+            dependencies.toasts.show(MemoryFailure(error) == .offline ? Copy.onthisdayOfflineDetail : Copy.onthisdayErrorDetail)
+        }
+    }
+
+    /// The date `on_this_day` is asked for to show `day`'s month and day in every year up to `today`'s: the same month and
+    /// day in the first year after `today`'s that has it (Feb 29: the next leap year, within eight years).
+    static func queryDate(for day: LocalDate, today: LocalDate) -> LocalDate {
+        for year in (today.year + 1)...(today.year + 8) { // provenance-ok: leap years recur within eight years (calendar rule)
+            if let date = LocalDate(year: year, month: day.month, day: day.day) { return date }
+        }
+        return day
     }
 
     private func pickRandom(change: Change, startsShuffle: Bool = false) async {
@@ -584,7 +662,7 @@ final class OnThisDayModel {
         case let .day(day): hiddenDays.insert(day)
         }
         var removed = Set<PostID>()
-        for memory in memories + picks where matches(memory) && removed.insert(memory.id).inserted {
+        for memory in memories + picks + dateMemories where matches(memory) && removed.insert(memory.id).inserted {
             removePost(memory.id)
         }
         dependencies.haptics(Tokens.Haptics.globalSuccess)
@@ -601,7 +679,12 @@ final class OnThisDayModel {
         let currentID = current?.id
         memories.removeAll { $0.id == postID }
         picks.removeAll { $0.id == postID }
+        dateMemories.removeAll { $0.id == postID }
         if mode == .shuffle, picks.isEmpty {
+            mode = .day
+            index = 0
+        }
+        if case .date = mode, dateMemories.isEmpty {
             mode = .day
             index = 0
         }

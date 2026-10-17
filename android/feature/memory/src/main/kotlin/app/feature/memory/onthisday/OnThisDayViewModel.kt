@@ -3,7 +3,9 @@ package app.feature.memory.onthisday
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.data.model.HistoryMonth
 import app.data.model.HistoryWeek
+import app.data.model.OnThisDayItem
 import app.data.model.Media
 import app.data.model.Post
 import app.designsystem.generated.Tokens
@@ -51,6 +53,12 @@ enum class MemoryMode {
 
     /** Random picks from the group's whole history (the dice): previous goes back through the picks shown. */
     Shuffle,
+
+    /**
+     * "Pick a date…": the month and day picked in the calendar, across the years (every year up to this one), newest
+     * first. Subtitle "Memories · {name}" (Retro's title outside 'On this week' mode).
+     */
+    Date,
 }
 
 sealed interface OnThisDayState {
@@ -79,7 +87,7 @@ sealed interface OnThisDayState {
         val isFirst: Boolean get() = index == 0
 
         /** In shuffle mode there is always a next pick. */
-        val isLast: Boolean get() = mode == MemoryMode.Day && index == memories.lastIndex
+        val isLast: Boolean get() = mode != MemoryMode.Shuffle && index == memories.lastIndex
     }
 }
 
@@ -100,6 +108,15 @@ sealed interface OnThisDayEvent {
 
             /** The hide failed offline (`onthisday.offline.detail`). */
             HideOffline,
+
+            /** The picked date has no memories (any more) for you (`onthisday.empty.title`). */
+            NothingOnDate,
+
+            /** Reading the calendar or the picked date failed (`onthisday.error.detail`). */
+            LoadFailed,
+
+            /** The same, offline (`onthisday.offline.detail`). */
+            LoadOffline,
         }
     }
 
@@ -140,8 +157,15 @@ class OnThisDayViewModel(
     /** The group's history weeks (shuffle source), read once per session. */
     private var weeks: List<HistoryWeek>? = null
 
-    /** The memories of today, kept while shuffling. */
+    /** The memories of today, kept while shuffling or on a picked date. */
     private var day: List<Memory> = emptyList()
+
+    /**
+     * "Pick a date…": the calendar's months (`group_history_months`, the days you hid left out) while the sheet is open;
+     * null when closed.
+     */
+    private val _calendar = MutableStateFlow<List<HistoryMonth>?>(null)
+    val calendar: StateFlow<List<HistoryMonth>?> = _calendar.asStateFlow()
 
     /**
      * Your hidden photos and days (`my_hidden_memories`, read with the dice's pool, plus the hides made on this page): the
@@ -188,8 +212,8 @@ class OnThisDayViewModel(
                     _state.update { current ->
                         when {
                             current !is OnThisDayState.Page -> loaded
-                            // Shuffling keeps its picks; the day behind it is refreshed.
-                            current.mode == MemoryMode.Shuffle -> current
+                            // Shuffling keeps its picks (a picked date its memories); the day behind it is refreshed.
+                            current.mode != MemoryMode.Day -> current
                             // Keep the viewer on the same memory.
                             else -> loaded.copy(index = loaded.memories.indexOfFirst { it.postId == current.memory.postId }.takeIf { it >= 0 } ?: 0, playing = current.playing)
                         }
@@ -203,16 +227,20 @@ class OnThisDayViewModel(
     private suspend fun loadDay(): OnThisDayState.Page? {
         val group = backend.group(groupId) ?: return null
         zone = runCatching { ZoneId.of(group.timeZone) }.getOrDefault(ZoneId.of("UTC"))
-        val items = backend.onThisDay(groupId, localDate(clock, zone))
-        if (items.isEmpty()) return null
+        val memories = memoriesOf(backend.onThisDay(groupId, localDate(clock, zone)))
+        return if (memories.isEmpty()) null else OnThisDayState.Page(memories, 0, group.name)
+    }
+
+    /** `on_this_day` rows → memories in the API's order (newest first). */
+    private suspend fun memoriesOf(items: List<OnThisDayItem>): List<Memory> {
+        if (items.isEmpty()) return emptyList()
         val media = backend.media(items.map { it.mediaId }).associateBy { it.id }
         val names = backend.profiles(items.map { it.authorId }.distinct()).associate { it.id to it.firstName.orEmpty() }
         val urls = backend.signedUrls(media.values.map { it.imagePath(Media.Rendition.Display) }.toSet())
-        val memories = items.mapNotNull { row ->
+        return items.mapNotNull { row ->
             val m = media[row.mediaId] ?: return@mapNotNull null
             Memory(row.postId, row.authorId, names[row.authorId].orEmpty(), urls[m.imagePath(Media.Rendition.Display)], m.originalPath, row.createdAt.atZone(zone).toLocalDate(), row.mediaId)
         }
-        return if (memories.isEmpty()) null else OnThisDayState.Page(memories, 0, group.name)
     }
 
     // ---- the dial ----------------------------------------------------------------------------------
@@ -250,13 +278,78 @@ class OnThisDayViewModel(
     fun shuffle() = pickRandom(append = false)
 
     /**
-     * Mode menu "On this day…" (Retro's Rewind mode menu): back from shuffle to the day's memories, at the newest one.
-     * In day mode it changes nothing. No haptic of its own (the menu plays the tap).
+     * Mode menu "On this day…" (Retro's Rewind mode menu): back from shuffle or a picked date to the day's memories, at
+     * the newest one. In day mode it changes nothing. No haptic of its own (the menu plays the tap).
      */
     fun showDay() {
         val page = _state.value as? OnThisDayState.Page ?: return
-        if (page.mode != MemoryMode.Shuffle || day.isEmpty()) return
+        if (page.mode == MemoryMode.Day || page.picking || day.isEmpty()) return
         _state.value = page.copy(memories = day, index = 0, mode = MemoryMode.Day, playing = false, picking = false)
+    }
+
+    /**
+     * Mode menu "Pick a date…" (Retro's Rewind mode menu, third item): reads the calendar — week.history's sheet,
+     * `group_history_months` — and opens it with only the days that have photos enabled (the days you hid left out).
+     * Playing stops. A failure: `haptic.global.error` and the error / offline line.
+     */
+    fun openCalendar() {
+        val page = _state.value as? OnThisDayState.Page ?: return
+        if (page.picking) return
+        if (page.playing) _state.value = page.copy(playing = false)
+        viewModelScope.launch {
+            attempt {
+                val months = backend.historyMonths(groupId)
+                loadHidden()
+                months.mapNotNull { month ->
+                    val days = month.days.filterNot(hiddenDays::contains)
+                    if (days.isEmpty()) null else month.copy(days = days)
+                }
+            }
+                .onSuccess { _calendar.value = it }
+                .onFailure { e -> failed(e) }
+        }
+    }
+
+    /** The calendar closed without a pick. */
+    fun closeCalendar() {
+        _calendar.value = null
+    }
+
+    /**
+     * A day picked in the calendar: that month and day across the years, newest first, at the newest one (subtitle
+     * "Memories · {name}"). `on_this_day` takes the date and returns the years before it, so it is asked for the same
+     * month and day in the first year after this one that has it ([queryDate]). Nothing there (a day whose photos were
+     * all hidden, or one shown in the calendar only for a collage): the page stays and the toast `onthisday.empty.title`.
+     */
+    fun pickDate(date: LocalDate) {
+        _calendar.value = null
+        val page = _state.value as? OnThisDayState.Page ?: return
+        if (page.picking) return
+        _state.value = page.copy(picking = true, playing = false)
+        viewModelScope.launch {
+            attempt { memoriesOf(backend.onThisDay(groupId, queryDate(date, localDate(clock, zone)))) }
+                .onSuccess { memories ->
+                    _state.update { s ->
+                        if (s !is OnThisDayState.Page) return@update s
+                        if (memories.isEmpty()) {
+                            events.trySend(OnThisDayEvent.Toast(OnThisDayEvent.Toast.Kind.NothingOnDate))
+                            s.copy(picking = false)
+                        } else {
+                            s.copy(memories = memories, index = 0, mode = MemoryMode.Date, playing = false, picking = false)
+                        }
+                    }
+                }
+                .onFailure { e ->
+                    _state.update { s -> if (s is OnThisDayState.Page) s.copy(picking = false) else s }
+                    failed(e)
+                }
+        }
+    }
+
+    private fun failed(e: Throwable) {
+        queue.haptic(Tokens.Haptics.globalError)
+        val offline = failureOf(e) == Failure.Offline
+        events.trySend(OnThisDayEvent.Toast(if (offline) OnThisDayEvent.Toast.Kind.LoadOffline else OnThisDayEvent.Toast.Kind.LoadFailed))
     }
 
     private fun pickRandom(append: Boolean) {
@@ -448,7 +541,7 @@ class OnThisDayViewModel(
             if (at < 0) return@update s
             val memories = s.memories.filterNot { it.postId == postId }
             when {
-                memories.isEmpty() && s.mode == MemoryMode.Shuffle && day.isNotEmpty() -> s.copy(memories = day, index = 0, mode = MemoryMode.Day, playing = false)
+                memories.isEmpty() && s.mode != MemoryMode.Day && day.isNotEmpty() -> s.copy(memories = day, index = 0, mode = MemoryMode.Day, playing = false)
                 memories.isEmpty() -> OnThisDayState.Empty
                 at < s.index -> s.copy(memories = memories, index = s.index - 1)
                 else -> s.copy(memories = memories, index = s.index.coerceAtMost(memories.lastIndex))
@@ -461,6 +554,15 @@ class OnThisDayViewModel(
     companion object {
         /** `group_history_weeks` page size for the dice (onthisday.md → Data: `p_limit: 52`, a year of weeks). */
         const val SHUFFLE_PAGE = 52
+
+        /**
+         * The date `on_this_day` is asked for to show [picked]'s month and day in every year up to [today]'s: the same
+         * month and day in the first year after [today]'s that has it (Feb 29: the next leap year).
+         */
+        fun queryDate(picked: LocalDate, today: LocalDate): LocalDate =
+            generateSequence(today.year + 1) { it + 1 }
+                .first { year -> picked.monthValue != 2 || picked.dayOfMonth != 29 || java.time.Year.isLeap(year.toLong()) }
+                .let { year -> picked.withYear(year) }
 
         /** The date `on_this_day` is asked for (`layout.onthisday.dayBoundary`). */
         fun localDate(clock: Clock, zone: ZoneId): LocalDate =

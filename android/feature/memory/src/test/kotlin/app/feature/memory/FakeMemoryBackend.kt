@@ -7,6 +7,7 @@ import app.data.model.Collage
 import app.data.model.Group
 import app.data.model.GroupTribute
 import app.data.model.HiddenMemory
+import app.data.model.HistoryMonth
 import app.data.model.HistoryWeek
 import app.data.model.GroupKind
 import app.data.model.Media
@@ -46,6 +47,10 @@ class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBacken
     val media = mutableMapOf<String, Media>()
     val profiles = mutableMapOf<String, Profile>()
     val onThisDay = mutableMapOf<String, List<OnThisDayItem>>()
+    /** `on_this_day` rows for one asked date (any group), ahead of [onThisDay] ("Pick a date…"). */
+    val onThisDayByDate = mutableMapOf<LocalDate, List<OnThisDayItem>>()
+    /** `group_history_months` rows, newest month first. */
+    val months = mutableListOf<HistoryMonth>()
     val requests = mutableMapOf<String, TributeRequest>()
     val contributions = mutableMapOf<String, TributeContribution>()
     val tributes = mutableMapOf<String, Tribute>()
@@ -85,7 +90,7 @@ class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBacken
         call("onThisDay")
         lastOnThisDayDate = localDate
         val zone = groups[groupId]?.timeZone?.let { java.time.ZoneId.of(it) } ?: java.time.ZoneOffset.UTC
-        return onThisDay[groupId].orEmpty().filter { item ->
+        return (onThisDayByDate[localDate] ?: onThisDay[groupId].orEmpty()).filter { item ->
             item.authorId !in blocked && hides.none { it.mediaId == item.mediaId || it.day == item.createdAt.atZone(zone).toLocalDate() }
         }
     }
@@ -124,6 +129,8 @@ class FakeMemoryBackend(override var currentUserId: String? = ME) : MemoryBacken
         call("historyWeeks")
         return history.filter { beforeWeek == null || it.weekStart.isBefore(beforeWeek) }.take(limit)
     }
+
+    override suspend fun historyMonths(groupId: String): List<HistoryMonth> = call("historyMonths").let { months.toList() }
 
     override suspend fun deletePost(postId: String) {
         call("deletePost")

@@ -59,8 +59,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
+import app.data.model.HistoryMonth
 import app.designsystem.R
 import app.designsystem.generated.Tokens
+import app.feature.memory.common.HistoryCalendarSheet
 import app.feature.memory.common.MediaAppearance
 import app.feature.memory.common.MediaMessage
 import app.feature.memory.common.MemoryFormats
@@ -87,6 +89,7 @@ import app.ui.system.FeatureIntroSheet
 import app.ui.system.SystemAlertDialog
 import app.ui.text.CapTop
 import app.ui.text.TextRoles
+import java.time.LocalDate
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 
@@ -106,8 +109,13 @@ data class OnThisDayActions(
     val onTogglePlay: () -> Unit = {},
     val onAdvance: () -> Unit = {},
     val onShuffle: () -> Unit = {},
-    /** Mode menu "On this day…": back to the day's memories (from shuffle). */
+    /** Mode menu "On this day…": back to the day's memories (from shuffle or a picked date). */
     val onShowDay: () -> Unit = {},
+    /** Mode menu "Pick a date…": opens the calendar. */
+    val onOpenCalendar: () -> Unit = {},
+    /** A day picked in the calendar. */
+    val onPickDate: (LocalDate) -> Unit = {},
+    val onCloseCalendar: () -> Unit = {},
     val onShare: () -> Unit = {},
     /** "Reply" ("then & now", owner decision 34): the camera answering the memory with a photo in its group. */
     val onReply: () -> Unit = {},
@@ -142,6 +150,8 @@ fun OnThisDayScreen(
     modifier: Modifier = Modifier,
     showIntro: Boolean = false,
     saveDenied: Boolean = false,
+    /** "Pick a date…": the calendar's months while its sheet is open (week.history's calendar; a day picks itself). */
+    calendar: List<HistoryMonth>? = null,
 ) {
     MediaAppearance {
         Box(modifier.fillMaxSize().background(Tokens.Colors.globalBackgroundDeep).semantics { isTraversalGroup = true }.testTag(OnThisDayTags.ROOT)) {
@@ -179,6 +189,11 @@ fun OnThisDayScreen(
                     onAction = actions.onIntroDone,
                     onDismissRequest = actions.onIntroDone,
                 )
+            }
+        }
+        if (calendar != null && state is OnThisDayState.Page) {
+            SystemAppearance {
+                HistoryCalendarSheet(months = calendar, onSelectDay = actions.onPickDate, onClose = actions.onCloseCalendar)
             }
         }
         if (saveDenied) {
@@ -236,7 +251,8 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
     Box(Modifier.matchParentSize().onGloballyPositioned { pageOrigin = it.positionInRoot() })
     Crossfade(targetState = memory, animationSpec = fade, label = "memoryTitle") { shown ->
         val subtitle = stringResource(
-            if (state.mode == MemoryMode.Shuffle) R.string.onthisday_subtitle_shuffle else R.string.onthisday_subtitle_day,
+            // Retro's subtitle outside 'On this week' mode is "Memories" (the shuffle and a picked date).
+            if (state.mode == MemoryMode.Day) R.string.onthisday_subtitle_day else R.string.onthisday_subtitle_shuffle,
             shown.authorName,
         )
         Header(
@@ -261,6 +277,7 @@ private fun BoxScope.Page(state: OnThisDayState.Page, actions: OnThisDayActions,
                     listOf(
                         DsMenuItem(stringResource(R.string.onthisday_mode_day), actions.onShowDay),
                         DsMenuItem(stringResource(R.string.onthisday_mode_shuffle), actions.onShuffle),
+                        DsMenuItem(stringResource(R.string.onthisday_mode_pickdate), actions.onOpenCalendar),
                     ),
                 )
             }

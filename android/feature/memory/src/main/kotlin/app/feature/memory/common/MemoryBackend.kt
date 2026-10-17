@@ -12,6 +12,7 @@ import app.data.model.Collage
 import app.data.model.Group
 import app.data.model.GroupTribute
 import app.data.model.HiddenMemory
+import app.data.model.HistoryMonth
 import app.data.model.HistoryWeek
 import app.data.model.Media
 import app.data.model.OnThisDayItem
@@ -61,6 +62,9 @@ interface MemoryBackend {
 
     /** `group_history_weeks`: weeks with posts, newest first, before [beforeWeek] (exclusive); respects `free_history_days`. */
     suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek>
+
+    /** `group_history_months` (migration 0045): the months of the group's history with the days that have photos (the "Pick a date…" calendar). */
+    suspend fun historyMonths(groupId: String): List<HistoryMonth>
 
     /** `delete_post` (your own post). */
     suspend fun deletePost(postId: String)
@@ -122,6 +126,7 @@ class GraphMemoryBackend(private val graph: DataGraph) : MemoryBackend {
 
     override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek> =
         graph.browse.historyWeeks(groupId, beforeWeek, limit)
+    override suspend fun historyMonths(groupId: String): List<HistoryMonth> = graph.browse.historyMonths(groupId)
 
     override suspend fun deletePost(postId: String) = graph.posts.deletePost(postId)
 
@@ -200,6 +205,7 @@ object UnconfiguredMemoryBackend : MemoryBackend {
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = fail()
     override fun postDeletions(groupId: String): Flow<String> = emptyFlow()
     override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek> = fail()
+    override suspend fun historyMonths(groupId: String): List<HistoryMonth> = fail()
     override suspend fun deletePost(postId: String) = fail()
     override suspend fun hideMemory(mediaId: String?, day: LocalDate?) = fail()
     override suspend fun hiddenMemories(): List<HiddenMemory> = fail()

@@ -8,7 +8,7 @@ import Foundation
 
 final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     enum Operation: String, CaseIterable, Sendable {
-        case group, postsWithMedia, profiles, signedURLs, onThisDay, historyWeeks, deletePost, downloadData
+        case group, postsWithMedia, profiles, signedURLs, onThisDay, historyWeeks, historyMonths, deletePost, downloadData
         case hideMemory, hiddenMemories
         case myPrivateProfile, setBirthday
         case openRequests, request, myContribution, contribute, withdraw, eligiblePostIDs
@@ -22,6 +22,12 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
         var posts: [PostWithMedia] = []
         var profiles: [Profile] = []
         var onThisDay: [OnThisDayItem] = []
+        /// `on_this_day` rows for one asked date, ahead of `onThisDay` ("Pick a date…").
+        var onThisDayByDate: [LocalDate: [OnThisDayItem]] = [:]
+        /// The dates `on_this_day` was asked for, in order.
+        var onThisDayDates: [LocalDate] = []
+        /// `group_history_months` rows, newest month first.
+        var historyMonths: [HistoryMonth] = []
         /// The caller's hidden photos and days (`memory_hides`), oldest hide first.
         var hides: [HiddenMemory] = []
         var privateProfile: ProfilePrivate?
@@ -132,11 +138,12 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     /// As `on_this_day`: the group's rows minus the caller's hidden photos and days (the day in the group's zone).
     func onThisDay(groupID: GroupID, localDate: LocalDate) async throws -> [OnThisDayItem] {
         let current = try await record(.onThisDay)
+        update { $0.onThisDayDates.append(localDate) }
         let groupPosts = Set(current.posts.filter { $0.post.groupID == groupID }.map(\.post.id))
         let zone = current.groups.first { $0.id == groupID }?.resolvedTimeZone ?? MemoryFormat.utc
         let hiddenMedia = Set(current.hides.compactMap(\.mediaID))
         let hiddenDays = Set(current.hides.compactMap(\.day))
-        return current.onThisDay.filter { item in
+        return (current.onThisDayByDate[localDate] ?? current.onThisDay).filter { item in
             groupPosts.contains(item.postID) && !hiddenMedia.contains(item.mediaID)
                 && !hiddenDays.contains(LocalDate(item.createdAt, in: zone))
         }
@@ -164,6 +171,23 @@ final class FixtureMemoryData: MemoryDataSource, @unchecked Sendable {
     /// `my_hidden_memories`: newest hide first.
     func hiddenMemories() async throws -> [HiddenMemory] {
         Array(try await record(.hiddenMemories).hides.reversed())
+    }
+
+    /// `group_history_months`: the fixture's months as set, else the group's posts by day (group time zone), newest month
+    /// first, days oldest first.
+    func historyMonths(groupID: GroupID) async throws -> [HistoryMonth] {
+        let current = try await record(.historyMonths)
+        if !current.historyMonths.isEmpty { return current.historyMonths }
+        let zone = current.groups.first { $0.id == groupID }?.resolvedTimeZone ?? MemoryFormat.utc
+        let days = Set(current.posts.filter { $0.post.groupID == groupID }.map { LocalDate($0.post.createdAt, in: zone) })
+        let byMonth = Dictionary(grouping: days) { LocalDate(year: $0.year, month: $0.month, day: 1) ?? $0 }
+        return byMonth.keys.sorted(by: >).map { month in
+            let list = (byMonth[month] ?? []).sorted()
+            let newest = list.last ?? month
+            // dayNumber 0 (1970-01-01) was a Thursday: Monday-based weekday = (dayNumber + 3) mod 7.
+            let weekday = ((newest.dayNumber + 3) % 7 + 7) % 7 // provenance-ok: calendar arithmetic (ISO weekday of the epoch)
+            return HistoryMonth(month: month, days: list, newestWeek: newest.adding(days: -weekday))
+        }
     }
 
     /// The group's posts by week (Monday start, group time zone), newest week first, posts chronological;
