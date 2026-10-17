@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  camera.quickaccess: the static launcher shortcut (long-press on the app icon) that opens the camera, as a widget tap
+  without a group (app://camera, camera.fromwidget). Short label copy camera.quickaccess.shortcut.short ("Camera"), long
+  label camera.quickaccess.shortcut.long ("Take photo"), icon ic_shortcut_camera. The dynamic shortcuts for the groups
+  most recently sent to are published from code (feature/capture CameraShortcuts). Platform:
+  https://developer.android.com/develop/ui/views/launch/shortcuts/creating-shortcuts#static
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_camera"
+        android:shortcutId="camera"
+        android:shortcutLongLabel="@string/camera_quickaccess_shortcut_long"
+        android:shortcutShortLabel="@string/camera_quickaccess_shortcut_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="app://camera"
+            android:targetClass="app.main.MainActivity"
+            android:targetPackage="@string/shortcut_target_package" />
+    </shortcut>
+</shortcuts>

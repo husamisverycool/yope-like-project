@@ -62,6 +62,28 @@ class WidgetGroupMeta(val root: File) {
         Unit
     }
 
+    /**
+     * Whether the signed-in person has premium (`widget.styles`: a premium style draws Photo without it; docs/
+     * WIDGET_REFRESH.md "Android keeps a marker next to the widget metadata"). Written by the app whenever it learns the
+     * entitlement; false until then and after signing out.
+     */
+    fun isPremium(): Boolean = File(root, PREMIUM).isFile
+
+    fun setPremium(premium: Boolean) = synchronized(lock) {
+        val marker = File(root, PREMIUM)
+        if (premium) {
+            root.mkdirs()
+            if (!marker.isFile) writeAtomically(marker) { it.write(PREMIUM.toByteArray()) }
+        } else {
+            marker.delete()
+        }
+        Unit
+    }
+
+    /** The groups the configuration activity or the app prepared (an All Groups widget draws from these). */
+    fun preparedGroups(): Set<String> =
+        root.listFiles()?.filter { it.isDirectory && DeepLinkCodec.isId(it.name) && File(it, STATE).isFile }?.map { it.name }?.toSet().orEmpty()
+
     /** Drops every group not in [groupIds] (left, removed, signed out). */
     fun retain(groupIds: Set<String>) = synchronized(lock) {
         root.listFiles()?.filter { it.isDirectory && it.name !in groupIds }?.forEach { it.deleteRecursively() }
@@ -105,6 +127,7 @@ class WidgetGroupMeta(val root: File) {
     companion object {
         private const val STATE = "state.json"
         private const val SIGNED_OUT = "signed-out"
+        private const val PREMIUM = "premium"
         private const val KEY_CONTENT = "content"
 
         /** The meta directory that belongs to [store] (a sibling of its root). */

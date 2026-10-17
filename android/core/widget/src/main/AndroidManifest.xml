@@ -33,6 +33,36 @@
                 android:resource="@xml/countdown_widget_info" />
         </receiver>
 
+        <!-- Friend Updates (widget.friend): picker label copy widget.friend.gallery.name, description in its provider XML. -->
+        <receiver
+            android:name="app.widget.FriendPhotoWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_friend_gallery_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/friend_photo_widget_info" />
+        </receiver>
+
+        <!-- Your Memories (widget.memories): picker label copy widget.memories.gallery.name, description in its provider
+             XML. TIME_SET / TIMEZONE_CHANGED re-render the day's memory when the clock or the zone changes (as the
+             countdown widget). -->
+        <receiver
+            android:name="app.widget.MemoriesWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_memories_gallery_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/memories_widget_info" />
+        </receiver>
+
         <activity
             android:name="app.widget.WidgetConfigureActivity"
             android:excludeFromRecents="true"

@@ -66,6 +66,52 @@ sealed interface WidgetEmptyState {
             meta.content(groupId) == WidgetGroupMeta.Content.NoPhotos -> NoPhotos
             else -> Loading
         }
+
+        /**
+         * An All Groups widget without an item (`widget.home.small.layout.allGroups`): signed out; no group prepared (none
+         * joined, or all left) → not set up; a group still being looked up → loading; else no photos in any group.
+         */
+        fun ofAllGroups(meta: WidgetGroupMeta): WidgetEmptyState {
+            if (meta.isSignedOut()) return SignedOut
+            val groups = meta.preparedGroups()
+            return when {
+                groups.isEmpty() -> NotSetUp
+                groups.any { meta.content(it) != WidgetGroupMeta.Content.NoPhotos } -> Loading
+                else -> NoPhotos
+            }
+        }
+
+        /**
+         * A friend widget without a photo (`widget.friend` → States): no friend chosen, or they share no group any more /
+         * a block → not set up; looked up with nothing to show → no photos; not looked up yet → loading.
+         */
+        fun ofFriend(personId: String?, slot: WidgetSlotStore.State?, signedOut: Boolean): WidgetEmptyState = when {
+            signedOut -> SignedOut
+            personId == null || slot == WidgetSlotStore.State.Gone -> NotSetUp
+            slot == WidgetSlotStore.State.None -> NoPhotos
+            else -> Loading
+        }
+
+        /** The memories widget without a photo (`widget.memories` → States): the day looked up with none → empty; else loading. */
+        fun ofMemories(slot: WidgetSlotStore.State, signedOut: Boolean): WidgetEmptyState = when {
+            signedOut -> SignedOut
+            slot == WidgetSlotStore.State.None -> NoPhotos
+            else -> Loading
+        }
+    }
+}
+
+/** The state lines of one widget kind (copy keys): "not set up" and "no photos". */
+data class WidgetStateLines(val setUp: Int, val noPhotos: Int) {
+    companion object {
+        /** `widget.home.small.empty.*` (Group Updates, All Groups). */
+        val group = WidgetStateLines(R.string.widget_home_small_empty_setup, R.string.widget_home_small_empty_nophotos)
+
+        /** `widget.friend.empty.*`. */
+        val friend = WidgetStateLines(R.string.widget_friend_empty_setup, R.string.widget_friend_empty_nophotos)
+
+        /** `widget.memories.empty.none` (a memories widget is never "not set up"). */
+        val memories = WidgetStateLines(R.string.widget_home_small_empty_setup, R.string.widget_memories_empty_none)
     }
 }
 
@@ -132,13 +178,36 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
     @Composable
     override fun Empty(groupId: String?, sizeClass: WidgetSizeClass) {
         val context = LocalContext.current
-        when (WidgetEmptyState.of(groupId, WidgetGroupMeta.of(WidgetFileStore.default(context)))) {
+        EmptyState(WidgetEmptyState.of(groupId, WidgetGroupMeta.of(WidgetFileStore.default(context))))
+    }
+
+    /** [state] drawn (`widget.home.small` → States) with [lines]' copy; signed out is shared by every kind. */
+    @Composable
+    internal fun EmptyState(state: WidgetEmptyState, lines: WidgetStateLines = WidgetStateLines.group) {
+        val context = LocalContext.current
+        when (state) {
             WidgetEmptyState.Loading -> StateBackground()
-            WidgetEmptyState.NoPhotos -> StateColumn(context.getString(R.string.widget_home_small_empty_nophotos))
-            WidgetEmptyState.NotSetUp -> StateColumn(context.getString(R.string.widget_home_small_empty_setup))
+            WidgetEmptyState.NoPhotos -> StateColumn(context.getString(lines.noPhotos))
+            WidgetEmptyState.NotSetUp -> StateColumn(context.getString(lines.setUp))
             WidgetEmptyState.SignedOut -> StateColumn(context.getString(R.string.widget_home_small_empty_signedout))
         }
     }
+
+    /** The one TalkBack label of [state] (the state line; none while loading). */
+    internal fun emptyLabel(context: Context, state: WidgetEmptyState, lines: WidgetStateLines = WidgetStateLines.group): String? = when (state) {
+        WidgetEmptyState.NotSetUp -> context.getString(lines.setUp)
+        WidgetEmptyState.NoPhotos -> context.getString(lines.noPhotos)
+        WidgetEmptyState.SignedOut -> context.getString(R.string.widget_home_small_empty_signedout)
+        WidgetEmptyState.Loading -> null
+    }
+
+    /** An All Groups widget's tap without an item: signed out → the app; not set up → configuration; else the camera. */
+    internal fun allGroupsTap(context: Context, meta: WidgetGroupMeta = WidgetGroupMeta.of(WidgetFileStore.default(context))): WidgetTap =
+        when (WidgetEmptyState.ofAllGroups(meta)) {
+            WidgetEmptyState.SignedOut -> WidgetTap.App
+            WidgetEmptyState.NotSetUp -> WidgetTap.Configure
+            WidgetEmptyState.Loading, WidgetEmptyState.NoPhotos -> WidgetTap.Camera(null)
+        }
 
     override fun tap(context: Context, snapshot: WidgetSnapshot?, groupId: String?): WidgetTap {
         val meta = WidgetGroupMeta.of(WidgetFileStore.default(context))
@@ -154,14 +223,7 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
     }
 
     override fun contentDescription(context: Context, snapshot: WidgetSnapshot?, groupId: String?): String? {
-        if (snapshot == null) {
-            return when (WidgetEmptyState.of(groupId, WidgetGroupMeta.of(WidgetFileStore.default(context)))) {
-                WidgetEmptyState.NotSetUp -> context.getString(R.string.widget_home_small_empty_setup)
-                WidgetEmptyState.NoPhotos -> context.getString(R.string.widget_home_small_empty_nophotos)
-                WidgetEmptyState.SignedOut -> context.getString(R.string.widget_home_small_empty_signedout)
-                WidgetEmptyState.Loading -> null
-            }
-        }
+        if (snapshot == null) return emptyLabel(context, WidgetEmptyState.of(groupId, WidgetGroupMeta.of(WidgetFileStore.default(context))))
         val group = snapshot.groupName
         if (snapshot.kind == WidgetSnapshot.Kind.Collage) {
             return context.getString(R.string.widget_home_small_a11y_collage, group, collageDate(snapshot))
@@ -170,7 +232,7 @@ object TokenPhotoWidgetSlots : PhotoWidgetSlots {
     }
 
     /** The first word of `display_name` (`widget.home.small.layout.overlay` line 1). */
-    private fun firstName(displayName: String?): String? =
+    internal fun firstName(displayName: String?): String? =
         displayName?.trim()?.split(Regex("\\s+"))?.firstOrNull()?.takeIf { it.isNotEmpty() }
 
     /** `{date}` of the collage: the invitation day in the locale's long date form (collage.view.title). */
@@ -259,12 +321,16 @@ internal object WidgetColors {
         val globalScrim: androidx.compose.ui.graphics.Color
         val globalTextOnMedia: androidx.compose.ui.graphics.Color
         val widgetHomeSmallColorStateTint: androidx.compose.ui.graphics.Color
+        val globalBackdropDim: androidx.compose.ui.graphics.Color
+        val widgetStylesColorFrame: androidx.compose.ui.graphics.Color
 
         data object Light : Palette {
             override val globalBackgroundDeep get() = Tokens.ColorsLight.globalBackgroundDeep
             override val globalScrim get() = Tokens.ColorsLight.globalScrim
             override val globalTextOnMedia get() = Tokens.ColorsLight.globalTextOnMedia
             override val widgetHomeSmallColorStateTint get() = Tokens.ColorsLight.widgetHomeSmallColorStateTint
+            override val globalBackdropDim get() = Tokens.ColorsLight.globalBackdropDim
+            override val widgetStylesColorFrame get() = Tokens.ColorsLight.widgetStylesColorFrame
         }
 
         data object Dark : Palette {
@@ -272,6 +338,8 @@ internal object WidgetColors {
             override val globalScrim get() = Tokens.ColorsDark.globalScrim
             override val globalTextOnMedia get() = Tokens.ColorsDark.globalTextOnMedia
             override val widgetHomeSmallColorStateTint get() = Tokens.ColorsDark.widgetHomeSmallColorStateTint
+            override val globalBackdropDim get() = Tokens.ColorsDark.globalBackdropDim
+            override val widgetStylesColorFrame get() = Tokens.ColorsDark.widgetStylesColorFrame
         }
     }
 }

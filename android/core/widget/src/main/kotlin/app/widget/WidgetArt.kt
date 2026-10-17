@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.core.content.res.ResourcesCompat
+import app.designsystem.generated.Tokens
 import java.io.File
 import kotlin.math.ceil
 import kotlin.math.max
@@ -174,6 +176,22 @@ internal object WidgetArt {
                     canvas.drawPath(path, paint)
                 }
             }
+        }
+    }
+
+    /**
+     * `font.global.display` (the bundled title serif, `res/font`, named by the token's resource name) at [weight]; the
+     * platform serif when the font is missing. The countdown line and the Date style's title (`widget.styles.layout.date`).
+     */
+    fun displayFace(context: Context, weight: FontWeight): Typeface {
+        @Suppress("DiscouragedApi") // tokens name fonts by resource name
+        val name = (Tokens.Fonts.globalDisplay as? app.designsystem.DSFontFamily.Custom)?.resourceName
+        val id = if (name == null) 0 else context.resources.getIdentifier(name, "font", context.packageName)
+        val base = if (id != 0) runCatching { ResourcesCompat.getFont(context, id) }.getOrNull() else null
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            Typeface.create(base ?: Typeface.SERIF, weight.weight, false)
+        } else {
+            Typeface.create(base ?: Typeface.SERIF, if (weight >= FontWeight.SemiBold) Typeface.BOLD else Typeface.NORMAL)
         }
     }
 

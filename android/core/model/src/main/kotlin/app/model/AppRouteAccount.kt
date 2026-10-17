@@ -65,3 +65,12 @@ data class SafetyReportSelfieRoute(val groupId: String, val selfieId: String, va
 data class SafetyReportContentRoute(val kind: String, val targetId: String, val groupId: String, val authorId: String? = null) : AppRoute {
     override val surface get() = "safety.report"
 }
+
+/**
+ * `paywall` opened at one perk's page ([perk]: `DeepLinkCodec.PERK_WIDGETS`, …): a locked premium perk tapped from outside
+ * the app (`widget.styles`: a widget whose chosen style needs premium). [AppRoute.Paywall] opens at the first page.
+ */
+@Serializable
+data class PaywallPerkRoute(val perk: String) : AppRoute {
+    override val surface get() = "paywall"
+}

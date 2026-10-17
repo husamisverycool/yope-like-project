@@ -429,13 +429,7 @@ internal object CountdownArt {
     }
 
     /** `font.global.display` (the bundled title serif, `res/font`), at the role's weight. */
-    private fun displayFace(context: Context, weight: FontWeight): Typeface {
-        @Suppress("DiscouragedApi") // tokens name fonts by resource name
-        val name = (Tokens.Fonts.globalDisplay as? app.designsystem.DSFontFamily.Custom)?.resourceName
-        val id = if (name == null) 0 else context.resources.getIdentifier(name, "font", context.packageName)
-        val base = if (id != 0) runCatching { ResourcesCompat.getFont(context, id) }.getOrNull() else null
-        return weighted(base ?: Typeface.SERIF, weight)
-    }
+    private fun displayFace(context: Context, weight: FontWeight): Typeface = WidgetArt.displayFace(context, weight)
 
     /** The widget's UI face, as the photo widget's stack (`WidgetArt`): the platform default at the role's weight. */
     private fun uiFace(weight: FontWeight): Typeface = weighted(Typeface.DEFAULT, weight)

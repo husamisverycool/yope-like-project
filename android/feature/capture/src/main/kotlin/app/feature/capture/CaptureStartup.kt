@@ -3,7 +3,12 @@ package app.feature.capture
 import android.app.Application
 import android.os.Build
 import androidx.camera.lifecycle.ProcessCameraProvider
+import app.feature.capture.data.CaptureDataProvider
+import app.feature.capture.widget.CameraShortcuts
 import app.feature.capture.widget.CaptureWidgetConfigureUi
+import app.feature.capture.widget.WidgetPrefetch
+import app.widget.PersonalWidgetStores
+import app.widget.PersonalWidgets
 import app.push.CaptureNotificationAppearance
 import app.push.ChannelCopy
 import app.push.NotificationAppearance
@@ -38,7 +43,9 @@ import kotlinx.coroutines.flow.map
  * - the widget's signed-out state (`widget.home.small.empty.signedOut`): the session is mirrored into the
  *   widget store so every placed widget says so, and a tap opens the app's sign-in;
  * - CameraX pre-warm: the app opens to the camera, so its provider initialises in the background
- *   now and the first preview frame is not held up by it.
+ *   now and the first preview frame is not held up by it;
+ * - the friend and memories widgets' first look-up when one is placed (`PersonalWidgets.onPlaced`), and the launcher's
+ *   per-group camera shortcuts kept to the person's groups (`camera.quickaccess`).
  */
 class CaptureStartup : AppStartupHook {
     override fun install(application: Application) = installCapture(application)
@@ -62,7 +69,16 @@ fun installCapture(application: Application) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
         startupScope.launch { runCatching { GlanceAppWidgetManager(application).setWidgetPreviews(GroupPhotoWidgetReceiver::class) } }
     }
-    DataGraph.get(application)?.let { graph -> mirrorSessionIntoWidgets(application, graph.auth.authState) }
+    PersonalWidgets.onPlaced = { WidgetPrefetch.refreshPersonal(application, CaptureDataProvider.get(application)) }
+    DataGraph.get(application)?.let { graph ->
+        mirrorSessionIntoWidgets(application, graph.auth.authState)
+        // A group left or deleted loses its camera shortcut when the group list loads.
+        startupScope.launch {
+            graph.groups.myGroupIds.filterNotNull().distinctUntilChanged().collect { ids ->
+                runCatching { CameraShortcuts.sync(application, ids) }
+            }
+        }
+    }
 }
 
 /** Keeps the widget store's signed-out marker in step with the session and re-renders the widgets when it flips. */
@@ -76,6 +92,12 @@ internal fun mirrorSessionIntoWidgets(application: Application, states: Flow<Aut
             .collect { signedOut ->
                 if (meta.isSignedOut() != signedOut) {
                     runCatching { meta.setSignedOut(signedOut) }
+                    if (signedOut) {
+                        // Nothing of the last person stays: friend and memories photos, premium styles, group shortcuts.
+                        runCatching { PersonalWidgetStores.clear(application) }
+                        runCatching { meta.setPremium(false) }
+                        runCatching { CameraShortcuts.clear(application) }
+                    }
                     runCatching { WidgetBinding.refreshAll(application) }
                 }
             }

@@ -116,6 +116,26 @@ class FakeCaptureData : CaptureData {
     var developing = app.data.model.Developing(developing = false, revealAt = null)
     override suspend fun myDeveloping(): app.data.model.Developing = developing
 
+    // The friend and memories widgets (null: the call failed).
+    var groupIds: Set<String>? = null
+    var people: List<app.data.model.WidgetPerson>? = null
+    val photosOf = mutableMapOf<String, List<app.data.model.PersonPhoto>?>()
+    var memories: List<app.data.model.DayMemory>? = null
+    var memoriesAsked: Triple<LocalDate, Int, java.time.ZoneId>? = null
+    var premiumKnown: Boolean? = null
+    val sends = mutableListOf<List<String>>()
+    override suspend fun myGroupIds(): Set<String>? = groupIds
+    override suspend fun widgetPeople(): List<app.data.model.WidgetPerson>? = people
+    override suspend fun newestPhotosOf(userId: String): List<app.data.model.PersonPhoto>? = photosOf[userId]
+    override suspend fun myMemories(from: LocalDate, days: Int, zone: java.time.ZoneId): List<app.data.model.DayMemory>? {
+        memoriesAsked = Triple(from, days, zone)
+        return memories
+    }
+    override suspend fun premiumOrNull(): Boolean? = premiumKnown
+    override fun recordSend(groupIds: List<String>) {
+        sends += groupIds
+    }
+
     override suspend fun download(url: String, target: File) {
         downloadError?.let { throw DataException(it) }
         downloads += url

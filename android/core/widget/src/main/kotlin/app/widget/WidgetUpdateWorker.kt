@@ -35,6 +35,8 @@ data class WidgetUpdateRequest(
     val senderName: String?,
     val senderAvatarUrl: String?,
     val caption: String?,
+    /** The photo's poster (`sender_id`): a friend widget following them takes the photo too (`widget.friend`). */
+    val senderId: String? = null,
 ) {
     val incoming: WidgetFileStore.Incoming
         get() = WidgetFileStore.Incoming(groupId, groupName, kind, postedAt, sourceId, senderName, caption)
@@ -49,6 +51,7 @@ data class WidgetUpdateRequest(
         .putString(K_SENDER, senderName)
         .putString(K_AVATAR, senderAvatarUrl)
         .putString(K_CAPTION, caption)
+        .putString(K_SENDER_ID, senderId)
         .build()
 
     companion object {
@@ -61,6 +64,7 @@ data class WidgetUpdateRequest(
         private const val K_SENDER = "widget.sender"
         private const val K_AVATAR = "widget.avatar"
         private const val K_CAPTION = "widget.caption"
+        private const val K_SENDER_ID = "widget.senderId"
 
         fun from(message: PushMessage.WidgetUpdate) = WidgetUpdateRequest(
             groupId = message.groupId,
@@ -72,6 +76,7 @@ data class WidgetUpdateRequest(
             senderName = message.senderName,
             senderAvatarUrl = message.senderAvatarUrl,
             caption = message.caption,
+            senderId = message.senderId,
         )
 
         fun fromData(data: Data): WidgetUpdateRequest? {
@@ -89,6 +94,7 @@ data class WidgetUpdateRequest(
                 senderName = data.getString(K_SENDER),
                 senderAvatarUrl = data.getString(K_AVATAR),
                 caption = data.getString(K_CAPTION),
+                senderId = data.getString(K_SENDER_ID)?.takeIf(DeepLinkCodec::isId),
             )
         }
     }
@@ -150,6 +156,8 @@ class WidgetUpdateWorker(
     params: WorkerParameters,
     private val downloader: RenditionDownloader,
     private val store: WidgetFileStore,
+    /** A friend widget following the poster takes the stored photo ([FriendWidgets.copyFromGroup]). */
+    private val copyToFriend: suspend (Context, String, WidgetSnapshot, WidgetFileStore) -> Unit = FriendWidgets::copyFromGroup,
     private val refresh: suspend (Context, String) -> Unit = WidgetBinding::refresh,
 ) : CoroutineWorker(context, params) {
 
@@ -168,7 +176,11 @@ class WidgetUpdateWorker(
                     writeAvatar = request.senderAvatarUrl?.let { url -> { out -> downloader.download(url, out) } },
                 )
             }
-            if (written != null) refresh(applicationContext, request.groupId)
+            if (written != null) {
+                refresh(applicationContext, request.groupId)
+                // Best effort: the app's own look-up of followed friends repeats it.
+                request.senderId?.let { sender -> runCatching { copyToFriend(applicationContext, sender, written, store) } }
+            }
             Result.success()
         } catch (e: HttpStatusException) {
             if (e.status in CLIENT_ERRORS) Result.failure() else retryOrFail()

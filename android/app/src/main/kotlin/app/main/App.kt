@@ -22,6 +22,7 @@ import app.designsystem.generated.Tokens
 import app.feature.account.AccountEnvironments
 import app.feature.account.invite.InstallReferrerReader
 import app.feature.capture.data.CaptureDataProvider
+import app.feature.capture.widget.CameraShortcuts
 import app.feature.capture.widget.WidgetPrefetch
 import app.links.AppLinks
 import app.links.DeepLinkIntents
@@ -48,6 +49,8 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         DeepLinkIntents.targetActivity = MainActivity::class.java
+        // camera.quickaccess: the per-group launcher shortcuts use the static shortcut's adaptive icon.
+        CameraShortcuts.iconRes = R.drawable.ic_shortcut_camera
         Billing.configure(this)
         DataGraph.install(this)?.let { graph -> SessionEndCleanup.start(this, graph.auth.authState, graph.scope) }
         AppNotificationChannels.register(this)

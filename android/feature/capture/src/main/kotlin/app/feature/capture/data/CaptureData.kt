@@ -15,14 +15,22 @@ import app.data.model.Post
 import app.data.model.Profile
 import app.data.offline.DataState
 import app.data.repo.Member
+import app.data.model.DayMemory
+import app.data.model.PersonPhoto
+import app.data.model.WidgetPerson
+import app.feature.capture.widget.CameraShortcuts
 import app.widget.HttpsRenditionDownloader
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.time.LocalDate
+import java.time.ZoneId
 
 /** The newest thing a group's widget should show (`widget.home.small` → Elements → photo / collage). */
 data class NewestForWidget(
@@ -97,10 +105,31 @@ interface CaptureData {
 
     /** `my_developing()` (camera.overnight, docs/API.md §14.3): whether your photos are developing and the next reveal; never a number. */
     suspend fun myDeveloping(): Developing
+
+    // The friend and memories widgets (migration 0036; design/surfaces/widget.friend.md, widget.memories.md). Null: the
+    // answer is not known (offline, failed), so the widgets keep what they show.
+
+    /** The ids of the person's groups (All Groups keeps every group's item up to date). */
+    suspend fun myGroupIds(): Set<String>? = null
+
+    /** `widget_people()`: the friend widget's picker — everyone who shares a group, minus blocks. */
+    suspend fun widgetPeople(): List<WidgetPerson>? = null
+
+    /** `newest_photos_of(person)`: their posts and the photos they tagged themselves in, newest first. */
+    suspend fun newestPhotosOf(userId: String): List<PersonPhoto>? = null
+
+    /** `my_memories(from, days, zone)`: the person's own memory per day. */
+    suspend fun myMemories(from: LocalDate, days: Int, zone: ZoneId): List<DayMemory>? = null
+
+    /** The premium entitlement when it is known (the widgets' styles, `widget.styles`); null when it could not be read. */
+    suspend fun premiumOrNull(): Boolean? = null
+
+    /** Records a send to [groupIds] (the launcher's per-group camera shortcuts, `camera.quickaccess`). */
+    fun recordSend(groupIds: List<String>) = Unit
 }
 
-/** The app's [CaptureData] over the process-wide [DataGraph]. */
-class GraphCaptureData(private val graph: DataGraph) : CaptureData {
+/** The app's [CaptureData] over the process-wide [DataGraph]; [context] publishes the launcher's camera shortcuts. */
+class GraphCaptureData(private val graph: DataGraph, private val context: Context? = null) : CaptureData {
     override fun groups(): Flow<DataState<List<Group>>> = graph.groups.observeMyGroups()
 
     override suspend fun signedUrls(paths: Collection<String>): Map<String, String> = graph.signedUrls.urls(paths)
@@ -111,7 +140,22 @@ class GraphCaptureData(private val graph: DataGraph) : CaptureData {
         false
     }
 
-    override fun enqueue(post: NewPost): String = graph.uploads.enqueue(post)
+    override fun enqueue(post: NewPost): String = graph.uploads.enqueue(post).also { recordSend(post.groupIds) }
+
+    override fun recordSend(groupIds: List<String>) {
+        val app = context?.applicationContext ?: return
+        graph.scope.launch { runCatching { CameraShortcuts.recordSend(app, groupIds) { id -> graph.groups.group(id) } } }
+    }
+
+    override suspend fun myGroupIds(): Set<String>? = orNull { graph.groups.myGroups().map { it.id }.toSet() }
+
+    override suspend fun widgetPeople(): List<WidgetPerson>? = orNull { graph.widgets.people() }
+
+    override suspend fun newestPhotosOf(userId: String): List<PersonPhoto>? = orNull { graph.widgets.newestPhotosOf(userId) }
+
+    override suspend fun myMemories(from: LocalDate, days: Int, zone: ZoneId): List<DayMemory>? = orNull { graph.widgets.memories(from, days, zone) }
+
+    override suspend fun premiumOrNull(): Boolean? = if (graph.auth.currentUserId == null) null else orNull { graph.entitlements.isPremium() }
 
     override fun progress(draftId: String): Flow<UploadProgress> = graph.uploads.progress(draftId)
 
@@ -194,7 +238,16 @@ object CaptureDataProvider {
     @Volatile var override: CaptureData? = null
 
     fun get(context: Context): CaptureData =
-        override ?: DataGraph.get(context.applicationContext)?.let(::GraphCaptureData) ?: UnconfiguredCaptureData
+        override ?: DataGraph.get(context.applicationContext)?.let { GraphCaptureData(it, context.applicationContext) } ?: UnconfiguredCaptureData
+}
+
+/** [block]'s answer, or null when it failed (offline, signed out, a server error); cancellation still propagates. */
+private suspend inline fun <T> orNull(block: () -> T): T? = try {
+    block()
+} catch (e: CancellationException) {
+    throw e
+} catch (_: Exception) {
+    null
 }
 
 /** Streams a signed HTTPS URL into [target] through a temp file. */

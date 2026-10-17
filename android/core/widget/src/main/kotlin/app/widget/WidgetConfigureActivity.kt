@@ -10,23 +10,24 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
 /**
- * The picker UI the screens pass supplies (surface `widget.android`: choose the group a widget
- * shows). It calls [onGroupChosen] with a group id, or [onCancel].
+ * The picker UI the screens pass supplies (surfaces `widget.android`, `widget.friend`, `widget.memories`,
+ * `widget.styles`: choose what a widget of [WidgetKind] shows, then its style). It calls `onChosen` with the choice,
+ * or `onCancel`.
  */
 fun interface WidgetConfigureUi {
-    @Composable fun Content(onGroupChosen: (groupId: String) -> Unit, onCancel: () -> Unit)
+    @Composable fun Content(kind: WidgetKind, onChosen: (WidgetChoice) -> Unit, onCancel: () -> Unit)
 
     companion object {
         /** Set once at app start by the screens pass; the default draws nothing. */
-        @Volatile var current: WidgetConfigureUi = WidgetConfigureUi { _, _ -> }
+        @Volatile var current: WidgetConfigureUi = WidgetConfigureUi { _, _, _ -> }
     }
 }
 
 /**
  * Widget configuration container: launched by the launcher when a widget is placed (and on
- * reconfigure), or by tapping a widget that has no group yet. Binds the widget to the chosen
- * group and returns RESULT_OK; backing out returns RESULT_CANCELED, so the launcher drops the
- * widget it was placing.
+ * reconfigure), or by tapping a widget that has no group (or friend) yet. Binds the widget to the
+ * choice and returns RESULT_OK; backing out returns RESULT_CANCELED, so the launcher drops the
+ * widget it was placing. Which picker shows follows the widget's provider ([WidgetLayouts.kindOf]).
  */
 class WidgetConfigureActivity : ComponentActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
@@ -40,13 +41,17 @@ class WidgetConfigureActivity : ComponentActivity() {
             finish()
             return
         }
-        setContent { WidgetConfigureUi.current.Content(onGroupChosen = ::bind, onCancel = ::finish) }
+        val kind = WidgetLayouts.kindOf(this, appWidgetId)
+        setContent { WidgetConfigureUi.current.Content(kind = kind, onChosen = { choice -> bind(choice) }, onCancel = ::finish) }
     }
 
     /** Binds this widget to [groupId], renders it and finishes with RESULT_OK. */
-    fun bind(groupId: String) {
+    fun bind(groupId: String) = bind(WidgetChoice(groupId = groupId))
+
+    /** Binds this widget to [choice], renders it and finishes with RESULT_OK. */
+    fun bind(choice: WidgetChoice) {
         lifecycleScope.launch {
-            WidgetBinding.bind(applicationContext, appWidgetId, groupId)
+            WidgetBinding.bind(applicationContext, appWidgetId, choice)
             setResult(RESULT_OK, result())
             finish()
         }

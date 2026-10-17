@@ -93,7 +93,16 @@ object DeepLinkRouting {
         is DeepLink.Plan -> link.groupId?.let { group -> listOf(home, AppRoute.Group(group), PlanRoute(link.planId, group)) }
             ?: listOf(home, PlanRoute(link.planId))
         is DeepLink.Collage -> listOf(home, AppRoute.Group(link.groupId), AppRoute.CollageById(link.groupId, link.collageId))
+        // widget.styles → Locked: without the paywall (premium, or the session's prompt already used) the widget's own place.
+        is DeepLink.Premium -> link.then?.takeUnless { it is DeepLink.Premium }?.let(::backStack) ?: listOf(home)
     }
+
+    /**
+     * [link]'s destination with the paywall at its perk on top ([PaywallPerkRoute]): what a locked widget style's tap opens
+     * when the session's one prompt is granted; closing the paywall leaves the widget's own place (iOS `AppRouter`'s
+     * `afterPaywall`).
+     */
+    fun withPaywall(link: DeepLink.Premium): List<AppRoute> = backStack(link) + PaywallPerkRoute(link.perk)
 
     /** The destination itself (top of [backStack]). */
     fun destination(link: DeepLink): AppRoute = backStack(link).last()

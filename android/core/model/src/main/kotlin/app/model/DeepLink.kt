@@ -55,6 +55,16 @@ sealed interface DeepLink {
      * the group's collage of the day (iOS `DeepLink.collage(groupID:collageID:)`).
      */
     data class Collage(val groupId: String, val collageId: String) : DeepLink
+
+    /**
+     * `app://premium?perk=widgets&to=camera&group=<id>` — a locked premium perk tapped from outside the app
+     * (`widget.styles`: a widget whose chosen style needs premium, design/surfaces/widget.styles.md → Locked): the
+     * paywall at [perk]'s page when the session's one prompt is still available (`SessionPromptGate`), then — or
+     * otherwise — [then], the widget's usual destination. `to` names [then]'s host and its fields follow flat (iOS
+     * `DeepLink.premium(perk:then:)`, the same format). [then] is never itself a premium link or an invite. Never taken
+     * from a notification.
+     */
+    data class Premium(val perk: String, val then: DeepLink? = null) : DeepLink
 }
 
 /**
@@ -92,6 +102,21 @@ class DeepLinkCodec(private val domain: String?) {
         is DeepLink.YearStory -> app(HOST_YEAR_STORY, P_GROUP to link.groupId, P_YEAR to link.year.toString())
         is DeepLink.Plan -> app(HOST_PLAN, *listOfNotNull(P_PLAN to link.planId, link.groupId?.let { P_GROUP to it }).toTypedArray())
         is DeepLink.Collage -> app(HOST_COLLAGE, P_GROUP to link.groupId, P_COLLAGE to link.collageId)
+        is DeepLink.Premium -> premium(link)
+    }
+
+    /** `app://premium?perk=<perk>[&to=<then's host>&<then's fields>]`. */
+    private fun premium(link: DeepLink.Premium): String {
+        val base = app(HOST_PREMIUM, P_PERK to link.perk)
+        val next = link.then?.takeUnless { it is DeepLink.Premium || it is DeepLink.Invite }?.let(::format) ?: return base
+        val uri = try {
+            URI(next)
+        } catch (_: Exception) {
+            return base
+        }
+        val host = uri.host ?: return base
+        val query = uri.rawQuery
+        return "$base&$P_TO=${encode(host)}" + if (query.isNullOrEmpty()) "" else "&$query"
     }
 
     private fun parseInvite(uri: URI): DeepLink? {
@@ -110,6 +135,7 @@ class DeepLinkCodec(private val domain: String?) {
         val host = (uri.host ?: uri.authority)?.lowercase() ?: return null
         val path = uri.rawPath.orEmpty()
         if (path.isNotEmpty() && path != "/") return null
+        if (host == HOST_PREMIUM) return parsePremium(uri)
         // The camera opens even when its group id is missing or unreadable (C-24).
         if (host == HOST_CAMERA) return DeepLink.Camera(query(uri.rawQuery)?.get(P_GROUP)?.takeIf(::isId))
         val q = query(uri.rawQuery) ?: return null
@@ -130,6 +156,25 @@ class DeepLinkCodec(private val domain: String?) {
             HOST_COLLAGE -> both(id(P_GROUP), id(P_COLLAGE), DeepLink::Collage)
             else -> null
         }
+    }
+
+    /**
+     * A premium link: the perk must be an identifier; the destination is read from the same fields under the host `to`
+     * names (never `premium` again). An incomplete destination is dropped and the paywall link stays.
+     */
+    private fun parsePremium(uri: URI): DeepLink? {
+        val q = query(uri.rawQuery) ?: return null
+        val perk = q[P_PERK]?.takeIf(::isId) ?: return null
+        val to = q[P_TO]?.lowercase()?.takeIf { isId(it) && it != HOST_PREMIUM }
+        val then = to?.let { host ->
+            val rest = q.filterKeys { it != P_PERK && it != P_TO }.entries.joinToString("&") { (k, v) -> "${encode(k)}=${encode(v)}" }
+            try {
+                parseAppLink(URI("$APP_SCHEME://$host?$rest"))
+            } catch (_: Exception) {
+                null
+            }
+        }
+        return DeepLink.Premium(perk, then?.takeUnless { it is DeepLink.Premium })
     }
 
     private inline fun <A : Any, B : Any> both(a: A?, b: B?, make: (A, B) -> DeepLink): DeepLink? =
@@ -167,6 +212,7 @@ class DeepLinkCodec(private val domain: String?) {
         const val HOST_YEAR_STORY = "year-story"
         const val HOST_PLAN = "plan"
         const val HOST_COLLAGE = "collage"
+        const val HOST_PREMIUM = "premium"
 
         const val P_GROUP = "group"
         const val P_POST = "post"
@@ -178,6 +224,12 @@ class DeepLinkCodec(private val domain: String?) {
         const val P_YEAR = "year"
         const val P_PLAN = "plan"
         const val P_COLLAGE = "collage"
+        /** `premium` links: the perk's paywall page, and the host of the destination that follows. */
+        const val P_PERK = "perk"
+        const val P_TO = "to"
+
+        /** The paywall page of the widget styles (`paywall.perk.widgets.*`, `widget.styles`). */
+        const val PERK_WIDGETS = "widgets"
 
         private const val HTTPS = "https"
         private const val HTTPS_PORT = 443

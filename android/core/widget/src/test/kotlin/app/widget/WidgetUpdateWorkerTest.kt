@@ -62,6 +62,21 @@ class WidgetUpdateWorkerTest {
         assertEquals(listOf(request.renditionUrl), downloads)
     }
 
+    /** A stored photo goes on to the friend widgets of its poster (docs/WIDGET_REFRESH.md "Friend and memories widgets"). */
+    @Test fun aPhotoWithItsPosterIsOfferedToTheFriendWidgets() = runBlocking {
+        val copied = mutableListOf<Pair<String, String?>>()
+        val worker = TestListenableWorkerBuilder<WidgetUpdateWorker>(context)
+            .setInputData(request.copy(senderId = "u2").toData())
+            .setWorkerFactory(object : WorkerFactory() {
+                override fun createWorker(appContext: Context, workerClassName: String, workerParameters: WorkerParameters): ListenableWorker =
+                    WidgetUpdateWorker(appContext, workerParameters, { _, out -> out.write(1) }, store, { _, sender, snapshot, _ -> copied += sender to snapshot.sourceId }) { _, g -> refreshed += g }
+            })
+            .build()
+        assertEquals(ListenableWorker.Result.success(), worker.doWork())
+        assertEquals(listOf("u2" to "p1"), copied)
+        assertEquals(listOf("g1"), refreshed)
+    }
+
     @Test fun duplicateDeliveryDoesNotDownloadAgain() = runBlocking {
         worker({ _, out -> out.write(1) }).doWork()
         downloads.clear(); refreshed.clear()
@@ -92,6 +107,9 @@ class WidgetUpdateWorkerTest {
     @Test fun requestDataRoundTrips() {
         assertEquals(request, WidgetUpdateRequest.fromData(request.toData()))
         assertNull(WidgetUpdateRequest.fromData(request.copy(groupId = "../x").toData()))
+        // The poster rides along for the friend widgets (widget.friend); an unreadable one is dropped.
+        assertEquals("u2", WidgetUpdateRequest.fromData(request.copy(senderId = "u2").toData())?.senderId)
+        assertNull(WidgetUpdateRequest.fromData(request.copy(senderId = "../u").toData())?.senderId)
     }
 
     @Test fun schedulerQueuesOneChainPerGroup() {

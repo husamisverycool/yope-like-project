@@ -140,7 +140,8 @@ sealed interface PushMessage {
                 groupId = group,
                 title = s(PushKeys.TITLE) ?: return null,
                 body = s(PushKeys.BODY),
-                link = codec.parse(s(PushKeys.LINK)) ?: derived,
+                // A premium link only ever comes from a widget (widget.styles), never from a notification.
+                link = codec.parse(s(PushKeys.LINK))?.takeUnless { it is DeepLink.Premium } ?: derived,
                 collapseKey = s(PushKeys.COLLAPSE_KEY),
             )
         }
