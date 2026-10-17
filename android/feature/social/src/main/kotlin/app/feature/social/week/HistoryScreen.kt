@@ -33,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.data.model.PhotoBatches
+import app.data.model.batchKey
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
@@ -173,7 +175,11 @@ private fun HistorySection(week: HistoryWeekUi, state: HistoryState, nav: Histor
     val range = if (week.isCurrent && week.photos.isEmpty() && week.collages.isEmpty()) null else Formats.weekRange(context, week.weekStart, zone)
     val spoken = if (range == null) title else "$title, ${Formats.spokenWeekRange(context, week.weekStart, zone)}"
     val start = week.weekStart.toString()
-    val photos = week.photos.map { p ->
+    // Photos posted together are one tile, the batch's first photo with the batch marker (`layout.global.photoBatch`);
+    // the viewer opens on it with the whole batch (`photo.viewer.layout.batchDots`).
+    val runs = PhotoBatches.runs(week.photos.sortedBy { it.post.visibleAt }) { it.post.batchKey }
+    val photos = runs.map { run ->
+        val p = run.first()
         // the week and the day a photo belongs to: when it became visible (an overnight photo: its reveal)
         val day = p.post.visibleAt.atZone(zone).toLocalDate()
         StripPhoto(
@@ -183,6 +189,7 @@ private fun HistorySection(week: HistoryWeekUi, state: HistoryState, nav: Histor
             stringRes(R.string.week_history_a11y_tile, Formats.weekdayLong(day), Formats.spokenDate(day), p.authorName.orEmpty()),
             { nav.photo(start, p.post.id) },
             p.videoDurationMs,
+            batch = run.size > 1,
         )
     } + week.collages.map { c ->
         // the group's photo of the day (the same-moment collage) on its day, before that day's photos

@@ -639,11 +639,14 @@ private fun LazyListScope.loaded(
         }
     }
     item(key = "pager") { CardPager(friendWeeks(thisWeek), zone, actions, feedCards) }
-    earlier.groupBy { it.post.visibleAt.atZone(zone).toLocalDate() }.forEach { (day, dayPhotos) ->
+    // Photos posted together are one cell, the batch's first photo with the batch marker, on that photo's day
+    // (`layout.global.photoBatch`); newest first.
+    val earlierRuns = PhotoBatches.runs(earlier.asReversed()) { it.post.batchKey }.asReversed()
+    earlierRuns.groupBy { it.first().post.visibleAt.atZone(zone).toLocalDate() }.forEach { (day, dayRuns) ->
         item(key = "day:$day", contentType = "day") {
             Column(Modifier.fillMaxWidth()) {
                 SectionHeader(Formats.longDate(day), afterContent = true)
-                PhotoGrid(dayPhotos.map { gridCell(it, zone, actions) }, columns = GRID_COLUMNS)
+                PhotoGrid(dayRuns.map { gridCell(it.first(), zone, actions, batch = it.size > 1) }, columns = GRID_COLUMNS)
             }
         }
     }
@@ -848,15 +851,30 @@ private fun photoMenu(photo: GroupPhoto, actions: GroupScreenActions): List<DsMe
     return listOf(report, DsMenuItem(stringResource(R.string.groups_screen_photo_menu_block, name), { actions.onBlock(photo.post) }, destructive = true))
 }
 
+/** [batch]: the cell stands for photos posted together (the batch marker; its label + `chat.thread.a11y.batch`). */
 @Composable
-private fun gridCell(photo: GroupPhoto, zone: ZoneId, actions: GroupScreenActions): GridCell {
+private fun gridCell(photo: GroupPhoto, zone: ZoneId, actions: GroupScreenActions, batch: Boolean = false): GridCell {
     val day = photo.post.visibleAt.atZone(zone).toLocalDate()
-    return GridCell(photo.post.id, photo.url, photoLabel(day, photo.authorFirstName), { actions.onPhoto(photo.post) }, photoMenu(photo, actions))
+    return GridCell(photo.post.id, photo.url, withBatch(photoLabel(day, photo.authorFirstName), batch), { actions.onPhoto(photo.post) }, photoMenu(photo, actions), batch = batch)
 }
 
-/** One member's week for a C-18 card: their newest photo of the week. */
-private fun friendWeeks(thisWeek: List<GroupPhoto>): List<GroupPhoto> =
-    thisWeek.filterNot { it.mine }.distinctBy { it.post.authorId }
+/** [label], then `chat.thread.a11y.batch` ("Photos posted together") when it stands for a batch. */
+@Composable
+private fun withBatch(label: String, batch: Boolean): String =
+    if (batch) label + ", " + stringResource(R.string.chat_thread_a11y_batch) else label
+
+/** One member's week for a C-18 card: [photo] = their newest photo, or the first photo of their newest batch ([batch]). */
+private data class FriendWeek(val photo: GroupPhoto, val batch: Boolean)
+
+/**
+ * One card per member (not you) who shared this week, newest first ([thisWeek] is newest first). Photos posted together
+ * are one card, the batch's first photo with the batch marker (`layout.global.photoBatch`).
+ */
+private fun friendWeeks(thisWeek: List<GroupPhoto>): List<FriendWeek> =
+    PhotoBatches.runs(thisWeek.asReversed()) { it.post.batchKey }.asReversed()
+        .filterNot { it.first().mine }
+        .distinctBy { it.first().post.authorId }
+        .map { run -> FriendWeek(run.first(), run.size > 1) }
 
 /**
  * The members' weeks and memories pager: C-18 friend cards (newest first) and the memory feed cards, a horizontal row
@@ -864,7 +882,7 @@ private fun friendWeeks(thisWeek: List<GroupPhoto>): List<GroupPhoto> =
  * `size.global.sectionGap` below the strip, so an empty pager takes no space.
  */
 @Composable
-private fun CardPager(friends: List<GroupPhoto>, zone: ZoneId, actions: GroupScreenActions, feedCards: @Composable () -> Unit) {
+private fun CardPager(friends: List<FriendWeek>, zone: ZoneId, actions: GroupScreenActions, feedCards: @Composable () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -872,15 +890,17 @@ private fun CardPager(friends: List<GroupPhoto>, zone: ZoneId, actions: GroupScr
             .padding(horizontal = Tokens.Sizes.globalScreenMargin),
         horizontalArrangement = Arrangement.spacedBy(Tokens.Sizes.globalCardGap),
     ) {
-        friends.forEach { photo ->
+        friends.forEach { (photo, batch) ->
             val day = photo.post.visibleAt.atZone(zone).toLocalDate()
             FriendCard(
                 name = photo.authorFirstName.orEmpty(),
                 avatar = photo.authorAvatarUrl,
                 photo = photo.url,
-                contentDescription = photoLabel(day, photo.authorFirstName),
+                contentDescription = withBatch(photoLabel(day, photo.authorFirstName), batch),
+                // photos posted together: the viewer opens on the batch's first photo with the whole batch
                 onClick = { actions.onPhoto(photo.post) },
                 modifier = Modifier.padding(top = Tokens.Sizes.globalSectionGap),
+                batch = batch,
             )
         }
         feedCards()

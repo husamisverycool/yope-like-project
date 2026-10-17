@@ -16,6 +16,9 @@ struct FriendCard: View {
     var avatar: PhotoSource?
     var photo: PhotoSource?
     var newLabel: String?
+    /// The card stands for photos posted together: the batch marker at the photo's top-trailing corner
+    /// (`layout.global.batchMarker`); the caller's label adds `chat.thread.a11y.batch`.
+    var isBatch: Bool
     let accessibilityLabel: String
     let action: () -> Void
 
@@ -24,6 +27,7 @@ struct FriendCard: View {
         avatar: PhotoSource?,
         photo: PhotoSource?,
         newLabel: String? = nil,
+        isBatch: Bool = false,
         accessibilityLabel: String,
         action: @escaping () -> Void
     ) {
@@ -31,6 +35,7 @@ struct FriendCard: View {
         self.avatar = avatar
         self.photo = photo
         self.newLabel = newLabel
+        self.isBatch = isBatch
         self.accessibilityLabel = accessibilityLabel
         self.action = action
     }
@@ -48,6 +53,9 @@ struct FriendCard: View {
                 PhotoView(source: photo)
                     .frame(width: Tokens.Sizes.globalFriendCardWidth, height: Tokens.Sizes.globalFriendCardHeight)
                     .clipShape(DSShape.rounded(Tokens.Radii.globalCard))
+                    .overlay(alignment: .topTrailing) {
+                        if isBatch { BatchTileMarker() }
+                    }
                     .newBadge(newLabel)
             }
             .frame(width: Tokens.Sizes.globalFriendCardWidth, alignment: .leading)

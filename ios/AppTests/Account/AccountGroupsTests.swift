@@ -169,6 +169,23 @@ final class AccountGroupsTests: XCTestCase {
         model.stop()
     }
 
+    func testFeedShowsPhotosPostedTogetherAsOneCardAndOneCell() async {
+        let fixture = AccountFixture()
+        let group = fixture.familyGroup()
+        let first = fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 32, batchID: "b1")
+        fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 31, batchID: "B1")
+        let oldFirst = fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 60 * 24 * 5, batchID: "b2")
+        fixture.data.addPost(groupID: group.id, author: fixture.rui.id, minutesAgo: 60 * 24 * 5 - 1, batchID: "b2")
+        let model = GroupFeedModel(groupID: group.id, data: fixture.data, now: { fixture.data.clock })
+        await model.refresh()
+
+        XCTAssertEqual(model.memberWeeks.map(\.newest.id), [first.id], "the card shows the batch's first photo")
+        XCTAssertEqual(model.memberWeeks.map(\.isBatch), [true])
+        XCTAssertEqual(model.earlierSections.flatMap(\.posts).map(\.id), [oldFirst.id], "one cell for the batch")
+        XCTAssertEqual(model.earlierSections.first?.runs.first?.count, 2)
+        model.stop()
+    }
+
     func testFeedQuietWeekKeepsEarlierPhotos() async {
         let fixture = AccountFixture()
         let group = fixture.familyGroup()

@@ -537,8 +537,10 @@ struct GroupFeedView: View {
                     name: week.member.profile?.firstName ?? "",
                     avatar: week.member.profile?.avatarPath.map { PhotoSource.storage($0) },
                     photo: week.newest.media?.imagePath(for: .display).map { PhotoSource.storage($0) },
-                    accessibilityLabel: photoLabel(week.newest)
+                    isBatch: week.isBatch,
+                    accessibilityLabel: SocialA11y.withBatch(photoLabel(week.newest), isBatch: week.isBatch)
                 ) {
+                    // photos posted together: the viewer opens on the batch's first photo, the batch side by side
                     open(week.newest)
                 }
                 .contextMenu { photoMenu(week.newest) }
@@ -603,7 +605,7 @@ struct GroupFeedView: View {
                         SectionHeader(title: GroupDates.longDate(section.day, calendar: model.calendar))
                     } content: {
                         GroupPhotoGrid(
-                            cells: section.posts.map { GroupPhotoCell(id: $0.id.rawValue, post: $0, label: photoLabel($0)) },
+                            cells: section.runs.compactMap { gridCell($0) },
                             columns: Self.gridColumns,
                             onSelect: { cell in if let post = cell.post { open(post) } }
                         ) { cell in
@@ -617,6 +619,14 @@ struct GroupFeedView: View {
             }
             .dsAnimation(ComponentMotion.crossfade, value: model.earlierSections.map(\.id))
         }
+    }
+
+    /// One cell per run: its first photo; photos posted together carry the batch marker (`layout.global.photoBatch`) and
+    /// open the viewer on the batch.
+    private func gridCell(_ run: [PostWithMedia]) -> GroupPhotoCell? {
+        guard let post = run.first else { return nil }
+        let isBatch = run.count > 1
+        return GroupPhotoCell(id: post.id.rawValue, post: post, label: SocialA11y.withBatch(photoLabel(post), isBatch: isBatch), isBatch: isBatch)
     }
 
     // MARK: Removed
@@ -815,11 +825,12 @@ struct GroupWeekStrip<Menu: View>: View {
     }
 }
 
-/// One cell of the dated grid.
+/// One cell of the dated grid; `isBatch`: it stands for photos posted together (`layout.global.batchMarker`).
 struct GroupPhotoCell: Identifiable, Hashable {
     let id: String
     let post: PostWithMedia?
     let label: String
+    var isBatch: Bool = false
 }
 
 /// C-21 album grid with a long-press menu per cell — a local variant of `PhotoGrid` (Components/PhotoGrid.swift), which
@@ -844,6 +855,9 @@ struct GroupPhotoGrid<Menu: View>: View {
                     PhotoView(source: cell.post?.media?.imagePath(for: .thumb).map { PhotoSource.storage($0) })
                         .aspectRatio(1, contentMode: .fit) // provenance-ok: square cells (C-21)
                         .clipShape(Rectangle())
+                        .overlay(alignment: .topTrailing) {
+                            if cell.isBatch { BatchTileMarker() }
+                        }
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

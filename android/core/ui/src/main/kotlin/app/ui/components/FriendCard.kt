@@ -52,7 +52,9 @@ data class FriendCardSpec(
  * `size.global.cardHeaderGap` below the avatar. [badge]: the C-24 "new" capsule `size.global.badgeInset` from the
  * card's top and right — never a count; Retro's "Seen" pill is do-not-copy. One button labelled
  * [contentDescription]; pressed: platform default + `haptic.global.tap` (the viewer opens with
- * `duration.global.photoOpen` — the caller's navigation).
+ * `duration.global.photoOpen` — the caller's navigation). [batch]: the card stands for photos posted together — the
+ * batch marker at the photo's top-trailing corner (`layout.global.batchMarker`); [contentDescription] carries
+ * `chat.thread.a11y.batch`.
  */
 @Composable
 fun FriendCard(
@@ -63,6 +65,7 @@ fun FriendCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     badge: String? = null,
+    batch: Boolean = false,
 ) {
     Column(
         modifier
@@ -80,6 +83,7 @@ fun FriendCard(
         Spacer(Modifier.height(Tokens.Sizes.globalCardHeaderGap))
         Box(Modifier.size(Tokens.Sizes.globalFriendCardWidth, Tokens.Sizes.globalFriendCardHeight).clip(RoundedCornerShape(Tokens.Radii.globalCard))) {
             DsImage(photo, null, Modifier.fillMaxSize())
+            if (batch) BatchTileMarker()
             if (badge != null) NewBadge(badge, Modifier.align(Alignment.TopEnd).padding(top = Tokens.Sizes.globalBadgeInset, end = Tokens.Sizes.globalBadgeInset))
         }
     }
