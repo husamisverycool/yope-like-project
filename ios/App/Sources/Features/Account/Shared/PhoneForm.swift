@@ -35,7 +35,7 @@ struct PhoneForm: View {
         ) {
             FormField(
                 Copy.authPhoneFieldPlaceholder,
-                text: $model.phone,
+                text: $model.phoneText,
                 accessibilityLabel: Copy.authPhoneFieldAccessibilityLabel,
                 keyboard: .phonePad,
                 contentType: .telephoneNumber,

@@ -27,7 +27,14 @@ final class PhoneModel {
     init(data: AccountDataSource, phone: String? = nil, deviceRegion: String? = Locale.current.region?.identifier) {
         self.data = data
         self.deviceRegion = deviceRegion
-        self.phone = phone ?? PhoneNumberInput.initialText(region: deviceRegion)
+        self.phone = PhoneNumberFormatting.formatted(phone ?? PhoneNumberInput.initialText(region: deviceRegion))
+    }
+
+    /// The field's binding: every edit is formatted as typed (`PhoneNumberFormatting.edit`); `phone` keeps the shown
+    /// text and `send()` submits its E.164 form.
+    var phoneText: String {
+        get { phone }
+        set { phone = PhoneNumberFormatting.edit(from: phone, to: newValue) }
     }
 
     /// The region whose flag shows at the field's leading edge; nil while no calling code is typed.
@@ -39,7 +46,7 @@ final class PhoneModel {
     func selectCountry(_ region: String) {
         guard let code = CallingCodes.byRegion[region.uppercased()] else { return }
         pickedRegion = region.uppercased()
-        phone = PhoneNumberInput.replacingCallingCode(in: phone, with: code)
+        phone = PhoneNumberFormatting.formatted(PhoneNumberInput.replacingCallingCode(in: phone, with: code))
     }
 
     /// "continue" is enabled once digits follow the calling code.

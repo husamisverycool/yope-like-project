@@ -8,7 +8,7 @@ Reference image(s): `references/auto/retro/lazyweb/retro-lazyweb-20251119-social
 
 Snapshots (CI, `ios/build/snapshots/account/`): `auth.phone-landing-light.png`, `auth.phone-landing-dark.png`, `auth.phone-form-light.png`, `auth.phone-form-filled-light.png`, `auth.phone-form-filled-dark.png`, `auth.phone-sending-light.png`, `auth.phone-offline-light.png`, `auth.phone-country-list-light.png`
 
-**Summary: 56 matched · 1 approximated · 0 not matched · 2 not applicable on iOS / owner / another pass.**
+**Summary: 57 matched · 0 approximated · 0 not matched · 2 not applicable on iOS / owner / another pass.**
 
 
 ## References
@@ -16,7 +16,7 @@ Snapshots (CI, `ios/build/snapshots/account/`): `auth.phone-landing-light.png`, 
 | status | token / copy | reference value | iOS implementation |
 |---|---|---|---|
 | matched | `auth.phone.fontSize.wordmark` | 64 pt (SOURCED) | `Tokens.FontSizes.authPhoneFontSizeWordmark` in PhoneScreen.swift |
-| approximated | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button; flagWidth: 30; flagHeight: 2… (SOURCED) | `Tokens.Layouts.AuthPhoneLayoutCountryCode` in PhoneForm.swift — flag, prefill, inline code, country list done; `autoFormat` not done (no phone-number formatting library: the number stays as typed) |
+| matched | `auth.phone.layout.countryCode` | pattern: flag at the field's leading edge + the calling code typed inline with the number ('+1 555 …'); no separate code button; flagWidth: 30; flagHeight: 2… (SOURCED) | `Tokens.Layouts.AuthPhoneLayoutCountryCode` in PhoneForm.swift — flag, prefill, inline code, country list done; `autoFormat` done in PhoneNumberInput.swift (`PhoneNumberFormatting`: PhoneNumberKit 4.2.13 `PartialFormatter`, the Swift port of libphonenumber's AsYouTypeFormatter that Android uses; edits at the end are re-formatted, an edit inside the number stays as typed so the cursor does not jump, deleting a separator deletes the digit before it; the shown text only — `send()` submits `PhoneNumberInput.normalized`, E.164) |
 
 ## Structure
 

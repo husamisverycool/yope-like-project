@@ -62,11 +62,25 @@ final class AccountAuthTests: XCTestCase {
         XCTAssertEqual(model.flagRegion, "US")
         model.phone = "+1 555 123 4567"
         model.selectCountry("CA")
-        XCTAssertEqual(model.phone, "+1 555 123 4567")
+        XCTAssertEqual(PhoneNumberInput.normalized(model.phone), "+15551234567")
         XCTAssertEqual(model.flagRegion, "CA", "same code: the chosen country's flag")
         model.selectCountry("pt")
-        XCTAssertEqual(model.phone, "+351 555 123 4567")
+        XCTAssertEqual(PhoneNumberInput.normalized(model.phone), "+3515551234567")
         XCTAssertEqual(model.flagRegion, "PT")
+    }
+
+    func testPhoneFieldFormatsAsTypedAndSendsE164() {
+        // PhoneNumberKit's own PartialFormatter expectations (PartialFormatterTests, French mobile).
+        XCTAssertEqual(PhoneNumberFormatting.formatted("+33689555555"), "+33 6 89 55 55 55")
+        XCTAssertEqual(PhoneNumberInput.normalized(PhoneNumberFormatting.formatted("+33689555555")), "+33689555555")
+        XCTAssertEqual(PhoneNumberFormatting.formatted("0689"), "0689", "no '+': left as typed")
+        XCTAssertEqual(PhoneNumberFormatting.edit(from: "+33 6 89 55 55 5", to: "+33 6 89 55 55 55"), "+33 6 89 55 55 55")
+        XCTAssertEqual(PhoneNumberFormatting.edit(from: "+33 6 ", to: "+33 6"), "+33", "deleting a separator deletes the digit before it")
+        XCTAssertEqual(PhoneNumberFormatting.edit(from: "+33 6 89 55", to: "+33 6 8 55"), "+33 6 8 55", "an edit inside stays as typed")
+
+        let model = PhoneModel(data: InMemoryAccountData(), deviceRegion: "FR")
+        model.phoneText = "+33689555555"
+        XCTAssertEqual(model.phone, "+33 6 89 55 55 55")
     }
 
     func testCountryListIsSortedAndComplete() {
