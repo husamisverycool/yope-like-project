@@ -48,29 +48,24 @@ struct PlanCountdownContent {
         days.flatMap { PlanCountdownText.text(days: $0) }
     }
 
-    /// The state column's line. "No plans" (`widget.countdown.empty.noPlans`) is BLOCKED: DEBUG builds only; release
-    /// builds show the glyph alone.
+    /// The state column's line: "No plans yet" (`widget.countdown.empty.noPlans`), the shared set-up / signed-out lines.
     var stateLine: String? {
         switch state {
         case .notSetUp: return Copy.widgetHomeSmallEmptySetUp
         case .signedOut: return Copy.widgetHomeSmallEmptySignedOut
-        case .noPlans:
-            #if DEBUG
-            return BlockedCopy.widgetCountdownEmptyNoPlans
-            #else
-            return nil
-            #endif
+        case .noPlans: return Copy.widgetCountdownEmptyNoPlans
         case .loading, .plan: return nil
         }
     }
 
-    /// `widget.countdown.a11y.plan` ("{title} with {group}, {countdown}", the day words inside the sentence); a state:
-    /// its visible line.
+    /// `widget.countdown.a11y.plan` ("{title} with {group}, {countdown}", the day words inside the sentence: "… today",
+    /// "… tomorrow", "… in 3 days"); a state: its visible line. A featured plan's day is today or later, so the
+    /// countdown is always there (a day before today counts as today: the sentence never ends in ", ").
     var accessibilityLabel: String {
         switch state {
         case .plan:
-            let spoken = days.flatMap { PlanCountdownText.text(days: $0, context: .middleOfSentence) }
-            return Copy.widgetCountdownA11yPlan(title: title ?? "", group: groupName ?? "", countdown: spoken ?? "")
+            let spoken = PlanCountdownText.text(days: max(0, days ?? 0), context: .middleOfSentence) ?? ""
+            return Copy.widgetCountdownA11yPlan(title: title ?? "", group: groupName ?? "", countdown: spoken)
         case .noPlans, .notSetUp, .signedOut: return stateLine ?? ""
         case .loading: return ""
         }
@@ -79,17 +74,14 @@ struct PlanCountdownContent {
 
 /// The countdown line (`widget.countdown` "The countdown line"): the platform's relative formatter at day granularity,
 /// never typed by us and never hours, minutes or seconds — ≥ 2 days `unitsStyle .full` ("In 3 days"), 1 day `.named`
-/// ("Tomorrow"), both `formattingContext .beginningOfSentence` (`.middleOfSentence` inside the accessibility label). The
-/// same day's word (`.named`, 0 days) is BLOCKED until a snapshot test pins it (plans.md §12 item 2): DEBUG builds show
-/// it, release builds leave the line out.
+/// ("Tomorrow"), 0 days `.named` ("Today": the formatter's same-day word, as ICU's `format(THIS, DAY) // "today"` and
+/// Android's widget; pinned by `PlanCountdownTextTests`, MERGE FV-2), all `formattingContext .beginningOfSentence`
+/// (`.middleOfSentence` inside the accessibility label).
 enum PlanCountdownText {
     static func text(
         days: Int, locale: Locale = .current, context: Formatter.Context = .beginningOfSentence
     ) -> String? {
         guard days >= 0 else { return nil }
-        #if !DEBUG
-        if days == 0 { return nil }
-        #endif
         let formatter = RelativeDateTimeFormatter()
         formatter.locale = locale
         formatter.unitsStyle = .full

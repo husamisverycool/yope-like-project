@@ -22,14 +22,10 @@ enum PlanFormats {
     }
 
     /// plans.page meta line 1: the locale's full date and short time ("Saturday, October 24, 2026 at 7:30 PM"); an
-    /// all-day plan: the date alone. On the plan's day the spec asks for the platform's "today" word + time — that word
-    /// is BLOCKED (plans.md §12 item 2), so only DEBUG builds use it; release builds keep the full date.
+    /// all-day plan: the date alone. On the plan's day the platform's "today" word + time ("Today at 7:30 PM";
+    /// `doesRelativeDateFormatting`, whose reference names "phrases such as “today” and “tomorrow”" — MERGE FV-2).
     static func whenLine(startsAt: Date, allDay: Bool, localDate: LocalDate, timeZone: TimeZone, now: Date) -> String {
-        #if DEBUG
         let relative = LocalDate(now, in: timeZone) == localDate
-        #else
-        let relative = false
-        #endif
         if allDay {
             return formatter(timeZone: timeZone, date: .full, time: .none, relative: relative)
                 .string(from: noon(of: localDate, in: timeZone))

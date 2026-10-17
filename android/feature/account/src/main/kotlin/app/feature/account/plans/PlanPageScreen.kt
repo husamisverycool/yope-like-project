@@ -431,7 +431,7 @@ fun PlanPageScreen(state: PlanPageUiState, now: Instant, actions: PlanPageAction
                 item(key = "madeBy") { MadeBy(state.maker, plan.note) }
                 if (state.going.isNotEmpty()) {
                     item(key = "going") {
-                        val label = if (past) PlanBlocked.went?.let { stringResource(it) } else stringResource(R.string.plans_page_going)
+                        val label = stringResource(if (past) R.string.plans_page_went else R.string.plans_page_going)
                         ListBlock(label, state.going) { peopleOpen = true }
                     }
                 }
@@ -677,12 +677,12 @@ private fun Album(photos: List<PlanPhoto>, onPhoto: (Post) -> Unit) {
 /**
  * "Who's Coming" (C-29 page sheet, `plans.page.people.title`): C-14 sections Going, Maybe and — for its own member and the
  * maker only, as RLS returns it — Can't go, of C-16 rows (avatar `size.global.avatarPicker`, first name `listTitle`); no
- * counts; rows are not buttons. A past plan's Going section takes the BLOCKED "Went" label (left out in release builds).
+ * counts; rows are not buttons. A past plan's Going section reads "Went" (`plans.page.went`, MERGE FV-2).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PeopleSheet(state: PlanPageUiState, past: Boolean, onDismiss: () -> Unit) {
-    val goingLabel = if (past) PlanBlocked.went?.let { stringResource(it) } else stringResource(R.string.plans_page_going)
+    val goingLabel = stringResource(if (past) R.string.plans_page_went else R.string.plans_page_going)
     DsBottomSheet(onDismissRequest = onDismiss) {
         SheetHeader(stringResource(R.string.plans_page_people_title))
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = Tokens.Sizes.globalSectionGap)) {

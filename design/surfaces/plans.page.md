@@ -84,8 +84,8 @@ Apple Invites' event-page order"`.
 | loading | first fetch | header, cover placeholder `color.global.control`, title skeleton-free (C-28: nothing until loaded, then `duration.global.fade`) | — |
 | upcoming, no answer | default | answer row all outline | — |
 | upcoming, answered | member answered | that capsule primary | — |
-| today | `local_date` = today | same as upcoming; meta line 1 uses the platform "today" word + time (BLOCKED word, `plans.md` §12 item 2) | — |
-| past | the day has ended | no answer row; lists read "Went" / "Maybe" (Apple / Partiful past wording) — **BLOCKED** label text; album block when collected | `plans.page.went` (BLOCKED) |
+| today | `local_date` = today | same as upcoming; meta line 1 uses the platform "today" word + time (iOS `DateFormatter.doesRelativeDateFormatting`, Android ICU `DateFormat.RELATIVE_FULL`; VERIFIED, `references/auto/platform/relative-day-word-docs-excerpt.txt`, MERGE FV-2): "Today at 7:30 PM" | — |
+| past | the day has ended | no answer row; lists read "Went" / "Maybe" (Partiful's past guest line "11 Went · 4 Maybe" without its counts); album block when collected | `plans.page.went` |
 | canceled | `status = canceled` | strikethrough title, `plans.page.canceled`, no answer row, lists kept read-only (Apple keeps the guest list) | `plans.page.canceled` |
 | removed from group / plan gone | RLS hides it | C-27 block centred | `plans.page.notFound.title`, `.notFound.detail` |
 | error | fetch failed | C-27 error variant with retry | `plans.page.error.title` |
@@ -142,5 +142,5 @@ blasts.
 | item | status | smallest capture |
 |---|---|---|
 | Retro capsule toggle motion | component default cross-fade | one screen recording of a Retro toggle capsule (e.g. "I'm in this") |
-| past-plan list wording | BLOCKED (`plans.page.went`) | a screenshot of a past Apple Invites event's guest list |
+| past-plan list wording | Partiful's "Went" (count dropped), MERGE FV-2 | a screenshot of a past Apple Invites event's guest list would confirm |
 | Apple Invites canceled event page | text only (AI-G) | one screenshot of a canceled event in Apple Invites |

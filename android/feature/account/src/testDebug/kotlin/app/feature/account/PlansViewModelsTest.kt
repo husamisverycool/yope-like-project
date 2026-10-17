@@ -214,6 +214,22 @@ class PlansViewModelsTest {
         assertNull("a failed read", loadNextPlan(backend, "g1"))
     }
 
+    /** plans.page meta line 1 on the plan's day: the platform's "today" word + time (MERGE FV-2); other days the date. */
+    @Test fun aPlanOfTodayReadsTheTodayWordAndOtherDaysTheirDate() {
+        // ICU's relative style picks "today" against System.currentTimeMillis, which Robolectric replaces with its own
+        // clock, so the word itself cannot show here: the same ICU word is pinned by core:widget's CountdownWordsTest
+        // (`format(THIS, DAY)`). This checks the day's line keeps its time and the other days their full date.
+        val zone = java.time.ZoneId.of("America/New_York")
+        val today = java.time.LocalDate.now(zone)
+        val startsAt = today.atTime(19, 30).atZone(zone).toInstant()
+        val english = java.util.Locale.US
+        val onTheDay = app.feature.account.plans.PlanFormats.whenLine(startsAt, false, zone, english, today)
+        assertTrue(onTheDay, onTheDay.contains("7:30"))
+        val later = today.plusDays(9).atTime(19, 30).atZone(zone).toInstant()
+        val dated = app.feature.account.plans.PlanFormats.whenLine(later, false, zone, english, today)
+        assertTrue(dated, dated.contains(today.plusDays(9).year.toString()) && !dated.contains("Today"))
+    }
+
     @Test fun theQuestionCardNeedsAQuestionWithCopyThatYouHaveNotRemoved() = runTest(main.dispatcher) {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val text: (String) -> String? = { WeeklyQuestions.text(context, it) }

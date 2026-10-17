@@ -478,10 +478,10 @@
       "origin": "adapted",
       "source_app": "Partiful",
       "surface": "plans.page",
-      "evidence": "Partiful web past events '{n} Went' (design/research/plans.md §5, references/auto/partiful/INDEX.md) — the count is do-not-copy",
+      "evidence": "references/auto/partiful/web/pf-web-private-past-01.png + pf-web-private-past.computed-styles.json (span 'ptf-QE3Iy', x 16 y 1154.5: '11 Went · 4 Maybe' — a past event's guest-list line, where an upcoming event reads '{n} Going · {n} Maybe'); Partiful help 15525507 'a fairly accurate record of who went' (design/research/plans.md §1.2)",
       "pattern": "retro.voice.title-case (section label)",
-      "level": "BLOCKED",
-      "notes": "Past-plan list label. BLOCKED: Partiful's word appears only with a count ('{n} Went'); the word alone is not evidenced as a label. Smallest capture: a screenshot of a past Apple Invites event's guest list."
+      "level": "SOURCED",
+      "notes": "The past plan's Going list label (plans.page Who's coming, people sheet). Partiful swaps 'Going' for 'Went' once the event is over; the count is dropped exactly as `plans.page.going` drops Apple's 'GOING (9)' (tenet 2). Was BLOCKED (the word was only seen with its count); searched 2026-10-17 for an Apple Invites past-event guest list (support.apple.com/guide/apple-invites view-your-events, MacTrast 2026-04 'All Events'): Apple shows past events but no past-tense list label is published, so Partiful's word stands. MERGE FV-2."
     },
     "plans.page.back.accessibilityLabel": {
       "text": "Back",
@@ -560,14 +560,14 @@
       "notes": "Default value of the Group parameter."
     },
     "widget.countdown.empty.noPlans": {
-      "text": "No plans yet. Tap to make one",
-      "origin": "new",
+      "text": "No plans yet",
+      "origin": "adapted",
       "source_app": "Retro",
       "surface": "widget.countdown",
-      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_empty_message` 'No media. Tap to reload' (state line + action)",
-      "pattern": "retro.voice.widget — state: a short line + the action",
-      "level": "BLOCKED",
-      "notes": "BLOCKED: no reference widget shows an empty plan state (Apple Invites' empty widget not captured; design/research/plans.md §12 item 7); pattern-only text. Smallest capture: one screenshot of the Apple Invites widget with no upcoming event."
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_sticker_picker_empty` 'No stickers yet' (also `manage_keys_given_empty_state_title` 'No keys shared yet'); Retro's empty widget `app_widget_empty_message` 'No media. Tap to reload' is the same short state line",
+      "pattern": "retro.voice.widget — state: a short line (the tap opens the app, so no action is named)",
+      "level": "SOURCED",
+      "notes": "Closest sourced pattern, not a captured widget: no reference widget showing an empty plan state was found (searched 2026-10-17: Apple Invites App Store screenshots and support guide 'view-your-events', 9to5Mac 2026-03-11 'Apple Invites widget just got a smart and useful improvement', iGeeksBlog and MacTrast widget articles — none shows or describes the empty widget). Noun swap stickers → plans in Retro's 'No {noun} yet' line; Retro's widget adds '. Tap to reload' because its tap reloads, while this widget's tap opens the app, so the line names no action (was 'No plans yet. Tap to make one'). MERGE FV-2. A capture of Apple Invites' widget with no upcoming event would confirm."
     },
     "widget.countdown.a11y.plan": {
       "text": "{title} with {group}, {countdown}",

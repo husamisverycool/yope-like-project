@@ -327,7 +327,7 @@ internal fun CountdownContent(store: CountdownStore, today: LocalDate, preview: 
         plan != null && countdown != null ->
             context.getString(R.string.widget_countdown_a11y_plan, plan.title, plan.groupName, CountdownWords.text(plan.daysFrom(today), inSentence = true))
         CountdownEmptyState.of(snapshot, signedOut) == CountdownEmptyState.SignedOut -> context.getString(R.string.widget_home_small_empty_signedout)
-        CountdownEmptyState.of(snapshot, signedOut) == CountdownEmptyState.NoPlans -> CountdownBlocked.noPlans?.let(context::getString)
+        CountdownEmptyState.of(snapshot, signedOut) == CountdownEmptyState.NoPlans -> context.getString(R.string.widget_countdown_empty_noplans)
         else -> null
     }
     label?.let { modifier = modifier.semantics { contentDescription = it } }
@@ -342,8 +342,8 @@ internal fun CountdownContent(store: CountdownStore, today: LocalDate, preview: 
             when (CountdownEmptyState.of(snapshot, signedOut)) {
                 CountdownEmptyState.Loading -> TokenPhotoWidgetSlots.StateBackground()
                 CountdownEmptyState.SignedOut -> TokenPhotoWidgetSlots.StateColumn(context.getString(R.string.widget_home_small_empty_signedout), Tokens.Icons.globalCalendar)
-                // The line is BLOCKED copy (design/BLOCKED.md): debug builds show it, release builds the glyph alone.
-                CountdownEmptyState.NoPlans -> TokenPhotoWidgetSlots.StateColumn(CountdownBlocked.noPlans?.let(context::getString), Tokens.Icons.globalCalendar)
+                // "No plans yet" (`widget.countdown.empty.noPlans`, MERGE FV-2).
+                CountdownEmptyState.NoPlans -> TokenPhotoWidgetSlots.StateColumn(context.getString(R.string.widget_countdown_empty_noplans), Tokens.Icons.globalCalendar)
             }
             return@Box
         }

@@ -404,8 +404,8 @@ final class PlansModelTests: XCTestCase {
 
     // MARK: widget.countdown
 
-    /// Pins the platform formatter's words in en-US (widget.countdown "The countdown line"; the same-day word is
-    /// BLOCKED until this test pins it — plans.md §12 item 2 — and DEBUG builds only show it meanwhile).
+    /// Pins the platform formatter's words in en-US (widget.countdown "The countdown line"; the same-day word "Today",
+    /// shipped in every build since MERGE FV-2).
     func testCountdownWordingComesFromThePlatformFormatter() {
         let english = Locale(identifier: "en_US")
         XCTAssertEqual(PlanCountdownText.text(days: 3, locale: english), "In 3 days")
@@ -414,6 +414,21 @@ final class PlansModelTests: XCTestCase {
         XCTAssertEqual(PlanCountdownText.text(days: 1, locale: english, context: .middleOfSentence), "tomorrow", "inside the accessibility label")
         XCTAssertEqual(PlanCountdownText.text(days: 0, locale: english), "Today")
         XCTAssertNil(PlanCountdownText.text(days: -1, locale: english), "a past day has no countdown")
+    }
+
+    /// A plan of today reads "… today" to VoiceOver (never a sentence ending in ", "), and the empty widget reads and
+    /// shows "No plans yet" (`widget.countdown.empty.noPlans`, MERGE FV-2).
+    func testCountdownLabelsOnThePlansDayAndWithNoPlans() {
+        let today = PlanCountdownContent(state: .plan, title: "Dinner", groupName: "Roomies", days: 0)
+        XCTAssertNotNil(today.countdown)
+        XCTAssertFalse(today.accessibilityLabel.hasSuffix(", "), today.accessibilityLabel)
+        XCTAssertEqual(
+            today.accessibilityLabel,
+            Copy.widgetCountdownA11yPlan(title: "Dinner", group: "Roomies", countdown: PlanCountdownText.text(days: 0, context: .middleOfSentence) ?? "")
+        )
+        let empty = PlanCountdownContent(state: .noPlans)
+        XCTAssertEqual(empty.stateLine, Copy.widgetCountdownEmptyNoPlans)
+        XCTAssertEqual(empty.accessibilityLabel, Copy.widgetCountdownEmptyNoPlans)
     }
 
     private func waitFor(_ condition: @escaping () -> Bool, file: StaticString = #filePath, line: UInt = #line) async throws {

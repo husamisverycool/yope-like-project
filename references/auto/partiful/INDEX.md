@@ -72,3 +72,9 @@ event reminders), 15525435 (customize auto-reminders), 15525538 (too many remind
 list or guest count), 15525520 / 15525507 (change RSVP), 15525377 (notified when someone RSVPs), 15525294 (cover image
 guidelines), 15525363 (turn off Maybe), 15525369 (RSVP button style), 15525438 (who guests can see), 15525428 (cohosts cancel), 15525415 (Can't Go replies). Image URLs are listed without their signed query string (`?expires=…&signature=…`, required to download, expires); re-fetch the article to get a fresh one. The App Preview video itself is not stored (kept
 outside the repository; frames only).
+
+## Added by the finishing pass (2026-10-17)
+
+| file | source URL | accessed | what it shows | version/date |
+|---|---|---|---|---|
+| `help/pf-help-account-and-event-deletion-excerpt.txt` | https://help.partiful.com/en/articles/15525644 ; …/15525651 ; …/15525450 | 2026-10-17 | verbatim: account deletion "removes your personal data and account history"; delete-account steps; an event with guests must be cancelled before it is deleted (delete_account, MERGE FV-5) | articles as of 2026-10-17 |

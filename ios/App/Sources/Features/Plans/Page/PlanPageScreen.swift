@@ -319,16 +319,11 @@ struct PlanPageView: View {
         [PlanAnswerKind.going, .maybe].filter { !model.people($0).isEmpty }
     }
 
-    /// The block's label: "Going" / "Maybe"; after the plan's day the Going list reads in the past — that word
-    /// (`plans.page.went`) is BLOCKED, so release builds leave the label out (the names stay).
+    /// The block's label: "Going" / "Maybe"; after the plan's day the Going list reads in the past, "Went"
+    /// (`plans.page.went`: Partiful's past guest line "11 Went · 4 Maybe" without its count, MERGE FV-2).
     private func listLabel(_ kind: PlanAnswerKind) -> String? {
         if kind == .maybe { return Copy.plansPageMaybe }
-        guard model.isPast else { return Copy.plansPageGoing }
-        #if DEBUG
-        return BlockedCopy.plansPageWent
-        #else
-        return nil
-        #endif
+        return model.isPast ? Copy.plansPageWent : Copy.plansPageGoing
     }
 
     /// C-20 label (`sectionLabel`, no number) with the chevron when the list continues in the sheet, then

@@ -56,7 +56,7 @@ Day granularity, from the platform formatter, never typed by us:
 |---|---|---|
 | ≥ 2 | "In {n} days" | iOS `RelativeDateTimeFormatter` (`unitsStyle .full`, `localizedString(from: DateComponents(day: n))`, `formattingContext .beginningOfSentence`); Android ICU `format(n, Direction.NEXT, RelativeUnit.DAYS)` with `DisplayContext.CAPITALIZATION_FOR_BEGINNING_OF_SENTENCE` — mechanic Apple "In 9 Days" (AI-S 08) |
 | 1 | "Tomorrow" | iOS `dateTimeStyle .named` (doc: "tomorrow"); ICU `AbsoluteUnit.DAY, Direction.NEXT` |
-| 0 | the formatter's same-day word | iOS `.named` day 0; ICU `AbsoluteUnit.DAY, Direction.THIS` — exact output not printed in the docs: **BLOCKED** until a snapshot test pins it (`plans.md` §12 item 2) |
+| 0 | the formatter's same-day word ("Today") | iOS `.named` day 0; ICU `AbsoluteUnit.DAY, Direction.THIS` — VERIFIED: Android's ICU reference prints `fmt.format(Direction.THIS, AbsoluteUnit.DAY); // "today"` and Apple's `DateFormatter.doesRelativeDateFormatting` names "phrases such as “today” and “tomorrow”" (`references/auto/platform/relative-day-word-docs-excerpt.txt`); pinned by `CountdownWordsTest` (Android) and `PlanCountdownTextTests` (iOS); MERGE FV-2 |
 
 Days are counted between calendar dates (the plan's `local_date` in the group's time zone vs. today in the device's time
 zone), not 24-hour spans, so "Tomorrow" never shows for a plan 30 hours away on the day after tomorrow.
@@ -69,7 +69,7 @@ zone), not 24-hour spans, so "Tomorrow" never shows for a plan 30 hours away on 
 | group line (medium) | `widget.home.small.fontSize.overlay`, `widget.home.small.fontWeight.overlay`, `color.global.textOnMedia` | data | — |
 | title | text role `listTitle`, `color.global.textOnMedia` | data | — |
 | countdown | `font.global.display`, text role `displaySmall`, `color.global.textOnMedia` | platform formatter output | changes at local midnight only |
-| tap | `widgetURL` (`DeepLink.plan(planID:)`) | — | opens `plans.page`; empty state opens `plans.create` for the configured group (or `groups.list` when "All groups") |
+| tap | `widgetURL` (`DeepLink.plan(planID:)`) | — | opens `plans.page`; the states open the app (no plan-creation link from a widget: the empty line names no action, MERGE FV-2) |
 | configuration | AppIntentConfiguration, one parameter | `widget.countdown.configuration.title`, `.configuration.group`, `.configuration.allGroups` | "All groups" (default — Apple's "your next event") or one group (Apple "Edit Widget") |
 | gallery | — | `widget.countdown.gallery.name`, `.gallery.description` | families small + medium (HIG: one description for all sizes) |
 
@@ -82,8 +82,8 @@ Non-photo states use `widget.home.small`'s state column: `color.global.backgroun
 | state | design | copy | source |
 |---|---|---|---|
 | upcoming plan | photo + text stack | — | Apple Invites widget |
-| plan today | same; countdown = same-day word | BLOCKED word | formatter |
-| no upcoming plan | state column | `widget.countdown.empty.noPlans` | retro.voice.widget ("No media. Tap to reload" pattern) — **wording BLOCKED for reference evidence** (`plans.md` §12 item 7); pattern-only until then |
+| plan today | same; countdown = the same-day word ("Today") | — | formatter |
+| no upcoming plan | state column: `icon.global.calendar` + "No plans yet" (VoiceOver / TalkBack read the line) | `widget.countdown.empty.noPlans` | Retro "No stickers yet" (noun swap), the closest sourced pattern: no reference widget's empty plan state was found (MERGE FV-2) |
 | next plan canceled | skipped; the following plan shows (or the empty state) | — | Apple: a canceled event is inactive |
 | not set up (configured group left / deleted) | state column | `widget.home.small.empty.setUp` (shared) | `widget.home.small` |
 | signed out | state column | `widget.home.small.empty.signedOut` (shared) | `widget.home.small` |
