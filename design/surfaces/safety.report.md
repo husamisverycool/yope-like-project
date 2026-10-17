@@ -36,9 +36,24 @@ Copy: `safety.report.*`.
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
 | menu item | C-29 menu, destructive role (red, C-10: Retro draws report actions in its destructive red, APK `vv3.g` call sites include report — RP §3.3) | `safety.report.menuItem.*` | opens the reasons sheet |
-| reasons sheet | C-29 action sheet / M3 bottom sheet; `safety.report.layout.flow` | `safety.report.title.post` / `.message` / `.user` / `.group` / `.selfie`; `safety.report.reason.*` (the kind's list in `safety.report.layout.reasons`; a selfie takes the post reasons, MERGE SR-10); `safety.report.cancel` | one tap files the report |
+| reasons sheet | C-29 action sheet / M3 bottom sheet; `safety.report.layout.flow` | `safety.report.title.post` / `.message` / `.user` / `.group` / `.selfie` / `.plan` / `.video` / `.recap` / `.collage`; `safety.report.reason.*` (the kind's list in `safety.report.layout.reasons`; a selfie, a plan, a birthday video, a year story, a collage and a recap take the post reasons, MERGE SR-10, FV-4); `safety.report.cancel` | one tap files the report |
 | next steps | C-29 action sheet | `safety.report.nextSteps.title`, `.nextSteps.leave`, `.nextSteps.block` | as Structure 4 |
 | confirmation | C-26 | `safety.report.sent.title`; `safety.report.left` | — |
+
+## Entries (where the menu item sits)
+
+| surface | entry | target kind · id | next steps |
+|---|---|---|---|
+| photo.viewer, groups.screen grid, onthisday | "Report Post" in the "•••" / long-press menu | `post` | Leave · Block the author |
+| chat.thread | "Report Message" | `message` | Leave · Block the author |
+| viewer.selfiereaction | "Report Selfie" | `selfie` | Leave · Block the selfie's author |
+| walls.member, groups.settings | "Report Profile" / "Report Group" | `user` / `group` | — |
+| plans.page | "Report Plan" (and "Block {first_name}") in the header's "•••" menu, on another member's plan (title, place, note and cover are its maker's) | `plan` · `plans.id` | Leave · Block the maker |
+| birthday.tribute | "•••" C-11 on media, `size.global.headerIconPitch` before the close circle (the C-01 pair pitch): "Report Video" | `tribute` · `tributes.id` | Leave |
+| year.story, collage.view, week.recap | "•••" C-11 on media on the close circle's centre line, `size.global.headerIconPitch` before it: "Report Recap" / "Report Collage" / "Report Recap" | `year_story` / `collage` / `recap` · their ids | Leave |
+
+The "•••" circle on media is labelled `safety.report.a11y.more`; its menu is the native menu (C-29, destructive item, Retro
+Rewind's "•••" — TC-RWP). Server: `report()` accepts each kind for members of the content's group (migration 0032).
 
 ## States
 

@@ -718,10 +718,13 @@ const table = {
   "photo.viewer.a11y.backHint": "Tap left to go back", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.close": "Close", // Apple HIG / Material 3 · photo.viewer · SOURCED
   "photo.viewer.a11y.more": "More Options", // Retro · photo.viewer · SOURCED
+  "photo.viewer.a11y.mute": "Mute", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.next": "Next photo", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.photo": "{name}'s photo, {date}", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.photoMine": "Your photo, {date}", // Retro · photo.viewer · SOURCED
+  "photo.viewer.a11y.play": "Play", // Retro · photo.viewer · SOURCED
   "photo.viewer.a11y.previous": "Previous photo", // Retro · photo.viewer · SOURCED
+  "photo.viewer.a11y.unmute": "Unmute", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.cancel": "Cancel", // Apple HIG · photo.viewer · PLATFORM
   "photo.viewer.delete.confirm": "Yes, delete", // Retro · photo.viewer · SOURCED
   "photo.viewer.delete.message": "It will be removed from every group you sent it to, and from chats, walls, recaps and albums.", // Retro · photo.viewer · SOURCED

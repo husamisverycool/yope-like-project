@@ -212,6 +212,8 @@ struct WeekRecapPreviewScreen: View {
     @State private var editing = false
     @State private var savingAlbum = false
     @State private var toasts = ToastCenter()
+    @State private var reportTarget: ReportTarget?
+    @Environment(AccountDependencies.self) private var accountDependencies: AccountDependencies?
     @Environment(\.dismiss) private var dismiss
 
     init(groupID: String, recapID: String, isPresentedModally: Bool = false) {
@@ -256,6 +258,13 @@ struct WeekRecapPreviewScreen: View {
             RecapPreviewClose(geometry: geometry, accessibilityLabel: Copy.weekRecapA11yClose) { dismiss() }
                 .accessibilitySortPriority(4)
                 .accessibilityIdentifier("week.recap.close") // provenance-ok: accessibility identifier for UI tests
+            // "Report Recap" (safety.report, MERGE FV-4): the group's recap, so the next steps offer "Leave the group".
+            if model.phase == .ready, let recap = model.recap {
+                RecapPreviewReportMenu(geometry: geometry, itemTitle: Copy.safetyReportMenuItemRecap) {
+                    reportTarget = ReportTarget(kind: .recap, id: recap.id.rawValue, groupID: model.groupID.rawValue, groupName: model.group?.name)
+                }
+                .accessibilitySortPriority(0)
+            }
         } leading: {
             selectThumbnail
                 .accessibilitySortPriority(2)
@@ -272,6 +281,7 @@ struct WeekRecapPreviewScreen: View {
             await model.run()
         }
         .socialFeedback(model.signals.feedback)
+        .reportFlowIfAvailable(target: $reportTarget, dependencies: accountDependencies)
         .toastHost(toasts)
         .socialPhotoViewer($viewer)
         .sheet(isPresented: $editing, onDismiss: { Task { await model.load() } }) {

@@ -161,6 +161,9 @@ final class PlansModelTests: XCTestCase {
         await memberPage.refresh()
         XCTAssertEqual(memberPage.people(.cantGo), [], "a member does not see others' Can't go")
         XCTAssertFalse(memberPage.showsMenu, "the menu is the maker's and the admins'")
+        XCTAssertTrue(memberPage.showsReport, "another member's plan can be reported (MERGE FV-4)")
+        XCTAssertEqual(memberPage.reportTarget?.kind, .plan)
+        XCTAssertEqual(memberPage.reportTarget?.person?.userID, PlansFixture.ana.rawValue, "Block the plan's maker")
 
         let maker = PlansFixture(me: PlansFixture.ana)
         maker.addDinner(answers: answers)
@@ -168,6 +171,7 @@ final class PlansModelTests: XCTestCase {
         await makerPage.refresh()
         XCTAssertEqual(makerPage.people(.cantGo).map(\.firstName), ["Ben"])
         XCTAssertTrue(makerPage.showsMenu)
+        XCTAssertFalse(makerPage.showsReport, "no report of your own plan")
 
         let ben = PlansFixture(me: PlansFixture.ben)
         ben.addDinner(answers: answers)

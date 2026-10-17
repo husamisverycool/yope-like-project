@@ -21,6 +21,10 @@ struct YearStoryScreen: View {
     /// Snapshots: the reveal settled at once.
     private let revealsImmediately: Bool
     @State private var frameWidth: CGFloat = 0
+    /// "Report Recap" (safety.report, MERGE FV-4): the story's target once it is loaded, and the one being reported.
+    @State private var storyReport: ReportTarget?
+    @State private var reportTarget: ReportTarget?
+    @Environment(AccountDependencies.self) private var accountDependencies: AccountDependencies?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.displayScale) private var displayScale
     @Environment(\.scenePhase) private var scenePhase
@@ -44,6 +48,13 @@ struct YearStoryScreen: View {
                     RecapPreviewClose(geometry: geometry, accessibilityLabel: Copy.yearStoryA11yClose) { model.close() }
                         .accessibilityIdentifier("year.story.close")
                         .accessibilitySortPriority(5)
+                    if let storyReport {
+                        RecapPreviewReportMenu(geometry: geometry, itemTitle: Copy.safetyReportMenuItemRecap) {
+                            model.setSuspended(true)
+                            reportTarget = storyReport
+                        }
+                        .accessibilitySortPriority(0)
+                    }
                 }
             } leading: {
                 leadingCircle
@@ -58,6 +69,11 @@ struct YearStoryScreen: View {
         .preferredColorScheme(.dark)
         .toolbar(.hidden, for: .navigationBar)
         .task { await model.loadIfNeeded() }
+        .task(id: model.phase == .loaded) { await resolveReport() }
+        .reportFlowIfAvailable(target: $reportTarget, dependencies: accountDependencies)
+        .onChange(of: reportTarget) { _, target in
+            if target == nil { model.setSuspended(scenePhase != .active) }
+        }
         .onDisappear { model.stopListening() }
         .onChange(of: model.isFinished) { _, finished in
             if finished { dismiss() }
@@ -71,6 +87,15 @@ struct YearStoryScreen: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("year.story")
+    }
+
+    /// The story's report target (kind `year_story`, by its id) once the story shows: the group's story, so the next steps
+    /// offer "Leave the group" only.
+    private func resolveReport() async {
+        guard model.phase == .loaded, storyReport == nil, let data = MemoryDependencies.current.data,
+              let story = try? await data.yearStory(groupID: GroupID(groupID), year: year) else { return }
+        let groupName = (try? await data.group(id: GroupID(groupID)))?.name
+        storyReport = ReportTarget(kind: .yearStory, id: story.id.rawValue, groupID: groupID, groupName: groupName)
     }
 
     /// The summary's share styles are pages (swiped, page dots `dimension.year.story.dots.offset` below the frame);

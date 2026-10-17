@@ -52,6 +52,8 @@ class CollageViewModel(
         val groupName: String? = null,
         val page: Int = 0,
         val sharing: Boolean = false,
+        /** The composed collage's id ("Report Collage", safety.report kind `collage`); null until it is composed. */
+        val collageId: String? = null,
         /** The collage's first photo (display rendition), downloaded: the blurred backdrop (L-7); null until it is here. */
         val backdrop: File? = null,
     )
@@ -127,6 +129,7 @@ class CollageViewModel(
             }
         }
         val ready = c
+        state.update { it.copy(collageId = ready.id) }
         val paths = ready.pagePaths()
         val urls = data.signedUrls(paths)
         val files = paths.map { pageFile(it) }

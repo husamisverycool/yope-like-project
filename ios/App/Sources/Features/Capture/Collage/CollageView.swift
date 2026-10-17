@@ -16,6 +16,8 @@ struct CollageView: View {
     @Bindable var model: CollageModel
     /// True when presented as a full-screen cover: the cover then asks for light status-bar content.
     var isPresentedModally = false
+    @State private var reportTarget: ReportTarget?
+    @Environment(AccountDependencies.self) private var accountDependencies: AccountDependencies?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -24,6 +26,7 @@ struct CollageView: View {
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
             .accessibilityIdentifier("collage.view")
+            .reportFlowIfAvailable(target: $reportTarget, dependencies: accountDependencies)
             .task { await model.load() }
             .onChange(of: model.currentPage) { _, _ in
                 Task { await model.pageChanged() }
@@ -47,6 +50,13 @@ struct CollageView: View {
             RecapPreviewClose(geometry: geometry, accessibilityLabel: Copy.collageViewA11yClose) { dismiss() }
                 .accessibilitySortPriority(4)
                 .accessibilityIdentifier("collage.view.close")
+            // "Report Collage" (safety.report, MERGE FV-4): a group-made image, so the next steps offer "Leave the group".
+            if isReady, let collage = model.collage {
+                RecapPreviewReportMenu(geometry: geometry, itemTitle: Copy.safetyReportMenuItemCollage) {
+                    reportTarget = ReportTarget(kind: .collage, id: collage.id.rawValue, groupID: model.groupID, groupName: model.groupName)
+                }
+                .accessibilitySortPriority(0)
+            }
         } leading: {
             EmptyView()
         } trailing: {

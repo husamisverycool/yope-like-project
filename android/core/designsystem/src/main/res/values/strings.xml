@@ -1433,14 +1433,20 @@
     <string name="photo_viewer_a11y_close" formatted="false">Close</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->
     <string name="photo_viewer_a11y_more" formatted="false">More Options</string>
+    <!-- Retro · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_a11y_mute" formatted="false">Mute</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_a11y_next" formatted="false">Next photo</string>
     <!-- Retro · photo.viewer · new · SOURCED · args: name, date -->
     <string name="photo_viewer_a11y_photo">%1$s\'s photo, %2$s</string>
     <!-- Retro · photo.viewer · new · SOURCED · args: date -->
     <string name="photo_viewer_a11y_photomine">Your photo, %1$s</string>
+    <!-- Retro · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_a11y_play" formatted="false">Play</string>
     <!-- Retro · photo.viewer · new · SOURCED -->
     <string name="photo_viewer_a11y_previous" formatted="false">Previous photo</string>
+    <!-- Retro · photo.viewer · verbatim · SOURCED -->
+    <string name="photo_viewer_a11y_unmute" formatted="false">Unmute</string>
     <!-- Apple HIG · photo.viewer · verbatim · PLATFORM -->
     <string name="photo_viewer_delete_cancel" formatted="false">Cancel</string>
     <!-- Retro · photo.viewer · verbatim · SOURCED -->

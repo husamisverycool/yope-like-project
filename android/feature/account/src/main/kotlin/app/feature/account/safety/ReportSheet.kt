@@ -89,11 +89,18 @@ object ReportReasons {
     fun of(kind: ReportTargetKind): List<ReportReason> {
         val layout = Tokens.Layouts.SafetyReportLayoutReasons
         return when (kind) {
-            // A selfie reaction (viewer.selfiereaction) is photo content: its list holds the post reasons (MERGE SR-10).
-            ReportTargetKind.Post, ReportTargetKind.Message, ReportTargetKind.Selfie -> {
+            // A selfie reaction (viewer.selfiereaction) is photo content: its list holds the post reasons (MERGE SR-10); so do
+            // plans, birthday videos, year stories, collages and recaps (MERGE FV-4).
+            ReportTargetKind.Post, ReportTargetKind.Message, ReportTargetKind.Selfie, ReportTargetKind.Plan, ReportTargetKind.Tribute,
+            ReportTargetKind.YearStory, ReportTargetKind.Collage, ReportTargetKind.Recap -> {
                 val wire = when (kind) {
                     ReportTargetKind.Message -> layout.message
                     ReportTargetKind.Selfie -> layout.selfie
+                    ReportTargetKind.Plan -> layout.plan
+                    ReportTargetKind.Tribute -> layout.tribute
+                    ReportTargetKind.YearStory -> layout.yearStory
+                    ReportTargetKind.Collage -> layout.collage
+                    ReportTargetKind.Recap -> layout.recap
                     else -> layout.post
                 }.split(SEPARATOR)
                 listOf(
@@ -169,6 +176,10 @@ fun reportTarget(route: app.model.SafetyReportMessageRoute): ReportTarget =
 /** A selfie reaction target (`photo.viewer`'s Reactions sheet, viewer.selfiereaction §4). */
 fun reportTarget(route: app.model.SafetyReportSelfieRoute): ReportTarget =
     ReportTarget(ReportTargetKind.Selfie, route.selfieId, route.groupId, route.authorId)
+
+/** A plan, birthday video, year story, collage or recap target (MERGE FV-4); null for a kind this build does not know. */
+fun reportTarget(route: app.model.SafetyReportContentRoute): ReportTarget? =
+    ReportTargetKind.entries.firstOrNull { it.wire == route.kind }?.let { ReportTarget(it, route.targetId, route.groupId, route.authorId) }
 
 /** Builds the target from the route (post, person or group). */
 fun reportTarget(route: AppRoute.SafetyReport): ReportTarget? = when {
@@ -271,6 +282,10 @@ internal fun reportTitle(kind: ReportTargetKind): Int = when (kind) {
     ReportTargetKind.User -> R.string.safety_report_title_user
     ReportTargetKind.Group -> R.string.safety_report_title_group
     ReportTargetKind.Selfie -> R.string.safety_report_title_selfie
+    ReportTargetKind.Plan -> R.string.safety_report_title_plan
+    ReportTargetKind.Tribute -> R.string.safety_report_title_video
+    ReportTargetKind.YearStory, ReportTargetKind.Recap -> R.string.safety_report_title_recap
+    ReportTargetKind.Collage -> R.string.safety_report_title_collage
 }
 
 /**

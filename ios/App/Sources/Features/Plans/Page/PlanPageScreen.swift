@@ -28,6 +28,8 @@ struct PlanPageView: View {
     @State private var confirmingCancel = false
     @State private var peopleOpen = false
     @State private var viewerContext: PhotoViewerContext?
+    @State private var reportTarget: ReportTarget?
+    @State private var blockTarget: BlockTarget?
     @Environment(AccountDependencies.self) private var dependencies: AccountDependencies?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -92,6 +94,8 @@ struct PlanPageView: View {
                 .modifier(PlanPresentedContent(dependencies: dependencies))
         }
         .socialPhotoViewer($viewerContext)
+        .reportFlowIfAvailable(target: $reportTarget, dependencies: dependencies)
+        .modifier(PlanBlockConfirmation(target: $blockTarget, dependencies: dependencies) { dismiss() })
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("plans.page")
     }
@@ -171,23 +175,35 @@ struct PlanPageView: View {
 
     // MARK: Header
 
-    /// C-02 back at `size.global.backInset`; trailing C-01 glyph `icon.global.more` (maker and admins) → native menu.
+    /// C-02 back at `size.global.backInset`; trailing C-01 glyph `icon.global.more` → native menu: the maker's and admins'
+    /// Edit / Cancel (or Restore) while the plan is on; on another member's plan "Report Plan" and "Block {first_name}"
+    /// (C-10 red, safety.report / safety.block, MERGE FV-4).
     private var headerRow: some View {
         HStack(spacing: 0) {
             FormBackButton(accessibilityLabel: Copy.plansPageBackAccessibilityLabel, identifier: "plans.page.back") {
                 dismiss()
             }
             Spacer(minLength: 0)
-            if model.showsMenu, let plan = model.plan {
+            if model.showsMenu || model.showsReport, let plan = model.plan {
                 HeaderIconMenu(icon: Tokens.Icons.globalMore, accessibilityLabel: Copy.plansPageMoreAccessibilityLabel) {
-                    if plan.isCanceled {
-                        Button(Copy.plansPageMenuRestore) { Task { await model.restore() } }
-                    } else {
-                        Button(Copy.plansPageMenuEdit) { editing = plan }
-                        Button(Copy.plansPageMenuCancel, role: .destructive) { confirmingCancel = true }
+                    if model.showsMenu {
+                        if plan.isCanceled {
+                            Button(Copy.plansPageMenuRestore) { Task { await model.restore() } }
+                                .disabled(model.isWorking || model.isOffline)
+                        } else {
+                            Button(Copy.plansPageMenuEdit) { editing = plan }
+                                .disabled(model.isWorking || model.isOffline)
+                            Button(Copy.plansPageMenuCancel, role: .destructive) { confirmingCancel = true }
+                                .disabled(model.isWorking || model.isOffline)
+                        }
+                    }
+                    if let target = model.reportTarget {
+                        Button(Copy.safetyReportMenuItemPlan, role: .destructive) { reportTarget = target }
+                        if let person = target.person {
+                            Button(Copy.safetyBlockMenuItemNamed(firstName: person.firstName), role: .destructive) { blockTarget = person }
+                        }
                     }
                 }
-                .disabled(model.isWorking || model.isOffline)
                 .padding(.trailing, max(0, Tokens.Sizes.globalHeaderInset - (Tokens.Sizes.globalHeaderButton - Tokens.Sizes.globalIcon) / 2))
                 .accessibilityIdentifier("plans.page.more")
             }
@@ -453,6 +469,26 @@ struct PlanPresentedContent: ViewModifier {
                 .environment(dependencies)
                 .environment(\.storageURLResolver, dependencies.storageURLResolver)
                 .toastHost(dependencies.toasts)
+        } else {
+            content
+        }
+    }
+}
+
+/// "Block {first_name}" from the plan page's menu (safety.block): the platform confirmation, then back (the maker's plans
+/// are hidden from now on, RLS).
+private struct PlanBlockConfirmation: ViewModifier {
+    @Binding var target: BlockTarget?
+    let dependencies: AccountDependencies?
+    let onBlocked: @MainActor () -> Void
+
+    func body(content: Content) -> some View {
+        if let dependencies {
+            content.blockConfirmation(target: $target, toasts: dependencies.toasts) { person in
+                try await dependencies.data.block(userID: UserID(person.userID))
+            } onBlocked: { _ in
+                onBlocked()
+            }
         } else {
             content
         }

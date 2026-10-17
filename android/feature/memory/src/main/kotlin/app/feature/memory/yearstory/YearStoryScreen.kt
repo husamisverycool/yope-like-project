@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -44,6 +45,7 @@ import app.ui.components.EmptyStateFill
 import app.ui.components.LoadingState
 import app.ui.components.PositionPill
 import app.ui.recap.RecapDots
+import app.ui.recap.MediaReportMenu
 import app.ui.recap.RecapPill
 import app.ui.recap.RecapPreviewScreen
 import kotlinx.coroutines.delay
@@ -66,6 +68,8 @@ data class YearStoryActions(
     val onShare: (StoryCard, SummaryStyle) -> Unit = { _, _ -> },
     val onRetry: () -> Unit = {},
     val onClose: () -> Unit = {},
+    /** "Report Recap" (safety.report, kind `year_story`, MERGE FV-4); null until the story's id is known. */
+    val onReport: (() -> Unit)? = null,
 )
 
 /**
@@ -141,6 +145,17 @@ private fun Story(
         pill = if (card.shareable) RecapPill(shareText, { actions.onShare(card, style) }, busy = sharing) else null,
         dots = if (summary) RecapDots.BelowPage(Tokens.Sizes.yearStoryDotsOffset) else RecapDots.Hidden,
         swipeEnabled = summary,
+        beforeClose = actions.onReport?.let { report ->
+            {
+                MediaReportMenu(
+                    stringResource(R.string.safety_report_menuitem_recap),
+                    onReport = {
+                        if (!state.paused) actions.onTogglePause()
+                        report()
+                    },
+                )
+            }
+        },
         topLeading = if (summary) null else {
             {
                 val position = stringResource(R.string.year_story_position, MemoryFormats.position(state.position), MemoryFormats.position(state.total))
@@ -211,9 +226,20 @@ private fun imageUrl(card: StoryCard): String? = when (card) {
 
 /** The year-story destination: loads the story, renders and shares cards. */
 @Composable
-fun YearStoryDestination(groupId: String, year: Int, onClose: () -> Unit, backend: MemoryBackend = rememberMemoryBackend()) {
+fun YearStoryDestination(
+    groupId: String,
+    year: Int,
+    onClose: () -> Unit,
+    backend: MemoryBackend = rememberMemoryBackend(),
+    onReport: (storyId: String) -> Unit = {},
+) {
     val vm = viewModel(key = "year.story/$groupId/$year") { YearStoryViewModel(groupId, year, backend) }
     val state by vm.state.collectAsStateWithLifecycle()
+    // The story's id for "Report Recap", once a story shows.
+    val shown = state is YearStoryState.Story
+    val storyId by produceState<String?>(null, groupId, year, shown) {
+        if (shown && value == null) value = runCatching { backend.yearStory(groupId, year)?.id }.getOrNull()
+    }
     val context = LocalContext.current
     LightSystemBarIcons()
     // TalkBack running: start paused (auto-advance would cut speech; WCAG 2.2.2).
@@ -242,6 +268,7 @@ fun YearStoryDestination(groupId: String, year: Int, onClose: () -> Unit, backen
             },
             onRetry = vm::retry,
             onClose = onClose,
+            onReport = storyId?.let { id -> { onReport(id) } },
         ),
         sharing = exporter.busy,
         shareHost = { width -> ShareCardHost(exporter, width) },

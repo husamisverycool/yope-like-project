@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -67,6 +68,7 @@ import app.ui.components.EmptyStateFill
 import app.ui.components.PlatformToast
 import app.ui.foundation.centreAt
 import app.ui.foundation.endAtLastBaseline
+import app.ui.recap.MediaReportMenu
 import app.ui.recap.RecapPill
 import app.ui.system.SystemAlertDialog
 import app.ui.text.CapTop
@@ -85,6 +87,8 @@ data class TributeActions(
     val onShare: () -> Unit = {},
     val onRetry: () -> Unit = {},
     val onClose: () -> Unit = {},
+    /** "Report Video" (safety.report, kind `tribute`, MERGE FV-4). */
+    val onReport: () -> Unit = {},
     val onToastShown: () -> Unit = {},
     val onDismissSaveDenied: () -> Unit = {},
     val onOpenSettings: () -> Unit = {},
@@ -161,7 +165,8 @@ private fun androidx.compose.foundation.layout.BoxScope.Page(state: TributeState
         else -> null
     }
     Column(Modifier.fillMaxSize()) {
-        Header(title, state.groupName, actions.onClose)
+        // "•••" with "Report Video" once the video's group is known (shown or rendering).
+        Header(title, state.groupName, actions.onClose, onReport = if (state.groupId != null) actions.onReport else null)
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             when (content) {
                 is TributeContent.Ready -> TributePlayer(player, content.videoUrl, content.posterUrl, autoplay, Modifier.fillMaxWidth())
@@ -190,13 +195,19 @@ private fun androidx.compose.foundation.layout.BoxScope.Page(state: TributeState
     )
 }
 
+/**
+ * The C-35 header; with [onReport] the C-11 "•••" on media (`safety.report.a11y.more`, "Report Video") sits
+ * `size.global.headerIconPitch` before the close circle (the C-01 pair pitch, MERGE FV-4).
+ */
 @Composable
-private fun Header(title: String?, group: String?, onClose: () -> Unit) {
+private fun Header(title: String?, group: String?, onClose: () -> Unit, onReport: (() -> Unit)? = null) {
     val style = TextRoles.headerTitle.copy(lineBreak = LineBreak.Heading)
     val capMiddle = Tokens.Sizes.globalTitleTop - CapTop.height(style) / 2
+    val trailing = Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalCircleButton + Tokens.Sizes.globalHeaderGap +
+        (if (onReport != null) Tokens.Sizes.globalHeaderIconPitch else 0.dp)
     Box(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars)) {
         if (title != null) {
-            Column(Modifier.padding(start = Tokens.Sizes.globalScreenMargin, end = Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalCircleButton + Tokens.Sizes.globalHeaderGap)) {
+            Column(Modifier.padding(start = Tokens.Sizes.globalScreenMargin, end = trailing)) {
                 Text(
                     title,
                     style = style,
@@ -220,6 +231,11 @@ private fun Header(title: String?, group: String?, onClose: () -> Unit) {
         Box(Modifier.align(Alignment.TopEnd).padding(end = Tokens.Sizes.globalHeaderInset).centreAt(capMiddle)) {
             CircleIconButton(Tokens.Icons.globalClose, stringResource(R.string.birthday_tribute_a11y_close), onClose, style = CircleButtonStyle.OnMedia)
         }
+        if (onReport != null) {
+            Box(Modifier.align(Alignment.TopEnd).padding(end = Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalHeaderIconPitch).centreAt(capMiddle)) {
+                MediaReportMenu(stringResource(R.string.safety_report_menuitem_video), onReport)
+            }
+        }
     }
 }
 
@@ -234,6 +250,7 @@ internal fun openAppSettings(context: android.content.Context) {
 fun TributeDestination(
     tributeId: String,
     onClose: () -> Unit,
+    onReport: (groupId: String) -> Unit = {},
     backend: MemoryBackend = rememberMemoryBackend(),
     files: TributeFiles? = null,
     clock: Clock = Clock.systemUTC(),
@@ -273,6 +290,7 @@ fun TributeDestination(
             onShare = vm::share,
             onRetry = vm::retry,
             onClose = onClose,
+            onReport = { state.groupId?.let(onReport) },
             onToastShown = vm::dismissToast,
             onDismissSaveDenied = vm::dismissSaveDenied,
             onOpenSettings = {

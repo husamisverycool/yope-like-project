@@ -24,6 +24,8 @@ import androidx.compose.material.icons.automirrored.outlined.MenuBook as AutoMir
 import androidx.compose.material.icons.automirrored.outlined.Send as AutoMirroredOutlinedSend
 import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos as AutoMirroredRoundedArrowBackIos
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight as AutoMirroredRoundedKeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.VolumeOff as AutoMirroredRoundedVolumeOff
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp as AutoMirroredRoundedVolumeUp
 import androidx.compose.material.icons.outlined.AccountCircle as OutlinedAccountCircle
 import androidx.compose.material.icons.outlined.CalendarMonth as OutlinedCalendarMonth
 import androidx.compose.material.icons.outlined.Casino as OutlinedCasino
@@ -57,6 +59,7 @@ import androidx.compose.material.icons.rounded.IosShare as RoundedIosShare
 import androidx.compose.material.icons.rounded.Link as RoundedLink
 import androidx.compose.material.icons.rounded.Lock as RoundedLock
 import androidx.compose.material.icons.rounded.MoreHoriz as RoundedMoreHoriz
+import androidx.compose.material.icons.rounded.MotionPhotosOn as RoundedMotionPhotosOn
 import androidx.compose.material.icons.rounded.Pause as RoundedPause
 import androidx.compose.material.icons.rounded.Person as RoundedPerson
 import androidx.compose.material.icons.rounded.PlayArrow as RoundedPlayArrow
@@ -560,6 +563,12 @@ object Tokens {
         val globalVideo: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedVideocam
         /** Retro · global · profile tab — your weeks (= walls) · PLATFORM — token `icon.global.wall` */
         val globalWall: ImageVector get() = androidx.compose.material.icons.Icons.Outlined.OutlinedAccountCircle
+        /** Apple HIG / Material Symbols · photo.viewer · Live Photo badge (Android; iOS draws PHLivePhotoView.livePhotoBadgeImage) · PLATFORM — token `icon.photo.viewer.livePhoto` */
+        val photoViewerLivePhoto: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedMotionPhotosOn
+        /** Retro · photo.viewer · sound toggle while a video plays muted · PLATFORM — token `icon.photo.viewer.soundOff` */
+        val photoViewerSoundOff: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedVolumeOff
+        /** Retro · photo.viewer · sound toggle while a video plays with sound · PLATFORM — token `icon.photo.viewer.soundOn` */
+        val photoViewerSoundOn: ImageVector get() = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.AutoMirroredRoundedVolumeUp
         /** Apple HIG / Material 3 · year.story · replay glyph in the summary bar's leading circle (back to the first card) · PLATFORM — token `icon.year.story.replay` */
         val yearStoryReplay: ImageVector get() = androidx.compose.material.icons.Icons.Rounded.RoundedReplay
     }
@@ -1643,6 +1652,12 @@ object Tokens {
             const val ios: String = "confirmationDialog (action sheet): title, message, destructive button, Cancel"
             const val android: String = "AlertDialog: title, message, confirm (color.global.system.error), dismiss"
         }
+        /** Apple HIG (Live Photos) · photo.viewer · a Live Photo in the viewer · PLATFORM — token `photo.viewer.layout.livePhoto` */
+        object PhotoViewerLayoutLivePhoto {
+            const val play: String = "touch and hold the photo plays its motion with its sound (iOS PHLivePhotoView .full; Android the motion movie over the still), release stops; under Reduce Motion too (the person starts it)"
+            const val menu: String = "on a Live Photo the long press plays it, so the menu and quick reactions are the field's \"•••\" and the add-reaction glyph (both already on the page); VoiceOver / TalkBack get photo.viewer.a11y.play as a custom action"
+            const val badge: String = "the system Live Photo badge over the content (iOS PHLivePhotoView.livePhotoBadgeImage(options: .overContent); Android icon.photo.viewer.livePhoto in color.global.textOnMedia, size.global.icon) at the visible photo's top-leading corner, size.global.videoPillInset in, while the motion is downloaded and playable"
+        }
         /** Retro + Apple HIG / Material 3 · photo.viewer · the viewer's actions menu · SOURCED — token `photo.viewer.layout.menu` */
         object PhotoViewerLayoutMenu {
             const val trigger: String = "the reply field's trailing icon.global.more (C-13, TC-2B) while the field is empty; also the photo's long-press context menu (with the quick-reaction palette, chat.reactions.layout.quickReactions)"
@@ -1656,7 +1671,18 @@ object Tokens {
             const val height: String = "the photo's own aspect ratio, never cropped"
             const val tall: String = "a photo taller than the space between the header and the footer is scaled down to fit and centred (letterboxed on color.global.backgroundDeep)"
             const val corners: String = "radius.global.photo (square)"
-            const val live: String = "a Live Photo plays while pressed (platform Live Photo view); a dual capture shows as daily.dualimage"
+            const val live: String = "a Live Photo plays while pressed (photo.viewer.layout.livePhoto); a video plays in the frame (photo.viewer.layout.video); a dual capture shows as daily.dualimage"
+        }
+        /** Retro (web viewer) + Apple HIG / Android audio focus · photo.viewer · a video post in the viewer · SOURCED — token `photo.viewer.layout.video` */
+        object PhotoViewerLayoutVideo {
+            const val frame: String = "the photo frame of photo.viewer.layout.photo at the video's own aspect (aspect fit, letterboxed on color.global.backgroundDeep); the poster (display rendition) shows until the first frame is drawn"
+            const val autoplay: String = "starts muted when its page shows and loops (Retro's viewer: autoPlay \"muted\", loop)"
+            const val taps: String = "unchanged: photo.viewer.layout.advance / .backZone go forward and back over a video too (Retro on a phone); long press opens the menu"
+            const val sound: String = "C-11 glass circle (size.global.circleButtonPhoto, color.global.glass) at the visible video's bottom-trailing corner, size.global.screenMargin in on both axes (the selfie stack's mirror): icon.photo.viewer.soundOff while muted, icon.photo.viewer.soundOn with sound; a tap toggles; the choice holds for every video until the viewer closes"
+            const val audio: String = "muted: no audio focus, mixes with other apps (iOS AVAudioSession .ambient); with sound — started by the person — plays even in silent mode (iOS .playback) and takes the media audio focus (Android USAGE_MEDIA / CONTENT_TYPE_MOVIE); pauses when headphones are disconnected"
+            const val pause: String = "when its page changes, the viewer closes, the app goes to the background, or the selfie capture layer opens"
+            const val reduceMotion: String = "Reduce Motion (layout.global.reduceMotion) or iOS Auto-Play Video Previews off (UIAccessibility.isVideoAutoplayEnabled): no autoplay; a C-11 glass circle with icon.global.play centred on the video starts it once, with sound (no loop); at its end the circle returns"
+            const val error: String = "the video cannot be played: photo.viewer.error.load over the poster (tap retries)"
         }
         /** Retro · photo.viewer · a photo's voice note in the viewer · SOURCED — token `photo.viewer.layout.voiceNote` */
         object PhotoViewerLayoutVoiceNote {

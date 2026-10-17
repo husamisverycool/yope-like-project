@@ -39,6 +39,8 @@ sealed interface TributeContent {
 
 data class TributeState(
     val content: TributeContent = TributeContent.Loading,
+    /** The tribute's group, once loaded ("Report Video" → Next Steps "Leave the group"). */
+    val groupId: String? = null,
     val groupName: String? = null,
     /** The honoree's first name (the member's title "{name}'s birthday video"). */
     val honoreeName: String? = null,
@@ -141,7 +143,7 @@ class TributeViewModel(
             if (tribute.honoreeId == backend.currentUserId && !delivered) return@attempt TributeContent.NotFound
             val forMe = tribute.honoreeId == backend.currentUserId
             val honoree = if (forMe) null else backend.profiles(listOf(tribute.honoreeId)).firstOrNull()?.firstName
-            _state.update { it.copy(groupName = backend.group(tribute.groupId)?.name, honoreeName = honoree, forMe = forMe) }
+            _state.update { it.copy(groupId = tribute.groupId, groupName = backend.group(tribute.groupId)?.name, honoreeName = honoree, forMe = forMe) }
             val video = tribute.videoPath
             if (tribute.status != RenderStatus.Ready || video == null) return@attempt TributeContent.Rendering
             val urls = backend.signedUrls(listOfNotNull(video, tribute.posterPath))

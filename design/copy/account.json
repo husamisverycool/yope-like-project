@@ -3290,6 +3290,46 @@
       "level": "SOURCED",
       "notes": "Noun swap profile → group."
     },
+    "safety.report.menuItem.plan": {
+      "text": "Report Plan",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_overflow_report` ('Report Post')",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Noun swap Post → Plan (plans.page \"•••\" menu, for another member's plan). MERGE FV-4."
+    },
+    "safety.report.menuItem.video": {
+      "text": "Report Video",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_overflow_report` ('Report Post')",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Noun swap Post → Video, the noun of birthday.tribute.title (\"Your birthday video\"). MERGE FV-4."
+    },
+    "safety.report.menuItem.recap": {
+      "text": "Report Recap",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_overflow_report` ('Report Post'); Retro's own noun for both ('{year} Recap', `home_feed_card_annual_retrospective_attribution_template`; 'Create Recap')",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Noun swap Post → Recap: the weekly recap (week.recap) and the year story (\"{year} Recap\"). MERGE FV-4."
+    },
+    "safety.report.menuItem.collage": {
+      "text": "Report Collage",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_comment_overflow_report` ('Report Post')",
+      "pattern": "retro.voice.menu-labels",
+      "level": "SOURCED",
+      "notes": "Noun swap Post → Collage (collage.view). MERGE FV-4."
+    },
     "safety.report.title.post": {
       "text": "Why are you reporting this post?",
       "origin": "verbatim",
@@ -3337,6 +3377,56 @@
       "pattern": "retro.voice.confirm",
       "level": "SOURCED",
       "notes": "Noun swap post → selfie, the noun of `viewer.selfiereaction.menu.report` ('Report Selfie'); as `safety.report.title.message`. MERGE SR-10."
+    },
+    "safety.report.title.plan": {
+      "text": "Why are you reporting this plan?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_report_reason_title` ('Why are you reporting this post?')",
+      "pattern": "retro.voice.confirm",
+      "level": "SOURCED",
+      "notes": "Noun swap post → plan, as `safety.report.title.selfie`. MERGE FV-4."
+    },
+    "safety.report.title.video": {
+      "text": "Why are you reporting this video?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_report_reason_title` ('Why are you reporting this post?')",
+      "pattern": "retro.voice.confirm",
+      "level": "SOURCED",
+      "notes": "Noun swap post → video (birthday.tribute). MERGE FV-4."
+    },
+    "safety.report.title.recap": {
+      "text": "Why are you reporting this recap?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_report_reason_title` ('Why are you reporting this post?')",
+      "pattern": "retro.voice.confirm",
+      "level": "SOURCED",
+      "notes": "Noun swap post → recap (week.recap, year.story). MERGE FV-4."
+    },
+    "safety.report.title.collage": {
+      "text": "Why are you reporting this collage?",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `media_viewer_report_reason_title` ('Why are you reporting this post?')",
+      "pattern": "retro.voice.confirm",
+      "level": "SOURCED",
+      "notes": "Noun swap post → collage (collage.view). MERGE FV-4."
+    },
+    "safety.report.a11y.more": {
+      "text": "More",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "safety.report",
+      "evidence": "design/copy-patterns.md platform.a11yLabel; the C-11 \"•••\" circle on a media surface (as onthisday.a11y.more)",
+      "pattern": "platform.a11yLabel",
+      "level": "VERIFIED",
+      "notes": "The \"•••\" circle that holds the report item on birthday.tribute, year.story, collage.view and week.recap. MERGE FV-4."
     },
     "safety.report.reason.dontLike": {
       "text": "I don't like it",

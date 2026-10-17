@@ -80,6 +80,7 @@ import app.feature.account.common.CollectEvents
 import app.feature.account.common.TapLine
 import app.feature.account.common.dataError
 import app.model.AppRoute
+import app.model.SafetyReportContentRoute
 import app.model.PlanCreateRoute
 import app.ui.components.Avatar
 import app.ui.components.AvatarStack
@@ -139,6 +140,8 @@ data class PlanPageUiState(
     val myAnswer: PlanAnswerKind? = null,
     /** The maker or a group admin (edit, cancel, restore — MERGE PL-6). */
     val canManage: Boolean = false,
+    /** Another member's plan: "Report Plan" and "Block {first_name}" in the menu (safety.report, MERGE FV-4). */
+    val canReport: Boolean = false,
     val photos: List<PlanPhoto> = emptyList(),
     val notFound: Boolean = false,
     val error: Boolean = false,
@@ -269,6 +272,7 @@ class PlanPageViewModel(
                 cantGo = list(PlanAnswerKind.CantGo),
                 myAnswer = answers.firstOrNull { a -> a.userId == me }?.answer,
                 canManage = me != null && (plan.createdBy == me || me in admins),
+                canReport = me != null && plan.createdBy != null && plan.createdBy != me,
                 notFound = false,
                 error = false,
             )
@@ -347,6 +351,10 @@ class PlanPageActions(
     val onConfirmCancel: () -> Unit = {},
     val onDismissCancel: () -> Unit = {},
     val onRestore: () -> Unit = {},
+    /** "Report Plan" (safety.report, kind `plan`). */
+    val onReport: () -> Unit = {},
+    /** "Block {first_name}" of the plan's maker (safety.block). */
+    val onBlockMaker: () -> Unit = {},
     val onAnswer: (PlanAnswerKind?) -> Unit = {},
     val onPhoto: (Post) -> Unit = {},
     val onRetry: () -> Unit = {},
@@ -369,6 +377,10 @@ fun PlanPageRoute(nav: NavController, planId: String) {
             onConfirmCancel = vm::confirmCancel,
             onDismissCancel = vm::dismissCancel,
             onRestore = vm::restore,
+            onReport = {
+                state.plan?.let { plan -> nav.navigate(SafetyReportContentRoute("plan", plan.id, plan.groupId, plan.createdBy)) }
+            },
+            onBlockMaker = { state.plan?.createdBy?.let { maker -> nav.navigate(AppRoute.SafetyBlock(maker)) } },
             onAnswer = vm::answer,
             onPhoto = { post -> nav.navigate(AppRoute.PhotoViewer(post.groupId, post.id)) },
             onRetry = vm::load,
@@ -454,12 +466,15 @@ fun PlanPageScreen(state: PlanPageUiState, now: Instant, actions: PlanPageAction
     }
 }
 
-/** C-02 without a title: back, and the C-01 "•••" with the native menu for the maker and admins while the plan is not over. */
+/**
+ * C-02 without a title: back, and the C-01 "•••" with the native menu: the maker's and admins' Edit / Cancel (or Restore)
+ * while the plan is not over; on another member's plan "Report Plan" and "Block {first_name}" (C-10 red, MERGE FV-4).
+ */
 @Composable
 private fun Header(state: PlanPageUiState, past: Boolean, actions: PlanPageActions) {
     val plan = state.plan
     var menuOpen by remember { mutableStateOf(false) }
-    val items = when {
+    val manage = when {
         plan == null || !state.canManage || past -> emptyList()
         plan.canceled -> listOf(DsMenuItem(stringResource(R.string.plans_page_menu_restore), actions.onRestore))
         else -> listOf(
@@ -467,6 +482,15 @@ private fun Header(state: PlanPageUiState, past: Boolean, actions: PlanPageActio
             DsMenuItem(stringResource(R.string.plans_page_menu_cancel), actions.onCancel, destructive = true),
         )
     }
+    val report = if (plan != null && state.canReport) {
+        listOfNotNull(
+            DsMenuItem(stringResource(R.string.safety_report_menuitem_plan), actions.onReport, destructive = true),
+            state.maker?.let { DsMenuItem(stringResource(R.string.safety_block_menuitemnamed, it.firstName), actions.onBlockMaker, destructive = true) },
+        )
+    } else {
+        emptyList()
+    }
+    val items = manage + report
     Box(Modifier.fillMaxWidth()) {
         PushedHeader(
             title = "",

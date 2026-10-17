@@ -1435,14 +1435,20 @@ public enum Copy {
     public static var photoViewerA11yClose: String { CopyLookup.string("photo.viewer.a11y.close", default: "Close") }
     /// "More Options" — Retro · photo.viewer · verbatim · SOURCED
     public static var photoViewerA11yMore: String { CopyLookup.string("photo.viewer.a11y.more", default: "More Options") }
+    /// "Mute" — Retro · photo.viewer · verbatim · SOURCED
+    public static var photoViewerA11yMute: String { CopyLookup.string("photo.viewer.a11y.mute", default: "Mute") }
     /// "Next photo" — Retro · photo.viewer · new · SOURCED
     public static var photoViewerA11yNext: String { CopyLookup.string("photo.viewer.a11y.next", default: "Next photo") }
     /// "{name}'s photo, {date}" — Retro · photo.viewer · new · SOURCED
     public static func photoViewerA11yPhoto(name: String, date: String) -> String { CopyLookup.format("photo.viewer.a11y.photo", default: "{name}'s photo, {date}", ["name": name, "date": date]) }
     /// "Your photo, {date}" — Retro · photo.viewer · new · SOURCED
     public static func photoViewerA11yPhotoMine(date: String) -> String { CopyLookup.format("photo.viewer.a11y.photoMine", default: "Your photo, {date}", ["date": date]) }
+    /// "Play" — Retro · photo.viewer · verbatim · SOURCED
+    public static var photoViewerA11yPlay: String { CopyLookup.string("photo.viewer.a11y.play", default: "Play") }
     /// "Previous photo" — Retro · photo.viewer · new · SOURCED
     public static var photoViewerA11yPrevious: String { CopyLookup.string("photo.viewer.a11y.previous", default: "Previous photo") }
+    /// "Unmute" — Retro · photo.viewer · verbatim · SOURCED
+    public static var photoViewerA11yUnmute: String { CopyLookup.string("photo.viewer.a11y.unmute", default: "Unmute") }
     /// "Cancel" — Apple HIG · photo.viewer · verbatim · PLATFORM
     public static var photoViewerDeleteCancel: String { CopyLookup.string("photo.viewer.delete.cancel", default: "Cancel") }
     /// "Yes, delete" — Retro · photo.viewer · verbatim · SOURCED

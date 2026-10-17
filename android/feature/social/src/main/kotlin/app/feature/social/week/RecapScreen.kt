@@ -62,6 +62,7 @@ import app.ui.foundation.PageRoles
 import app.ui.foundation.endAtLastBaseline
 import app.ui.foundation.tapClickable
 import app.ui.recap.RecapDots
+import app.ui.recap.MediaReportMenu
 import app.ui.recap.RecapPill
 import app.ui.recap.RecapPillLabel
 import app.ui.recap.RecapPreviewScreen
@@ -81,6 +82,8 @@ data class RecapNav(
     val saveAsAlbum: (recapId: String) -> Unit,
     val cardPhoto: (recapId: String, postId: String) -> Unit,
     val camera: () -> Unit,
+    /** "Report Recap" (safety.report, kind `recap`, MERGE FV-4). */
+    val report: (recapId: String) -> Unit = {},
 )
 
 @Composable
@@ -242,6 +245,7 @@ fun WeekRecapPreview(state: RecapState, nav: RecapNav, onRetry: () -> Unit, init
             pill = if (ready) RecapPill(stringRes(R.string.week_recap_saveasalbum), { nav.saveAsAlbum(recap!!.id) }, label = RecapPillLabel.Pill) else null,
             dots = RecapDots.BelowPage(Tokens.Sizes.yearStoryDotsOffset),
             bottomLeading = if (ready) ({ SelectPhotosThumb(cover, stringRes(R.string.week_recap_a11y_edit)) { nav.edit(recap!!.id) } }) else null,
+            beforeClose = if (ready) ({ MediaReportMenu(stringRes(R.string.safety_report_menuitem_recap), onReport = { nav.report(recap!!.id) }) }) else null,
         ) { index ->
             when {
                 // Loading: the card's cells as `color.global.control` placeholders (two rows) until the images load.

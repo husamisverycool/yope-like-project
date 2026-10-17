@@ -54,3 +54,14 @@ data class SafetyReportMessageRoute(val groupId: String, val messageId: String, 
 data class SafetyReportSelfieRoute(val groupId: String, val selfieId: String, val authorId: String) : AppRoute {
     override val surface get() = "safety.report"
 }
+
+/**
+ * `safety.report` for the other content kinds (MERGE FV-4): [kind] is the server's `report_target_kind` — `plan`
+ * (plans.page), `tribute` (birthday.tribute), `year_story` (year.story), `collage` (collage.view) or `recap`
+ * (week.recap) — and [targetId] its row's id; [authorId] is the person behind it (a plan's maker: Next Steps → Block),
+ * null for group-made content (Next Steps → Leave the group only).
+ */
+@Serializable
+data class SafetyReportContentRoute(val kind: String, val targetId: String, val groupId: String, val authorId: String? = null) : AppRoute {
+    override val surface get() = "safety.report"
+}

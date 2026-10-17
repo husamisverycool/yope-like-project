@@ -74,6 +74,16 @@ public enum ReportTargetKind: String, LenientEnum {
     case post, message, user, group
     /// A selfie reaction, by its `selfie_reactions.id` (docs/API.md §14.1).
     case selfie
+    /// Another member's plan, by `plans.id` (migration 0032).
+    case plan
+    /// A birthday video you can watch, by `tributes.id` (0032).
+    case tribute
+    /// A group's year story, by `year_stories.id` (0032).
+    case yearStory = "year_story"
+    /// A same-moment collage, by `collages.id` (0032).
+    case collage
+    /// A weekly recap, by `weekly_recaps.id` (0032).
+    case recap
     case unknown
     public static var unknownCase: ReportTargetKind { .unknown }
 }

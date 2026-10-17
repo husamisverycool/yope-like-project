@@ -75,6 +75,7 @@ fun NavGraphBuilder.captureDestinations(navController: NavHostController) {
             invitationId = route.invitationId,
             onBack = { navController.popBackStack() },
             onOpenCamera = { navController.navigate(AppRoute.Camera(route.groupId)) },
+            onReport = { collageId -> navController.navigate(app.model.SafetyReportContentRoute("collage", collageId, route.groupId)) },
         )
     }
 }

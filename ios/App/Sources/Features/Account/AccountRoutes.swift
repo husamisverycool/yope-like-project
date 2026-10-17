@@ -61,6 +61,16 @@ struct ReportTarget: Hashable, Identifiable {
         case group
         /// A selfie reaction (`report('selfie', <selfie_reactions.id>, reason)`, viewer.selfiereaction).
         case selfie
+        /// Another member's plan (`plans.id`, plans.page).
+        case plan
+        /// A birthday video (`tributes.id`, birthday.tribute).
+        case tribute
+        /// A group's year story (`year_stories.id`, year.story).
+        case yearStory = "year_story"
+        /// A same-moment collage (`collages.id`, collage.view).
+        case collage
+        /// A weekly recap (`weekly_recaps.id`, week.recap).
+        case recap
     }
 
     let kind: Kind

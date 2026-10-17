@@ -53,6 +53,7 @@ import app.feature.memory.share.MemoryFiles
 import app.feature.memory.share.PhotoFiles
 import app.feature.memory.yearstory.YearStoryDestination
 import app.model.AppRoute
+import app.model.SafetyReportContentRoute
 import app.model.OnThisDayRoute
 import app.ui.components.PlatformToast
 import app.ui.nav.emptyDestination
@@ -99,11 +100,20 @@ fun NavGraphBuilder.memoryDestinations(navController: NavHostController) {
     }
     composable<AppRoute.Tribute> { entry ->
         val route = entry.toRoute<AppRoute.Tribute>()
-        TributeDestination(route.tributeId, onClose = { navController.popBackStack() })
+        TributeDestination(
+            route.tributeId,
+            onClose = { navController.popBackStack() },
+            onReport = { groupId -> navController.navigate(SafetyReportContentRoute("tribute", route.tributeId, groupId)) },
+        )
     }
     composable<AppRoute.YearStory> { entry ->
         val route = entry.toRoute<AppRoute.YearStory>()
-        YearStoryDestination(route.groupId, route.year, onClose = { navController.popBackStack() })
+        YearStoryDestination(
+            route.groupId,
+            route.year,
+            onClose = { navController.popBackStack() },
+            onReport = { storyId -> navController.navigate(SafetyReportContentRoute("year_story", storyId, route.groupId)) },
+        )
     }
 }
 

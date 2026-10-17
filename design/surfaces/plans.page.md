@@ -27,8 +27,9 @@ Apple Invites' event-page order"`.
 ## Structure (pushed from `groups.screen` / a push / the widget; page `color.global.background`; one vertical scroll)
 
 1. **Header row** — C-02 back (`icon.global.back` at `size.global.backInset`); trailing C-01 glyph `icon.global.more`
-   (maker and admins only) → native menu: `plans.page.menu.edit`, `plans.page.menu.cancel` (C-10 red) /
-   `plans.page.menu.restore` when canceled.
+   → native menu: for the maker and admins while the plan is on `plans.page.menu.edit`, `plans.page.menu.cancel` (C-10
+   red) / `plans.page.menu.restore` when canceled; on another member's plan `safety.report.menuItem.plan` and
+   `safety.block.menuItemNamed` ("Block {first_name}", the maker), both C-10 red (safety.report kind `plan`, MERGE FV-4).
 2. **Cover** (only when the plan has one) — `size.global.titleToContent` below the header line, centred,
    `groups.screen.size.coverWidth` × `.coverHeight`, `radius.global.thumbnail`, `groups.screen.shadow.cover`, aspect fill.
 3. **Title** — `groups.screen.size.coverToTitle` below the cover (or `size.global.titleToContent` below the header),

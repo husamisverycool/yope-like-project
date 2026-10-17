@@ -685,6 +685,15 @@ public enum Tokens {
         /// Retro · global · profile tab — your weeks (= walls) · PLATFORM
         /// token: `icon.global.wall`
         public static let globalWall: String = "person.crop.circle"
+        /// Apple HIG / Material Symbols · photo.viewer · Live Photo badge (Android; iOS draws PHLivePhotoView.livePhotoBadgeImage) · PLATFORM
+        /// token: `icon.photo.viewer.livePhoto`
+        public static let photoViewerLivePhoto: String = "livephoto"
+        /// Retro · photo.viewer · sound toggle while a video plays muted · PLATFORM
+        /// token: `icon.photo.viewer.soundOff`
+        public static let photoViewerSoundOff: String = "speaker.slash.fill"
+        /// Retro · photo.viewer · sound toggle while a video plays with sound · PLATFORM
+        /// token: `icon.photo.viewer.soundOn`
+        public static let photoViewerSoundOn: String = "speaker.wave.2.fill"
         /// Apple HIG / Material 3 · year.story · replay glyph in the summary bar's leading circle (back to the first card) · PLATFORM
         /// token: `icon.year.story.replay`
         public static let yearStoryReplay: String = "arrow.counterclockwise"
@@ -1901,6 +1910,13 @@ public enum Tokens {
             public static let ios: String = "confirmationDialog (action sheet): title, message, destructive button, Cancel"
             public static let android: String = "AlertDialog: title, message, confirm (color.global.system.error), dismiss"
         }
+        /// Apple HIG (Live Photos) · photo.viewer · a Live Photo in the viewer · PLATFORM
+        /// token: `photo.viewer.layout.livePhoto`
+        public enum PhotoViewerLayoutLivePhoto {
+            public static let play: String = "touch and hold the photo plays its motion with its sound (iOS PHLivePhotoView .full; Android the motion movie over the still), release stops; under Reduce Motion too (the person starts it)"
+            public static let menu: String = "on a Live Photo the long press plays it, so the menu and quick reactions are the field's \"•••\" and the add-reaction glyph (both already on the page); VoiceOver / TalkBack get photo.viewer.a11y.play as a custom action"
+            public static let badge: String = "the system Live Photo badge over the content (iOS PHLivePhotoView.livePhotoBadgeImage(options: .overContent); Android icon.photo.viewer.livePhoto in color.global.textOnMedia, size.global.icon) at the visible photo's top-leading corner, size.global.videoPillInset in, while the motion is downloaded and playable"
+        }
         /// Retro + Apple HIG / Material 3 · photo.viewer · the viewer's actions menu · SOURCED
         /// token: `photo.viewer.layout.menu`
         public enum PhotoViewerLayoutMenu {
@@ -1916,7 +1932,19 @@ public enum Tokens {
             public static let height: String = "the photo's own aspect ratio, never cropped"
             public static let tall: String = "a photo taller than the space between the header and the footer is scaled down to fit and centred (letterboxed on color.global.backgroundDeep)"
             public static let corners: String = "radius.global.photo (square)"
-            public static let live: String = "a Live Photo plays while pressed (platform Live Photo view); a dual capture shows as daily.dualimage"
+            public static let live: String = "a Live Photo plays while pressed (photo.viewer.layout.livePhoto); a video plays in the frame (photo.viewer.layout.video); a dual capture shows as daily.dualimage"
+        }
+        /// Retro (web viewer) + Apple HIG / Android audio focus · photo.viewer · a video post in the viewer · SOURCED
+        /// token: `photo.viewer.layout.video`
+        public enum PhotoViewerLayoutVideo {
+            public static let frame: String = "the photo frame of photo.viewer.layout.photo at the video's own aspect (aspect fit, letterboxed on color.global.backgroundDeep); the poster (display rendition) shows until the first frame is drawn"
+            public static let autoplay: String = "starts muted when its page shows and loops (Retro's viewer: autoPlay \"muted\", loop)"
+            public static let taps: String = "unchanged: photo.viewer.layout.advance / .backZone go forward and back over a video too (Retro on a phone); long press opens the menu"
+            public static let sound: String = "C-11 glass circle (size.global.circleButtonPhoto, color.global.glass) at the visible video's bottom-trailing corner, size.global.screenMargin in on both axes (the selfie stack's mirror): icon.photo.viewer.soundOff while muted, icon.photo.viewer.soundOn with sound; a tap toggles; the choice holds for every video until the viewer closes"
+            public static let audio: String = "muted: no audio focus, mixes with other apps (iOS AVAudioSession .ambient); with sound — started by the person — plays even in silent mode (iOS .playback) and takes the media audio focus (Android USAGE_MEDIA / CONTENT_TYPE_MOVIE); pauses when headphones are disconnected"
+            public static let pause: String = "when its page changes, the viewer closes, the app goes to the background, or the selfie capture layer opens"
+            public static let reduceMotion: String = "Reduce Motion (layout.global.reduceMotion) or iOS Auto-Play Video Previews off (UIAccessibility.isVideoAutoplayEnabled): no autoplay; a C-11 glass circle with icon.global.play centred on the video starts it once, with sound (no loop); at its end the circle returns"
+            public static let error: String = "the video cannot be played: photo.viewer.error.load over the poster (tap retries)"
         }
         /// Retro · photo.viewer · a photo's voice note in the viewer · SOURCED
         /// token: `photo.viewer.layout.voiceNote`

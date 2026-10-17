@@ -194,6 +194,29 @@ final class AccountSettingsTests: XCTestCase {
         XCTAssertFalse(ReportReason.dontLike.filesReport, "'I don't like it' opens Next Steps instead")
     }
 
+    /// Plans, birthday videos, year stories, collages and recaps (MERGE FV-4): the post reasons, Retro's question with
+    /// the kind's noun, and the server's kind on the wire.
+    func testReportCoversPlansVideosRecapsAndCollages() async {
+        let titles: [(ReportTarget.Kind, String, ReportTargetKind)] = [
+            (.plan, Copy.safetyReportTitlePlan, .plan),
+            (.tribute, Copy.safetyReportTitleVideo, .tribute),
+            (.yearStory, Copy.safetyReportTitleRecap, .yearStory),
+            (.collage, Copy.safetyReportTitleCollage, .collage),
+            (.recap, Copy.safetyReportTitleRecap, .recap),
+        ]
+        let fixture = AccountFixture()
+        for (kind, title, wire) in titles {
+            XCTAssertEqual(ReportReason.reasons(for: kind), ReportReason.reasons(for: .post))
+            let model = ReportModel(target: ReportTarget(kind: kind, id: "x-" + kind.rawValue, groupID: "g1"), data: fixture.data)
+            XCTAssertEqual(model.title, title)
+            let filed = await model.submit(.other)
+            XCTAssertTrue(filed)
+            XCTAssertEqual(fixture.data.reports.last?.kind, wire)
+            XCTAssertEqual(fixture.data.reports.last?.reason, "Other")
+        }
+        XCTAssertEqual(ReportTarget.Kind.yearStory.rawValue, "year_story", "the server's report_target_kind value")
+    }
+
     func testReportFilesTheReasonsEnglishTextAtOnce() async {
         let fixture = AccountFixture()
         let model = ReportModel(target: ReportTarget(kind: .post, id: "p1"), data: fixture.data)

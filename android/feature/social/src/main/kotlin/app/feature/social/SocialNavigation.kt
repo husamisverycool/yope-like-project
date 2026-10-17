@@ -258,6 +258,7 @@ private class SocialNavigator(private val nav: NavHostController) {
         saveAsAlbum = { recapId -> nav.navigate(WeekRecapAlbum(groupId, recapId)) },
         cardPhoto = { recapId, postId -> nav.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Recap, recapId)) },
         camera = { camera(groupId, null) },
+        report = { recapId -> nav.navigate(app.model.SafetyReportContentRoute("recap", recapId, groupId)) },
     )
 
     fun history(groupId: String) = HistoryNav(

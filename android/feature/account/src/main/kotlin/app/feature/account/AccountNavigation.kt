@@ -32,6 +32,7 @@ import app.model.GroupCreateKindRoute
 import app.model.GroupProfileRoute
 import app.model.OnboardingWidgetFromSettingsRoute
 import app.model.SafetyReportMessageRoute
+import app.model.SafetyReportContentRoute
 import app.model.SafetyReportSelfieRoute
 import app.ui.nav.emptyDestination
 
@@ -86,5 +87,9 @@ fun NavGraphBuilder.accountDestinations(navController: NavHostController) {
     }
     dialog<SafetyReportMessageRoute>(dialogProperties = overlay) { entry -> ReportRoute(navController, reportTarget(entry.toRoute<SafetyReportMessageRoute>())) }
     dialog<SafetyReportSelfieRoute>(dialogProperties = overlay) { entry -> ReportRoute(navController, reportTarget(entry.toRoute<SafetyReportSelfieRoute>())) }
+    dialog<SafetyReportContentRoute>(dialogProperties = overlay) { entry ->
+        val target = reportTarget(entry.toRoute<SafetyReportContentRoute>())
+        if (target != null) ReportRoute(navController, target) else navController.popBackStack()
+    }
     dialog<AppRoute.SafetyBlock>(dialogProperties = overlay) { entry -> BlockRoute(navController, entry.toRoute<AppRoute.SafetyBlock>().userId) }
 }

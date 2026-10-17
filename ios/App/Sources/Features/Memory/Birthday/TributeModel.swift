@@ -25,6 +25,8 @@ final class TributeModel {
 
     private(set) var phase: Phase = .idle
     private(set) var groupName = ""
+    /// The tribute's group, once loaded ("Leave the group" in the report's next steps).
+    private(set) var groupID: GroupID?
     /// The honoree's first name (`birthday.tribute.title.member`); empty for the honoree.
     private(set) var honoreeName = ""
     /// The caller is the honoree (`birthday.tribute.title`).
@@ -67,6 +69,13 @@ final class TributeModel {
     /// app only through the person they were given to (owner decision 12). Members watch it in the app.
     var offersExport: Bool { isHonoree }
 
+    /// The report target of the video (kind `tribute`), once it is shown: no single person made it, so the next steps
+    /// offer "Leave the group" only (safety.report, MERGE FV-4).
+    var reportTarget: ReportTarget? {
+        guard phase == .ready || phase == .rendering, let groupID else { return nil }
+        return ReportTarget(kind: .tribute, id: tributeID.rawValue, groupID: groupID.rawValue, groupName: groupName)
+    }
+
     /// Save and Share work once the file is on the device (the honoree only).
     var canUseFile: Bool { offersExport && phase == .ready && localFile != nil && !isSaving }
 
@@ -103,6 +112,7 @@ final class TributeModel {
                 phase = .notFound
                 return
             }
+            groupID = tribute.groupID
             groupName = try await data.group(id: tribute.groupID)?.name ?? ""
             isHonoree = tribute.honoreeID == me
             if !isHonoree {

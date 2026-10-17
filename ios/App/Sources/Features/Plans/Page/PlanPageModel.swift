@@ -81,6 +81,22 @@ final class PlanPageModel {
         return plan.createdBy == me || isAdmin
     }
 
+    /// "Report Plan" and "Block {name}" in the more menu: another member's plan (safety.report, MERGE FV-4).
+    var showsReport: Bool {
+        guard let plan, let me, let maker = plan.createdBy else { return false }
+        return maker != me
+    }
+
+    /// The report target of the plan (kind `plan`): its maker for "Block {first_name}", its group for "Leave the group".
+    var reportTarget: ReportTarget? {
+        guard showsReport, let plan, let maker = plan.createdBy else { return nil }
+        return ReportTarget(
+            kind: .plan, id: plan.id.rawValue,
+            person: BlockTarget(userID: maker.rawValue, firstName: person(maker)?.firstName ?? ""),
+            groupID: plan.groupID.rawValue, groupName: group?.name
+        )
+    }
+
     var maker: Person? {
         plan?.createdBy.flatMap(person)
     }

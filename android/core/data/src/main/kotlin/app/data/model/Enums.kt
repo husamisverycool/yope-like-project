@@ -62,6 +62,21 @@ enum class ReportTargetKind(val wire: String) {
     @SerialName("group") Group("group"),
     /** A selfie reaction, by its `selfie_reactions.id` (§14.1). */
     @SerialName("selfie") Selfie("selfie"),
+
+    /** Another member's plan, by `plans.id` (migration 0032). */
+    @SerialName("plan") Plan("plan"),
+
+    /** A birthday video you can watch, by `tributes.id` (0032). */
+    @SerialName("tribute") Tribute("tribute"),
+
+    /** A group's year story, by `year_stories.id` (0032). */
+    @SerialName("year_story") YearStory("year_story"),
+
+    /** A same-moment collage, by `collages.id` (0032). */
+    @SerialName("collage") Collage("collage"),
+
+    /** A weekly recap, by `weekly_recaps.id` (0032). */
+    @SerialName("recap") Recap("recap"),
 }
 
 /** `wall.item_kind` (text, not a Postgres enum). */

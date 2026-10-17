@@ -45,6 +45,7 @@ import app.ui.components.EmptyStateAction
 import app.ui.components.PlatformToast
 import app.ui.foundation.tapClickable
 import app.ui.format.Formats
+import app.ui.recap.MediaReportMenu
 import app.ui.recap.RecapPill
 import app.ui.recap.RecapPreviewDefaults
 import app.ui.recap.RecapPreviewScreen
@@ -55,7 +56,13 @@ import java.io.File
 
 /** The collage destination: view model, page decoding, share sheet and navigation out. */
 @Composable
-fun CollageRoute(groupId: String, invitationId: String, onBack: () -> Unit, onOpenCamera: () -> Unit) {
+fun CollageRoute(
+    groupId: String,
+    invitationId: String,
+    onBack: () -> Unit,
+    onOpenCamera: () -> Unit,
+    onReport: (collageId: String) -> Unit = {},
+) {
     val context = LocalContext.current
     val vm: CollageViewModel = viewModel(key = "collage:$invitationId") {
         CollageViewModel(CaptureDataProvider.get(context), groupId, invitationId, context.cacheDir)
@@ -83,6 +90,7 @@ fun CollageRoute(groupId: String, invitationId: String, onBack: () -> Unit, onOp
         onShare = vm::share,
         onOpenCamera = onOpenCamera,
         onRetry = vm::load,
+        onReport = { state.collageId?.let(onReport) },
     )
 }
 
@@ -111,6 +119,8 @@ fun CollageScreen(
     onOpenCamera: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    /** "Report Collage" (safety.report, MERGE FV-4): the "•••" before the close circle once the collage is composed. */
+    onReport: () -> Unit = {},
 ) {
     val ready = state.content as? CollageViewModel.Content.Ready
     val pages = ready?.pages.orEmpty()
@@ -129,6 +139,9 @@ fun CollageScreen(
         modifier = modifier.testTag("collage.view"),
         pill = if (ready != null && ready.shareable) RecapPill(stringResource(R.string.collage_share_button), onShare, busy = state.sharing) else null,
         dotsDescription = stringResource(R.string.collage_view_a11y_page, state.page + 1, pages.size),
+        beforeClose = if (ready != null && state.collageId != null) ({
+            MediaReportMenu(stringResource(R.string.safety_report_menuitem_collage), onReport)
+        }) else null,
     ) { page ->
         when (val content = state.content) {
             is CollageViewModel.Content.Ready -> CollageCard(pageImage(content.pages.getOrNull(page)), pageLabel)

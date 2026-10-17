@@ -33,11 +33,12 @@ enum ReportReason: String, CaseIterable, Identifiable {
     var filesReport: Bool { self != .dontLike }
 
     /// The reasons offered for a target kind, in Retro's order: posts, messages and selfie reactions "I don't like it ·
-    /// Nudity or sexual activity · Other" (a selfie is photo content: its list holds the post reasons, MERGE SR-10),
-    /// people and groups "It's impersonating someone · It's inappropriate · Other".
+    /// Nudity or sexual activity · Other" (a selfie is photo content: its list holds the post reasons, MERGE SR-10), and
+    /// so do plans, birthday videos, year stories, collages and recaps (photo content, MERGE FV-4); people and groups
+    /// "It's impersonating someone · It's inappropriate · Other".
     static func reasons(for kind: ReportTarget.Kind) -> [ReportReason] {
         switch kind {
-        case .post, .message, .selfie: return [.dontLike, .nudity, .other]
+        case .post, .message, .selfie, .plan, .tribute, .yearStory, .collage, .recap: return [.dontLike, .nudity, .other]
         case .user, .group: return [.impersonation, .inappropriate, .other]
         }
     }
@@ -50,6 +51,11 @@ enum ReportReason: String, CaseIterable, Identifiable {
         case .post: list = Tokens.Layouts.SafetyReportLayoutReasons.post
         case .message: list = Tokens.Layouts.SafetyReportLayoutReasons.message
         case .selfie: list = Tokens.Layouts.SafetyReportLayoutReasons.selfie
+        case .plan: list = Tokens.Layouts.SafetyReportLayoutReasons.plan
+        case .tribute: list = Tokens.Layouts.SafetyReportLayoutReasons.tribute
+        case .yearStory: list = Tokens.Layouts.SafetyReportLayoutReasons.yearStory
+        case .collage: list = Tokens.Layouts.SafetyReportLayoutReasons.collage
+        case .recap: list = Tokens.Layouts.SafetyReportLayoutReasons.recap
         case .user: list = Tokens.Layouts.SafetyReportLayoutReasons.user
         case .group: list = Tokens.Layouts.SafetyReportLayoutReasons.group
         }
@@ -89,6 +95,10 @@ final class ReportModel {
         case .post: return Copy.safetyReportTitlePost
         case .message: return Copy.safetyReportTitleMessage
         case .selfie: return Copy.safetyReportTitleSelfie
+        case .plan: return Copy.safetyReportTitlePlan
+        case .tribute: return Copy.safetyReportTitleVideo
+        case .yearStory, .recap: return Copy.safetyReportTitleRecap
+        case .collage: return Copy.safetyReportTitleCollage
         case .user: return Copy.safetyReportTitleUser
         case .group: return Copy.safetyReportTitleGroup
         }

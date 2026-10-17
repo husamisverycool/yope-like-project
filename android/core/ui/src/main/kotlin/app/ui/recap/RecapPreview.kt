@@ -176,6 +176,8 @@ fun RecapPreviewScreen(
     backdropBlur: Dp = RecapPreviewDefaults.BackdropBlur,
     topLeading: (@Composable () -> Unit)? = null,
     bottomLeading: (@Composable () -> Unit)? = null,
+    /** A C-11 control on the close circle's centre line, `size.global.headerIconPitch` before it (the report "•••"). */
+    beforeClose: (@Composable () -> Unit)? = null,
     page: @Composable BoxScope.(page: Int) -> Unit,
 ) {
     val screen = Tokens.Layouts.CollageViewLayoutScreen
@@ -205,6 +207,14 @@ fun RecapPreviewScreen(
             RecapPages(pageCount, currentPage, onPageChange, swipeEnabled, page)
             if (topLeading != null) {
                 Box(Modifier.align(Alignment.TopStart).centreAt(Dp(screen.closeCentreBelowPageTop))) { topLeading() }
+            }
+            if (beforeClose != null) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(end = Dp(screen.closeCentreFromTrailing) + Tokens.Sizes.globalHeaderIconPitch - Tokens.Sizes.globalCircleButton / 2)
+                        .centreAt(Dp(screen.closeCentreBelowPageTop)),
+                ) { beforeClose() }
             }
             CircleIconButton(
                 Tokens.Icons.globalClose,

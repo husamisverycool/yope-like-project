@@ -19,6 +19,8 @@ struct TributeScreen: View {
     let tributeID: String
     let groupID: String?
     @State private var model: TributeModel
+    @State private var reportTarget: ReportTarget?
+    @Environment(AccountDependencies.self) private var accountDependencies: AccountDependencies?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
@@ -53,6 +55,7 @@ struct TributeScreen: View {
         .environment(\.colorScheme, .dark)
         .preferredColorScheme(.dark)
         .toolbar(.hidden, for: .navigationBar)
+        .reportFlowIfAvailable(target: $reportTarget, dependencies: accountDependencies)
         .task { await model.loadIfNeeded() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await model.refreshIfRendering() } }
@@ -79,7 +82,9 @@ struct TributeScreen: View {
     /// The title (`birthday.tribute.title` / `.title.member`, display serif `headerTitle`, `color.global.textOnMedia`, up to
     /// two lines) at `size.global.screenMargin`, its first baseline `size.global.titleTop` below the safe-area top; the group
     /// name (text role `textButton`, `color.global.textSecondary`) with its baseline `dimension.onthisday.subtitleBaseline`
-    /// below the title's; the close circle (C-11 on media) at `size.global.headerInset`, centred on the title's cap middle.
+    /// below the title's; the close circle (C-11 on media) at `size.global.headerInset`, centred on the title's cap middle,
+    /// and once the video shows, the "•••" circle (C-11 on media) `size.global.headerIconPitch` before it with "Report
+    /// Video" (safety.report, MERGE FV-4).
     private var header: some View {
         MetricStack {
             Text(model.phase == .notFound ? "" : model.title)
@@ -87,7 +92,11 @@ struct TributeScreen: View {
                 .foregroundStyle(Tokens.Colors.globalTextOnMedia)
                 .lineLimit(2)
                 .padding(.leading, Tokens.Sizes.globalScreenMargin)
-                .padding(.trailing, Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalCircleButton + Tokens.Sizes.globalHeaderGap)
+                .padding(
+                    .trailing,
+                    Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalCircleButton + Tokens.Sizes.globalHeaderGap
+                        + (model.reportTarget == nil ? 0 : Tokens.Sizes.globalHeaderIconPitch)
+                )
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityHidden(model.title.isEmpty || model.phase == .notFound)
@@ -101,6 +110,13 @@ struct TributeScreen: View {
                     .padding(.trailing, Tokens.Sizes.globalHeaderInset)
                     .accessibilitySortPriority(2)
                     .accessibilityIdentifier("birthday.tribute.close")
+                }
+                .overlay(alignment: Alignment(horizontal: .trailing, vertical: .capMiddle)) {
+                    if let target = model.reportTarget {
+                        MediaReportMenu(itemTitle: Copy.safetyReportMenuItemVideo) { reportTarget = target }
+                            .padding(.trailing, Tokens.Sizes.globalHeaderInset + Tokens.Sizes.globalHeaderIconPitch)
+                            .accessibilitySortPriority(1)
+                    }
                 }
                 .metricGap(Tokens.Sizes.globalTitleTop, from: .top, to: .firstBaseline)
             if !model.groupName.isEmpty {
