@@ -32,7 +32,8 @@ if git diff --cached --quiet; then echo "no screen changed"; exit 0; fi
 git commit -m "Screens from CI: $dest (at ${GITHUB_SHA::7})"
 for i in 1 2 3 4; do
   git push origin "HEAD:${GITHUB_REF#refs/heads/}" && exit 0
-  git pull --rebase origin "${GITHUB_REF#refs/heads/}"
+  # The build leaves tracked files modified (generated project, copied fixtures); stash them around the rebase.
+  git pull --rebase --autostash origin "${GITHUB_REF#refs/heads/}"
   sleep $((i * 5))
 done
 exit 1

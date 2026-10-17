@@ -256,7 +256,7 @@ jobs:
           git commit -m "Android snapshot baselines re-recorded (CI, at ${GITHUB_SHA::7})"
           for i in 1 2 3 4; do
             git push origin "HEAD:${GITHUB_REF#refs/heads/}" && exit 0
-            git pull --rebase origin "${GITHUB_REF#refs/heads/}"
+            git pull --rebase --autostash origin "${GITHUB_REF#refs/heads/}"
             sleep $((i * 5))
           done
           exit 1
