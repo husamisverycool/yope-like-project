@@ -187,6 +187,7 @@ describe('app_config / public_app_config', () => {
       'max_group_members',
       'min_age_years',
       'overnight_reveal_local_time',
+      'video_max_ms',
       'week_start_isodow',
       'weekly_question_keys',
     ]);
