@@ -301,9 +301,21 @@ struct WeekHistorySection: View {
 /// then the months newest first — the month title (`sectionLabel`, a button to the month's newest week) over a
 /// seven-column grid, Monday first; a day with something is its number (`pill`) on a `color.global.control` circle of
 /// `size.global.pillHeight` (C-06 fill) and opens its week; other days are tertiary numbers. No count anywhere.
+///
+/// On This Day's "Pick a date…" (onthisday.md E) shows the same sheet with `selection: .day`: a day picks itself and the
+/// month titles are plain headers.
 struct HistoryCalendarSheet: View {
+    /// What a day with something hands to `onSelect`.
+    enum Selection {
+        /// The week containing it (week.history); a month title hands its newest week.
+        case week
+        /// The day itself (onthisday "Pick a date…"); month titles do nothing.
+        case day
+    }
+
     let months: [HistoryCalendarMonth]
     let timeZone: TimeZone
+    var selection: Selection = .week
     let onSelect: (LocalDate) -> Void
     let onClose: () -> Void
 
@@ -335,17 +347,19 @@ struct HistoryCalendarSheet: View {
 
     private func monthSection(_ month: HistoryCalendarMonth) -> some View {
         VStack(alignment: .leading, spacing: Tokens.Sizes.globalSectionHeaderToContent) {
-            Button {
-                onSelect(month.newestWeek)
-            } label: {
-                Text(SocialFormat.monthTitle(month.month, timeZone: timeZone))
-                    .dsTextStyle(TextRole.sectionLabel)
-                    .foregroundStyle(Tokens.Colors.globalTextPrimary)
-                    .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos, alignment: .leading)
-                    .contentShape(Rectangle())
+            switch selection {
+            case .week:
+                Button {
+                    onSelect(month.newestWeek)
+                } label: {
+                    monthTitle(month)
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(.isHeader)
+            case .day:
+                monthTitle(month)
+                    .accessibilityAddTraits(.isHeader)
             }
-            .buttonStyle(.plain)
-            .accessibilityAddTraits(.isHeader)
             LazyVGrid(columns: gridColumns, spacing: 0) {
                 ForEach(Array(SocialFormat.weekdayInitials().enumerated()), id: \.offset) { _, initial in
                     Text(initial)
@@ -365,12 +379,23 @@ struct HistoryCalendarSheet: View {
         }
     }
 
+    private func monthTitle(_ month: HistoryCalendarMonth) -> some View {
+        Text(SocialFormat.monthTitle(month.month, timeZone: timeZone))
+            .dsTextStyle(TextRole.sectionLabel)
+            .foregroundStyle(Tokens.Colors.globalTextPrimary)
+            .frame(minHeight: Tokens.Sizes.globalMinTouchTargetIos, alignment: .leading)
+            .contentShape(Rectangle())
+    }
+
     @ViewBuilder
     private func dayCell(_ day: LocalDate, active: Bool) -> some View {
         let number = Text(day.day.formatted())
         if active {
             Button {
-                onSelect(SocialCalendar.weekStart(containing: SocialCalendar.start(of: day, in: timeZone), in: timeZone))
+                switch selection {
+                case .week: onSelect(SocialCalendar.weekStart(containing: SocialCalendar.start(of: day, in: timeZone), in: timeZone))
+                case .day: onSelect(day)
+                }
             } label: {
                 number
                     .dsTextStyle(TextRole.pill)

@@ -28,6 +28,8 @@ protocol MemoryDataSource: Sendable {
     func onThisDay(groupID: GroupID, localDate: LocalDate) async throws -> [OnThisDayItem]
     /// `group_history_weeks` (newest first; `free_history_days` applied by the server) — the shuffle's pool.
     func historyWeeks(groupID: GroupID, before: LocalDate?, limit: Int) async throws -> [HistoryWeek]
+    /// `group_history_months` (migration 0045): the months with the days that have photos — "Pick a date…"'s calendar.
+    func historyMonths(groupID: GroupID) async throws -> [HistoryMonth]
     /// `delete_post` (own post).
     func deletePost(id: PostID) async throws
     /// The bytes at a (signed) file URL (the original photo, for saving).
@@ -148,6 +150,10 @@ struct LiveMemoryData: MemoryDataSource {
 
     func historyWeeks(groupID: GroupID, before: LocalDate?, limit: Int) async throws -> [HistoryWeek] {
         try await environment.memories.historyWeeks(groupID: groupID, beforeWeek: before, limit: limit)
+    }
+
+    func historyMonths(groupID: GroupID) async throws -> [HistoryMonth] {
+        try await environment.memories.historyMonths(groupID: groupID)
     }
 
     func deletePost(id: PostID) async throws {

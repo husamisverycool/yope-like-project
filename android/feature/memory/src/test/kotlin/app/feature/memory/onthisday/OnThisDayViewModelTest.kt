@@ -3,6 +3,7 @@ package app.feature.memory.onthisday
 import android.net.Uri
 import app.data.error.DataError
 import app.data.model.HiddenMemory
+import app.data.model.HistoryMonth
 import app.designsystem.generated.Tokens
 import app.feature.memory.FakeMemoryBackend
 import app.feature.memory.FakeMemoryBackend.Companion.ME
@@ -131,6 +132,33 @@ class OnThisDayViewModelTest {
         vm.step(-1)
         assertEquals("previous = back through the picks", first.memory.postId, vm.page.memory.postId)
         assertEquals(1, backend.calls.count { it == "historyWeeks" })
+    }
+
+    @Test fun pickADateShowsThatDayAcrossTheYearsThenOnThisDayGoesBack() {
+        val march1 = LocalDate.of(2025, 3, 1)
+        val backend = Scenario.backend().apply {
+            months += HistoryMonth(LocalDate.of(2025, 3, 1), listOf(march1, LocalDate.of(2025, 3, 2)), LocalDate.of(2025, 2, 24))
+            hides += HiddenMemory(id = "h-1", day = LocalDate.of(2025, 3, 2), createdAt = FakeMemoryBackend.NOW)
+            onThisDayByDate[LocalDate.of(2027, 3, 1)] = onThisDay[FakeMemoryBackend.GROUP].orEmpty().takeLast(2)
+        }
+        val vm = vm(backend)
+        vm.togglePlay()
+        vm.openCalendar()
+        assertFalse("playing stops", vm.page.playing)
+        assertEquals("only days with photos, your hidden day left out", listOf(listOf(march1)), vm.calendar.value?.map { it.days })
+        vm.pickDate(march1)
+        assertNull("the sheet closes", vm.calendar.value)
+        assertEquals("the same day after this year: every year up to this one", LocalDate.of(2027, 3, 1), backend.lastOnThisDayDate)
+        assertEquals(MemoryMode.Date, vm.page.mode)
+        assertEquals(listOf("p-2023b", "p-2023c"), vm.page.memories.map { it.postId })
+        assertEquals(0, vm.page.index)
+        vm.step(+1)
+        assertTrue(vm.page.isLast)
+        vm.showDay()
+        assertEquals(MemoryMode.Day, vm.page.mode)
+        assertEquals(listOf("p-2025", "p-2023a", "p-2023b", "p-2023c"), vm.page.memories.map { it.postId })
+        // Feb 29 is asked for in the next leap year.
+        assertEquals(LocalDate.of(2028, 2, 29), OnThisDayViewModel.queryDate(LocalDate.of(2024, 2, 29), LocalDate.of(2026, 12, 5)))
     }
 
     @Test fun modeMenuGoesBackFromShuffleToTheDay() {

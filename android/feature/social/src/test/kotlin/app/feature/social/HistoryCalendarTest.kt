@@ -7,7 +7,7 @@ import app.feature.social.FakeSocialData.Companion.ANA
 import app.feature.social.FakeSocialData.Companion.GROUP
 import app.feature.social.week.HistoryViewModel
 import app.feature.social.week.RecapEdits
-import app.feature.social.week.calendarCells
+import app.feature.memory.common.calendarCells
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking

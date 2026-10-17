@@ -38,6 +38,7 @@ import app.data.model.batchKey
 import app.designsystem.R
 import app.designsystem.generated.Tokens
 import app.feature.social.common.Formats
+import app.feature.memory.common.HistoryCalendarSheet
 import app.feature.social.common.StripPhoto
 import app.feature.social.common.placeholderDays
 import app.feature.social.common.stringRes
@@ -153,11 +154,16 @@ fun WeekHistoryContent(
     if (calendarOpen) {
         HistoryCalendarSheet(
             months = state.months,
-            onSelect = { week ->
+            // A day opens its week; a month title its newest week.
+            onSelectDay = { day ->
                 calendarOpen = false
-                onJump(week)
+                onJump(Formats.weekStartOf(day))
             },
             onClose = { calendarOpen = false },
+            onSelectMonth = { month ->
+                calendarOpen = false
+                onJump(month.newestWeek)
+            },
         )
     }
 }

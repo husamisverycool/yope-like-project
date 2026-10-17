@@ -76,6 +76,20 @@ struct OnThisDayScreen: View {
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("onthisday.intro")
         }
+        .sheet(isPresented: $model.showsCalendar) {
+            // "Pick a date…": week.history's calendar (only the days with photos open); a day picks itself.
+            HistoryCalendarSheet(
+                months: model.calendarMonths.map(HistoryCalendarMonth.init),
+                timeZone: model.timeZone,
+                selection: .day
+            ) { day in
+                Task { await model.pickDate(day) }
+            } onClose: {
+                model.showsCalendar = false
+            }
+            .environment(\.colorScheme, SystemAppearance.colorScheme)
+            .preferredColorScheme(SystemAppearance.colorScheme)
+        }
         .alert(
             Copy.onthisdayDeleteTitle,
             isPresented: Binding(get: { model.deleteCandidate != nil }, set: { if !$0 { model.deleteCandidate = nil } }),
@@ -268,8 +282,8 @@ struct OnThisDayScreen: View {
         .accessibilityIdentifier("onthisday.back")
     }
 
-    /// Retro's Rewind mode menu (native pull-down, PLATFORM): "On this day…" (back to the day's memories) and "Shuffle"
-    /// (the dice). Its invisible label covers the title and reaches over the chevron; it carries the title for VoiceOver.
+    /// Retro's Rewind mode menu (native pull-down, PLATFORM): "On this day…" (back to the day's memories), "Shuffle"
+    /// (the dice) and "Pick a date…" (week.history's calendar; the picked day across the years). Its invisible label covers the title and reaches over the chevron; it carries the title for VoiceOver.
     private var modeMenu: some View {
         Menu {
             Button(Copy.onthisdayModeDay) {
@@ -277,6 +291,9 @@ struct OnThisDayScreen: View {
             }
             Button(Copy.onthisdayModeShuffle) {
                 Task { await model.shuffle() }
+            }
+            Button(Copy.onthisdayModePickDate) {
+                Task { await model.openCalendar() }
             }
         } label: {
             Color.clear

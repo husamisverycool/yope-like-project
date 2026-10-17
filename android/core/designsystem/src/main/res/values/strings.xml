@@ -1404,6 +1404,8 @@
     <!-- Retro · onthisday · adapted · SOURCED -->
     <string name="onthisday_mode_day" formatted="false">On this day…</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
+    <string name="onthisday_mode_pickdate" formatted="false">Pick a date…</string>
+    <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_mode_shuffle" formatted="false">Shuffle</string>
     <!-- Retro · onthisday · verbatim · SOURCED -->
     <string name="onthisday_nux_button" formatted="false">Try it out</string>

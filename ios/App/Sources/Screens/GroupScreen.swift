@@ -74,7 +74,7 @@ struct GroupFeedView: View {
         .task { await followDeveloping() }
         .task(id: model.group?.name) {
             guard donatesShareTarget, let group = model.group else { return }
-            await ShareTargetDonations.donate([ShareTargetDonations.Group(id: group.id.rawValue, name: group.name)])
+            await ShareTargetDonations.donate([ShareTargetDonations.Group(id: group.id.rawValue, name: group.name, coverPath: group.coverPath)])
         }
         .task(id: PlansServices.shared.revision) { await developingTile?.refresh() }
         .onDisappear { model.stop() }

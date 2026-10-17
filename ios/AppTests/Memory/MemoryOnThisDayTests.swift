@@ -158,6 +158,39 @@ final class MemoryOnThisDayTests: XCTestCase {
         XCTAssertTrue(context.haptics.isEmpty, "the native menu plays its own feedback")
     }
 
+    func testPickADateShowsThatDayAcrossTheYearsThenOnThisDayGoesBack() async {
+        let march1 = LocalDate(year: 2025, month: 3, day: 1)!
+        let hiddenDay = LocalDate(year: 2025, month: 3, day: 2)!
+        let context = MemoryTestContext { state in
+            state.historyMonths = [HistoryMonth(month: march1, days: [march1, hiddenDay], newestWeek: LocalDate(year: 2025, month: 2, day: 24)!)]
+            // The query date: the same month and day after this year (2026), so every year up to 2026 is included.
+            state.onThisDayByDate[LocalDate(year: 2027, month: 3, day: 1)!] = Array(state.onThisDay.suffix(2))
+        }
+        let model = makeModel(context)
+        await model.loadIfNeeded()
+        try? await context.data.hideMemory(.day(hiddenDay))
+        await model.openCalendar()
+        XCTAssertTrue(model.showsCalendar)
+        XCTAssertEqual(model.calendarMonths.map(\.days), [[march1]], "only days with photos; your hidden day left out")
+        await model.pickDate(march1)
+        XCTAssertFalse(model.showsCalendar)
+        XCTAssertEqual(context.data.snapshot.onThisDayDates.last, LocalDate(year: 2027, month: 3, day: 1))
+        XCTAssertEqual(model.mode, .date(march1))
+        XCTAssertEqual(model.list.map(\.id), [MemoryIDs.post(8), MemoryIDs.post(7)])
+        XCTAssertEqual(model.index, 0)
+        XCTAssertEqual(model.subtitle, Copy.onthisdaySubtitleShuffle(name: model.current?.authorName ?? ""))
+        XCTAssertTrue(model.next())
+        XCTAssertFalse(model.canGoNext, "a picked date stops at its oldest memory")
+        model.showDay()
+        XCTAssertEqual(model.mode, .day)
+        XCTAssertEqual(model.list.map(\.id), [MemoryIDs.post(6), MemoryIDs.post(9), MemoryIDs.post(8), MemoryIDs.post(7)])
+        // Feb 29 is asked for in the next leap year.
+        XCTAssertEqual(
+            OnThisDayModel.queryDate(for: LocalDate(year: 2024, month: 2, day: 29)!, today: LocalDate(year: 2026, month: 10, day: 15)!),
+            LocalDate(year: 2028, month: 2, day: 29)
+        )
+    }
+
     /// Moves to the fixture's own memory (index 2, posted by the signed-in member) and forgets the two dial ticks.
     private func showOwnMemory(_ model: OnThisDayModel, _ context: MemoryTestContext) {
         model.next()

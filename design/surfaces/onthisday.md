@@ -118,11 +118,24 @@ member's photo is not offered (owner decision 12). Report → `safety.report`; D
 
 **E. Mode menu (native — C-29 pull-down menu anchored to the date title; Retro's Rewind mode selection)**, items in
 this order: `onthisday.mode.day` ("On this day…", Retro's 'On this week…' with the noun swapped as RM-2) → the day's
-memories from the newest (from shuffle; nothing changes in day mode), and `onthisday.mode.shuffle` ("Shuffle",
-verbatim) → as the dice. Retro's third item 'Pick a date…' is not built: its date picker and the subtitle it leaves were
-never captured, so nothing in it is sourced (Gaps). Presentation: iOS SwiftUI `Menu` over the title (HIG pull-down buttons), Android M3 `DropdownMenu` anchored
+memories from the newest (from shuffle or a picked date; nothing changes in day mode), `onthisday.mode.shuffle`
+("Shuffle", verbatim) → as the dice, and `onthisday.mode.pickDate` ("Pick a date…", verbatim — Retro's third item) →
+**the calendar** (below). Presentation: iOS SwiftUI `Menu` over the title (HIG pull-down buttons), Android M3 `DropdownMenu` anchored
 under the title; no haptic of its own (the platform menu's). For VoiceOver / TalkBack the title is the menu button
 (header trait, pop-up / dropdown role), read as the date.
+
+**F. Pick a date… (the calendar).** Retro's own date picker was never captured (Gaps), so the page reuses the app's
+calendar: week.history's "jump to a date" sheet (`week.history.layout.calendar`, design/surfaces/week.history.md —
+C-29 page sheet, "Memories" title, C-11 close circle, months newest first, Monday-first grid; iOS `HistoryCalendarSheet`
+with `selection: .day`, Android `HistoryCalendarSheet` in `feature/memory/common`). Only the days that have photos are
+enabled (`group_history_months` days, minus the days you hid — `my_hidden_memories`); month titles are plain headers here
+(no jump). The sheet follows the system appearance, as the page's other sheets (RM-16). Opening it stops playing. Picking a
+day closes the sheet and shows **that month and day across the years**, newest first, from the newest (dial, play and
+the menus as in day mode, stopping at the oldest); the subtitle is `onthisday.subtitle.shuffle` ("Memories · {name}" —
+Retro's title outside 'On this week' mode). "On this day…" goes back to today's memories, "Shuffle" to the dice. A day
+that turns out empty (all its photos hidden, or a day the calendar shows only for a collage or by the day a photo was
+revealed): the page stays as it was and toast `onthisday.empty.title`. Failure reading the calendar or the day:
+`haptic.global.error` + `onthisday.error.detail` / `onthisday.offline.detail`.
 
 ## Elements
 
@@ -132,7 +145,8 @@ under the title; no haptic of its own (the platform menu's). For VoiceOver / Tal
 | photo | `layout.global.appearance` (media), `color.global.backgroundDeep`, `radius.global.photo` | `onthisday.a11y.photo` ("Photo by {name}, {date}") | `media.display_path` (original until `renditions_ready_at`) |
 | back | C-02: `icon.global.back`, `size.global.backInset`, `color.global.textOnMedia`, hit `size.global.minTouchTarget.*` | `onthisday.a11y.back` | pops to the group screen |
 | date title | C-35: `font.global.display`, text role `headerTitle`, `size.global.titleTop`, `size.global.headerGap`, `color.global.textOnMedia`, `layout.onthisday.dateFormat` | — (data) | changes with the memory (cross-fade); opens the mode menu (E) |
-| expand chevron + mode menu | `icon.global.chevronDown`, `dimension.onthisday.modeChevron.width` / `.gap` / `.drop`, `fontWeight.onthisday.modeChevron`, `color.global.textOnMedia`; C-29 menu | `onthisday.mode.day`, `.mode.shuffle` | "On this day…" back to the day; "Shuffle" as the dice |
+| expand chevron + mode menu | `icon.global.chevronDown`, `dimension.onthisday.modeChevron.width` / `.gap` / `.drop`, `fontWeight.onthisday.modeChevron`, `color.global.textOnMedia`; C-29 menu | `onthisday.mode.day`, `.mode.shuffle`, `.mode.pickDate` | "On this day…" back to the day; "Shuffle" as the dice; "Pick a date…" the calendar (F) |
+| calendar (F) | week.history's calendar (`week.history.layout.calendar`: C-29, C-11, C-06 fill, text roles) | `week.history.calendar.title`, `.calendar.a11y.close`, `week.history.a11y.emptyday`; `onthisday.empty.title` (toast) | an enabled day → its month and day across the years |
 | subtitle | text role `textButton`, `color.onthisday.subtitle`, `dimension.onthisday.subtitleBaseline` | `onthisday.subtitle.day`, `.subtitle.shuffle` | `{name}` = poster |
 | more | C-11 glass: `size.global.circleButtonPhoto`, `color.global.glass`, `icon.global.more`, `size.global.headerInset` | `onthisday.a11y.more`; menu `onthisday.menu.*` (reply, save, hidePhoto, hideDay, delete / report), `onthisday.delete.*`, `onthisday.toast.*` (saved, deleted, hidden), `onthisday.saveFailed`, `onthisday.saveDenied.*` | native menu (D) |
 | scrim | `layout.global.photoScrim`, `color.global.scrim` | — | decorative |
@@ -153,6 +167,8 @@ under the title; no haptic of its own (the platform menu's). For VoiceOver / Tal
 | permission-denied (save) | native alert, button opens Settings | `onthisday.saveDenied.*` | `retro.voice.permission` |
 | memory deleted while open (`post_deleted`) | drop it from the dial; if it was shown, show the next (or previous) one | — | docs/API.md 8.2 |
 | memory hidden (Hide Photo / Hide This Day) | the same as a deletion, for every memory the hide covers | `onthisday.toast.hidden` | migration 0038 |
+| picked date (F) | the page as in day mode, subtitle "Memories · {name}"; its last memory deleted or hidden: back to today's memories | `onthisday.subtitle.shuffle` | — |
+| picked date empty (F) | the page stays; toast | `onthisday.empty.title` | — |
 
 ## Motion
 
@@ -211,6 +227,12 @@ dial step, SEGMENT_FREQUENT_TICK / CLOCK_TICK). Taps on back, more, share, rando
 - **Shuffle (dice):** `rpc("group_history_weeks", p_group_id, p_limit: 52)` paged with `p_before_week` until a page
   has fewer than 52 rows (cache per session); pick a random week, then a random `post_id` of it; then `posts` /
   `media` / `profiles` as above. Respects `free_history_days` (older weeks are left out for free users — T1).
+- **Pick a date… (F):** the calendar: `rpc("group_history_months", p_group_id)` (migration 0045; `free_history_days` as
+  the history) with the days of `my_hidden_memories` left out. The picked day: `on_this_day` already takes the date —
+  `rpc("on_this_day", p_group_id, p_local_date)` with `p_local_date` = the picked month and day in the first year after
+  the current one that has it (Feb 29: the next leap year), because it returns the years **before** `p_local_date`'s;
+  so every year up to this one is included. No backend change. Then `posts` / `media` / `profiles` as above. The
+  calendar's days are by `visible_at`, `on_this_day` by the day taken — usually the same day; where not, the empty toast.
 - **Writes:** save (any memory: download the original to the photo library; no API call); `rpc("delete_post", p_post_id)` (own
   post); `rpc("hide_memory", p_media_id | p_day)` (any memory, for you only; migration 0038); report → `safety.report`
   (target kind `post`).
@@ -252,4 +274,4 @@ banners, progress bar, streaks, mascot, watermark and nag pushes; any count of m
 | top legibility over bright photos | no top scrim, as Retro (contrast not guaranteed) | — (owner / verification) |
 | shuffle source | built (RM-5) | owner decision |
 | sharing others' photos | decided: your own photos only (owner decision 12; RM-6 closed); saving any memory to your library (decision 28) | — |
-| Retro's 'Pick a date…' and its mode menu's look | not built / platform menu (Retro's sheet never captured) | one RAW recording of Retro's Rewind: tap the date title, pick a date |
+| Retro's mode menu's look and its own date picker | platform menu; "Pick a date…" opens week.history's calendar (F) — Retro's picker and the subtitle it leaves were never captured | one RAW recording of Retro's Rewind: tap the date title, pick a date |

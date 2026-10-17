@@ -34,6 +34,8 @@ final class ImagePipeline: @unchecked Sendable {
     private let cache = NSCache<NSString, UIImage>()
     private let lock = NSLock()
     private var inFlight: [String: Task<UIImage?, Never>] = [:]
+    /// The pixel buckets decoded per path (NSCache cannot list its keys), for `largestCachedImage(path:)`.
+    private var buckets: [String: Set<Int>] = [:]
     private let session: URLSession
 
     init(session: URLSession = .shared) {
@@ -56,6 +58,26 @@ final class ImagePipeline: @unchecked Sendable {
         cache.object(forKey: Self.key(path, pixels) as NSString)
     }
 
+    /// The largest decoded image of `path` still in memory, at any pixel size (nil when none): a picture of it already on
+    /// the device, without a download (the share sheet's group images, ShareTargetDonations).
+    func largestCachedImage(path: String) -> UIImage? {
+        let sizes = lock.withLock { buckets[path] ?? [] }
+        for size in sizes.sorted(by: >) {
+            if let image = cache.object(forKey: Self.key(path, size) as NSString) { return image }
+        }
+        return nil
+    }
+
+    /// Keeps an image decoded elsewhere (send-to's group covers) in the memory cache, under its path and pixel size.
+    func insert(_ image: UIImage, path: String, pixels: Int) {
+        store(image, key: Self.key(path, pixels), path: path, pixels: pixels)
+    }
+
+    private func store(_ image: UIImage, key: String, path: String, pixels: Int) {
+        cache.setObject(image, forKey: key as NSString)
+        lock.withLock { buckets[path, default: []].insert(Self.pixelBucket(pixels)) }
+    }
+
     /// Loads (or joins the load of) the image at `url`, decoded to at most `pixels` on its longer side.
     func image(path: String, url: URL, pixels: Int) async -> UIImage? {
         let key = Self.key(path, pixels)
@@ -73,7 +95,7 @@ final class ImagePipeline: @unchecked Sendable {
         }
         let image = await task.value
         lock.withLock { inFlight[key] = nil }
-        if let image { cache.setObject(image, forKey: key as NSString) }
+        if let image { store(image, key: key, path: path, pixels: pixels) }
         return image
     }
 
@@ -88,6 +110,7 @@ final class ImagePipeline: @unchecked Sendable {
 
     func removeAll() {
         cache.removeAllObjects()
+        lock.withLock { buckets = [:] }
     }
 
     /// ImageIO thumbnail decode: downsampled, orientation applied, decoded immediately.

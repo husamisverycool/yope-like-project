@@ -703,6 +703,7 @@ const table = {
   "onthisday.menu.report": "Report Post", // Retro · onthisday · SOURCED
   "onthisday.menu.save": "Save to Camera Roll", // Retro · onthisday · SOURCED
   "onthisday.mode.day": "On this day…", // Retro · onthisday · SOURCED
+  "onthisday.mode.pickDate": "Pick a date…", // Retro · onthisday · SOURCED
   "onthisday.mode.shuffle": "Shuffle", // Retro · onthisday · SOURCED
   "onthisday.nux.button": "Try it out", // Retro · onthisday · SOURCED
   "onthisday.nux.message": "On This Day is a private way to revisit what {group} shared on this date over the years. Drag the dial to take a spin through your memories.", // Retro · onthisday · SOURCED
