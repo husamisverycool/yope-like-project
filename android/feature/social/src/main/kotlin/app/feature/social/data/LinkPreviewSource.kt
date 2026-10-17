@@ -2,11 +2,14 @@ package app.feature.social.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import androidx.exifinterface.media.ExifInterface
 import app.designsystem.generated.Tokens
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -221,9 +224,12 @@ class BitmapLinkImageEncoder : LinkImageEncoder {
             } else {
                 decoded
             }
+            // The page image upright, as iOS's ImageEncoder draws it (the JPEG is written without metadata).
+            val upright = orient(scaled, image)
             val out = ByteArrayOutputStream()
             val quality = (Tokens.Layouts.ChatThreadLayoutLinkPreview.jpegQuality * PERCENT).toInt()
-            val ok = scaled.compress(Bitmap.CompressFormat.JPEG, quality, out)
+            val ok = upright.compress(Bitmap.CompressFormat.JPEG, quality, out)
+            if (upright !== scaled) upright.recycle()
             if (scaled !== decoded) scaled.recycle()
             decoded.recycle()
             if (ok) out.toByteArray() else null
@@ -234,6 +240,24 @@ class BitmapLinkImageEncoder : LinkImageEncoder {
         } catch (_: OutOfMemoryError) {
             null
         }
+    }
+
+    /** Applies the EXIF orientation (rotation and mirroring); the bitmap itself when there is none or it cannot be read. */
+    private fun orient(bitmap: Bitmap, image: ByteArray): Bitmap {
+        val exif = try {
+            ExifInterface(ByteArrayInputStream(image))
+        } catch (_: Exception) {
+            return bitmap
+        }
+        val degrees = exif.rotationDegrees
+        val flipped = exif.isFlipped
+        if (degrees == 0 && !flipped) return bitmap
+        val matrix = Matrix().apply {
+            // Rotate, then mirror (EXIF 2/4/5/7 as Glide's TransformationUtils applies them).
+            postRotate(degrees.toFloat())
+            if (flipped) postScale(-1f, 1f)
+        }
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
     private companion object {

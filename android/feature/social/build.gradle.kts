@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:data"))
+    implementation(libs.androidx.exifinterface)
     implementation(project(":core:media"))
     implementation(project(":core:voice"))
     implementation(project(":core:widget"))
