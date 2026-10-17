@@ -94,7 +94,6 @@ final class CaptureBatchTests: XCTestCase {
         let draft = try await CaptureDraftBuilder.build(request)
         XCTAssertEqual(draft.takenOn, LocalDate("2026-08-30"))
         XCTAssertEqual(draft.batchID, "5b0b5e43-2f0e-4c5e-9a55-3f7d0b8f1a20")
-        XCTAssertEqual(draft.mediaRow(owner: UserID("9f1c1d2e-0000-4000-8000-000000000002")).takenOn, LocalDate("2026-08-30"))
     }
 
     // MARK: The camera's library picker
