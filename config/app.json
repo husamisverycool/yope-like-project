@@ -6,18 +6,18 @@
     "notes": "owner decision 0.1: the owner named the app Jolt (16 October 2026); the App Store listing name may need a longer form if 'Jolt' is taken there"
   },
   "domain": {
-    "value": null,
-    "level": "BLOCKED",
-    "notes": "owner step 4.1"
+    "value": "jolt-husamisverycool.fly.dev",
+    "level": "OWNER",
+    "notes": "owner decision 33 (docs/OWNER_DECISIONS.md, 2026-10-17): the invite page's Fly.io address until the owner buys a domain. One change moves every build to another: the repository variable APP_DOMAIN (the release workflows put it here and into the iOS build, tools/release/app_identity.py), or this value together with ios/Config/Base.xcconfig APP_DOMAIN (docs/OWNER_SETUP.md §4)"
   },
   "ios": {
-    "bundleId": "com.example.groupphotos",
+    "bundleId": "com.husamisverycool.jolt",
     "teamId": null,
     "deploymentTarget": "17.2",
     "appStoreId": null
   },
   "android": {
-    "applicationId": "com.example.groupphotos",
+    "applicationId": "com.husamisverycool.jolt",
     "minSdk": 26,
     "targetSdk": 36,
     "sha256CertFingerprints": []

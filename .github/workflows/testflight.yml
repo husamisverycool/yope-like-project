@@ -2,7 +2,8 @@
 # Connect API key) and uploads it to App Store Connect, where it appears under TestFlight about half an hour later
 # (docs/OWNER_SETUP.md §1, §10). Run it from GitHub → Actions → this workflow → Run workflow. Needs the secrets
 # APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (an API key with Admin access, so it can manage signing), the
-# app record in App Store Connect for the bundle ID below, and config/app.json supabase.url / anonKey.
+# app record in App Store Connect for the bundle ID below, and config/app.json supabase.url / anonKey. The invite-link
+# domain is config/app.json `domain` (owner decision 33), or the repository variable APP_DOMAIN when it is set.
 name: send Jolt to TestFlight
 
 on:
@@ -28,9 +29,14 @@ jobs:
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
       # The input, else the repository variable IOS_BUNDLE_ID, else Jolt's default.
-      BUNDLE_ID: ${{ inputs.bundle_id || vars.IOS_BUNDLE_ID || 'com.husamisverycool.jolt' }}
+      IOS_BUNDLE_ID: ${{ inputs.bundle_id || vars.IOS_BUNDLE_ID || 'com.husamisverycool.jolt' }}
+      # Empty: config/app.json `domain` as committed.
+      APP_DOMAIN: ${{ vars.APP_DOMAIN }}
     steps:
       - uses: actions/checkout@v4
+      # This job's copy of config/app.json (bundled into the app) gets the bundle ID, the domain and the team.
+      - name: the app's identity
+        run: python3 tools/release/app_identity.py
       - name: what is set up
         run: python3 tools/release/check_setup.py testflight
       - name: select newest Xcode
@@ -64,10 +70,13 @@ jobs:
         working-directory: ios
         run: |
           set -o pipefail
+          # The associated domains (universal links, App Clip) follow config/app.json `domain` as app_identity.py left it.
+          DOMAIN=$(python3 -c "import json; print(json.load(open('../config/app.json'))['domain']['value'] or '')")
+          echo "bundle ID $IOS_BUNDLE_ID, link domain ${DOMAIN:-ios/Config/Base.xcconfig's}"
           xcodebuild -project App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/Jolt.xcarchive" -allowProvisioningUpdates \
             -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic APP_BUNDLE_ID="$BUNDLE_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic APP_BUNDLE_ID="$IOS_BUNDLE_ID" ${DOMAIN:+APP_DOMAIN="$DOMAIN"} \
             CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" archive 2>&1 | tee archive.log | grep -E "error:|warning: .*[Pp]rovisioning|ARCHIVE|\*\*" || true
           grep -q "\*\* ARCHIVE SUCCEEDED \*\*" archive.log
       - name: upload to App Store Connect
@@ -79,7 +88,7 @@ jobs:
             -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             2>&1 | tee upload.log | grep -E "error:|Upload|EXPORT|\*\*" || true
           grep -q "\*\* EXPORT SUCCEEDED \*\*" upload.log
-          echo "Uploaded build $GITHUB_RUN_NUMBER of $BUNDLE_ID: it appears in App Store Connect → TestFlight after Apple processes it."
+          echo "Uploaded build $GITHUB_RUN_NUMBER of $IOS_BUNDLE_ID: it appears in App Store Connect → TestFlight after Apple processes it."
       - name: keep the logs
         if: always()
         uses: actions/upload-artifact@v4

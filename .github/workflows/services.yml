@@ -33,6 +33,8 @@ jobs:
       # invite page's association files name these apps.
       IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID || 'com.husamisverycool.jolt' }}
       ANDROID_APPLICATION_ID: ${{ vars.ANDROID_APPLICATION_ID || 'com.husamisverycool.jolt' }}
+      # The invite page's domain: the repository variable when set, else config/app.json `domain` (decision 33).
+      APP_DOMAIN: ${{ vars.APP_DOMAIN }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}

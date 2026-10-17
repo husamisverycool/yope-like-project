@@ -221,7 +221,7 @@ class CheckSetupTest(unittest.TestCase):
     }
 
     def test_play_names_every_missing_step(self):
-        code, out = self.check("play", {"domain.value": None})
+        code, out = self.check("play", {"domain.value": None, "android.applicationId": "com.example.groupphotos"})
         self.assertEqual(code, 1)
         self.assertIn("Google Play does not accept the package name com.example", out)
         self.assertIn("create the Android signing key", out)
@@ -236,6 +236,14 @@ class CheckSetupTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("has no Android app com.yourname.jolt", out)
         self.assertIn("PLAY_SERVICE_ACCOUNT_JSON is not the text of a .json file", out)
+
+    def test_testflight_needs_the_domain(self):
+        secrets = dict(APPLE_TEAM_ID="ABCDE12345", ASC_KEY_ID="k", ASC_ISSUER_ID="i", ASC_KEY_P8="p")
+        code, out = self.check("testflight", {**self.ready, "domain.value": None}, **secrets)
+        self.assertEqual(code, 1)
+        self.assertIn("repository variable APP_DOMAIN", out)
+        code, out = self.check("testflight", self.ready, **secrets)
+        self.assertEqual(code, 0, out)
 
     def test_android_key_wants_a_long_password(self):
         code, out = self.check("android-key", ANDROID_KEYSTORE_PASSWORD="short")
@@ -268,6 +276,51 @@ class CheckSetupTest(unittest.TestCase):
         self.assertIn("APNS_KEY_ID is not set", out)
         self.assertIn("FCM_SERVICE_ACCOUNT_JSON is not a Firebase service account key", out)
         self.assertIn("'bad_name' is not allowed", out)
+
+
+class ConfigIdentityTest(unittest.TestCase):
+    """The committed identity (decision 33, the store IDs) and app_identity.py's repository variables."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self.path = self.tmp / "app.json"
+        shutil.copy(HERE.parents[1] / "config" / "app.json", self.path)
+
+    def identity(self, **variables) -> tuple[int, str, dict]:
+        environment = {k: v for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG")}
+        environment.update(APP_CONFIG_PATH=str(self.path), **variables)
+        result = subprocess.run([sys.executable, str(HERE / "app_identity.py")], capture_output=True, text=True, env=environment)
+        return result.returncode, result.stdout + result.stderr, json.loads(self.path.read_text())
+
+    def test_committed_identity_matches_the_ios_build_settings(self):
+        config = json.loads(self.path.read_text())
+        self.assertEqual(config["domain"]["value"], "jolt-husamisverycool.fly.dev")
+        self.assertEqual(config["ios"]["bundleId"], "com.husamisverycool.jolt")
+        self.assertEqual(config["android"]["applicationId"], "com.husamisverycool.jolt")
+        base = (HERE.parents[1] / "ios" / "Config" / "Base.xcconfig").read_text()
+        self.assertIn("APP_DOMAIN = jolt-husamisverycool.fly.dev\n", base)
+        self.assertIn("APP_BUNDLE_ID = com.husamisverycool.jolt\n", base)
+
+    def test_domain_variable_moves_the_config(self):
+        code, out, config = self.identity(APP_DOMAIN="Photos.Example.com")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(config["domain"]["value"], "photos.example.com")
+        self.assertIn("domain = photos.example.com", out)
+        self.assertEqual(config["domain"]["level"], "OWNER", "the rest of the entry stays")
+
+    def test_bad_domain_variable_stops_the_run(self):
+        code, out, config = self.identity(APP_DOMAIN="https://photos.example.com/")
+        self.assertEqual(code, 1)
+        self.assertIn("APP_DOMAIN", out)
+        self.assertEqual(config["domain"]["value"], "jolt-husamisverycool.fly.dev")
+
+    def test_no_variables_keep_the_file(self):
+        before = self.path.read_text()
+        code, out, _ = self.identity()
+        self.assertEqual(code, 0, out)
+        self.assertIn("as in config/app.json", out)
+        self.assertEqual(self.path.read_text(), before)
 
 
 @unittest.skipUnless(shutil.which("keytool") and shutil.which("openssl"), "needs keytool and openssl")

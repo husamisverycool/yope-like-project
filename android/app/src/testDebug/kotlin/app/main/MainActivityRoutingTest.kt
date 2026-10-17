@@ -62,7 +62,8 @@ class MainActivityRoutingTest {
         controller.pause().stop().destroy()
     }
 
-    @Test fun inviteAppLinkIsIgnoredWhileTheDomainIsUnset() {
+    /** Only the configured domain's links are invites (config/app.json `domain`; AndroidManifest's App Links host). */
+    @Test fun inviteAppLinkOfAnotherHostIsIgnored() {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://unset.invalid/i/token"))
             .setClass(app, MainActivity::class.java)
         ActivityScenario.launch<MainActivity>(intent).use { scenario ->

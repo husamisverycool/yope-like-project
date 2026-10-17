@@ -187,16 +187,18 @@ Placeholders used below:
 
 ## 4. Domain and links
 
-1. **No domain of your own yet?** The invite page's Fly.io address works: `jolt-<your GitHub name>.fly.dev` (or
-   `<FLY_WEB_APP>.fly.dev` when you set that repository variable, §10). Put it, without `https://` and without `/`, in
-   `config/app.json` → `domain` → `value` and in `ios/Config/Base.xcconfig` → `APP_DOMAIN`. Fly.io provides its HTTPS
-   certificate. The runs of "start the background service" and "send Jolt to Google Play" name the exact address when
-   the domain is missing.
-2. **Your own domain** (optional, any time later): buy it, put it in the same two places, run "start the background
-   service" (§7) again. Its summary page shows the DNS records Fly.io asks for; add them at the company you bought the
-   domain from, wait up to an hour for the certificate and run the workflow again. Then send a new build of each app
-   (links are part of the apps). Links already sent with the `.fly.dev` address still open the invite page: the same
-   Fly.io app answers on both addresses.
+1. **Already set** (owner decision 33): invite links use the invite page's Fly.io address
+   `jolt-husamisverycool.fly.dev` (`config/app.json` → `domain`, `ios/Config/Base.xcconfig` → `APP_DOMAIN`). Fly.io
+   provides its HTTPS certificate. If the invite page runs under another Fly.io name (the repository variable
+   `FLY_WEB_APP`, §10), use `<FLY_WEB_APP>.fly.dev` as in step 2.
+2. **Your own domain** (optional, any time later): buy it and make **one change** — the repository variable
+   `APP_DOMAIN` (§10; the name only, no `https://` and no `/`). Every release workflow uses it: the iPhone build's
+   universal links and App Clip, the Android App Links and the invite page (`tools/release/app_identity.py`). (Or
+   change `config/app.json` → `domain` → `value` and `ios/Config/Base.xcconfig` → `APP_DOMAIN` together in the
+   repository.) Then run "start the background service" (§7) again. Its summary page shows the DNS records Fly.io asks
+   for; add them at the company you bought the domain from, wait up to an hour for the certificate and run the workflow
+   again. Then send a new build of each app (links are part of the apps). Links already sent with the `.fly.dev`
+   address still open the invite page: the same Fly.io app answers on both addresses.
 3. The web service serves `/.well-known/apple-app-site-association` (generated from
    `config/app.json`: `TEAM_ID.APP_BUNDLE_ID` and the App Clip ID for `/i/*`) and
    `/.well-known/assetlinks.json` (from the SHA-256 fingerprints). Nothing to hand-edit.
@@ -313,6 +315,7 @@ Without these, CI still builds and tests unsigned debug builds on every push.
 |---|---|---|
 | `IOS_BUNDLE_ID` | `com.husamisverycool.jolt` | The iPhone app's bundle ID: TestFlight, the worker's iPhone notifications and the invite page's link file use it |
 | `ANDROID_APPLICATION_ID` | `com.husamisverycool.jolt` | The Android package name in Google Play (fixed by the first upload): the Play build and the invite page's link file use it |
+| `APP_DOMAIN` | `jolt-husamisverycool.fly.dev` (`config/app.json` `domain`, decision 33) | The invite-link domain once you have your own (§4.2): the iPhone build, the Android build and the invite page all follow it |
 | `FLY_WORKER_APP`, `FLY_WEB_APP` | `jolt-worker-<GitHub name>`, `jolt-<GitHub name>` | The Fly.io app names (shared by all of Fly.io); `<FLY_WEB_APP>.fly.dev` is the invite address until you have a domain |
 | `FLY_REGION` | `iad` | Where the worker and the invite page run (a Fly.io region code, close to the Supabase project) |
 | `FLY_ORG` | the token's organization | Only when the Fly.io token sees several organizations |

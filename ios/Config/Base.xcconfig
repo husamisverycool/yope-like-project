@@ -5,10 +5,10 @@
 // target's own settings.
 
 // ---- Identity (config/app.json; AppModelsTests/AppConfigurationTests keeps these equal) ----
-APP_BUNDLE_ID = com.example.groupphotos
-// config/app.json `domain` is BLOCKED (docs/OWNER_SETUP.md step 4.1). The reserved `.invalid`
-// name keeps the associated-domains entitlements well formed until the owner sets it.
-APP_DOMAIN = example.invalid
+APP_BUNDLE_ID = com.husamisverycool.jolt
+// config/app.json `domain` (owner decision 33: the invite page's Fly.io address). Release workflows pass the repository
+// variable APP_DOMAIN when it is set (`xcodebuild … APP_DOMAIN=…`, .github/workflows/testflight.yml).
+APP_DOMAIN = jolt-husamisverycool.fly.dev
 APP_GROUP_ID = group.$(APP_BUNDLE_ID)
 // config/app.json `ios.teamId` (BLOCKED until owner step 1.1). Empty: unsigned CI builds.
 DEVELOPMENT_TEAM =

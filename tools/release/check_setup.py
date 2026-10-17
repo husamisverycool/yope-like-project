@@ -53,10 +53,11 @@ def domain_problem() -> str | None:
     domain = ((config.get("domain") or {}).get("value") or "").strip()
     if not domain:
         return (f"config/app.json domain is not set — the address of invite links. No domain of your own yet? Use your invite "
-                f"page's address {web_address()} (OWNER_SETUP.md §4): put it in config/app.json \"domain\" → \"value\" and in "
-                "ios/Config/Base.xcconfig APP_DOMAIN")
+                f"page's address {web_address()} (OWNER_SETUP.md §4): set it as the repository variable APP_DOMAIN, or put it in "
+                "config/app.json \"domain\" → \"value\" and in ios/Config/Base.xcconfig APP_DOMAIN")
     if not DOMAIN_RE.fullmatch(domain):
-        return f"config/app.json domain {domain!r} is not a host name — just the name, like {web_address()}: no https:// and no /"
+        return (f"config/app.json domain {domain!r} is not a host name — just the name, like {web_address()}: no https:// and no / "
+                "(the repository variable APP_DOMAIN, or config/app.json)")
     return None
 
 
@@ -81,6 +82,9 @@ def check_testflight() -> None:
         ("ASC_KEY_P8", "the downloaded AuthKey_….p8 file's whole text (OWNER_SETUP.md §1)"),
     ]:
         need_secret(name, step)
+    problem = domain_problem()
+    if problem:
+        missing.append(problem)
     check_app_has_server()
 
 
