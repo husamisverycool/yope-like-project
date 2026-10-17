@@ -54,6 +54,10 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
         var cachedMessages: [GroupID: [Message]] = [:]
         var cachedWalls: [UserID: [WallItem]] = [:]
         var cachedHistory: [GroupID: [HistoryWeek]] = [:]
+        /// `group_history_months` per group; absent: derived from the posts and collages (as the RPC does).
+        var historyMonths: [GroupID: [HistoryMonth]] = [:]
+        /// Every `search_photos` query asked, with its `before` cursor, in order.
+        var searches: [(query: PhotoSearchQuery, before: Date?)] = []
         var cachedAlbums: [GroupID: [AlbumWithItems]] = [:]
         var cachedGroups: [PhotoGroup]?
         var cachedMembers: [GroupID: [MemberProfile]] = [:]
@@ -457,6 +461,100 @@ final class FakeSocialData: SocialDataSource, @unchecked Sendable {
     }
 
     func cachedHistoryWeeks(groupID: GroupID) async -> [HistoryWeek]? { read { $0.cachedHistory[groupID] } }
+
+    /// Like `group_history_months`: the group-local days with a photo (by `visible_at`) or a ready collage, per month,
+    /// newest month first, each with the newest week touching it.
+    func historyMonths(groupID: GroupID) async throws -> [HistoryMonth] {
+        await hold("historyMonths")
+        try call("historyMonths")
+        return read { state in
+            if let set = state.historyMonths[groupID] { return set }
+            let zone = state.groups.first { $0.id == groupID }?.resolvedTimeZone ?? TimeZone(identifier: "UTC")!
+            let days = Set(
+                state.posts.filter { $0.post.groupID == groupID }.map { LocalDate($0.post.visibleAt, in: zone) }
+                    + (state.historyCollages[groupID] ?? []).map(\.localDate)
+            )
+            let byMonth = Dictionary(grouping: days) { LocalDate(year: $0.year, month: $0.month, day: 1)! }
+            return byMonth.keys.sorted(by: >).map { month in
+                let list = (byMonth[month] ?? []).sorted()
+                let newest = list.last ?? month
+                return HistoryMonth(
+                    month: month, days: list,
+                    newestWeek: SocialCalendar.weekStart(containing: SocialCalendar.start(of: newest, in: zone), in: zone)
+                )
+            }
+        }
+    }
+
+    /// Like `search_photos`: every criterion given must match — all the words (each a prefix, any case) in the caption or
+    /// in one chat message replying to the photo; the member posted it or tagged themselves; the day taken (group-local)
+    /// in `from…to`. One row per photo (the post in the query's group, else the first), newest first, a page at a time.
+    func searchPhotos(_ query: PhotoSearchQuery, before: Date?) async throws -> [PhotoSearchHit] {
+        await hold("searchPhotos")
+        update { $0.searches.append((query, before)) }
+        try call("searchPhotos")
+        guard !query.isEmpty else { throw DataError.api(.invalidArgument) }
+        return read { state in
+            let words = Self.words(query.trimmedText)
+            func matches(_ text: String?) -> Bool {
+                guard let text, !words.isEmpty else { return false }
+                let have = Self.words(text)
+                return words.allSatisfy { word in have.contains { $0.hasPrefix(word) } }
+            }
+            var hits: [(PostWithMedia, [String])] = []
+            for post in state.posts {
+                let p = post.post
+                if let group = query.groupID, p.groupID != group { continue }
+                if let before, p.createdAt >= before { continue }
+                if state.blocked.contains(p.authorID) { continue }
+                var why: [String] = []
+                if !words.isEmpty {
+                    let byCaption = matches(p.caption)
+                    let byChat = state.messages.contains { $0.replyToPostID == p.id && !state.blocked.contains($0.authorID) && matches($0.body) }
+                    guard byCaption || byChat else { continue }
+                    if byCaption { why.append("caption") }
+                    if byChat { why.append("chat") }
+                }
+                if let member = query.memberID {
+                    let byAuthor = p.authorID == member
+                    let byTag = state.tags.contains { $0.postID == p.id && $0.userID == member }
+                    guard byAuthor || byTag else { continue }
+                    if byAuthor { why.append("author") }
+                    if byTag { why.append("tag") }
+                }
+                if query.from != nil || query.to != nil {
+                    let zone = state.groups.first { $0.id == p.groupID }?.resolvedTimeZone ?? TimeZone(identifier: "UTC")!
+                    let day = LocalDate(p.createdAt, in: zone)
+                    if let from = query.from, day < from { continue }
+                    if let to = query.to, to < day { continue }
+                    why.append("date")
+                }
+                hits.append((post, why))
+            }
+            // One row per photo: the post in the query's group, else the first posted.
+            var best: [MediaID: (PostWithMedia, [String])] = [:]
+            for hit in hits {
+                let media = hit.0.post.mediaID
+                guard let current = best[media] else { best[media] = hit; continue }
+                let inGroup = { (post: PostWithMedia) in query.groupID.map { post.post.groupID == $0 } ?? false }
+                if inGroup(hit.0) && !inGroup(current.0) || (inGroup(hit.0) == inGroup(current.0) && hit.0.post.createdAt < current.0.post.createdAt) {
+                    best[media] = hit
+                }
+            }
+            return best.values
+                .sorted { ($0.0.post.createdAt, $1.0.id.rawValue) > ($1.0.post.createdAt, $0.0.id.rawValue) }
+                .prefix(SocialPaging.search)
+                .map { hit in
+                    PhotoSearchHit(postID: hit.0.id, mediaID: hit.0.post.mediaID, groupID: hit.0.post.groupID, authorID: hit.0.post.authorID,
+                                   createdAt: hit.0.post.createdAt, matched: hit.1)
+                }
+        }
+    }
+
+    /// Lower-cased words (letters and digits), as Postgres' `simple` configuration splits them.
+    private static func words(_ text: String) -> [String] {
+        text.lowercased().components(separatedBy: CharacterSet.alphanumerics.inverted).filter { !$0.isEmpty }
+    }
 
     func albums(groupID: GroupID) async throws -> [AlbumWithItems] {
         await hold("albums")

@@ -69,6 +69,33 @@ data class GroupCollage(
     val tilePath: String? get() = widgetPath ?: imagePath
 }
 
+/**
+ * One row of `search_photos` (migration 0040): a photo you can see that matches every criterion given, newest first.
+ * [matched] says why (`caption`, `chat`, `author`, `tag`, `date`); it is never shown and no count is made of it.
+ */
+@Serializable
+data class PhotoSearchHit(
+    @SerialName("post_id") val postId: String,
+    @SerialName("media_id") val mediaId: String,
+    @SerialName("group_id") val groupId: String,
+    @SerialName("author_id") val authorId: String,
+    @SerialName("created_at") val createdAt: Instant,
+    val matched: List<String>? = null,
+)
+
+/**
+ * One row of `group_history_months` (migration 0045): a month (group time zone) of the group's history, its [days] with
+ * something (oldest first), and [newestWeek], the newest history week touching it — `group_history_weeks(p_before_week =
+ * newestWeek + 7)` starts with that week. Newest month first.
+ */
+@Serializable
+data class HistoryMonth(
+    /** The first day of the month. */
+    val month: LocalDate,
+    val days: List<LocalDate> = emptyList(),
+    @SerialName("newest_week") val newestWeek: LocalDate,
+)
+
 /** One row of `on_this_day`. */
 @Serializable
 data class OnThisDayItem(

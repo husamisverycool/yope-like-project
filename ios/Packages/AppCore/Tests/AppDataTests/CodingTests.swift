@@ -121,6 +121,31 @@ final class CodingTests: XCTestCase {
         XCTAssertEqual(try DataCoding.makeDecoder().decode(Collage.self, from: Data(older.utf8)).pageCount, 1)
     }
 
+    func testSearchHitsAndHistoryMonthsDecodeAPIRows() throws {
+        let hits = """
+        [{"post_id":"0f8fad5b-d9cb-469f-a165-70867728950e","media_id":"7c9e6679-7425-40de-944b-e07fc1f90ae7",
+          "group_id":"9f1c1d2e-0000-4000-8000-000000000001","author_id":"9f1c1d2e-0000-4000-8000-000000000002",
+          "created_at":"2026-10-15T13:35:09.329469+00:00","matched":["caption","tag"]},
+         {"post_id":"0f8fad5b-d9cb-469f-a165-70867728950f","media_id":"7c9e6679-7425-40de-944b-e07fc1f90ae8",
+          "group_id":"9f1c1d2e-0000-4000-8000-000000000001","author_id":"9f1c1d2e-0000-4000-8000-000000000002",
+          "created_at":"2026-10-14T13:35:09+00:00","matched":null}]
+        """
+        let decoded = try DataCoding.makeDecoder().decode([PhotoSearchHit].self, from: Data(hits.utf8))
+        XCTAssertEqual(decoded.map(\.matched), [["caption", "tag"], []])
+        XCTAssertEqual(decoded[0].groupID, GroupID("9f1c1d2e-0000-4000-8000-000000000001"))
+        XCTAssertGreaterThan(decoded[0].createdAt, decoded[1].createdAt)
+
+        let months = """
+        [{"month":"2026-10-01","days":["2026-10-03","2026-10-15"],"newest_week":"2026-10-12"},
+         {"month":"2026-09-01","days":["2026-09-30"],"newest_week":"2026-09-28"}]
+        """
+        let rows = try DataCoding.makeDecoder().decode([HistoryMonth].self, from: Data(months.utf8))
+        XCTAssertEqual(rows.map(\.month), [LocalDate("2026-10-01")!, LocalDate("2026-09-01")!])
+        XCTAssertEqual(rows[0].days, [LocalDate("2026-10-03")!, LocalDate("2026-10-15")!])
+        XCTAssertEqual(rows[1].newestWeek, LocalDate("2026-09-28")!)
+        XCTAssertEqual(rows[1].id, rows[1].month)
+    }
+
     func testEnumsDecodeUnknownValuesLeniently() throws {
         let kinds = try JSONDecoder().decode([MessageKind].self, from: Data(#"["text","sticker"]"#.utf8))
         XCTAssertEqual(kinds, [.text, .unknown])

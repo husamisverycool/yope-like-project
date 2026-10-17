@@ -708,6 +708,59 @@ final class SocialSnapshotTests: XCTestCase {
         record(WeekHistoryScreen(model: offlineModel), "week.history", "offline")
     }
 
+    /// week.history's calendar (`week.history.layout.calendar`): the months with the days that open a week.
+    func testWeekHistoryCalendar() async {
+        let model = history(use(richData()))
+        await model.load()
+        XCTAssertFalse(model.months.isEmpty, "the calendar glyph shows once the months are known")
+        record(
+            HistoryCalendarSheet(months: model.months.map(HistoryCalendarMonth.init), timeZone: utc, onSelect: { _ in }, onClose: {}),
+            "week.history", "calendar", both, navigation: false
+        )
+    }
+
+    // MARK: search.photos
+
+    func testSearchPhotos() async {
+        let data = use(richData())
+        let idle = SearchPhotosModel(groupID: SocialDemo.groupID, data: data)
+        await idle.loadMembers()
+        record(SearchPhotosScreen(model: idle), "search.photos", "idle", both)
+
+        let found = SearchPhotosModel(groupID: nil, data: data)
+        await found.loadMembers()
+        await found.toggle(member: SocialDemo.ana)
+        XCTAssertEqual(found.phase, .results)
+        record(SearchPhotosScreen(model: found), "search.photos", "results", both)
+
+        let none = SearchPhotosModel(groupID: SocialDemo.groupID, data: data)
+        none.text = "zzz"
+        await none.search()
+        XCTAssertEqual(none.phase, .empty)
+        record(SearchPhotosScreen(model: none), "search.photos", "empty")
+
+        let held = use(SocialDemo.makeData())
+        held.update { $0.holds.insert("searchPhotos") }
+        let loading = SearchPhotosModel(groupID: SocialDemo.groupID, data: held)
+        loading.text = "snow"
+        let task = await startHeld({ await loading.search() }, until: { loading.phase == .loading })
+        record(SearchPhotosScreen(model: loading), "search.photos", "loading")
+        task.cancel()
+
+        let failed = SearchPhotosModel(groupID: SocialDemo.groupID, data: use(failing()))
+        failed.text = "snow"
+        await failed.search()
+        record(SearchPhotosScreen(model: failed), "search.photos", "error")
+
+        let offlineModel = SearchPhotosModel(groupID: SocialDemo.groupID, data: use(offline { _ in }))
+        offlineModel.text = "snow"
+        await offlineModel.search()
+        XCTAssertEqual(offlineModel.phase, .offline)
+        record(SearchPhotosScreen(model: offlineModel), "search.photos", "offline", both)
+
+        record(SearchDatesSheet(from: nil, to: nil, onDone: { _, _ in }), "search.photos", "dates", navigation: false)
+    }
+
     // MARK: albums.list
 
     func testAlbumsList() async {

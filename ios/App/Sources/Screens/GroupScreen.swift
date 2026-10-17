@@ -172,6 +172,11 @@ struct GroupFeedView: View {
             Spacer(minLength: 0)
             if model.phase != .removed {
                 HStack(spacing: Tokens.Sizes.globalHeaderIconPitch - Tokens.Sizes.globalHeaderButton) {
+                    // search.photos in this group (owner decision 34; Yope's search glyph in its header).
+                    HeaderIconButton(icon: Tokens.Icons.globalSearch, accessibilityLabel: Copy.searchPhotosOpen) {
+                        push(.social(.search(groupID: groupID)))
+                    }
+                    .accessibilityIdentifier("groups.screen.search")
                     HeaderIconButton(icon: Tokens.Icons.globalAlbums, accessibilityLabel: Copy.groupsScreenAlbumsAccessibilityLabel) {
                         push(.social(.albums(groupID: groupID)))
                     }

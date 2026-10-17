@@ -26,6 +26,9 @@ import app.feature.social.common.LocalSocialData
 import app.feature.social.common.SocialRoot
 import app.feature.social.data.SocialData
 import app.feature.social.data.socialDataFor
+import app.feature.social.search.SearchNav
+import app.feature.social.search.SearchPhotosScreen
+import app.feature.social.search.SearchViewModel
 import app.feature.social.viewer.PhotoViewerScreen
 import app.feature.social.viewer.PhotoViewerViewModel
 import app.feature.social.viewer.ViewerNav
@@ -50,6 +53,7 @@ import app.model.PhotoContext
 import app.model.PhotoViewerIn
 import app.model.SafetyReportMessageRoute
 import app.model.SafetyReportSelfieRoute
+import app.model.SearchPhotos
 import app.model.SocialHandoff
 import app.model.WeekAlbum
 import app.model.WeekRecapAlbum
@@ -73,7 +77,7 @@ private fun SocialHost(content: @Composable (SocialData) -> Unit) {
 /**
  * Destinations of the social feature group (surface specs in design/surfaces/): chat.thread (+ composer, voice,
  * reactions), photo.viewer, walls.*, week.*, albums.*. Page sheets (recap list, week.edit, albums.view) are dialog
- * destinations whose content is the native sheet.
+ * destinations whose content is the native sheet. `search.photos` ([SearchPhotos]) is pushed from groups.list / groups.screen.
  */
 fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
     val nav = SocialNavigator(navController)
@@ -166,6 +170,19 @@ fun NavGraphBuilder.socialDestinations(navController: NavHostController) {
         SocialHost { data ->
             val vm = viewModel(key = "history:${route.groupId}") { HistoryViewModel(data, route.groupId) }
             WeekHistoryScreen(vm, nav.history(route.groupId))
+        }
+    }
+    composable<SearchPhotos> { entry ->
+        val route = entry.toRoute<SearchPhotos>()
+        SocialHost { data ->
+            val vm = viewModel(key = "search:${route.groupId}") { SearchViewModel(data, route.groupId) }
+            SearchPhotosScreen(
+                vm,
+                SearchNav(
+                    back = { navController.popBackStack() },
+                    photo = { groupId, postId -> navController.navigate(PhotoViewerIn(groupId, postId, PhotoContext.Search, vm.resultsKey)) },
+                ),
+            )
         }
     }
     composable<AppRoute.AlbumsList> { entry ->

@@ -7,9 +7,11 @@ import app.data.model.Collage
 import app.data.model.DailyInvitation
 import app.data.model.GroupCollage
 import app.data.model.GroupTribute
+import app.data.model.HistoryMonth
 import app.data.model.HistoryWeek
 import app.data.model.InstantSerializer
 import app.data.model.OnThisDayItem
+import app.data.model.PhotoSearchHit
 import app.data.model.Post
 import app.data.model.RenderStatus
 import app.data.model.Tribute
@@ -61,6 +63,40 @@ class BrowseRepository(private val api: Api, private val cache: OfflineCache, pr
     fun observeHistory(groupId: String): Flow<DataState<List<HistoryWeek>>> =
         cachedFlow(cache, CacheKey.history(groupId), ListSerializer(HistoryWeek.serializer()), clock) { historyWeeks(groupId) }
 
+    /**
+     * The months of the group's history with the days that have something and the week each one jumps to
+     * ([historyWeeks] with `beforeWeek = newestWeek + 7` starts with it), newest month first (migration 0045).
+     */
+    suspend fun historyMonths(groupId: String): List<HistoryMonth> =
+        api.rpcList(Rpc.GroupHistoryMonths, HistoryMonth.serializer()) {
+            put("p_group_id", groupId)
+        }
+
+    /**
+     * `search_photos` (migration 0040): the photos you can see — in [groupId] or all your groups — that match every
+     * criterion given: [text] (caption or chat about the photo; each word a prefix), [memberId] (posted it or tagged
+     * themselves), the day taken in [from]…[to] (group-local, inclusive). Newest first; page with [before] = the last
+     * `created_at`. At least one criterion (`invalid_argument`). No face or AI search.
+     */
+    suspend fun searchPhotos(
+        text: String?,
+        groupId: String? = null,
+        memberId: String? = null,
+        from: LocalDate? = null,
+        to: LocalDate? = null,
+        before: Instant? = null,
+        limit: Int = SEARCH_PAGE,
+    ): List<PhotoSearchHit> =
+        api.rpcList(Rpc.SearchPhotos, PhotoSearchHit.serializer()) {
+            opt("p_text", text?.trim()?.takeIf { it.isNotEmpty() })
+            opt("p_group_id", groupId)
+            opt("p_member_id", memberId)
+            opt("p_from", from)
+            opt("p_to", to)
+            opt("p_before", before)
+            put("p_limit", limit)
+        }
+
     /** The group's ready same-moment collages whose day (group-local) is in [from]…[to], newest first (migration 0033). */
     suspend fun groupCollages(groupId: String, from: LocalDate? = null, to: LocalDate? = null): List<GroupCollage> =
         api.rpcList(Rpc.GroupCollages, GroupCollage.serializer()) {
@@ -79,6 +115,8 @@ class BrowseRepository(private val api: Api, private val cache: OfflineCache, pr
     companion object {
         const val WALL_PAGE = 50
         const val HISTORY_PAGE = 8
+        /** `search_photos`' default page (docs/API.md). */
+        const val SEARCH_PAGE = 60
     }
 }
 

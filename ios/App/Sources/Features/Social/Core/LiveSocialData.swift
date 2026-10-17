@@ -220,6 +220,17 @@ struct LiveSocialData: SocialDataSource {
         await environment.memories.cachedHistoryWeeks(groupID: groupID)?.value
     }
 
+    func historyMonths(groupID: GroupID) async throws -> [HistoryMonth] {
+        try await environment.memories.historyMonths(groupID: groupID)
+    }
+
+    func searchPhotos(_ query: PhotoSearchQuery, before: Date?) async throws -> [PhotoSearchHit] {
+        try await environment.memories.searchPhotos(
+            text: query.trimmedText, groupID: query.groupID, memberID: query.memberID, from: query.from, to: query.to,
+            before: before, limit: SocialPaging.search
+        )
+    }
+
     func albums(groupID: GroupID) async throws -> [AlbumWithItems] {
         try await environment.memories.albums(groupID: groupID)
     }
@@ -302,6 +313,8 @@ struct UnconfiguredSocialData: SocialDataSource {
     func updateRecap(id: RecapID, items: [PostID], text: String) async throws -> WeeklyRecap { try fail() }
     func historyWeeks(groupID: GroupID, beforeWeek: LocalDate?) async throws -> [HistoryWeek] { try fail() }
     func cachedHistoryWeeks(groupID: GroupID) async -> [HistoryWeek]? { nil }
+    func historyMonths(groupID: GroupID) async throws -> [HistoryMonth] { try fail() }
+    func searchPhotos(_ query: PhotoSearchQuery, before: Date?) async throws -> [PhotoSearchHit] { try fail() }
     func albums(groupID: GroupID) async throws -> [AlbumWithItems] { try fail() }
     func cachedAlbums(groupID: GroupID) async -> [AlbumWithItems]? { nil }
     func saveAlbum(groupID: GroupID, name: String, postIDs: [PostID]) async throws -> Album { try fail() }

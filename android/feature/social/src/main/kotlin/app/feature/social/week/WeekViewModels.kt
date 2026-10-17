@@ -393,6 +393,15 @@ data class HistoryState(
     val loadingMore: Boolean = false,
     val endReached: Boolean = false,
     val refreshing: Boolean = false,
+    /** The history's months for the calendar (`group_history_months`), newest first; empty: no calendar glyph. */
+    val months: List<app.data.model.HistoryMonth> = emptyList(),
+    /**
+     * After a jump from the calendar: the list starts at this week (no current week above it) and pages older from there;
+     * null: the list starts at the newest week. A refresh returns to the newest week.
+     */
+    val startsAt: LocalDate? = null,
+    /** A week the list should bring to its top once (the calendar's jump); cleared by [HistoryViewModel.scrolled]. */
+    val scrollTo: LocalDate? = null,
 ) {
     enum class Phase { Loading, Ready, Error }
 
@@ -423,10 +432,55 @@ class HistoryViewModel(private val data: SocialData, private val groupId: String
 
     private suspend fun start() {
         group = runCatching { data.group(groupId) }.getOrNull()
+        viewModelScope.launch { loadMonths() }
         data.observeHistory(groupId).collect { page -> apply(page) }
     }
 
+    /** `group_history_months` for the calendar; a failure keeps what is known (the glyph shows once months are known). */
+    private suspend fun loadMonths() {
+        val months = try {
+            data.historyMonths(groupId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Throwable) {
+            return
+        }
+        _state.update { it.copy(months = months) }
+    }
+
+    /**
+     * The calendar's jump (`week.history.layout.calendar`): a week already in the list is brought to the top; otherwise the
+     * list starts at that week (`group_history_weeks(p_before_week = week + 7)`, whose first week is that one) and pages
+     * older from there. A failure keeps the list (offline: its line).
+     */
+    fun jumpTo(week: LocalDate) {
+        if (weeks.any { it.weekStart == week }) {
+            _state.update { it.copy(scrollTo = week) }
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val fetched = data.historyWeeks(groupId, week.plusDays(Formats.DAYS_IN_WEEK), PAGE)
+                val page = fetched.filter { !it.weekStart.isAfter(week) }
+                if (page.isEmpty()) return@launch
+                hydrate(page)
+                weeks = page
+                _state.update { it.copy(phase = HistoryState.Phase.Ready, offline = false, endReached = fetched.size < PAGE, startsAt = week, scrollTo = week) }
+                publish()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                if (e.dataError() == DataError.Network) _state.update { it.copy(offline = true) }
+            }
+        }
+    }
+
+    /** The list brought [HistoryState.scrollTo] to its top. */
+    fun scrolled() = _state.update { it.copy(scrollTo = null) }
+
     private suspend fun apply(page: DataState<List<app.data.model.HistoryWeek>>) {
+        // After a jump the list starts at the chosen week; the newest weeks arrive again on refresh.
+        if (_state.value.startsAt != null) return
         val value = page.value
         when {
             value != null -> {
@@ -449,8 +503,9 @@ class HistoryViewModel(private val data: SocialData, private val groupId: String
                 val page = data.historyWeeks(groupId, null, PAGE)
                 weeks = page
                 hydrate(page)
-                _state.update { it.copy(phase = HistoryState.Phase.Ready, refreshing = false, offline = false, endReached = page.size < PAGE) }
+                _state.update { it.copy(phase = HistoryState.Phase.Ready, refreshing = false, offline = false, endReached = page.size < PAGE, startsAt = null) }
                 publish()
+                loadMonths()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -501,6 +556,8 @@ class HistoryViewModel(private val data: SocialData, private val groupId: String
                 if (post.mediaId !in media) runCatching { data.media(listOf(post.mediaId)) }.getOrNull()?.forEach { media[it.id] = it }
                 if (post.authorId !in names) runCatching { data.profiles(listOf(post.authorId)) }.getOrNull()?.forEach { names[it.id] = it.firstName }
                 val start = Formats.weekStartOf(post.visibleAt.atZone(_state.value.zone).toLocalDate())
+                // After a jump only the weeks shown take new photos (the current week is not above them).
+                if (_state.value.startsAt != null && weeks.none { it.weekStart == start }) return@launch
                 weeks = if (weeks.any { it.weekStart == start }) weeks.map { w -> if (w.weekStart == start && post.id !in w.postIds) w.copy(postIds = w.postIds + post.id) else w }
                 else (listOf(app.data.model.HistoryWeek(start, listOf(post.id))) + weeks).sortedByDescending { it.weekStart }
                 publish()
@@ -522,7 +579,8 @@ class HistoryViewModel(private val data: SocialData, private val groupId: String
                 collages = w.collages,
             )
         }.filter { it.photos.isNotEmpty() || it.collages.isNotEmpty() || it.isCurrent }
-        val withCurrent = if (list.none { it.isCurrent }) listOf(HistoryWeekUi(current, emptyList(), recaps[current], true)) + list else list
+        // The current week is synthesised when it has no posts — not above a week the calendar jumped to.
+        val withCurrent = if (_state.value.startsAt == null && list.none { it.isCurrent }) listOf(HistoryWeekUi(current, emptyList(), recaps[current], true)) + list else list
         _state.update { it.copy(group = group, weeks = withCurrent) }
     }
 

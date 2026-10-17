@@ -92,6 +92,29 @@ object Formats {
 
     fun spokenDate(date: LocalDate): String = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(locale()).format(date)
 
+    /**
+     * `search.photos` date chip: the chosen days as the locale's interval ("Oct 3 – 9"; one day: "Oct 3"); a range
+     * outside this year shows its year.
+     */
+    fun dayRange(context: Context, from: LocalDate, to: LocalDate, today: LocalDate = LocalDate.now()): String {
+        val zone = ZoneId.systemDefault()
+        val start = from.atStartOfDay(zone).toInstant().toEpochMilli()
+        // DateUtils treats an end at midnight as exclusive: the day after the last one.
+        val end = to.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        val year = if (from.year == today.year && to.year == today.year) DateUtils.FORMAT_NO_YEAR else DateUtils.FORMAT_SHOW_YEAR
+        return DateUtils.formatDateRange(context, java.util.Formatter(StringBuilder(), locale()), start, end, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_MONTH or year, zone.id).toString()
+    }
+
+    /** `week.history.layout.calendar`: a month's title in the locale's format ("October 2026"). */
+    fun monthTitle(month: LocalDate): String =
+        DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale(), MONTH_YEAR_SKELETON), locale()).format(month)
+
+    /** A calendar day read in full ("Saturday, October 3, 2026"). */
+    fun spokenFullDate(date: LocalDate): String = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale()).format(date)
+
+    /** The locale's weekday initials, Monday first (the calendar's header row). */
+    fun weekdayInitials(): List<String> = DayOfWeek.entries.map { it.getDisplayName(TextStyle.NARROW_STANDALONE, locale()) }
+
     /** The Monday starting the week of [date] (`week_start_isodow` = 1). */
     fun weekStartOf(date: LocalDate): LocalDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
@@ -102,6 +125,9 @@ object Formats {
     private const val SECONDS_PER_MINUTE = 60L
     private const val LAST_SECOND_OF_HOUR = 3_599L
     const val DAYS_IN_WEEK = 7L
+
+    /** The month-and-year skeleton the locale turns into its pattern ("October 2026"). */
+    private const val MONTH_YEAR_SKELETON = "yMMMM"
 }
 
 /** Emoji system names (Unicode character names, lowercased), for labels and picker search. */

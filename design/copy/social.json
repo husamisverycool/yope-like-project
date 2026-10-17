@@ -2002,6 +2002,178 @@
       "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
       "level": "SOURCED",
       "notes": "Owner decision 16: label of the paused draft's continue control (chat.voice.layout.locked). Apple's Title Case button name in Retro's sentence case."
+    },
+    "search.photos.title": {
+      "text": "Search",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_create_thread_input_placeholder) ('Search'); references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png (Retro's albums search)",
+      "pattern": "retro.voice.title (a short noun phrase: 'Postcard', 'Create Recap', 'Next Steps')",
+      "level": "SOURCED",
+      "notes": "C-02 title of the search page; the word Retro puts in every search field."
+    },
+    "search.photos.field": {
+      "text": "Search",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_create_thread_input_placeholder)",
+      "level": "SOURCED",
+      "notes": "C-12 placeholder (retro.voice.placeholder: a bare noun for search)."
+    },
+    "search.photos.field.a11y": {
+      "text": "Search photos",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (message_thread_create_thread_input_placeholder) ('Search'); design/components.md C-12 (the field's label comes from copy, not the placeholder)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
+    },
+    "search.photos.open": {
+      "text": "Search",
+      "origin": "new",
+      "source_app": "Yope",
+      "surface": "search.photos",
+      "evidence": "design/research/yope-a.md §2.9 (groups.list: 'search circle (left)' in Yope's home header) and §1.7 (magnifier → magnifyingglass / search); https://www.tiktok.com/@savannahclooney/video/7683341732695592206 (Yope search on the group list)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "Label of the header glyph that opens search.photos on groups.list (all groups) and groups.screen (that group)."
+    },
+    "search.photos.member.you": {
+      "text": "You",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/store/editorial/retro-appstore-story-1854931006-week3-albums.png ('you shared a post': Retro names the viewer 'you'); as groups.settings.members.you",
+      "pattern": "retro.voice.sentence-case",
+      "level": "SOURCED",
+      "notes": "Your own member chip: photos you posted or are tagged in (\"I'm in this\")."
+    },
+    "search.photos.date": {
+      "text": "Date",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "search.photos",
+      "evidence": "https://support.apple.com/en-us/108314 (Apple Shared Albums filters); https://support.apple.com/guide/apple-invites/create-an-event-dev1d1c7cb6b/ios ('Tap Date and Time'); as widget.styles.name.date / plans.create.date",
+      "pattern": "retro.voice.title-case — a filter named by one noun",
+      "level": "SOURCED",
+      "notes": "The date filter chip while no date is chosen, and the title of its sheet."
+    },
+    "search.photos.date.start": {
+      "text": "Start",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "design/copy-patterns.md retro.voice.settings (row label, as groups.settings.invitation.start; Retro video_editor_start_earlier 'Start one second earlier' uses the same word)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "First day of the date filter (iOS date sheet row; Android's range picker draws its own labels)."
+    },
+    "search.photos.date.end": {
+      "text": "End",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "design/copy-patterns.md retro.voice.settings (row label, as groups.settings.invitation.end; Retro video_editor_end_earlier 'End one second earlier' uses the same word)",
+      "pattern": "retro.voice.settings",
+      "level": "SOURCED",
+      "notes": "Last day of the date filter (iOS date sheet row)."
+    },
+    "search.photos.date.cancel": {
+      "text": "Cancel",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (cancel); HIG Alerts ('Cancel')",
+      "level": "SOURCED"
+    },
+    "search.photos.date.done": {
+      "text": "Done",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (video_editor_done)",
+      "level": "SOURCED"
+    },
+    "search.photos.idle.title": {
+      "text": "Find a photo",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_empty_state_*) ('Let's get started'); (message_inbox_empty_state_*) ('Your chats will show up here.'), as design/copy-patterns.md retro.voice.empty-state cites them",
+      "pattern": "retro.voice.empty-state ('Nothing to see here yet', 'Let's get started' / 'Add some photos or videos to your album!' / 'Add to album', 'Your chats will show up here.' / 'Create a chat')",
+      "level": "SOURCED",
+      "notes": "Before anything is searched."
+    },
+    "search.photos.idle.detail": {
+      "text": "Search captions and comments, or choose who's in it or when it was taken.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (journal_profile_empty_state_*) ('Add some photos or videos to your album!'); migration 0040 (captions, chat about a photo, member or \"I'm in this\", dates)",
+      "pattern": "retro.voice.explanation (Sentence case with a final period: 'Retro is a social photo journal for moments big and small. Add to any week, any time.')",
+      "level": "SOURCED",
+      "notes": "Says what search reads; no face or AI search is offered (directive)."
+    },
+    "search.photos.empty.title": {
+      "text": "No matching photos",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (media_viewer_edit_tagged_user_no_search_results) ('No matching users')",
+      "pattern": "retro.voice.empty-state ('Nothing to see here yet', 'Let's get started' / 'Add some photos or videos to your album!' / 'Add to album', 'Your chats will show up here.' / 'Create a chat')",
+      "level": "SOURCED",
+      "notes": "Noun swap: users → photos (as albums.list.search.empty). No count of results anywhere (tenet 2)."
+    },
+    "search.photos.error": {
+      "text": "Error loading photos. Tap here to try again.",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (friends_tab_loading_error)",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "Noun swap: friends → photos."
+    },
+    "search.photos.offline": {
+      "text": "Couldn't search. Check your connection and try again.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "search.photos",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt (error_message_auth_code_service) (\"We couldn't verify the code. Check your connection and try again.\")",
+      "pattern": "retro.voice.error ('Something went wrong', 'There was a problem. Please try again.', 'Error loading friends. Tap here to try again.', 'Couldn't send comment', 'Couldn't find album', 'Error loading media. Tap to retry')",
+      "level": "SOURCED",
+      "notes": "As week.history.offline: what failed, then what to do."
+    },
+    "week.history.calendar.open": {
+      "text": "View all memories",
+      "origin": "adapted",
+      "source_app": "BeReal",
+      "surface": "week.history",
+      "evidence": "https://help.bereal.com/hc/en-us/articles/7531349180829 ('Tap \"View all my Memories\" on your profile to see your past BeReal posts', accessed 2026-10-17)",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED",
+      "notes": "Label of the header glyph that opens the calendar; 'my' dropped (the group's memories), Sentence case per Retro."
+    },
+    "week.history.calendar.title": {
+      "text": "Memories",
+      "origin": "verbatim",
+      "source_app": "BeReal",
+      "surface": "week.history",
+      "evidence": "https://help.bereal.com/hc/en-us/articles/7531349180829 ('Tap \"Memories\".', accessed 2026-10-17)",
+      "level": "SOURCED",
+      "notes": "Title of the calendar sheet (a generic word, not a mark)."
+    },
+    "week.history.calendar.a11y.close": {
+      "text": "Close",
+      "origin": "new",
+      "source_app": "Apple HIG / Material 3",
+      "surface": "week.history",
+      "evidence": "design/components.md C-11",
+      "pattern": "platform.a11yLabel ('View Terms', 'View Privacy'; label the purpose, no 'button' suffix)",
+      "level": "SOURCED"
     }
   }
 }

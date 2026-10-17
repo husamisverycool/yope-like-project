@@ -91,11 +91,19 @@ protocol SocialDataSource: Sendable {
     /// Weeks with posts, newest first, pages of 8; `beforeWeek` is exclusive.
     func historyWeeks(groupID: GroupID, beforeWeek: LocalDate?) async throws -> [HistoryWeek]
     func cachedHistoryWeeks(groupID: GroupID) async -> [HistoryWeek]?
+    /// `group_history_months` (migration 0045): the history's months, their days with something and the week each jumps
+    /// to, newest month first (`week.history.layout.calendar`).
+    func historyMonths(groupID: GroupID) async throws -> [HistoryMonth]
     func albums(groupID: GroupID) async throws -> [AlbumWithItems]
     func cachedAlbums(groupID: GroupID) async -> [AlbumWithItems]?
     func saveAlbum(groupID: GroupID, name: String, postIDs: [PostID]) async throws -> Album
     func renameAlbum(id: AlbumID, name: String) async throws -> Album
     func deleteAlbum(id: AlbumID, groupID: GroupID) async throws
+
+    // MARK: Search (migration 0040, search.photos)
+    /// `search_photos`: newest first, pages of `SocialPaging.search`; `before` pages back (the last hit's `createdAt`).
+    /// Never called with an empty query (the RPC refuses it).
+    func searchPhotos(_ query: PhotoSearchQuery, before: Date?) async throws -> [PhotoSearchHit]
 
     // MARK: Files (§7)
     /// A short-lived signed URL for a private storage path.
@@ -123,6 +131,26 @@ enum SocialPaging {
     static let wall = 50
     /// `week.history`: `group_history_weeks(p_limit: 8)`.
     static let historyWeeks = 8
+    /// `search.photos`: `search_photos(p_limit: 60)` (the API's default page).
+    static let search = 60
+}
+
+/// What `search.photos` asks `search_photos` (migration 0040): every criterion given must match. No face or AI search.
+struct PhotoSearchQuery: Equatable, Sendable {
+    /// Words of a caption or of the chat about a photo (each a prefix).
+    var text: String = ""
+    /// One group (opened from `groups.screen`); nil: all your groups.
+    var groupID: GroupID?
+    /// Posted it, or tagged themselves "I'm in this".
+    var memberID: UserID?
+    /// The days it was taken, group-local, inclusive (either open).
+    var from: LocalDate?
+    var to: LocalDate?
+
+    var trimmedText: String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    /// No criterion: the page stays idle and nothing is asked (`invalid_argument` otherwise).
+    var isEmpty: Bool { trimmedText.isEmpty && memberID == nil && from == nil && to == nil }
 }
 
 /// How a failed call is shown: every screen maps these to its own error / offline / gone copy.

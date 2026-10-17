@@ -9,11 +9,13 @@ import app.data.model.Collage
 import app.data.model.Group
 import app.data.model.GroupKind
 import app.data.model.GroupMember
+import app.data.model.HistoryMonth
 import app.data.model.HistoryWeek
 import app.data.model.Media
 import app.data.model.MediaKind
 import app.data.model.MemberRole
 import app.data.model.Message
+import app.data.model.PhotoSearchHit
 import app.data.model.MessageKind
 import app.data.model.Post
 import app.data.model.PostTag
@@ -27,6 +29,7 @@ import app.data.offline.DataState
 import app.data.realtime.GroupEvent
 import app.data.repo.Member
 import app.data.repo.ReactionEntry
+import app.feature.social.data.PhotoSearchQuery
 import app.feature.social.data.SocialData
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -66,6 +69,11 @@ class FakeSocialData(var me: String = ME) : SocialData {
     val chatCache = HashMap<String, List<Message>>()
     val wallCache = HashMap<String, List<WallItem>>()
     val historyCache = HashMap<String, List<HistoryWeek>>()
+    /** `group_history_months` per group (none by default: no calendar glyph in the existing snapshots). */
+    val months = LinkedHashMap<String, List<HistoryMonth>>()
+    /** `search_photos` rows returned, newest first (filtered by `before`, a page at a time), and every query asked. */
+    val searchHits = ArrayList<PhotoSearchHit>()
+    val searches = ArrayList<Pair<PhotoSearchQuery, Instant?>>()
 
     var offline = false
     val failNext = HashSet<String>()
@@ -210,6 +218,15 @@ class FakeSocialData(var me: String = ME) : SocialData {
     override suspend fun historyWeeks(groupId: String, beforeWeek: LocalDate?, limit: Int): List<HistoryWeek> {
         net("history")
         return weeks[groupId].orEmpty().filter { beforeWeek == null || it.weekStart.isBefore(beforeWeek) }.sortedByDescending { it.weekStart }.take(limit)
+    }
+
+    override suspend fun historyMonths(groupId: String): List<HistoryMonth> { net("historyMonths"); return months[groupId].orEmpty() }
+
+    override suspend fun searchPhotos(query: PhotoSearchQuery, before: Instant?, limit: Int): List<PhotoSearchHit> {
+        searches += query to before
+        net("search")
+        require(!query.isEmpty) { "search_photos: invalid_argument" }
+        return searchHits.filter { before == null || it.createdAt.isBefore(before) }.sortedByDescending { it.createdAt }.take(limit)
     }
 
     override suspend fun recaps(groupId: String): List<WeeklyRecap> { net("recaps"); return recaps.values.filter { it.groupId == groupId }.sortedByDescending { it.weekStart } }

@@ -18,8 +18,10 @@ C-06, C-04, C-27, C-28.
 ## Structure (page `color.global.background` / `.background.android`; vertical scroll; tab bar fixed)
 
 1. **Header (C-01)**: serif title `groups.list.title` (`font.global.display`, text role `headerTitle` 40,
-   `color.global.textPrimary`) at `size.global.screenMargin`, baseline `size.global.titleTop`; one trailing glyph
-   `icon.global.newAlbum` (ink at `size.global.headerInset`, hit `size.global.headerButton`) → `groups.create`.
+   `color.global.textPrimary`) at `size.global.screenMargin`, baseline `size.global.titleTop`; trailing glyphs
+   (C-01, `size.global.headerIconPitch` apart): while you have a group, `icon.global.search` → `search.photos` over all
+   your groups (Yope puts search on its group list — design/research/yope-a.md §2.9; owner decision 34, research #6),
+   then `icon.global.newAlbum` (ink at `size.global.headerInset`, hit `size.global.headerButton`) → `groups.create`.
 2. `size.global.titleToContent` below the title baseline: **group rows (C-15)**, newest activity first, thumbnails
    `size.global.listGap` (22.5) apart (row pitch 119.5), inside `size.global.screenMargin`:
    - cover thumbnail `size.global.rowThumbWidth` × `.rowThumbHeight` (72 × 97, 3:4), `radius.global.thumbnail` (4),
@@ -47,6 +49,7 @@ C-06, C-04, C-27, C-28.
 | element | tokens / component | copy | behaviour |
 |---|---|---|---|
 | title | C-01 | `groups.list.title` | header trait |
+| search glyph | C-01 trailing glyph `icon.global.search` (only with at least one group) | `search.photos.open` | → `search.photos` (all groups) |
 | new group glyph | C-01 trailing glyph `icon.global.newAlbum` | `groups.list.header.add.accessibilityLabel` | → `groups.create` (type step) |
 | group row | C-15 + C-23 | `groups.list.row.accessibilityLabel` ({group_name}, {subtitle}) | tap → `groups.screen` (push) |
 | subtitle | `listSubtitle`, actor semibold | newest post by someone else: `groups.list.row.sentPic` ({first_name}); by you: `groups.list.row.newPic`; no posts: `groups.list.row.createdByYou` / `.createdBy` ({first_name}) / `.noPics` (creator unknown) | updates live (realtime `posts` inserts) |
@@ -88,7 +91,7 @@ Row, "+", template "Create", tab presses → `haptic.global.tap` (Android VIRTUA
 - Tabs: buttons with labels, selected trait on the current tab, no count values.
 - Dynamic Type: title `largeTitle`; name, subtitle `subheadline`; section header `subheadline`; capsule `subheadline`.
   Rows grow with their text (minimum = the thumbnail height); the thumbnail keeps 72 × 97.
-- Focus order: title → new group → rows (row, +) → ideas header → template rows (row, Create) → tab bar.
+- Focus order: title → search → new group → rows (row, +) → ideas header → template rows (row, Create) → tab bar.
 - Contrast (`design/CONTRAST.md`):
 
 | pair | light | dark |

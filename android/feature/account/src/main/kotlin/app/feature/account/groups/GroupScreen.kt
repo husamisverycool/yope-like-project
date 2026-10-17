@@ -356,6 +356,7 @@ fun GroupFeedRoute(nav: NavHostController, groupId: String) {
         actions = GroupScreenActions(
             onBack = { nav.popBackStack() },
             onAlbums = { nav.navigate(AppRoute.AlbumsList(groupId)) },
+            onSearch = { nav.navigate(app.model.SearchPhotos(groupId)) },
             onChat = { nav.navigate(AppRoute.Chat(groupId)) },
             onMembers = { nav.navigate(AppRoute.GroupSettings(groupId)) },
             // "Recaps" opens the group's recap list sheet (week.recap list; social pass).
@@ -441,6 +442,8 @@ const val GROUP_SCREEN_LIST_TAG = "groups.screen.list" // provenance-ok: test ta
 data class GroupScreenActions(
     val onBack: () -> Unit = {},
     val onAlbums: () -> Unit = {},
+    /** `search.photos` in this group. */
+    val onSearch: () -> Unit = {},
     val onChat: () -> Unit = {},
     val onMembers: () -> Unit = {},
     val onRecaps: () -> Unit = {},
@@ -644,7 +647,7 @@ private fun LazyListScope.loaded(
     }
 }
 
-/** C-02 without a title: back + (unless [glyphs] is false) the albums and chat glyphs at the C-01 places. */
+/** C-02 without a title: back + (unless [glyphs] is false) the search, albums and chat glyphs at the C-01 places. */
 @Composable
 private fun Header(actions: GroupScreenActions, glyphs: Boolean) {
     PushedHeader(
@@ -655,6 +658,7 @@ private fun Header(actions: GroupScreenActions, glyphs: Boolean) {
             emptyList()
         } else {
             listOf(
+                HeaderAction(Tokens.Icons.globalSearch, stringResource(R.string.search_photos_open), actions.onSearch),
                 HeaderAction(Tokens.Icons.globalAlbums, stringResource(R.string.groups_screen_albums_accessibilitylabel), actions.onAlbums),
                 HeaderAction(Tokens.Icons.globalChats, stringResource(R.string.groups_screen_chat), actions.onChat),
             )

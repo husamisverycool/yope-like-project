@@ -16,6 +16,7 @@ import app.feature.social.data.SocialData
 import app.feature.social.data.dataError
 import app.feature.social.reactions.withReaction
 import app.feature.social.reactions.withoutReaction
+import app.feature.social.search.SearchResults
 import app.model.PhotoContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -122,7 +123,10 @@ class PhotoViewerViewModel(
     private val contextId: String,
     private val weekStart: LocalDate?,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(ViewerState(me = data.currentUserId(), fromWall = context == PhotoContext.Wall))
+    // From a wall, or a search over all your groups: the header's second line names the photo's group.
+    private val _state = MutableStateFlow(
+        ViewerState(me = data.currentUserId(), fromWall = context == PhotoContext.Wall || (context == PhotoContext.Search && SearchResults.spansGroups(contextId))),
+    )
     val state: StateFlow<ViewerState> = _state.asStateFlow()
     private val _effects = MutableSharedFlow<ViewerEffect>(extraBufferCapacity = 16, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val effects: SharedFlow<ViewerEffect> = _effects.asSharedFlow()
@@ -207,6 +211,8 @@ class PhotoViewerViewModel(
         PhotoContext.Recap -> data.recap(contextId)?.items.orEmpty()
         PhotoContext.Album -> data.albumItems(contextId).sortedBy { it.position }.map { it.postId }
         PhotoContext.Question -> data.questionAnswers(contextId)
+        // search.photos: the results in their order, as the search page kept them (none after a new process: the photo alone).
+        PhotoContext.Search -> SearchResults.postIds(contextId) ?: listOf(postId)
         PhotoContext.Reveal -> {
             // camera.overnight C: the photos revealed together, oldest first; a photo shared at once stays alone.
             val post = data.posts(listOf(postId)).firstOrNull()

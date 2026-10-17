@@ -1773,6 +1773,36 @@ public enum Copy {
     public static var safetyReportTitleUser: String { CopyLookup.string("safety.report.title.user", default: "What's wrong with this profile?") }
     /// "Why are you reporting this video?" — Retro · safety.report · adapted · SOURCED
     public static var safetyReportTitleVideo: String { CopyLookup.string("safety.report.title.video", default: "Why are you reporting this video?") }
+    /// "Date" — Apple HIG / Material 3 · search.photos · new · SOURCED
+    public static var searchPhotosDate: String { CopyLookup.string("search.photos.date", default: "Date") }
+    /// "Cancel" — Retro · search.photos · verbatim · SOURCED
+    public static var searchPhotosDateCancel: String { CopyLookup.string("search.photos.date.cancel", default: "Cancel") }
+    /// "Done" — Retro · search.photos · verbatim · SOURCED
+    public static var searchPhotosDateDone: String { CopyLookup.string("search.photos.date.done", default: "Done") }
+    /// "End" — Retro · search.photos · new · SOURCED
+    public static var searchPhotosDateEnd: String { CopyLookup.string("search.photos.date.end", default: "End") }
+    /// "Start" — Retro · search.photos · new · SOURCED
+    public static var searchPhotosDateStart: String { CopyLookup.string("search.photos.date.start", default: "Start") }
+    /// "No matching photos" — Retro · search.photos · adapted · SOURCED
+    public static var searchPhotosEmptyTitle: String { CopyLookup.string("search.photos.empty.title", default: "No matching photos") }
+    /// "Error loading photos. Tap here to try again." — Retro · search.photos · adapted · SOURCED
+    public static var searchPhotosError: String { CopyLookup.string("search.photos.error", default: "Error loading photos. Tap here to try again.") }
+    /// "Search" — Retro · search.photos · verbatim · SOURCED
+    public static var searchPhotosField: String { CopyLookup.string("search.photos.field", default: "Search") }
+    /// "Search photos" — Retro · search.photos · new · SOURCED
+    public static var searchPhotosFieldA11y: String { CopyLookup.string("search.photos.field.a11y", default: "Search photos") }
+    /// "Search captions and comments, or choose who's in it or when it was taken." — Retro · search.photos · new · SOURCED
+    public static var searchPhotosIdleDetail: String { CopyLookup.string("search.photos.idle.detail", default: "Search captions and comments, or choose who's in it or when it was taken.") }
+    /// "Find a photo" — Retro · search.photos · new · SOURCED
+    public static var searchPhotosIdleTitle: String { CopyLookup.string("search.photos.idle.title", default: "Find a photo") }
+    /// "You" — Retro · search.photos · new · SOURCED
+    public static var searchPhotosMemberYou: String { CopyLookup.string("search.photos.member.you", default: "You") }
+    /// "Couldn't search. Check your connection and try again." — Retro · search.photos · new · SOURCED
+    public static var searchPhotosOffline: String { CopyLookup.string("search.photos.offline", default: "Couldn't search. Check your connection and try again.") }
+    /// "Search" — Yope · search.photos · new · SOURCED
+    public static var searchPhotosOpen: String { CopyLookup.string("search.photos.open", default: "Search") }
+    /// "Search" — Retro · search.photos · new · SOURCED
+    public static var searchPhotosTitle: String { CopyLookup.string("search.photos.title", default: "Search") }
     /// "Cancel" — Apple HIG · settings.account · verbatim · VERIFIED
     public static var settingsAccountAlertCancel: String { CopyLookup.string("settings.account.alert.cancel", default: "Cancel") }
     /// "Birthday" — Retro · settings.account · new · SOURCED
@@ -2115,6 +2145,12 @@ public enum Copy {
     public static var weekHistoryA11yMore: String { CopyLookup.string("week.history.a11y.more", default: "More Options") }
     /// "{weekday}, {date}, {name}'s photo" — Retro · week.history · new · SOURCED
     public static func weekHistoryA11yTile(weekday: String, date: String, name: String) -> String { CopyLookup.format("week.history.a11y.tile", default: "{weekday}, {date}, {name}'s photo", ["weekday": weekday, "date": date, "name": name]) }
+    /// "Close" — Apple HIG / Material 3 · week.history · new · SOURCED
+    public static var weekHistoryCalendarA11yClose: String { CopyLookup.string("week.history.calendar.a11y.close", default: "Close") }
+    /// "View all memories" — BeReal · week.history · adapted · SOURCED
+    public static var weekHistoryCalendarOpen: String { CopyLookup.string("week.history.calendar.open", default: "View all memories") }
+    /// "Memories" — BeReal · week.history · verbatim · SOURCED
+    public static var weekHistoryCalendarTitle: String { CopyLookup.string("week.history.calendar.title", default: "Memories") }
     /// "Get this week started" — Retro · week.history · verbatim · SOURCED
     public static var weekHistoryEmptyAction: String { CopyLookup.string("week.history.empty.action", default: "Get this week started") }
     /// "Welcome to Week {week_number}!" — Retro · week.history · verbatim · SOURCED

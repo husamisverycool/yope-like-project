@@ -41,6 +41,12 @@ enum class PhotoContext {
      * the reveal push names the first); `contextId` = the post id.
      */
     Reveal,
+
+    /**
+     * The results of a `search.photos` search, in their order (newest first); `contextId` = the key the search page kept
+     * them under (`SearchResults`); when they are gone (a new process), the opened photo alone.
+     */
+    Search,
 }
 
 /**
@@ -81,6 +87,15 @@ data class WeekRecapAlbum(val groupId: String, val recapId: String) : AppRoute {
 @Serializable
 data class WeekAlbum(val groupId: String, val weekStart: String) : AppRoute {
     override val surface get() = "week.edit"
+}
+
+/**
+ * `search.photos` (owner decision 34, research #6): search the photos by caption or chat, member ("I'm in this") and date
+ * — in [groupId] (from `groups.screen`), or in all your groups when null (from `groups.list`).
+ */
+@Serializable
+data class SearchPhotos(val groupId: String? = null) : AppRoute {
+    override val surface get() = "search.photos"
 }
 
 /**

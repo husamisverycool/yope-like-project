@@ -34,11 +34,7 @@ struct GroupsListView: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    ScreenHeader(title: Copy.groupsListTitle, actions: [
-                        HeaderAction(icon: Tokens.Icons.globalNewAlbum, accessibilityLabel: Copy.groupsListHeaderAddAccessibilityLabel) {
-                            dependencies.router.modal = .account(.groupCreate)
-                        },
-                    ])
+                    ScreenHeader(title: Copy.groupsListTitle, actions: headerActions)
                     content(width: proxy.size.width, height: proxy.size.height)
                 }
             }
@@ -64,6 +60,21 @@ struct GroupsListView: View {
             if wasOffline, !isOffline { Task { await model.refresh() } }
         }
         .accessibilityIdentifier("groups.list")
+    }
+
+    /// C-01 glyphs: while you have a group, search (`search.photos` over all your groups — Yope's search on its group
+    /// list), then the new group glyph.
+    private var headerActions: [HeaderAction] {
+        var actions: [HeaderAction] = []
+        if model.phase == .loaded, !model.rows.isEmpty {
+            actions.append(HeaderAction(icon: Tokens.Icons.globalSearch, accessibilityLabel: Copy.searchPhotosOpen) {
+                dependencies.router.path.append(.social(.search(groupID: nil)))
+            })
+        }
+        actions.append(HeaderAction(icon: Tokens.Icons.globalNewAlbum, accessibilityLabel: Copy.groupsListHeaderAddAccessibilityLabel) {
+            dependencies.router.modal = .account(.groupCreate)
+        })
+        return actions
     }
 
     @ViewBuilder

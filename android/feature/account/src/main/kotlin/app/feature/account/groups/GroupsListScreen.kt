@@ -269,6 +269,7 @@ fun GroupsListRoute(nav: NavController) {
         onCamera = { nav.navigate(AppRoute.Camera(it)) },
         onCreate = { nav.navigate(AppRoute.GroupCreate) },
         onTemplate = { nav.navigate(GroupCreateKindRoute(it.wire)) },
+        onSearch = { nav.navigate(app.model.SearchPhotos(null)) },
     )
 }
 
@@ -290,12 +291,20 @@ fun GroupsListScreen(
     onCamera: (String) -> Unit,
     onCreate: () -> Unit,
     onTemplate: (GroupKind) -> Unit,
+    onSearch: () -> Unit = {},
 ) {
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + TabBarClearance
+    // While you have a group: search (`search.photos` over all your groups — Yope's search on its group list), then new group.
+    val search = stringResource(R.string.search_photos_open)
+    val add = stringResource(R.string.groups_list_header_add_accessibilitylabel)
+    val hasGroups = !state.rows.isNullOrEmpty()
     val header = @Composable {
         ScreenHeader(
             stringResource(R.string.groups_list_title),
-            actions = listOf(HeaderAction(Tokens.Icons.globalNewAlbum, stringResource(R.string.groups_list_header_add_accessibilitylabel), onCreate)),
+            actions = listOfNotNull(
+                if (hasGroups) HeaderAction(Tokens.Icons.globalSearch, search, onSearch) else null,
+                HeaderAction(Tokens.Icons.globalNewAlbum, add, onCreate),
+            ),
         )
     }
     Box(Modifier.fillMaxSize().background(PageRoles.page).windowInsetsPadding(WindowInsets.statusBars)) {
