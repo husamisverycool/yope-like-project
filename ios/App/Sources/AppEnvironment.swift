@@ -39,6 +39,8 @@ final class AppEnvironment {
     let purchases: PurchasesService
     let widgetStore: WidgetStore
     let deviceTokens = DeviceTokens()
+    /// The APNs token kept across launches (registered at sign-in, unregistered at sign-out before this launch's arrives).
+    let pushTokenRecord: PushTokenRecord
     /// The WidgetKit push token written by the widget extension (iOS 26 widget push handler).
     let widgetPushTokens: WidgetPushTokenStore
     /// The backend (AppData). Nil while config/app.json has no Supabase URL / anon key (BLOCKED).
@@ -69,8 +71,11 @@ final class AppEnvironment {
         let widgetStore = WidgetStore.forBundle(bundle)
         self.widgetStore = widgetStore
         widgetPushTokens = WidgetPushTokenStore.forBundle(bundle)
+        let pushTokenRecord = PushTokenRecord()
+        self.pushTokenRecord = pushTokenRecord
         // Session glue: RevenueCat follows the signed-in user; widget reloads after the group
-        // list or a deleted post changed the widget store; the person's temporary files go when the session ends.
+        // list or a deleted post changed the widget store; the person's temporary files go when the session ends; the
+        // stored APNs token is unregistered at sign-out.
         let hooks = SessionHooks(
             linkPurchases: { userID in
                 if let userID {
@@ -84,7 +89,8 @@ final class AppEnvironment {
             },
             removeSessionFiles: {
                 SessionFiles.removeAll()
-            }
+            },
+            storedPushToken: { pushTokenRecord.token }
         )
         let data = try? DataEnvironment.live(configuration: configuration, widgetStore: widgetStore, hooks: hooks)
         self.data = data
@@ -118,11 +124,20 @@ final class AppEnvironment {
         let router = self.router
         let deviceTokens = self.deviceTokens
         push.onRoute = { link in router.handle(link) }
+        let pushTokenRecord = self.pushTokenRecord
+        if deviceTokens.apnsToken == nil { deviceTokens.apnsToken = pushTokenRecord.token }
         push.onDeviceToken = { [weak self] token in
+            pushTokenRecord.token = token
             deviceTokens.apnsToken = token
             self?.syncDeviceTokens()
         }
         push.install()
+        // Every launch: APNs registration when notifications are allowed (the token can change; onboarding is not the
+        // only way in — returning accounts and App Clip joiners skip it). The stored token reaches the session glue at
+        // once, so sign-in registers this device and sign-out unregisters it before APNs answers.
+        let pushService = self.push
+        Task { await pushService.registerIfAuthorized() }
+        syncDeviceTokens()
 
         liveActivities.onPushToStartToken = { [weak self] token in
             deviceTokens.pushToStartToken = token
@@ -182,6 +197,9 @@ final class AppEnvironment {
             PlanWidgetSync.shared.refresh()
             // Picks up a widget push token the widget extension recorded meanwhile.
             syncDeviceTokens()
+            // Notifications turned on in Settings while the app was away: register now.
+            let pushService = self.push
+            Task { await pushService.registerIfAuthorized() }
             let liveActivities = self.liveActivities
             Task { await liveActivities.endClosedActivities() }
         case .background:

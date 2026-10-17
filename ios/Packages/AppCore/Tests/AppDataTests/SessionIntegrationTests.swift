@@ -77,6 +77,20 @@ final class SessionIntegrationTests: XCTestCase {
         XCTAssertNil(reopened.currentUserID)
     }
 
+    /// A relaunch: APNs has not handed this launch its token yet, so sign-out unregisters the token stored on the device
+    /// (`SessionHooks.storedPushToken`) — the phone stops getting the account's notifications.
+    func testSignOutUnregistersTheStoredTokenAfterARelaunch() async throws {
+        let stored = String(repeating: "d1", count: 32) + users.runID
+        let rui = try await users.make("Rui", hooks: SessionHooks(storedPushToken: { stored }))
+        _ = try await rui.data.account.registerDevice(pushToken: stored, pushToStartToken: nil, widgetPushToken: nil)
+        await rui.data.coordinator.didSignIn(rui.id)
+        let before = try await rui.data.account.myDevices()
+        XCTAssertEqual(before.map(\.pushToken), [stored])
+        await rui.data.coordinator.signOut()
+        let after = try await rui.data.account.myDevices()
+        XCTAssertTrue(after.isEmpty, "the stored token is unregistered")
+    }
+
     func testCoordinatorRegistersDeviceSyncsWidgetsAndAppliesDeletions() async throws {
         try await LocalStack.requireWebSockets() // deletions arrive over Realtime
         let widgetRoot = FileManager.default.temporaryDirectory.appendingPathComponent("widgets-\(UUID().uuidString)", isDirectory: true)

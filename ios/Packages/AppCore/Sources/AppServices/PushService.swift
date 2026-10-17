@@ -81,6 +81,16 @@ public final class PushService: NSObject, UNUserNotificationCenterDelegate {
         UIApplication.shared.registerForRemoteNotifications()
     }
 
+    /// Registers with APNs when notifications are allowed (authorized, provisional or ephemeral). Call at every launch and
+    /// return to the foreground: Apple asks apps to register at each launch because the device token can change, and a
+    /// person who turned notifications on in Settings gets a token without going back to onboarding.
+    @discardableResult
+    public func registerIfAuthorized() async -> Bool {
+        guard await authorizationStatus() == .granted else { return false }
+        registerForRemoteNotifications()
+        return true
+    }
+
     /// Forward from `application(_:didRegisterForRemoteNotificationsWithDeviceToken:)`.
     public func didRegister(deviceToken: Data) {
         onDeviceToken?(PushToken.hex(deviceToken))

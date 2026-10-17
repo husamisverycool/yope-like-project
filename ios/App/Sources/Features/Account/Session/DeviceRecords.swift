@@ -85,6 +85,25 @@ final class OnboardingRecord {
     }
 }
 
+/// The APNs device token this phone last received (`PushService.onDeviceToken`), kept across launches so the session glue
+/// can register it right after sign-in and unregister it at sign-out before APNs hands this launch its token again.
+final class PushTokenRecord: Sendable {
+    private let suiteName: String?
+    private let key = "push.apnsToken" // provenance-ok: UserDefaults key, not user-facing
+
+    /// `suiteName` nil: the app's standard defaults.
+    init(suiteName: String? = nil) {
+        self.suiteName = suiteName
+    }
+
+    private var defaults: UserDefaults { suiteName.flatMap(UserDefaults.init(suiteName:)) ?? .standard }
+
+    var token: String? {
+        get { defaults.string(forKey: key) }
+        set { defaults.set(newValue, forKey: key) }
+    }
+}
+
 /// Device-local preference of `settings.notifications` → "Live Activity": when off, the push-to-start token is not
 /// registered (`register_device(… p_push_to_start_token: null)`).
 @MainActor

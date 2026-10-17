@@ -26,15 +26,20 @@ public struct SessionHooks: Sendable {
     /// After sign-out, account deletion or expiry: remove the files the app keeps outside AppData for the person who
     /// was signed in (capture drafts, voice recordings, downloaded media copies, share images, collage pages).
     public var removeSessionFiles: (@Sendable () async -> Void)?
+    /// The APNs token this device last received, kept across launches: sign-out unregisters it even when this launch has
+    /// not received the token yet.
+    public var storedPushToken: (@Sendable () -> String?)?
 
     public init(
         linkPurchases: (@Sendable (UserID?) async -> Void)? = nil,
         reloadWidgets: (@Sendable () async -> Void)? = nil,
-        removeSessionFiles: (@Sendable () async -> Void)? = nil
+        removeSessionFiles: (@Sendable () async -> Void)? = nil,
+        storedPushToken: (@Sendable () -> String?)? = nil
     ) {
         self.linkPurchases = linkPurchases
         self.reloadWidgets = reloadWidgets
         self.removeSessionFiles = removeSessionFiles
+        self.storedPushToken = storedPushToken
     }
 }
 
@@ -259,9 +264,10 @@ public actor SessionCoordinator {
     // MARK: Signing out
 
     /// Unregisters the device (docs/API.md §2: before `auth.signOut()`), signs out and clears
-    /// every local copy of the user's data.
+    /// every local copy of the user's data. The token is this launch's, else the one stored on the device
+    /// (`SessionHooks.storedPushToken`), so a sign-out right after a relaunch still stops this phone's notifications.
     public func signOut() async {
-        if signedInUser != nil, let apns = tokens.apns {
+        if signedInUser != nil, let apns = tokens.apns ?? hooks.storedPushToken?() {
             try? await environment.account.unregisterDevice(pushToken: apns)
         }
         await environment.auth.signOut()
