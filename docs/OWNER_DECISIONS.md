@@ -78,3 +78,28 @@ Decided by the lead, each from reference evidence (the evidence rule above still
 | 21 | Android dark background | Retro's **#1C1C1E** default stays; Retro's **True black** option is added to Settings | Retro APK: `colorScheme = isDark ? (trueBlack ? … : …)` (design/research/retro-package-copy-motion.md §3.1–3.2) |
 | 22 | Locket values read from a decompiled bundle | **re-sourced** from public screenshots or platform documentation; the decompiled bundle no longer counts as evidence | legal caution: reading another app's code is not inspiration. What a public web page sends to every browser (retro.app's HTML, CSS and page script, read as View Source shows them) stays acceptable evidence, like the retro.app CSS used since Pass 1; decompiled app binaries do not. Retro's own Android package, read the same way in the research passes, is left to the owner (docs/OWNER_SETUP.md §0 item 9) |
 | 23 | report categories | **Retro's lists** stay | Retro APK strings; they match the platforms' common report reasons |
+
+## 2026-10-17 — Finish the whole vision: every promised feature, plus what the best apps have
+
+> "I want you to continuously develop all of these features, work at developing all of the other things that should be
+> apparent and enabled within all of this, and draw purely from inspiration … incorporated in a very clean, professional
+> way in order for all of this to befit the overall vision" — the owner. Earlier (2026-10-16): "I want you to make it so
+> that you have a ton of all the cool features that are from all the different apps … combining all these features".
+
+A four-part audit (spec sections, release readiness, reference-app features) produced the work list. Decided by the lead
+under the 2026-10-16 mandate; the evidence rule still applies to every value and word these produce.
+
+| # | question | decision | evidence / reason |
+|---|---|---|---|
+| 24 | plans (Partiful / Apple Invites) vs. the directive's "Explicitly do NOT build: events" | **kept**, flagged to the owner: built on the owner's 2026-10-16 request for features from other apps; stays light (no tickets, payments, public pages, guest counts). The owner can ask for it to be removed | directive Part 5 ("flag it instead of silently building it") |
+| 25 | iPad | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`; iPads run it in compatibility mode) | Retro, Locket and BeReal are iPhone-only in their App Store compatibility sections; an iPad build needs its own layouts and screenshots |
+| 26 | minimum age | **13** (`app_config.min_age_years`) | the age every reference app's terms set for sign-up (cited in the migration that sets it); COPPA's threshold |
+| 27 | invite links | **no expiry**: a link works until an admin resets it or turns link sharing off (`invite_ttl_seconds` NULL) | WhatsApp group invite links stay valid until reset; Partiful links do not expire |
+| 28 | saving other members' photos | **any member may save any photo they can see to their own photo library**; sharing to other apps stays your own photos only (decision 12 still holds for sharing) | Apple Shared Albums: subscribers can save shared items to their own library (support.apple.com/108314); WhatsApp saves group media |
+| 29 | downloads | **album export in full quality is premium** (the directive's perk, already on the paywall); **"download all my photos" is free** (tenet 4; also offered before account deletion) | directive Part 6 Subscription; Yope "download all photos"; Retro's downloads page |
+| 30 | weekly question | **on**: the catalogue is asked in order, a new question each week; **on by default for new groups**, an admin can turn it off | owner mandate to decide open questions; tenet 5 holds (no push, no tally, hideable) |
+| 31 | year story | **refreshed on 31 December** so December counts, then **kept in the group's memories for good** (no second push) | tenet 4 "Nothing gets lost"; Wrapped's story stays reachable through the season |
+| 32 | app icon | **made by the lead from the app's own identity** (the title serif's "J" on the media black), with a dark and a tinted variant; the owner can replace it at any time | decision 0.2 left the icon to the owner, but both stores refuse an app without one and Android shows no notification without a small icon |
+| 33 | domain | **`jolt-husamisverycool.fly.dev`** (the invite page's Fly address) until the owner buys one | universal links, the App Clip and invite links need a host; `services.yml` deploys the page there |
+| 34 | new features | built: posting several photos at once; downloads (29); more widgets and the premium widget styles the paywall sells; "Share to Jolt" from other apps; library photos land on the day they were taken; search; reactions on chat messages; editing a message or caption; reply and react from a notification; albums anyone can add to; quick ways to open the camera (Control Center, Shortcuts, Quick Settings, app shortcuts); hide a memory; reply to a memory in the group; use a photo as the group cover; an opt-in memory notification; tappable links in chat; pause all notifications for today; "{name} joined" in the chat; private favorites; a typing line with names; jump to a date | `docs/RESEARCH_FEATURES_2026-10-17.md` (evidence URL per feature) |
+| 35 | not built | voice-message transcripts (the directive limits AI to recaps), an activity inbox (decision 14), printing (payments), read receipts / online dots (tenet 5), on-demand video recaps (later) | tenets and the do-not-build list |
