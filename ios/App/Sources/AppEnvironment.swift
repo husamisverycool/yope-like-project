@@ -1,4 +1,5 @@
 import AppData
+import AppIntents
 import AppModels
 import AppServices
 import Foundation
@@ -86,7 +87,11 @@ final class AppEnvironment {
                 }
             },
             reloadWidgets: {
-                await MainActor.run { WidgetReloader.reloadGroupWidgets() }
+                await MainActor.run {
+                    WidgetReloader.reloadGroupWidgets()
+                    // "Take a photo for {group}" (camera.quickaccess) offers the groups the widget store now lists.
+                    CameraShortcuts.updateAppShortcutParameters()
+                }
             },
             removeSessionFiles: {
                 SessionFiles.removeAll()
@@ -134,6 +139,14 @@ final class AppEnvironment {
         let router = self.router
         let deviceTokens = self.deviceTokens
         push.onRoute = { link in router.handle(link) }
+        // camera.quickaccess: the control and the App Shortcuts open the camera through the router.
+        CameraIntentInbox.install { link in router.handle(link) }
+        // widget.styles: a locked style's link goes straight on for a premium member.
+        let purchases = self.purchases
+        let widgetStore = self.widgetStore
+        router.isPremium = { purchases.isPremium || widgetStore.isPremium }
+        observePremium()
+        Task { await self.syncWidgetPremium() }
         let pushTokenRecord = self.pushTokenRecord
         if deviceTokens.apnsToken == nil { deviceTokens.apnsToken = pushTokenRecord.token }
         push.onDeviceToken = { [weak self] token in
@@ -219,6 +232,8 @@ final class AppEnvironment {
             if let coordinator = data?.coordinator {
                 Task { await coordinator.refreshWidgetContent() }
             }
+            // widget.styles: the premium styles follow the person's entitlement (a purchase on another device too).
+            Task { await self.syncWidgetPremium() }
             let liveActivities = self.liveActivities
             Task { await liveActivities.endClosedActivities() }
         case .background:
@@ -226,6 +241,31 @@ final class AppEnvironment {
             _ = try? widgetStore.prune(now: Date(), gracePeriod: Self.widgetPruneGracePeriod)
         default:
             break
+        }
+    }
+
+    /// Writes whether the person has premium to the App Group (`WidgetStore.premium.json`), which the widgets read to draw
+    /// a premium style or Photo (`widget.styles.layout.styles`), and reloads them when it changed. RevenueCat's state,
+    /// or the server's entitlement (`entitlements`, a purchase on another platform).
+    func syncWidgetPremium() async {
+        var premium = purchases.isPremium
+        if !premium, let data, data.auth.currentUserID != nil {
+            premium = (try? await data.account.hasPremium()) ?? widgetStore.isPremium
+        }
+        if (try? widgetStore.setPremium(premium)) == true {
+            WidgetReloader.reloadAll()
+        }
+    }
+
+    /// Follows RevenueCat's premium state (a purchase or restore in the paywall) into the widgets.
+    private func observePremium() {
+        withObservationTracking {
+            _ = purchases.isPremium
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                await self?.syncWidgetPremium()
+                self?.observePremium()
+            }
         }
     }
 

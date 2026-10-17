@@ -1094,6 +1094,140 @@
       "evidence": "docs/PLATFORM_CONSTRAINTS.md §1.2, §1.6; https://developer.apple.com/design/human-interface-guidelines/notifications; design/copy-patterns.md tenet filters (no TIME SENSITIVE)",
       "method": "native API + rule",
       "level": "PLATFORM"
+    },
+    "widget.styles.layout.styles": {
+      "type": "layout",
+      "value": {
+        "photo": "free — Retro's widget: the photo full bleed under the name stack (widget.home.small)",
+        "date": "premium — Retro's Rewind header over the photo (widget.styles.layout.date)",
+        "frame": "premium — Retro's instant-print recap style (widget.styles.layout.frame)",
+        "default": "photo",
+        "locked": "a premium style chosen without premium draws photo (the widget never stops working); the widget's tap then opens the paywall at the widgets perk once per session (paywall.layout.promptRule) and otherwise does what it always does",
+        "applies": "every home-screen photo widget (Group Updates, Friend Updates, Your Memories; iOS small, medium, large, extra large; Android Glance at every size); not the Lock Screen kinds (vibrant rendering) or Next Plan"
+      },
+      "source_app": "Locket",
+      "surface": "widget.styles",
+      "element": "which widget styles exist and which are premium",
+      "evidence": "https://mobbin.com/explore/flows/775b5243-e2f1-42fa-a2af-cbee353c1dcd (references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png: Locket Gold perk “Widget frames — Personalize your widgets”); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `retro_membership_paywall_benefit_title_recap_styles` ('Premium recap styles'), `recap_select_style_title` ('Select Style'); references/auto/retro/store/retro-store-04.png, references/auto/retro/play/retro-play-04.png (Retro's instant-print recap); references/auto/retro/press/tc-2025-12-rewind-device-a.png (Rewind header); directive Part 6 ('Premium: extra widget styles')",
+      "method": "Locket sells widget frames as a paid decoration around the widget photo; Retro sells premium recap styles, which are frames and headers drawn around one photo. The premium styles are the two Retro photo treatments that stay legible at widget sizes; Retro's white recap card is not offered (its footer, scaled from a 306-pt card to a 87-pt card on a small widget, would set its name line at 4 pt).",
+      "level": "SOURCED",
+      "notes": "Owner decision 34 (“the premium widget styles the paywall sells”). Locket's own frame art is not copied (do-not-copy, widget.home.small)."
+    },
+    "widget.styles.layout.date": {
+      "type": "layout",
+      "value": {
+        "title": "the item's date in layout.onthisday.dateFormat ('Jul 22, 2022'): font.global.display, text role displaySmall, color.global.textOnMedia, one line, tail truncation",
+        "position": "top-leading: leading inset size.global.screenMargin, the title's cap top size.global.screenMargin below the top edge",
+        "stack": "the name stack of widget.home.small.layout.overlay, unchanged",
+        "photo": "widget.home.small.layout.photo under layout.global.photoScrim; no top scrim (Rewind shows none)",
+        "states": "as widget.home.small"
+      },
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "element": "the Date style: Rewind's serif date over the full-bleed photo",
+      "evidence": "references/auto/retro/press/tc-2025-12-rewind-device-a.png (RWA: 'May 1, 2019' in the display serif at the margin over the full-bleed photo, no top scrim); references/auto/retro/store/retro-store-05.png (ST-05: 'July 5, 2021'); references/auto/retro/press/tc-2023-12-recaps.png phone 3 (Retro's full-bleed recap style with its serif date); design/surfaces/onthisday.md",
+      "method": "Rewind's header placed in the widget. Text role: the largest display role whose medium date fits a 155-pt small widget between two 16-pt margins — 'Sep 30, 2024' measures 4.57 em in Roboto Serif Title (PIL getlength), so displaySmall 25.8 pt → 118 pt ≤ 123 pt fits and headerTitle 43 pt → 197 pt does not. Inset: size.global.screenMargin, which is also the HIG widget margin (16 pt).",
+      "level": "SOURCED",
+      "precision": "±1 pt (font metrics)"
+    },
+    "widget.styles.layout.frame": {
+      "type": "layout",
+      "value": {
+        "backdrop": "C-34 blurred backdrop: the same photo aspect-filling the whole widget, Gaussian σ size.global.backdropBlur, under color.global.backdropDim",
+        "fit": 0.784,
+        "fitRule": "the print is the largest that fits inside fit × the widget's width by fit × its height, centred",
+        "aspect": 1.18,
+        "sideBorder": 0.066,
+        "topBorder": 0.097,
+        "bottomBorder": 0.214,
+        "window": "square, 1 − 2 × sideBorder (0.868) of the print's width; the photo aspect-fills it",
+        "fill": "widget.styles.color.frame",
+        "corners": "square",
+        "text": "none (Retro's print carries no text)",
+        "states": "as widget.home.small"
+      },
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "element": "the Frame style: the photo as an instant print on its blurred backdrop",
+      "evidence": "references/auto/retro/store/retro-store-04.png (1284 × 2778): print x275–1009, y1122–1990; window x324–962, y1194–1833; media page x171–1110. references/auto/retro/play/retro-play-04.png (1563 × 2778): print x402–1159, y1144–2035; window x454–1110, y1217–1873; media page x298–1264",
+      "method": "edge runs of the off-white border (mean channel > 170, chroma < 30) on rows y1300 / 1529 / 1750 and columns x450 / 640 / 850 (ST-04) and rows y1500 / 1750, columns x550 / 780 (PLAY-04); ratios of the print width (735 / 757 px): side 48 / 50.5 px → 0.065 / 0.067, top 72 / 73 → 0.098 / 0.096, bottom 157 / 162 → 0.214 / 0.214, window 638 / 656 → 0.868 / 0.867, height 868 / 891 → 1.181 / 1.177; fit = print width ÷ media page width 735 / 939 = 0.783, 757 / 966 = 0.784",
+      "level": "SOURCED",
+      "precision": "±0.003 of the print width (±2 px)",
+      "notes": "The backdrop is the recap preview's (size.global.backdropBlur, color.global.backdropDim fitted on ST-04, MERGE L-5). Retro's paper texture is its own art and is not copied: the print is the flat median colour."
+    },
+    "widget.styles.color.frame": {
+      "type": "color",
+      "value": "#D5D6CD",
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "element": "the instant print's paper (Frame style)",
+      "evidence": "references/auto/retro/store/retro-store-04.png print x275–1009 y1122–1990 minus the window x324–962 y1194–1833; references/auto/retro/play/retro-play-04.png print x402–1159 y1144–2035 minus the window x454–1110 y1217–1873",
+      "method": "per-channel median of every border pixel, 4 px in from each edge: ST-04 206 398 px → (213, 214, 205); PLAY-04 220 471 px → (213, 214, 205)",
+      "level": "SOURCED",
+      "precision": "±3/255 (texture)",
+      "notes": "Same in both appearances (the widget is a media surface)."
+    },
+    "widget.friend.layout.content": {
+      "type": "layout",
+      "value": {
+        "item": "the newest photo of the chosen person the viewer may see: posted by them, or one they tagged themselves in ('I'm in this'); never by face (newest_photos_of)",
+        "anatomy": "widget.home.small (photo, scrim, name stack: the poster's first name over the group), every size",
+        "tap": "camera.capture with the photo's group preselected (camera.fromwidget); no photo yet: camera.capture",
+        "refresh": "the photo's widget push when the person posts (sender_id), the app's own sync for self-tags and on each return to the foreground (docs/WIDGET_REFRESH.md)",
+        "picker": "widget_people: everyone who shares a group with the viewer, minus blocks"
+      },
+      "source_app": "Locket",
+      "surface": "widget.friend",
+      "element": "what the friend widget shows and where a tap goes",
+      "evidence": "https://apps.apple.com/us/app/id1600525061 (Locket: “'Crush' or 'Best Friend' picture widget… photos only from that person”); references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg ('Best Friend' / 'Pick one friend'); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_title_friends`, `app_widget_config_screen_title_friend_picker`; references/auto/retro/apk/widget_preview_friends.webp (Retro's friend widget: the same anatomy)",
+      "method": "Locket's one-person widget as the mechanic, drawn as Retro's Friend Updates widget (same Glance layout as its Albums widget)",
+      "level": "SOURCED"
+    },
+    "widget.memories.layout.content": {
+      "type": "layout",
+      "value": {
+        "item": "per day, the newest photo the person posted or tagged themselves in that was taken on today's month and day in an earlier year (my_memories, device time zone); a day without one shows the empty state, never another photo",
+        "anatomy": "widget.home.small (photo, scrim, name stack: the poster's first name over the group), every size",
+        "days": "the app stores today and the next 6 days, so the widget turns over at midnight without the app; a day beyond them shows the loading state until the app runs",
+        "tap": "the memory in the photo viewer (app://post?group=<id>&post=<id>); empty: the app"
+      },
+      "source_app": "Retro",
+      "surface": "widget.memories",
+      "element": "what the memories widget shows and where a tap goes",
+      "evidence": "https://apps.apple.com/us/app/id6443709020 (Retro: “See the newest posts from friends or time hop back to your own memories with our new widgets”); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_title_memories` ('Your Memories'), `widget_description_memories` ('See memories from your profile'); references/auto/retro/apk/widget_preview_memories.webp ('livs / Seoul': name over place); design/surfaces/onthisday.md (this product's memories: same month and day in earlier years)",
+      "method": "Retro's Your Memories widget filled with this product's On This Day rule, limited to the person's own photos",
+      "level": "SOURCED",
+      "notes": "Seven days ahead is an engineering bound (one week of renditions, ~2 MB), not a design value."
+    },
+    "widget.home.small.layout.allGroups": {
+      "type": "layout",
+      "value": {
+        "option": "first row of the group picker, before the groups (widget.home.small.configuration.allGroups)",
+        "item": "the newest photo or collage across every group the person is in (the newest of the per-group items)",
+        "tap": "as the item's group (camera, or the day's collage)"
+      },
+      "source_app": "Retro",
+      "surface": "widget.home.small",
+      "element": "the All Groups choice of the group widget",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_config_screen_friend_picker_item_all_friends` ('All Friends', the first row of Retro's 'See photos from…' picker); design/surfaces/widget.countdown.md (this app's own 'All Groups' choice)",
+      "method": "Retro's 'All Friends' row with friends → groups",
+      "level": "SOURCED"
+    },
+    "camera.quickaccess.layout.entries": {
+      "type": "layout",
+      "value": {
+        "iosControl": "ControlWidgetButton (iOS 18+) running OpenCameraIntent, which opens the app to camera.capture; Control Center, Lock Screen and the Action button; symbol icon.global.camera; title camera.quickaccess.control.title. From the Lock Screen the system asks to unlock first: no LockedCameraCapture extension (opening the app is the action)",
+        "iosShortcuts": "AppShortcutsProvider: OpenCameraIntent without a group and with a group parameter (Siri, Spotlight, the Shortcuts app)",
+        "androidTile": "TileService, always STATE_INACTIVE (a button, no on / off), icon drawable ic_tile_camera (Material photo_camera outlined, solid white vector), label camera.quickaccess.tile.label, subtitle camera.quickaccess.tile.subtitle; a tap collapses the panel and opens camera.capture; on a secure lock screen unlockAndRun first",
+        "androidShortcuts": "one static shortcut (camera) and up to 3 dynamic shortcuts for the groups most recently sent to, newest first (4 in all)",
+        "link": "app://camera (camera.fromwidget.layout.target), app://camera?group=<id> for a group"
+      },
+      "source_app": "Apple HIG",
+      "surface": "camera.quickaccess",
+      "element": "the system entry points that open the camera",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/controls (“Control buttons perform an action, link to a specific area of your app, or launch a camera experience on a locked device”); https://developer.apple.com/documentation/appintents/app-shortcuts; https://developer.android.com/develop/ui/views/quicksettings-tiles (“The icon must be a solid white with a transparent background, measure 24 x 24dp, and be in the form of a VectorDrawable”; “up to 18 characters for android:label”; “If the tile action is unsafe, use unlockAndRun()”); https://developer.android.com/develop/ui/views/launch/shortcuts/best-practices (“we recommend that you publish only four distinct shortcuts”; short label 10, long label 25 characters); https://9to5mac.com/2024/10/24/snapchat-camera-will-be-available-from-the-iphone-lock-screen-but-no-filters/ (Snapchat's Lock Screen camera control)",
+      "method": "platform components as documented; Snapchat's Lock Screen control as the mechanic (one control that opens the camera)",
+      "level": "PLATFORM"
     }
   }
 }

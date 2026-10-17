@@ -98,6 +98,26 @@ scan(walk(path.join(ROOT, "web/src"), [".ts", ".tsx", ".css"]), TS_UI_RULES);
 scan(walk(path.join(ROOT, "backend"), [".ts", ".sql"]), [], { ui: false });
 scan(walk(path.join(ROOT, "docs"), [".md"]).filter((f) => !f.endsWith("CONVENTIONS.md")), [], { ui: false });
 
+// App Intents literals (App Shortcut phrases) carry the copy key they repeat: `// provenance-ok: phrase of <key>`. The literal
+// must be that key's text ({app_name} → \(.applicationName), {name} → \(\.$name)), so a phrase never drifts from the
+// sourced copy (design/surfaces/camera.quickaccess.md).
+{
+  const copyTexts = {};
+  for (const f of fs.readdirSync(path.join(ROOT, "design/copy")).filter((n) => n.endsWith(".json"))) {
+    for (const [k, v] of Object.entries(JSON.parse(fs.readFileSync(path.join(ROOT, "design/copy", f), "utf8")).strings ?? {})) copyTexts[k] = v.text;
+  }
+  for (const f of walk(path.join(ROOT, "ios"), [".swift"])) {
+    fs.readFileSync(f, "utf8").split("\n").forEach((line, i) => {
+      const m = line.match(/provenance-ok: phrase of ([a-zA-Z0-9.]+)/);
+      if (!m) return;
+      const text = copyTexts[m[1]];
+      const literal = line.match(/"((?:[^"\\]|\\.)*)"/)?.[1];
+      const expected = text?.replace(/\{app_name\}/g, "\\(.applicationName)").replace(/\{([a-z_]+)\}/g, (_, p) => `\\(\\.$${p})`);
+      if (!text || literal !== expected) violations.push(`${path.relative(ROOT, f)}:${i + 1}: literal differs from copy ${m[1]} ("${expected ?? "missing key"}")\n      ${line.trim()}`);
+    });
+  }
+}
+
 if (violations.length) {
   console.error(violations.join("\n"));
   console.error(`\nprovenance-check: ${violations.length} violation(s)`);

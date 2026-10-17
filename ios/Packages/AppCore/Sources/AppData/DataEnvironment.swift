@@ -126,7 +126,8 @@ public final class DataEnvironment: Sendable {
         if let widgetStore {
             widgetContent = WidgetContentSync(
                 posts: posts, memories: memories, profiles: profiles, signedURLs: signedURLs, store: widgetStore,
-                download: widgetDownload ?? { try await DataEnvironment.widgetDownloader.data(from: $0) }
+                download: widgetDownload ?? { try await DataEnvironment.widgetDownloader.data(from: $0) },
+                widgets: WidgetRepository(client: client)
             )
         }
         let coordinator = SessionCoordinator(

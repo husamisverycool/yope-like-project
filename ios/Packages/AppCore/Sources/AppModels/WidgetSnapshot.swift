@@ -79,8 +79,12 @@ public enum WidgetKind {
     public static let groupPhoto = "GroupPhotoWidget"
     /// Kind of the per-group Lock Screen widget (its own gallery entry, `widget.lock.*`).
     public static let groupPhotoLock = "GroupPhotoLockWidget"
+    /// The friend widget (`widget.friend`): one person's newest photo.
+    public static let friendPhoto = "FriendPhotoWidget"
+    /// The memories widget (`widget.memories`): the person's own photo from this day in an earlier year.
+    public static let memories = "MemoriesWidget"
     /// Every kind that shows group photos; reload all of them when a photo arrives or is deleted.
-    public static let allGroupPhoto = [groupPhoto, groupPhotoLock]
+    public static let allGroupPhoto = [groupPhoto, groupPhotoLock, friendPhoto, memories]
 }
 
 public enum AppGroup {

@@ -21,10 +21,16 @@ public struct WidgetContentSync: Sendable {
     let signedURLs: SignedURLCache
     let store: WidgetStore
     let download: Download
+    /// The friend and memories widgets' functions (nil: those widgets are not filled, e.g. in tests of the group path).
+    let widgets: WidgetRepository?
+
+    /// Days of memories stored ahead (today included): the widget turns over at midnight without the app for a week
+    /// (`widget.memories.layout.content`; an engineering bound, one rendition a day).
+    public static let memoryDays = 7
 
     public init(
         posts: PostRepository, memories: MemoriesRepository, profiles: ProfileRepository, signedURLs: SignedURLCache,
-        store: WidgetStore, download: @escaping Download
+        store: WidgetStore, download: @escaping Download, widgets: WidgetRepository? = nil
     ) {
         self.posts = posts
         self.memories = memories
@@ -32,6 +38,7 @@ public struct WidgetContentSync: Sendable {
         self.signedURLs = signedURLs
         self.store = store
         self.download = download
+        self.widgets = widgets
     }
 
     /// Brings `group`'s photo and collage snapshots up to date. Returns whether a snapshot changed. Failures (offline,
@@ -74,6 +81,82 @@ public struct WidgetContentSync: Sendable {
             groupName: group.name, postedAt: collage.composedAt ?? collage.createdAt
         )
         return (try? await WidgetDelivery(store: store, download: download).deliver(payload, receivedAt: now)) != nil
+    }
+
+    // MARK: Friend and memories widgets (design/surfaces/widget.friend.md, widget.memories.md)
+
+    /// The friend widget's picker (`widget_people`): everyone who shares a group with the person, minus blocks; someone
+    /// no longer listed leaves the friend widgets. Returns whether the list changed.
+    public func syncPeople() async -> Bool {
+        guard let widgets, let rows = try? await widgets.people() else { return false }
+        let people = rows.map { WidgetPerson(id: $0.userID.rawValue, name: $0.displayName) }
+        guard !store.hasPeopleList || store.people() != people else { return false }
+        return (try? store.syncPeople(people)) != nil
+    }
+
+    /// Each friend a placed widget follows gets their newest photo the person may see (`newest_photos_of`): their own
+    /// posts and the photos they tagged themselves in. Self-tags send no push, so this is how they reach the widget.
+    /// Offline or failed look-ups leave the store as it was. Returns whether a friend widget changed.
+    public func syncFriends(now: Date = Date()) async -> Bool {
+        guard let widgets else { return false }
+        var changed = false
+        for personID in store.watchedPeople(now: now).sorted() {
+            guard let photos = try? await widgets.newestPhotos(of: UserID(personID)) else { continue }
+            guard let photo = photos.first(where: { $0.widgetPath != nil }), let widgetPath = photo.widgetPath else {
+                // Nothing the person may see (yet, or any more: deleted, a block, no shared group): the empty state.
+                if photos.isEmpty, store.personSnapshot(personID: personID) != nil || !store.isPersonLookedUp(personID: personID) {
+                    changed = ((try? store.removePersonSnapshot(personID: personID)) != nil) || changed
+                }
+                continue
+            }
+            if store.personSnapshot(personID: personID)?.sourceID == photo.postID.rawValue { continue }
+            guard let renditionURL = try? await signedURLs.url(for: widgetPath),
+                  let bytes = try? await download(renditionURL) else { continue }
+            var avatar: Data?
+            var avatarName: String?
+            if let path = photo.authorAvatarPath, let url = try? await signedURLs.url(for: path), let data = try? await download(url) {
+                avatar = data
+                avatarName = "avatar-\(photo.postID.rawValue).\(WidgetPushPayload.imageExtension(url))"
+            }
+            let snapshot = WidgetSnapshot(
+                groupID: photo.groupID.rawValue, groupName: photo.groupName, sourceID: photo.postID.rawValue,
+                photoFileName: "photo-\(photo.postID.rawValue).\(WidgetPushPayload.imageExtension(renditionURL))",
+                senderID: photo.authorID.rawValue, senderDisplayName: photo.authorName.isEmpty ? nil : photo.authorName,
+                senderAvatarFileName: avatarName, caption: photo.caption, kind: .photo, postedAt: photo.visibleAt
+            )
+            if (try? store.savePerson(snapshot, personID: personID, photo: bytes, avatar: avatar)) != nil { changed = true }
+        }
+        return changed
+    }
+
+    /// The person's own memories for today and the next days (`my_memories`, the device's zone), when a memories widget
+    /// is placed. Days without a memory are recorded as such (the widget's empty state); a memory whose rendition is
+    /// not made shows as none rather than as another photo. A failed download keeps the stored days. Returns whether the
+    /// store changed.
+    public func syncMemories(now: Date = Date(), calendar: Calendar = .current) async -> Bool {
+        guard let widgets, store.watchesMemories(now: now) else { return false }
+        let today = LocalDate(now, in: calendar.timeZone)
+        guard let rows = try? await widgets.memories(from: today, days: Self.memoryDays, timeZone: calendar.timeZone) else { return false }
+        var memories: [String: WidgetSnapshot] = [:]
+        var photos: [String: Data] = [:]
+        for row in rows {
+            guard let widgetPath = row.widgetPath else { continue }
+            let day = row.day.description
+            let snapshot = WidgetSnapshot(
+                groupID: row.groupID.rawValue, groupName: row.groupName, sourceID: row.postID.rawValue,
+                photoFileName: "memory-\(row.postID.rawValue).jpg", senderID: row.authorID.rawValue,
+                senderDisplayName: row.authorName.isEmpty ? nil : row.authorName, kind: .photo, postedAt: row.takenAt
+            )
+            if store.hasMemory(day: day, sourceID: row.postID.rawValue) || photos[snapshot.photoFileName] != nil {
+                memories[day] = snapshot
+                continue
+            }
+            guard let url = try? await signedURLs.url(for: widgetPath), let bytes = try? await download(url) else { return false }
+            memories[day] = snapshot
+            photos[snapshot.photoFileName] = bytes
+        }
+        let through = today.adding(days: Self.memoryDays - 1)
+        return (try? store.replaceMemories(days: today.description...through.description, memories: memories, photos: photos)) != nil
     }
 
     /// The store already shows `sourceID` as the group's `kind` snapshot, with its rendition on disk.

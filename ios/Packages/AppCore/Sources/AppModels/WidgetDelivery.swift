@@ -125,14 +125,15 @@ public struct WidgetPushPayload: Hashable, Sendable {
         return url
     }
 
-    static func imageExtension(_ url: URL) -> String {
+    public static func imageExtension(_ url: URL) -> String {
         let ext = url.pathExtension.lowercased()
         return ["jpg", "jpeg", "png", "heic", "webp"].contains(ext) ? ext : "jpg"
     }
 }
 
 /// Downloads a widget rendition (and the sender's avatar, best effort) into `WidgetStore` and
-/// records the snapshot. The caller reloads widget timelines afterwards.
+/// records the snapshot — also as the poster's newest photo when a friend widget follows them. The caller reloads
+/// widget timelines afterwards.
 public struct WidgetDelivery: Sendable {
     public typealias Download = @Sendable (URL) async throws -> Data
 
@@ -177,6 +178,8 @@ public struct WidgetDelivery: Sendable {
             postedAt: payload.postedAt ?? receivedAt
         )
         try store.save(snapshot)
+        // A friend widget following the poster takes the photo too (design/surfaces/widget.friend.md).
+        _ = try? store.copyToWatchedPerson(snapshot, now: receivedAt)
         return snapshot
     }
 }

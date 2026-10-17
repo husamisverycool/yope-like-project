@@ -776,13 +776,14 @@
       "notes": "Retro's upsell title without 'New!' (inside onboarding nothing is new to the person)."
     },
     "onboarding.widget.detail": {
-      "text": "Never miss a moment from your groups — right on your home screen.",
-      "origin": "new",
+      "text": "Never miss a moment from a friend or a group, and relive your memories — all right on your home screen.",
+      "origin": "adapted",
       "source_app": "Retro",
       "surface": "onboarding.widget",
       "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `home_widget_nux_upsell_message` ('Never miss a moment from a friend, relive memories from your profile or an album — all directly from your home screen')",
       "pattern": "retro.voice.widget",
-      "level": "SOURCED"
+      "level": "SOURCED",
+      "notes": "Retro's message names its three widgets (friend, memories, album); ours names the same three (Friend Updates, Your Memories, Group Updates): album → group, 'from your profile' dropped (our memories are your photos from this day), 'directly' → 'right' as before."
     },
     "onboarding.widget.step.ios.1": {
       "text": "From your Home Screen, touch and hold a widget or empty area until the apps jiggle.",

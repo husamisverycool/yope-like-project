@@ -4,8 +4,9 @@
 // Reference images: references/auto/retro/apk/widget_preview_journals.webp, references/auto/locket/store/locket-store-03.png,
 // locket-store-06.png, references/auto/locket/frames/locket-tt-7168613044728155438-15.133s-widget-placeholder-just-added.jpg →
 // 15.167s-widget-photo-arrived.jpg, references/auto/platform/hig-widgets-ios-dimensions.png (design/surfaces/widget.*.md).
-// Two widget kinds: the Home Screen photo widget (small, medium, large; extra large on iPad) and the Lock Screen widget
-// (circular, rectangular, inline). Both read only the App Group `WidgetStore`; a tap opens the camera for the widget's group.
+// Two widget kinds: the Home Screen photo widget (small, medium, large; extra large on iPad; one group or All Groups; a
+// style, widget.styles) and the Lock Screen widget (circular, rectangular, inline). Both read only the App Group
+// `WidgetStore`; a tap opens the camera for the widget's group (the day's collage while it shows one).
 import AppIntents
 import AppModels
 import DesignSystem
@@ -50,13 +51,40 @@ struct GroupPhotoProvider: AppIntentTimelineProvider {
     }
 }
 
+/// The Home Screen kind's timeline: the configured group, or All Groups, drawn in the configured style
+/// (`StyledEntryResolver.group`); the same random 15–60-minute safety refresh as `GroupPhotoProvider`.
+struct GroupHomeProvider: AppIntentTimelineProvider {
+    func placeholder(in context: Context) -> StyledPhotoEntry {
+        .loading(at: Date())
+    }
+
+    func snapshot(for configuration: SelectGroupIntent, in context: Context) async -> StyledPhotoEntry {
+        let entry = entry(for: configuration, at: Date())
+        if context.isPreview && !entry.showsItem { return .loading(at: Date()) }
+        return entry
+    }
+
+    func timeline(for configuration: SelectGroupIntent, in context: Context) async -> Timeline<StyledPhotoEntry> {
+        let now = Date()
+        let refresh = now.addingTimeInterval(TimeInterval.random(in: GroupPhotoProvider.safetyRefreshSeconds))
+        return Timeline(entries: [entry(for: configuration, at: now)], policy: .after(refresh))
+    }
+
+    private func entry(for configuration: SelectGroupIntent, at date: Date) -> StyledPhotoEntry {
+        StyledEntryResolver.group(
+            configuredGroupID: configuration.group?.id, allGroups: configuration.group?.isAllGroups ?? false,
+            style: configuration.style?.style, store: WidgetStore.forBundle(.main), at: date
+        )
+    }
+}
+
 /// Home Screen: the photo fills the widget as the removable container background (content margins disabled); one
-/// layout at every size (RC-11). Gallery: "Group Updates" / `widget.home.small.gallery.description` (Retro names its
-/// widgets by content, `retro.voice.widget`).
+/// layout at every size (RC-11), in the configured style (widget.styles). Gallery: "Group Updates" /
+/// `widget.home.small.gallery.description` (Retro names its widgets by content, `retro.voice.widget`).
 struct GroupPhotoWidget: Widget {
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: GroupWidgetKinds.home, intent: SelectGroupIntent.self, provider: GroupPhotoProvider()) { entry in
-            GroupPhotoWidgetView(entry: entry)
+        AppIntentConfiguration(kind: GroupWidgetKinds.home, intent: SelectGroupIntent.self, provider: GroupHomeProvider()) { entry in
+            StyledPhotoWidgetView(entry: entry)
         }
         .configurationDisplayName(Text(Copy.widgetHomeSmallGalleryName))
         .description(Text(Copy.widgetHomeSmallGalleryDescription))
@@ -78,14 +106,16 @@ struct GroupLockWidget: Widget {
     }
 }
 
-struct GroupPhotoWidgetView: View {
-    let entry: GroupPhotoEntry
+/// Every home-screen photo widget (Group Updates, Friend Updates, Your Memories): the styled overlay over the styled,
+/// removable container background; the whole widget is the tap.
+struct StyledPhotoWidgetView: View {
+    let entry: StyledPhotoEntry
 
     var body: some View {
-        let content = entry.content
-        WidgetOverlay(content: content)
+        let presentation = entry.presentation
+        StyledWidgetOverlay(presentation: presentation)
             .containerBackground(for: .widget) {
-                WidgetContainerBackground(content: content)
+                StyledWidgetBackground(presentation: presentation)
             }
             .widgetURL(entry.tapURL)
     }

@@ -66,13 +66,17 @@ playing, menu, share) · 26 sign-up landing · 27 paywall · 28 settings sheet �
 | `camera.sendto` | Choose one or more groups; optional caption and voice note; send (no mandatory edit) | 30 (composer sheet "Add to Your Week": Cancel / title / Update, strip, grid), 17 (postcard composer: "Add a message" pill, 60 pt capsule), 8 (avatar grid) | Locket, Yope (send-to flow) |
 | `camera.trim` | A library video longer than the camera's limit is trimmed before send-to (short videos; the server enforces the same limit) | no analog in Retro's visuals (its Android "Trim Video" editor was not captured) — iOS: the system trimmer (UIVideoEditorController); Android: media surface with C-29 header, Material 3 range slider | Retro (editor wording, "Video too long"), Apple (system trimmer) |
 | `camera.fromwidget` | Widget tap opens straight into the camera | no analog — as `camera.capture` | Locket |
+| `camera.quickaccess` | Control Center / Lock Screen / Action button control, App Shortcuts, Android Quick Settings tile and launcher shortcuts that open the camera | no analog — system components | Snapchat (Lock Screen control); Apple HIG / Material 3 (PLATFORM) |
 | `camera.overnight` | Camera mode "9 AM · Now": photos develop for the chosen groups at 9 AM in the group's time zone; nobody sees them before; one developing tile per group | 19 (native segmented control on black, TC-REC) on the `camera.capture` media surface; C-09 pill, C-17 placeholder tile, C-29 sheet | Dispo (switch, 9 AM reveal, shoot to rolls), Lapse (no preview, one alert, sequential review) |
 
 ## Photos coming to you
 
 | id | surface | visual reference (Retro) | mechanics reference |
 |---|---|---|---|
-| `widget.home.small` / `.medium` / `.large` / `.xl` | Home-screen widgets per group: newest photo; after a daily invitation, the collage | 34 (Retro widgets: full-bleed photo, 22 dp corners, white name + place stack bottom-right) | Locket (widget behaviour) |
+| `widget.home.small` / `.medium` / `.large` / `.xl` | Home-screen widgets per group (or All Groups): newest photo; after a daily invitation, the collage | 34 (Retro widgets: full-bleed photo, 22 dp corners, white name + place stack bottom-right) | Locket (widget behaviour) |
+| `widget.friend` | Friend Updates: one person's newest photo (posted by them or tagged "I'm in this"), every home-screen size | 34 (Retro's Friend Updates widget) | Locket (one-friend widget) |
+| `widget.memories` | Your Memories: your own photo from this day in an earlier year, every home-screen size | 34 (Retro's Your Memories widget) | Retro ("time hop back to your own memories"), `onthisday` |
+| `widget.styles` | Widget styles: Photo (free), Date and Frame (premium) on every home-screen photo widget | 22–23 (Rewind date), 20 (recap preview: instant print on the blurred backdrop) | Locket Gold (widget frames) |
 | `widget.lock.rect` / `.circular` / `.inline` | Lock-screen widgets | no analog — PLATFORM (WidgetKit accessory families) | Locket, Apple HIG |
 | `widget.arrival` | How a new photo arrives on the widget | 34 | Locket |
 | `widget.android` | Glance widgets (all sizes) | 34 (Retro's Glance widgets: 2×2, 22 dp, states "No media. Tap to reload") | Locket (Android) + Material 3 |

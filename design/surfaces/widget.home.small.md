@@ -39,8 +39,8 @@ a daily invitation, the collage), tap opens the camera (`camera.fromwidget`). Si
 | photo / collage | `widget.home.small.layout.photo`, `layout.global.photoScrim` | a11y `widget.home.small.a11y.photo` / `.a11y.collage` | newest item of the configured group (`media.widget_path` / `collages.widget_path`); muted groups still update |
 | text stack | `widget.home.small.layout.overlay`, `.fontSize.overlay`, `.fontWeight.overlay`, `color.global.textOnMedia` | data: first name (first word of `display_name`), group name | — |
 | tap | `camera.fromwidget.layout.target` | — | opens `camera.capture` with the group preselected; on the collage, opens that collage (`collage.view`) |
-| configuration | AppIntentConfiguration | `widget.home.small.configuration.title`, `.configuration.group`, `.configuration.groupType` | one group parameter (default: the first group) |
-| gallery | — | `widget.home.small.gallery.name`, `.gallery.description` | one widget kind, families small / medium / large (+ extra large on iPad), one description (HIG) |
+| configuration | AppIntentConfiguration | `widget.home.small.configuration.title`, `.configuration.group`, `.configuration.groupType`, `.configuration.allGroups`; `widget.styles.configuration.style` | a group parameter (default: the first group) whose first choice is **All Groups** (`widget.home.small.layout.allGroups`: Retro's "All Friends" row — the newest photo or collage across the person's groups, the tap following that item's group), and the style (`widget.styles`) |
+| gallery | — | `widget.home.small.gallery.name`, `.gallery.description` | one widget kind, families small / medium / large (+ extra large on iPad), one description (HIG); beside it, as Retro's three widgets, Friend Updates (`widget.friend`) and Your Memories (`widget.memories`) |
 
 ## States
 

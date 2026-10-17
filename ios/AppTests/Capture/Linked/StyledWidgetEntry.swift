@@ -1,0 +1,1 @@
+../../../Widgets/Sources/StyledWidgetEntry.swift

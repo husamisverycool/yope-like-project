@@ -1608,6 +1608,316 @@
       "pattern": "retro.voice.settings",
       "level": "SOURCED",
       "notes": "{time}: as camera.overnight.mode.later (the spec's '9 AM')."
+    },
+    "widget.home.small.configuration.allGroups": {
+      "text": "All Groups",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "widget.home.small",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_config_screen_friend_picker_item_all_friends` ('All Friends')",
+      "pattern": "retro.voice.widget — picker row, Title Case",
+      "level": "SOURCED",
+      "notes": "Noun swap friends → groups (the same words as widget.countdown.configuration.allGroups)."
+    },
+    "widget.styles.configuration.style": {
+      "text": "Style",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_select_style_title` ('Select Style')",
+      "pattern": "retro.voice.title-case — parameter name",
+      "level": "SOURCED",
+      "notes": "The verb dropped: a configuration parameter names the choice (as widget.home.small.configuration.group 'Group')."
+    },
+    "widget.styles.configuration.title": {
+      "text": "Select Style",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_select_style_title`",
+      "pattern": "retro.voice.widget",
+      "level": "SOURCED",
+      "notes": "Android configure activity: the step after the group or friend (Retro's widget configuration asks one thing per page)."
+    },
+    "widget.styles.name.photo": {
+      "text": "Photo",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_aspect_ratio_postcard` / `recap_aspect_ratio_square` / `recap_aspect_ratio_stories` (Retro names its recap options with one Title-Case noun)",
+      "pattern": "retro.voice.title-case — option name, one noun",
+      "level": "SOURCED",
+      "notes": "The free style: the photo edge to edge."
+    },
+    "widget.styles.name.date": {
+      "text": "Date",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_aspect_ratio_*` (one Title-Case noun per option)",
+      "pattern": "retro.voice.title-case — option name, one noun",
+      "level": "SOURCED"
+    },
+    "widget.styles.name.frame": {
+      "text": "Frame",
+      "origin": "new",
+      "source_app": "Locket",
+      "surface": "widget.styles",
+      "evidence": "https://mobbin.com/explore/flows/775b5243-e2f1-42fa-a2af-cbee353c1dcd (references/auto/locket/mobbin/locket-mobbin-gold-flow-2.png: Locket Gold perk “Widget frames — Personalize your widgets”); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `recap_aspect_ratio_*` (one Title-Case noun per option)",
+      "pattern": "retro.voice.title-case — option name, one noun",
+      "level": "SOURCED",
+      "notes": "Locket's own word for a premium widget decoration, singular."
+    },
+    "widget.styles.description.photo": {
+      "text": "Show the photo edge to edge",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_config_media_type_subtitle_memories` ('Show a selection of all photos')",
+      "pattern": "retro.voice.widget — option subtitle: a verb-first Sentence-case line, no period",
+      "level": "SOURCED"
+    },
+    "widget.styles.description.date": {
+      "text": "Show the photo with its date",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_config_media_type_subtitle_memories` ('Show a selection of all photos')",
+      "pattern": "retro.voice.widget — option subtitle: a verb-first Sentence-case line, no period",
+      "level": "SOURCED"
+    },
+    "widget.styles.description.frame": {
+      "text": "Show the photo as a print",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.styles",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_config_media_type_subtitle_memories` ('Show a selection of all photos'); references/auto/retro/store/retro-store-04.png (the instant print)",
+      "pattern": "retro.voice.widget — option subtitle: a verb-first Sentence-case line, no period",
+      "level": "SOURCED"
+    },
+    "widget.friend.gallery.name": {
+      "text": "Friend Updates",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "widget.friend",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_title_friends`",
+      "pattern": "retro.voice.widget — gallery name, Title Case",
+      "level": "SOURCED",
+      "notes": "Owner decision 10: 'friends' where a sentence means the person's friends in general — the picker lists people from all their groups."
+    },
+    "widget.friend.gallery.description": {
+      "text": "See live updates from a friend",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "widget.friend",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_description_friends` ('See live updates from your friends'); references/auto/locket/frames/locket-tt-7532209311150329102-14.500s-gallery-best-friend-widget.jpg ('Pick one friend')",
+      "pattern": "retro.voice.widget + platform.widgetDescription",
+      "level": "SOURCED",
+      "notes": "Plural → one friend: the widget follows one person (Locket's one-friend widget)."
+    },
+    "widget.friend.configuration.title": {
+      "text": "See photos from…",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "widget.friend",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_config_screen_title_friend_picker`",
+      "pattern": "retro.voice.widget",
+      "level": "SOURCED"
+    },
+    "widget.friend.configuration.friend": {
+      "text": "Friend",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.friend",
+      "evidence": "design/copy-patterns.md `retro.voice.title-case`; references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_title_friends`",
+      "pattern": "retro.voice.title-case — parameter name",
+      "level": "SOURCED"
+    },
+    "widget.friend.empty.noPhotos": {
+      "text": "No photos yet",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "widget.friend",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_empty_message` ('No media. Tap to reload')",
+      "pattern": "retro.voice.widget — a short line",
+      "level": "SOURCED",
+      "notes": "Noun swap media → photos, 'yet' from widget.home.small.empty.noPhotos; no action: the photos are the friend's to post or tag."
+    },
+    "widget.friend.empty.setUp": {
+      "text": "Tap to choose a friend",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.friend",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `app_widget_empty_message` ('… Tap to reload'); `app_widget_config_screen_title_friend_picker`",
+      "pattern": "retro.voice.widget — the action as a short line",
+      "level": "SOURCED",
+      "notes": "As widget.home.small.empty.setUp (group → friend): no friend chosen, or they no longer share a group."
+    },
+    "widget.friend.configure.empty": {
+      "text": "Join a group to see your friends here.",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "widget.friend",
+      "evidence": "design/copy-patterns.md `retro.voice.empty-state` ('Your chats will show up here.' — `message_inbox_empty_state_message`); widget.android.configure.empty",
+      "pattern": "retro.voice.empty-state — one sentence with a period",
+      "level": "SOURCED",
+      "notes": "Android picker with nobody to choose."
+    },
+    "widget.memories.gallery.name": {
+      "text": "Your Memories",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "widget.memories",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `widget_title_memories`",
+      "pattern": "retro.voice.widget — gallery name, Title Case",
+      "level": "SOURCED"
+    },
+    "widget.memories.gallery.description": {
+      "text": "Revisit your memories from this day over the years",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "widget.memories",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `home_rewind_upsell_feed_card_title` ('Revisit memories from Week %1$s over the years'); onthisday.entry.subtitle",
+      "pattern": "retro.voice.widget + platform.widgetDescription (begins with a verb)",
+      "level": "SOURCED",
+      "notes": "'Week %1$s' → 'this day' (this product's memories match the date); 'your' as Retro's 'See memories from your profile'."
+    },
+    "widget.memories.empty.none": {
+      "text": "No photos found for this day",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "widget.memories",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `rewind_home_empty_state_message` ('No media found on your camera roll'); onthisday.empty.title",
+      "pattern": "retro.voice.empty-state",
+      "level": "SOURCED",
+      "notes": "The same words as onthisday.empty.title: the day has no memory of the person's (never another photo in its place)."
+    },
+    "widget.memories.a11y.photo": {
+      "text": "Your memory from {date} in {group}",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "widget.memories",
+      "evidence": "design/copy-patterns.md `platform.a11yLabel` (images of people: the person and context)",
+      "pattern": "platform.a11yLabel — what and where, Sentence case",
+      "level": "SOURCED",
+      "notes": "{date}: the photo's day in layout.onthisday.dateFormat ('Jul 22, 2022')."
+    },
+    "camera.quickaccess.control.title": {
+      "text": "Camera",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "camera.quickaccess",
+      "evidence": "https://developer.apple.com/design/human-interface-guidelines/controls (“The title describes what the control relates to”); groups.list.tab.camera.accessibilityLabel ('Camera', the app's camera tab)",
+      "pattern": "platform.systemEntry",
+      "level": "PLATFORM",
+      "notes": "Also the control's name in the controls gallery, under the app's name."
+    },
+    "camera.quickaccess.control.description": {
+      "text": "Take a photo for your groups",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "camera.quickaccess",
+      "evidence": "design/copy-patterns.md `platform.widgetDescription` (begins with an action verb); references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo` ('Take photo')",
+      "pattern": "platform.widgetDescription",
+      "level": "PLATFORM"
+    },
+    "camera.quickaccess.control.actionHint": {
+      "text": "Take photo",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.quickaccess",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo`; https://developer.apple.com/design/human-interface-guidelines/controls (“Provide hint text for the Action button… Use verbs to construct the hint text”)",
+      "pattern": "platform.systemEntry + retro.voice.button",
+      "level": "SOURCED"
+    },
+    "camera.quickaccess.intent.title": {
+      "text": "Take Photo",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.quickaccess",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `edit_profile_picture_choice_take_a_photo` ('Take Photo')",
+      "pattern": "platform.appShortcut (short title) + retro.voice.title-case",
+      "level": "SOURCED",
+      "notes": "The App Intent's title and the App Shortcut's short title (Shortcuts app, Spotlight)."
+    },
+    "camera.quickaccess.intent.group": {
+      "text": "Group",
+      "origin": "new",
+      "source_app": "Retro",
+      "surface": "camera.quickaccess",
+      "evidence": "design/copy-patterns.md `retro.voice.title-case`; widget.home.small.configuration.group",
+      "pattern": "retro.voice.title-case — parameter name",
+      "level": "SOURCED"
+    },
+    "camera.quickaccess.shortcut.phrase": {
+      "text": "Take a photo with {app_name}",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "camera.quickaccess",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo` ('Take photo'); https://developer.apple.com/documentation/appintents/app-shortcuts (phrases name the app)",
+      "pattern": "platform.appShortcut + retro.voice.button",
+      "level": "SOURCED",
+      "notes": "iOS Siri / Spotlight phrase; {app_name} is ${applicationName} (AppShortcuts.strings)."
+    },
+    "camera.quickaccess.shortcut.groupPhrase": {
+      "text": "Take a photo for {group} with {app_name}",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "camera.quickaccess",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo` ('Take photo'); https://developer.apple.com/documentation/appintents/app-shortcuts",
+      "pattern": "platform.appShortcut + retro.voice.button",
+      "level": "SOURCED",
+      "notes": "{group}: the group parameter (${group})."
+    },
+    "camera.quickaccess.shortcut.short": {
+      "text": "Camera",
+      "origin": "new",
+      "source_app": "Apple HIG",
+      "surface": "camera.quickaccess",
+      "evidence": "https://developer.android.com/develop/ui/views/launch/shortcuts/best-practices (short label ≤ 10 characters); groups.list.tab.camera.accessibilityLabel ('Camera')",
+      "pattern": "platform.systemEntry",
+      "level": "PLATFORM",
+      "notes": "Android static launcher shortcut, short label."
+    },
+    "camera.quickaccess.shortcut.long": {
+      "text": "Take photo",
+      "origin": "verbatim",
+      "source_app": "Retro",
+      "surface": "camera.quickaccess",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo`",
+      "pattern": "platform.systemEntry (long label) + retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Android static launcher shortcut, long label (≤ 25 characters)."
+    },
+    "camera.quickaccess.shortcut.groupLong": {
+      "text": "Take photo for {group}",
+      "origin": "adapted",
+      "source_app": "Retro",
+      "surface": "camera.quickaccess",
+      "evidence": "references/auto/retro/apk/retro-android-2026.10.1150-strings.txt `journal_profile_take_photo` ('Take photo')",
+      "pattern": "platform.systemEntry (long label) + retro.voice.button",
+      "level": "SOURCED",
+      "notes": "Android dynamic shortcut per recent group, long label; its short label is the group's name."
+    },
+    "camera.quickaccess.tile.label": {
+      "text": "{app_name}",
+      "origin": "new",
+      "source_app": "Material 3",
+      "surface": "camera.quickaccess",
+      "evidence": "https://developer.android.com/develop/ui/views/quicksettings-tiles (the tile's android:label, ≤ 18 characters)",
+      "pattern": "platform.systemEntry",
+      "level": "PLATFORM",
+      "notes": "The app's name (config/app.json displayName)."
+    },
+    "camera.quickaccess.tile.subtitle": {
+      "text": "Camera",
+      "origin": "new",
+      "source_app": "Material 3",
+      "surface": "camera.quickaccess",
+      "evidence": "https://developer.android.com/develop/ui/views/quicksettings-tiles (Tile.setSubtitle); groups.list.tab.camera.accessibilityLabel ('Camera')",
+      "pattern": "platform.systemEntry",
+      "level": "PLATFORM",
+      "notes": "What the tile opens."
     }
   }
 }

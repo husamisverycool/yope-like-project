@@ -67,6 +67,12 @@ public struct DeepLinkParser: Sendable {
             guard let field = DeepLinkField(rawValue: item.name), let value = item.value else { continue }
             values[field.rawValue] = value
         }
+        if route == .premium {
+            // The destination is read from the same fields; it is never itself a premium link.
+            guard let perk = values[DeepLinkField.perk.rawValue], Self.isValidIdentifier(perk) else { return nil }
+            let next = values[DeepLinkField.to.rawValue].flatMap { DeepLinkRoute(rawValue: $0) }.flatMap { $0 == .premium ? nil : $0 }
+            return .premium(perk: perk, then: next.flatMap { route in Self.make(route: route) { values[$0.rawValue] } })
+        }
         return Self.make(route: route) { values[$0.rawValue] }
     }
 
@@ -129,7 +135,7 @@ public struct DeepLinkParser: Sendable {
         case .tribute?: type = .tribute
         case .yearStory?: type = .yearStory
         case .plan?: type = .plan
-        case .camera?, .collage?, nil: type = nil
+        case .camera?, .collage?, .premium?, nil: type = nil
         }
         guard let type else {
             return url(for: link).map { [PushKey.link: $0.absoluteString] } ?? [:]
@@ -179,6 +185,9 @@ public struct DeepLinkParser: Sendable {
         case .collage:
             guard let group = id(.group), let collage = id(.collage) else { return nil }
             return .collage(groupID: group, collageID: collage)
+        case .premium:
+            // Only from URLs (`parseCustomScheme`); a notification never carries one.
+            return nil
         }
     }
 

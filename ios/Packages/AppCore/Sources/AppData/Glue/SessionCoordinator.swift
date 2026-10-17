@@ -100,6 +100,8 @@ public actor SessionCoordinator {
     private var deletionWatchers: [GroupID: Task<Void, Never>] = [:]
     /// Groups whose widget content is being written (a second request meanwhile is dropped, not queued).
     private var widgetSyncs: Set<GroupID> = []
+    /// The friend and memories widgets are being written (a second request meanwhile is dropped).
+    private var personalWidgetSync = false
 
     public init(services: Services, widgetStore: WidgetStore?, hooks: SessionHooks = SessionHooks(), widgetContent: WidgetContentSync? = nil) {
         self.environment = services
@@ -194,7 +196,9 @@ public actor SessionCoordinator {
         if let widgetStore {
             try? widgetStore.syncGroups(groups.map { WidgetGroup(id: $0.id.rawValue, name: $0.name) })
             await hooks.reloadWidgets?()
-            if await syncWidgetContent(groups) { await hooks.reloadWidgets?() }
+            let groupsChanged = await syncWidgetContent(groups)
+            let personalChanged = await syncPersonalWidgets()
+            if groupsChanged || personalChanged { await hooks.reloadWidgets?() }
         }
         for group in groups where deletionWatchers[group.id] == nil {
             watchDeletions(group.id)
@@ -219,7 +223,22 @@ public actor SessionCoordinator {
             guard let mine = try? await environment.groups.myGroups() else { return }
             groups = mine
         }
-        if await syncWidgetContent(groups) { await hooks.reloadWidgets?() }
+        let groupsChanged = await syncWidgetContent(groups)
+        // The friend and memories widgets follow on each return to the foreground, not on one group's feed.
+        let personalChanged = groupID == nil ? await syncPersonalWidgets() : false
+        if groupsChanged || personalChanged { await hooks.reloadWidgets?() }
+    }
+
+    /// The friend widget's picker, each followed friend's newest photo and the person's memories of the coming days
+    /// (`WidgetContentSync`). Returns whether a widget's content changed.
+    private func syncPersonalWidgets() async -> Bool {
+        guard let widgetContent, !personalWidgetSync else { return false }
+        personalWidgetSync = true
+        defer { personalWidgetSync = false }
+        let people = await widgetContent.syncPeople()
+        let friends = await widgetContent.syncFriends()
+        let memories = await widgetContent.syncMemories()
+        return people || friends || memories
     }
 
     /// Returns whether a snapshot changed.

@@ -44,7 +44,10 @@ targets:
       Release: Config/App.xcconfig
     sources:
       - path: App/Sources
-      # Asset catalog: the "Ideas to Get Started" template covers (groups.list.layout.templateCovers, owner decision 9).
+      # The camera intent (camera.quickaccess): also in Widgets — a control's intent must exist in both targets.
+      - path: Intents
+      # Asset catalog: the "Ideas to Get Started" template covers (groups.list.layout.templateCovers, owner decision 9);
+      # en.lproj/Localizable.strings: the App Intents keys tools/designgen.mjs generates.
       - path: App/Resources
       # config/app.json is the single source of app configuration; bundled as app.json.
       - path: ../config/app.json
@@ -84,6 +87,9 @@ targets:
       Release: Config/Widgets.xcconfig
     sources:
       - path: Widgets/Sources
+      - path: Intents
+      # en.lproj/Localizable.strings: the widget configuration intents' keys (tools/designgen.mjs).
+      - path: Widgets/Resources
       - path: Widgets/PrivacyInfo.xcprivacy
         buildPhase: resources
     dependencies:

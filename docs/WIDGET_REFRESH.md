@@ -112,6 +112,27 @@ downloaded for an item the widget store already shows. When the shown photo is g
 newest one replaces it, and a group with no photo left shows the widget's empty state. iOS reloads the timelines only
 when a snapshot changed; reloads from the foreground app are not budgeted (PLATFORM_CONSTRAINTS §1.1).
 
+## Friend and memories widgets
+
+Two more home-screen widgets (design/surfaces/widget.friend.md, widget.memories.md) and the styles every photo widget
+can take (widget.styles.md) ride on the same pipeline; nothing new is pushed for them.
+
+| widget | what fills it | from a push | from the app |
+|---|---|---|---|
+| **Group Updates → All Groups** | the newest item across the per-group snapshots the store already holds | every group's widget push (each member gets every group's) | iOS: every group on each foreground (as above); Android: `refreshPlaced` brings every group up to date while an All Groups widget is placed |
+| **Friend Updates** (one person) | `newest_photos_of(person)`: their own posts and photos they tagged themselves in, in groups both share, no blocks | widget pushes carry the poster (`sender_id`): iOS `WidgetDelivery` (Notification Service Extension, background push, the app) and the Android widget worker copy a photo by a followed friend into that friend's slot when it is newer | on each foreground for every followed friend: this is how self-tags arrive (tagging sends no push — a background push for it would spend the ≤ 2 / hour iOS budget the group widgets need) and how a deleted, hidden or blocked photo leaves |
+| **Your Memories** | `my_memories(today, 7 days, device zone)`: the person's own photos from that month and day in earlier years (0038 leaves hidden ones out) | — (a memory is not news) | when a memories widget is placed, on each foreground: today and the next 6 days, so the widget turns over at local midnight without the app (iOS: one timeline entry per day; Android: a midnight WorkManager job, as the countdown widget) |
+
+Which friends and whether memories are followed: iOS widget timelines record it in the App Group (`watched.json`,
+expires after 2 days without a timeline run); Android reads the placed widgets' bindings. The picker's people
+(`widget_people`) are written with the group list. Premium styles: the iOS app writes the entitlement to the App Group
+(`premium.json`); Android keeps a marker next to the widget metadata. A premium style without premium draws the free
+Photo style.
+
+Deletion: a deleted photo leaves the friend and memories slots with the group snapshots (`WidgetStore.removeSource` on
+iOS; the Android widget store drops a slot whose photo the server no longer returns), and a left group's items leave with
+its group folder.
+
 ## Limits (what can make a widget late or stale)
 
 - **Budgets.** iOS widget reloads (40–70/day per widget) and background pushes (throttled, not

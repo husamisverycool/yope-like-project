@@ -8,6 +8,7 @@ import Foundation
 ///         groups/<group id>/photo.json      newest photo snapshot
 ///         groups/<group id>/collage.json    newest same-moment collage snapshot
 ///         groups/<group id>/<file>          widget renditions and sender avatars
+///         … and the friend and memories widgets' files (`WidgetStore+People.swift`)
 ///
 /// Every write is atomic (write to a temporary file, then rename), and a rendition is written
 /// before the snapshot that references it, so a reader in another process never sees a
@@ -69,6 +70,8 @@ public struct WidgetStore: Sendable {
         for groupID in storedGroupIDs() where !keep.contains(groupID) {
             try removeGroup(groupID)
         }
+        // A friend's photo or a memory from a group the person is no longer in leaves those widgets too.
+        try removeExtraSnapshots { !keep.contains($0.groupID) }
     }
 
     public func groups() -> [WidgetGroup] {
@@ -142,7 +145,7 @@ public struct WidgetStore: Sendable {
     /// a deleted photo leaves the widgets).
     @discardableResult
     public func removeSource(_ sourceID: String) throws -> Bool {
-        var removed = false
+        var removed = try removeExtraSnapshots { $0.sourceID == sourceID }
         for groupID in storedGroupIDs() {
             for kind in WidgetSnapshot.Kind.allCases {
                 guard let snapshot = snapshot(groupID: groupID, kind: kind), snapshot.sourceID == sourceID else { continue }
@@ -173,7 +176,7 @@ public struct WidgetStore: Sendable {
     public func prune(now: Date, gracePeriod: TimeInterval) throws -> Int {
         let fileManager = FileManager.default
         let cutoff = now.addingTimeInterval(-gracePeriod)
-        var deleted = 0
+        var deleted = try pruneExtras(cutoff: cutoff)
         for groupID in storedGroupIDs() {
             let directory = groupDirectory(groupID)
             var referenced: Set<String> = Set(WidgetSnapshot.Kind.allCases.map { Self.snapshotFileName($0) })
@@ -219,7 +222,7 @@ public struct WidgetStore: Sendable {
         return names.filter(Self.isValidIdentifier).sorted()
     }
 
-    private func write(_ data: Data, to url: URL) throws {
+    func write(_ data: Data, to url: URL) throws {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         #if canImport(Darwin)
         // Lock-screen widgets and the Notification Service Extension read and write while the
@@ -230,12 +233,12 @@ public struct WidgetStore: Sendable {
         #endif
     }
 
-    private func removeIfPresent(_ url: URL) throws {
+    func removeIfPresent(_ url: URL) throws {
         guard FileManager.default.fileExists(atPath: url.path) else { return }
         try FileManager.default.removeItem(at: url)
     }
 
-    private static func isOlder(_ lhs: WidgetSnapshot, _ rhs: WidgetSnapshot) -> Bool {
+    static func isOlder(_ lhs: WidgetSnapshot, _ rhs: WidgetSnapshot) -> Bool {
         lhs.postedAt < rhs.postedAt
     }
 

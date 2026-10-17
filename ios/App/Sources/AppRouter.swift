@@ -51,7 +51,20 @@ enum AppModal: Hashable, Identifiable {
 @Observable
 final class AppRouter {
     var path: [AppRoute] = []
-    var modal: AppModal?
+    var modal: AppModal? {
+        didSet {
+            // A widget's locked style opened the paywall first: once it closes, the widget's own destination follows.
+            guard oldValue == .account(.paywall), modal == nil, let next = afterPaywall else { return }
+            afterPaywall = nil
+            apply(next)
+        }
+    }
+    /// The paywall page to open on (`PaywallPerk` raw value) when it was opened for a locked perk; read once by the
+    /// paywall.
+    var paywallPerk: String?
+    /// Whether the person has premium (set by the app environment); a premium link then goes straight on.
+    var isPremium: @MainActor () -> Bool = { false }
+    private var afterPaywall: DeepLink?
     private(set) var isReady = false
     private(set) var pendingLink: DeepLink?
     private(set) var promptGate = SessionPromptGate()
@@ -124,6 +137,16 @@ final class AppRouter {
             // plans.page over its group's screen when the link names the group (Back returns there).
             let page = AppRoute.plans(.page(planID: planID, groupID: groupID))
             show(groupID.map { [.group(id: $0), page] } ?? [page])
+        case let .premium(perk, then):
+            // widget.styles: a widget whose chosen style needs premium. The tap on a locked perk opens the paywall at
+            // that perk once per session (`SessionPromptGate`); otherwise — or once it closes — the widget's own place.
+            if !isPremium(), consumePremiumPrompt() {
+                afterPaywall = then
+                paywallPerk = perk
+                modal = .account(.paywall)
+            } else if let then {
+                apply(then)
+            }
         case let .collage(groupID, collageID):
             // A widget showing the group's collage of the day opens that collage over the group's screen.
             show([.group(id: groupID), .social(.collage(groupID: groupID, collageID: collageID))])

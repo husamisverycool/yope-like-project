@@ -63,7 +63,12 @@ struct PaywallScreen: View {
     @Environment(AccountDependencies.self) private var dependencies
 
     var body: some View {
-        PaywallView(model: PaywallModel(purchases: dependencies.purchases, data: dependencies.data))
+        // Opened for a locked perk (a widget's premium style, `widget.styles`): that perk's page first.
+        PaywallView(
+            model: PaywallModel(purchases: dependencies.purchases, data: dependencies.data),
+            initialPerk: dependencies.router.paywallPerk.flatMap(PaywallPerk.init(rawValue:))
+        )
+        .onDisappear { dependencies.router.paywallPerk = nil }
     }
 }
 
@@ -76,9 +81,10 @@ struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
 
     /// - Parameter photo: the benefit media (tests); the newest photo from the person's groups otherwise.
-    init(model: PaywallModel, photo: PhotoSource? = nil) {
+    init(model: PaywallModel, photo: PhotoSource? = nil, initialPerk: PaywallPerk? = nil) {
         _model = State(initialValue: model)
         _photo = State(initialValue: photo)
+        _perkID = State(initialValue: initialPerk?.id)
     }
 
     private static let reveal = DSAnimation.timing(duration: Tokens.Durations.globalPageTransition, easing: Tokens.Easings.globalStandard)

@@ -21,7 +21,10 @@ Tokens: `onboarding.widget.*`. Copy: `onboarding.widget.*`.
 
 1. C-02 header row: back chevron only when opened from `settings.root`; none inside onboarding.
 2. Title `onboarding.widget.title` (`font.global.display`, `displayMedium`), leading, baseline `size.global.titleTop`.
-3. Explanation `onboarding.widget.detail` under it (`body`, `color.global.textSecondary`).
+3. Explanation `onboarding.widget.detail` under it (`body`, `color.global.textSecondary`). It names the three widgets the
+   gallery offers (a friend, a group, your memories — Friend Updates, Group Updates, Your Memories), as Retro's upsell
+   names its three ("Never miss a moment from a friend, relive memories from your profile or an album…"). The flow, the
+   preview tile and the steps are unchanged: the steps add any of them the same way.
 4. `size.global.titleToContent` below: **preview tile** `onboarding.widget.size.preview` (158) square, corners
    `onboarding.widget.radius.preview` (22, `layout.global.cornerStyle`), centred: the newest photo from the person's
    groups, aspect-fill, with the widget's bottom scrim (`layout.global.photoScrim`) and the sender's first name in

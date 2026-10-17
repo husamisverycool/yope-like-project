@@ -26,6 +26,11 @@ public enum DeepLink: Hashable, Sendable {
     case plan(planID: String, groupID: String?)
     /// A same-moment collage (`collage.view`): the widget's tap while it shows the group's collage of the day.
     case collage(groupID: String, collageID: String)
+    /// A locked premium perk tapped from outside the app (`widget.styles`: a widget whose chosen style needs premium):
+    /// the paywall at `perk`'s page when the session's one prompt is still available, then (or otherwise) `then`, the
+    /// widget's usual destination. `app://premium?perk=widgets&to=camera&group=<id>` — `to` names `then`'s route and
+    /// its fields follow flat.
+    indirect case premium(perk: String, then: DeepLink?)
 }
 
 /// Hosts of custom-scheme links (`app://<route>?…`), shared with Android
@@ -41,6 +46,7 @@ public enum DeepLinkRoute: String, CaseIterable, Sendable {
     case yearStory = "year-story"
     case plan
     case collage
+    case premium
 }
 
 /// The identifiers a deep link carries. URLs use `queryName` (`app://camera?group=<id>`);
@@ -56,6 +62,9 @@ public enum DeepLinkField: String, CaseIterable, Sendable {
     case year
     case plan
     case collage
+    /// `premium` links: the perk's paywall page, and the route of the destination that follows (`to`).
+    case perk
+    case to
 
     public var queryName: String { rawValue }
 
@@ -78,6 +87,7 @@ extension DeepLink {
         case .yearStory: return .yearStory
         case .plan: return .plan
         case .collage: return .collage
+        case .premium: return .premium
         }
     }
 
@@ -106,6 +116,9 @@ extension DeepLink {
             return [(.plan, planID)] + (groupID.map { [(.group, $0)] } ?? [])
         case .collage(let groupID, let collageID):
             return [(.group, groupID), (.collage, collageID)]
+        case .premium(let perk, let then):
+            guard let then, let route = then.route, route != .premium else { return [(.perk, perk)] }
+            return [(.perk, perk), (.to, route.rawValue)] + then.fields
         }
     }
 
@@ -119,6 +132,8 @@ extension DeepLink {
             return groupID
         case .birthdayRequest(_, let groupID), .tribute(_, let groupID), .plan(_, let groupID):
             return groupID
+        case .premium(_, let then):
+            return then?.groupID
         }
     }
 }
