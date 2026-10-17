@@ -382,9 +382,10 @@ class CameraViewModel(
      * Several items picked (or shared from another app, `share.in`) at once, in the order picked: one send-to for the
      * whole selection, each item its own post with the same `batch_id`. Each video over the limit goes through the
      * trimmer in turn — its Cancel leaves that video out, a clip that cannot be written is left out after the "Video too
-     * long" alert — and the others go on to send-to.
+     * long" alert — and the others go on to send-to. [sharedGroupId]: the group picked in the share sheet's per-group
+     * targets (share.in), preselected in send-to instead of the camera's own context.
      */
-    fun onPickedAll(picked: List<PickedFile>) {
+    fun onPickedAll(picked: List<PickedFile>, sharedGroupId: String? = null) {
         val items = picked.mapNotNull { item ->
             when (item.kind) {
                 MediaKind.Video -> {
@@ -407,8 +408,12 @@ class CameraViewModel(
         selection.filter { it.file !in kept }.forEach { it.file.delete() }
         selection.clear()
         selection += items
+        selectionGroupId = sharedGroupId
         continueSelection()
     }
+
+    /** The group picked in the share sheet for the selection being prepared (share.in); null: the camera's context. */
+    private var selectionGroupId: String? = null
 
     /** The next video over the limit opens the trimmer; with none left, send-to opens on the selection. */
     private fun continueSelection() {
@@ -420,7 +425,8 @@ class CameraViewModel(
         val first = selection.firstOrNull() ?: return
         val more = selection.drop(1)
         selection.clear()
-        handoff.put(first, contextGroupId, replyToPostId, questionId, more)
+        handoff.put(first, selectionGroupId ?: contextGroupId, replyToPostId, questionId, more)
+        selectionGroupId = null
         events.trySend(Event.OpenSendTo)
     }
 

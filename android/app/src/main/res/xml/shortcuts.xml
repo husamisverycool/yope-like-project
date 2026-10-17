@@ -19,4 +19,16 @@
             android:targetClass="app.main.MainActivity"
             android:targetPackage="@string/shortcut_target_package" />
     </shortcut>
+
+    <!--
+      share.in: the share sheet's per-group targets (design/surfaces/share.in.md "Per-group targets"). A long-lived dynamic
+      shortcut per group in this category (feature/capture share/ShareTargets.CATEGORY, the two must match) is offered for
+      photos and videos; picking one sends SEND / SEND_MULTIPLE to MainActivity with EXTRA_SHORTCUT_ID. Platform:
+      https://developer.android.com/training/sharing/receive#sharing-shortcuts-api (Android 10 and later).
+    -->
+    <share-target android:targetClass="app.main.MainActivity">
+        <data android:mimeType="image/*" />
+        <data android:mimeType="video/*" />
+        <category android:name="app.sharetarget.category.GROUP" />
+    </share-target>
 </shortcuts>

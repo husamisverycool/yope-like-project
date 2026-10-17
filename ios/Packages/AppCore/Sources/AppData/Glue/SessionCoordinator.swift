@@ -31,19 +31,24 @@ public struct SessionHooks: Sendable {
     public var storedPushToken: (@Sendable () -> String?)?
     /// A post or chat message was deleted: withdraw the delivered notifications that show it (post ids, message ids).
     public var withdrawNotifications: (@Sendable (Set<String>, Set<String>) async -> Void)?
+    /// share.in's per-group share targets (the share sheet's suggestion row): keep only the targets of these group ids
+    /// (the person's groups after each refresh, so a group left is removed); nil removes all (sign-out).
+    public var keepShareTargets: (@Sendable (Set<String>?) async -> Void)?
 
     public init(
         linkPurchases: (@Sendable (UserID?) async -> Void)? = nil,
         reloadWidgets: (@Sendable () async -> Void)? = nil,
         removeSessionFiles: (@Sendable () async -> Void)? = nil,
         storedPushToken: (@Sendable () -> String?)? = nil,
-        withdrawNotifications: (@Sendable (Set<String>, Set<String>) async -> Void)? = nil
+        withdrawNotifications: (@Sendable (Set<String>, Set<String>) async -> Void)? = nil,
+        keepShareTargets: (@Sendable (Set<String>?) async -> Void)? = nil
     ) {
         self.linkPurchases = linkPurchases
         self.reloadWidgets = reloadWidgets
         self.removeSessionFiles = removeSessionFiles
         self.storedPushToken = storedPushToken
         self.withdrawNotifications = withdrawNotifications
+        self.keepShareTargets = keepShareTargets
     }
 }
 
@@ -193,6 +198,7 @@ public actor SessionCoordinator {
     public func refreshGroups() async {
         guard signedInUser != nil else { return }
         guard let groups = try? await environment.groups.myGroups() else { return }
+        await hooks.keepShareTargets?(Set(groups.map(\.id.rawValue)))
         if let widgetStore {
             try? widgetStore.syncGroups(groups.map { WidgetGroup(id: $0.id.rawValue, name: $0.name) })
             await hooks.reloadWidgets?()
@@ -356,5 +362,6 @@ public actor SessionCoordinator {
         }
         await hooks.linkPurchases?(nil)
         await hooks.removeSessionFiles?()
+        await hooks.keepShareTargets?(nil)
     }
 }

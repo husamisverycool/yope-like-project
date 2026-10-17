@@ -27,6 +27,12 @@
 			</array>
 		</dict>
 	</array>
+	<!-- share.in: the share sheet's suggestion row — the app donates an INSendMessageIntent per group
+	     (ShareTargetDonations); the Share Extension declares it in IntentsSupported. -->
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>INSendMessageIntent</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<!-- Silent widget pushes for muted groups (docs/SPEC_FLAGS.md T6). -->

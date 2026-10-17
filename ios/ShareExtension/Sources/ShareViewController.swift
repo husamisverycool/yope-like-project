@@ -5,7 +5,11 @@
 // This extension draws nothing of its own: it copies the items into the App Group inbox (AppModels `ShareInbox`), opens
 // the app with `<app scheme>://share` and finishes. Signed in or not, the app decides (signed out: sign-in first, then
 // send-to). Nothing but the files is kept — no caption, no place, no sender.
+// A group chosen in the share sheet's suggestion row (the app's `INSendMessageIntent` donations, one per group,
+// Info.plist `IntentsSupported`) arrives as `extensionContext.intent`; its conversation identifier (the group id) goes
+// into the inbox with the files, and send-to opens with that group preselected.
 import AppModels
+import Intents
 import UIKit
 import UniformTypeIdentifiers
 
@@ -29,13 +33,18 @@ final class ShareViewController: UIViewController {
         }
         var stored = false
         if !files.isEmpty {
-            stored = (try? ShareInbox.forBundle(.main).replace(with: files)) != nil
+            stored = (try? ShareInbox.forBundle(.main).replace(with: files, groupID: chosenGroupID)) != nil
         }
         try? FileManager.default.removeItem(at: folder)
         if stored, let scheme = ShareInLink.scheme(in: .main), let url = ShareInLink.url(scheme: scheme) {
             openContainingApp(url)
         }
         extensionContext?.completeRequest(returningItems: nil)
+    }
+
+    /// The group picked in the share sheet's suggestion row (nil: the app itself was picked).
+    private var chosenGroupID: String? {
+        (extensionContext?.intent as? INSendMessageIntent)?.conversationIdentifier
     }
 
     /// Share extensions have no `openURL`; the responder chain reaches the extension's `UIApplication`, which opens the

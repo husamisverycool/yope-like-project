@@ -2,6 +2,7 @@ package app.feature.capture
 
 import android.content.Intent
 import android.net.Uri
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.data.error.DataError
@@ -17,6 +18,7 @@ import app.feature.capture.data.TakenOn
 import app.feature.capture.sendto.SendToViewModel
 import app.feature.capture.share.ShareIn
 import app.feature.capture.share.ShareInbox
+import app.feature.capture.share.ShareTargets
 import app.model.SessionPromptGate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -221,9 +223,22 @@ class BatchShareTest {
         val vm = CameraViewModel(data, handoff, MemoryCapturePrefs(), SessionPromptGate(), dir, null, durationOf = { 3_000L }, sizeOf = { 300 to 400 })
         val shared = listOf(PickedFile(Images.photoFile(dir, "s1.jpg"), MediaKind.Photo, LocalDate.of(2026, 7, 4)), PickedFile(Images.photoFile(dir, "s2.jpg"), MediaKind.Photo))
         ShareInbox.put(shared)
-        ShareInbox.take()?.let(vm::onPickedAll)
+        ShareInbox.takeShare()?.let { vm.onPickedAll(it.items, it.groupId) }
         assertNull("taken once", ShareInbox.take())
         assertEquals(shared.map { it.file }, handoff.pending.value!!.items.map { it.file })
         assertEquals(LocalDate.of(2026, 7, 4), handoff.pending.value!!.media.takenOn)
+        assertNull("no group picked: the camera's own context", handoff.pending.value!!.contextGroupId)
+    }
+
+    @Test fun aShareThroughAGroupsShareTargetPreselectsThatGroup() {
+        val target = Intent(Intent.ACTION_SEND).setType("image/jpeg")
+            .putExtra(ShortcutManagerCompat.EXTRA_SHORTCUT_ID, ShareTargets.shortcutId("g2"))
+        assertEquals("g2", ShareIn.groupId(target))
+        assertNull("the camera's launcher shortcut is not a share target", ShareIn.groupId(Intent(Intent.ACTION_SEND).putExtra(ShortcutManagerCompat.EXTRA_SHORTCUT_ID, "camera-group-g2")))
+        assertNull(ShareIn.groupId(Intent(Intent.ACTION_SEND)))
+        val vm = CameraViewModel(data, handoff, MemoryCapturePrefs(), SessionPromptGate(), dir, "g1", durationOf = { 3_000L }, sizeOf = { 300 to 400 })
+        ShareInbox.put(listOf(PickedFile(Images.photoFile(dir, "t1.jpg"), MediaKind.Photo)), groupId = "g2")
+        ShareInbox.takeShare()?.let { vm.onPickedAll(it.items, it.groupId) }
+        assertEquals("g2", handoff.pending.value!!.contextGroupId)
     }
 }

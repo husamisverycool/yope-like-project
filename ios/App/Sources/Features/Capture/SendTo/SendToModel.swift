@@ -94,6 +94,8 @@ final class SendToModel: Identifiable {
     /// (social's `PhotoReplyHandoff`), and its reset once the reply is sent.
     private let replyTarget: @MainActor (String?) -> String?
     private let clearReply: @MainActor () -> Void
+    /// share.in: the groups posted to become the share sheet's suggestions (`ShareTargetDonations`).
+    private let donateShareTargets: @MainActor ([CaptureGroup]) -> Void
     @ObservationIgnored private var didPreselect = false
 
     init(
@@ -108,6 +110,7 @@ final class SendToModel: Identifiable {
         navigation: CaptureNavigation,
         onClose: @escaping @MainActor () -> Void,
         onSent: @escaping @MainActor () -> Void,
+        donateShareTargets: @escaping @MainActor ([CaptureGroup]) -> Void = { _ in },
         replyTarget: @escaping @MainActor (String?) -> String? = { PhotoReplyHandoff.replyTarget(for: $0)?.rawValue },
         clearReply: @escaping @MainActor () -> Void = { PhotoReplyHandoff.clear() }
     ) {
@@ -125,6 +128,7 @@ final class SendToModel: Identifiable {
         self.onSent = onSent
         self.replyTarget = replyTarget
         self.clearReply = clearReply
+        self.donateShareTargets = donateShareTargets
     }
 
     // MARK: Derived state
@@ -339,6 +343,7 @@ final class SendToModel: Identifiable {
             }
         }
         isSending = false
+        donateShareTargets(groups.filter { selection.contains($0.id) })
         clearReply()
         onSent()
     }

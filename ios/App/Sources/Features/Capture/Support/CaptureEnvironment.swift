@@ -38,7 +38,9 @@ final class CaptureEnvironment {
     /// from the server, then kept.
     var batchLimit: @MainActor () async -> Int? = { nil }
     /// share.in: the photos another app shared, taken from the App Group inbox (at most `limit`); none by default.
-    var sharedItems: @MainActor (_ limit: Int) async -> [CapturedMedia] = { _ in [] }
+    var sharedItems: @MainActor (_ limit: Int) async -> ShareInSelection = { _ in ShareInSelection() }
+    /// share.in's per-group share targets: the groups a post was just sent to (`ShareTargetDonations`; none in tests).
+    var donateShareTargets: @MainActor (_ groups: [CaptureGroup]) -> Void = { _ in }
 
     init(
         makeCamera: @escaping @MainActor (_ supportsDualCapture: Bool) -> CaptureCamera,
@@ -86,6 +88,10 @@ final class CaptureEnvironment {
         let limit = CaptureBatchLimit(data: data)
         environment.batchLimit = { await limit.value() }
         environment.sharedItems = { max in await ShareInImport.take(limit: max) }
+        environment.donateShareTargets = { groups in
+            let targets = groups.map { ShareTargetDonations.Group(id: $0.id, name: $0.name) }
+            Task { await ShareTargetDonations.donate(targets) }
+        }
         return environment
     }
 
@@ -148,7 +154,8 @@ final class CaptureEnvironment {
             sendCenter: sendCenter,
             navigation: navigation,
             onClose: onClose,
-            onSent: onSent
+            onSent: onSent,
+            donateShareTargets: donateShareTargets
         )
     }
 

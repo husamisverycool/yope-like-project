@@ -83,18 +83,35 @@ object CameraShortcuts {
     /** Signed out: no group of the last person stays in the launcher. */
     fun clear(context: Context) {
         val app = context.applicationContext
-        val before = recent(app).map { shortcutId(it.groupId) }
+        val before = (recent(app).map { shortcutId(it.groupId) } + published(app)).distinct()
         save(app, emptyList())
-        runCatching { ShortcutManagerCompat.removeAllDynamicShortcuts(app) }
-        if (before.isNotEmpty()) runCatching { ShortcutManagerCompat.disableShortcuts(app, before, null) }
+        if (before.isNotEmpty()) {
+            runCatching { ShortcutManagerCompat.removeDynamicShortcuts(app, before) }
+            runCatching { ShortcutManagerCompat.disableShortcuts(app, before, null) }
+        }
     }
 
     fun shortcutId(groupId: String) = ID_PREFIX + groupId
 
+    /**
+     * Publishes [entries] as this object's shortcuts only: other dynamic shortcuts (share.in's per-group share targets,
+     * share/ShareTargets) are kept, so no `setDynamicShortcuts` / `removeAllDynamicShortcuts` here.
+     */
     private fun publish(context: Context, entries: List<Entry>) {
         val shortcuts = entries.take(MAX_GROUPS).mapIndexedNotNull { rank, entry -> shortcut(context, entry, rank) }
-        runCatching { ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts) }
+        val keep = shortcuts.map { it.id }.toSet()
+        val stale = published(context).filter { it !in keep }
+        if (stale.isNotEmpty()) runCatching { ShortcutManagerCompat.removeDynamicShortcuts(context, stale) }
+        if (shortcuts.isEmpty()) return
+        // Over the per-activity limit, pushing evicts the lowest-ranked dynamic shortcut (a share target, ranked after these).
+        if (runCatching { ShortcutManagerCompat.addDynamicShortcuts(context, shortcuts) }.getOrDefault(false)) return
+        shortcuts.forEach { shortcut -> runCatching { ShortcutManagerCompat.pushDynamicShortcut(context, shortcut) } }
     }
+
+    /** The ids of this object's dynamic shortcuts now published. */
+    private fun published(context: Context): List<String> =
+        runCatching { ShortcutManagerCompat.getDynamicShortcuts(context) }.getOrDefault(emptyList())
+            .map { it.id }.filter { it.startsWith(ID_PREFIX) }
 
     internal fun shortcut(context: Context, entry: Entry, rank: Int): ShortcutInfoCompat? {
         if (entry.name.isBlank()) return null

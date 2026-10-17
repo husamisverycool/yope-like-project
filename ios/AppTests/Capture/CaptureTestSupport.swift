@@ -65,7 +65,7 @@ final class CaptureTestRig {
         contextGroupID: String? = nil,
         now: Date = CaptureTestRig.fixedNow,
         batchLimit: @escaping @MainActor () async -> Int? = { nil },
-        sharedItems: @escaping @MainActor (Int) async -> [CapturedMedia] = { _ in [] }
+        sharedItems: @escaping @MainActor (Int) async -> ShareInSelection = { _ in ShareInSelection() }
     ) -> CameraCaptureModel {
         CameraCaptureModel(
             contextGroupID: contextGroupID,

@@ -51,6 +51,20 @@ final class ShareInboxTests: XCTestCase {
         XCTAssertEqual(String(decoding: try Data(contentsOf: taken[0].url), as: UTF8.self), "new")
     }
 
+    func testTheGroupChosenInTheShareSheetIsTakenWithTheItems() throws {
+        let inbox = ShareInbox(rootURL: directory.appendingPathComponent(ShareInbox.directoryName, isDirectory: true))
+        let group = "6f1c2a9e-0d4b-4f7a-9a51-2b7e8c3d1f00"
+        try inbox.replace(with: [ShareInbox.File(url: try file("a.jpg", "a"), kind: .image)], groupID: group)
+        let share = inbox.takeShare(into: directory.appendingPathComponent("taken", isDirectory: true))
+        XCTAssertEqual(share.groupID, group)
+        XCTAssertEqual(share.files.count, 1)
+        // A share without a chosen group, and an id that is not a plain id, carry none.
+        try inbox.replace(with: [ShareInbox.File(url: try file("b.jpg", "b"), kind: .image)], groupID: "../x")
+        XCTAssertNil(inbox.takeShare(into: directory.appendingPathComponent("taken2", isDirectory: true)).groupID)
+        try inbox.replace(with: [ShareInbox.File(url: try file("c.jpg", "c"), kind: .image)])
+        XCTAssertNil(inbox.groupID())
+    }
+
     func testAManifestCannotPointOutsideTheInbox() throws {
         let root = directory.appendingPathComponent(ShareInbox.directoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
