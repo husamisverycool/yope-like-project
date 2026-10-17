@@ -35,6 +35,9 @@ export interface RunnerStats {
   failed: number;
 }
 
+/** wakeAt wakes the lane at `at` plus each of these offsets (see wakeAt). */
+export const WAKE_FOLLOW_UPS_MS = [1, 50, 250, 1000];
+
 /** Claims up to `limit` due jobs of `kinds` for this worker (default: the claim_jobs RPC). */
 export type ClaimFn = (kinds: string[], limit: number) => Promise<JobRow[]>;
 
@@ -82,11 +85,17 @@ export class Runner {
     if (!lane || !this.running) return;
     const delay = Math.max(0, at.getTime() - Date.now());
     if (delay > 10 * 60_000) return;
-    const t = setTimeout(() => {
-      lane.timers.delete(t);
-      lane.wake?.();
-    }, delay);
-    lane.timers.add(t);
+    // The claim compares run_at with the database's clock: a timer that fires a hair early (Node
+    // timers can, and `at` lost its microseconds) or a database clock slightly behind finds nothing
+    // due, and the lane would then sleep a whole poll interval (CI run 197: the dispatch slipped to
+    // closes_at and sent nothing). A few follow-up wakes just after `at` catch it on time.
+    for (const extra of WAKE_FOLLOW_UPS_MS) {
+      const t = setTimeout(() => {
+        lane.timers.delete(t);
+        lane.wake?.();
+      }, delay + extra);
+      lane.timers.add(t);
+    }
   }
 
   private async laneLoop(lane: LaneState): Promise<void> {

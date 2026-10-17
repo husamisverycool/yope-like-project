@@ -500,6 +500,10 @@ final class ScenarioIntegrationTests: XCTestCase {
         await assertThrows(.api(.targetNotFound)) {
             try await ana.data.safety.report(.post, targetID: UUID().uuidString, reason: "missing")
         }
+        // a reported post is no longer shown to its reporter (migration 0057); Rui's next photo still shows
+        let kept = try await rui.data.publisher.publish(PostDraft(kind: .photo, original: .init(url: try temporaryFile(tinyJPEG, extension: "jpg"), contentType: ContentType.jpeg), groupIDs: [group.id]))
+        let afterReport = try await ana.data.posts.page(groupID: group.id).items.map(\.id)
+        XCTAssertEqual(afterReport, [kept[0].id], "the reporter no longer sees the reported post")
         try await ana.data.safety.block(userID: rui.id)
         let value57 = try await ana.data.safety.blocked().map(\.blockedID)
         XCTAssertEqual(value57, [rui.id])
@@ -510,7 +514,7 @@ final class ScenarioIntegrationTests: XCTestCase {
         await assertThrows(.api(.cannotTargetSelf)) { try await ana.data.safety.block(userID: ana.id) }
         try await ana.data.safety.unblock(userID: rui.id)
         let value60 = try await ana.data.posts.page(groupID: group.id).items.map(\.id)
-        XCTAssertEqual(value60, [posted[0].id])
+        XCTAssertEqual(value60, [kept[0].id], "unblocking shows the other's posts again (not the reported one)")
 
         // Video needs premium; Rui has none.
         let video = try temporaryFile(Data(repeating: 0, count: 4096), extension: "mp4")

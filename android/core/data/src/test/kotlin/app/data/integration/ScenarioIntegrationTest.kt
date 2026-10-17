@@ -392,7 +392,9 @@ class ScenarioIntegrationTest {
     private suspend fun settings() {
         // Mute, invitation hours / pause, quiet hours, devices, public config.
         b.groups.setMuted(g1.id, true)
-        assertTrue(a.groups.members(g1.id).single { it.member.userId == rui.id }.member.muted)
+        assertTrue(b.groups.members(g1.id).single { it.member.userId == rui.id }.member.muted)
+        // a mute is private (group_mutes, migration 0056): the others read Rui as not muted
+        assertFalse(a.groups.members(g1.id).single { it.member.userId == rui.id }.member.muted)
         assertEquals(LocalTime.of(9, 0), a.groups.setInvitationHours(g1.id, LocalTime.of(9, 0), LocalTime.of(21, 0)).wakingStart)
         expectApi(ApiError.NotGroupAdmin) { b.groups.setInvitationHours(g1.id, LocalTime.of(8, 0), LocalTime.of(20, 0)) }
         assertNull(a.groups.setInvitationHours(g1.id, null, null).wakingStart)
@@ -414,13 +416,17 @@ class ScenarioIntegrationTest {
     }
 
     private suspend fun safety() {
-        assertTrue(b.safety.report(ReportTargetKind.Post, p1.id, "test report $tag").isNotBlank())
+        // a reported post is no longer shown to its reporter (migration 0057); p2, so p1 stays for the deletion checks
+        assertTrue(b.safety.report(ReportTargetKind.Post, p2.id, "test report $tag").isNotBlank())
+        assertTrue(b.posts.feed(g1.id).none { it.id == p2.id })
+        assertTrue(a.posts.feed(g1.id).any { it.id == p2.id })
         b.safety.block(ana.id)
         assertEquals(listOf(ana.id), b.safety.blocked().map { it.blockedId })
         assertTrue(b.posts.feed(g1.id).none { it.authorId == ana.id })
         assertTrue(a.posts.feed(g1.id).none { it.authorId == rui.id })
         b.safety.unblock(ana.id)
         assertTrue(b.posts.feed(g1.id).any { it.id == p1.id })
+        assertTrue(b.posts.feed(g1.id).none { it.id == p2.id })
         expectApi(ApiError.CannotTargetSelf) { b.safety.block(rui.id) }
     }
 

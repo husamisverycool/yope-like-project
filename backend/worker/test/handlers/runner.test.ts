@@ -116,4 +116,22 @@ describe("runner", () => {
     expect(ranAt - at.getTime()).toBeGreaterThanOrEqual(-50);
     expect(ranAt - at.getTime()).toBeLessThan(1500);
   });
+
+  it("wakeAt still runs the job on time when the first claim at `at` finds it not yet due (database clock a little behind)", async () => {
+    const timed = k("skewed");
+    let ranAt = 0;
+    const svc = buildServices(w.config, { db: admin, log: memoryLogger().log, recapModel: null });
+    const at = new Date(Date.now() + 1500);
+    const real = (kinds: string[], limit: number) => rpc<any[]>(admin, "claim_jobs", { p_worker_id: w.config.workerId, p_kinds: kinds, p_limit: limit });
+    // the database sees the job as due only 30 ms after the worker's clock says `at`
+    const claim = async (kinds: string[], limit: number) => (Date.now() < at.getTime() + 30 ? [] : real(kinds, limit));
+    const runner = new Runner(svc, { [timed]: async () => void (ranAt = Date.now()) }, [{ name: "rt", kinds: [timed], concurrency: 1, pollMs: 30_000 }], { claim });
+    await rpc(admin, "enqueue_job", { p_kind: timed, p_run_at: at.toISOString() });
+    runner.start();
+    runner.wakeAt(at, timed);
+    await waitFor(() => ranAt > 0, 10_000);
+    await runner.stop(500);
+    expect(ranAt).toBeGreaterThan(0);
+    expect(ranAt - at.getTime()).toBeLessThan(1500);
+  });
 });

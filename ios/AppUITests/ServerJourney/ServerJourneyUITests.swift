@@ -13,7 +13,7 @@ import XCTest
 ///    notification and widget steps; creates a group; turns link sharing on; takes a photo with the camera and sends it
 ///    to the group; sees it in the group, opens it in the viewer and reacts; sends a chat message; makes a plan.
 /// 2. Theo, as another client of the same server (this test's own requests: test OTP sign-in, `join_group` with the
-///    group's invite, `answer_plan`, `send_message`), joins, answers the plan Going and writes in the chat; Maya's app
+///    group's invite after `confirm_age`, `answer_plan`, `send_message`), joins, answers the plan Going and writes in the chat; Maya's app
 ///    shows his name under Going and his message in the chat (realtime).
 /// 3. Maya opens settings and signs out.
 /// Each step attaches a screenshot (the result bundle; CI exports them as the `ios-e2e` artifact). A step that fails is
@@ -161,6 +161,8 @@ final class ServerJourneyUITests: XCTestCase {
             let invite = try self.stack.latestInvite(token: mayaSession.accessToken)
             let theo = try self.stack.signIn(phone: Self.theo.phone)
             try self.stack.setName(Self.theo.name, session: theo)
+            // the age gate, as the apps pass it at sign-up: join_group refuses before it (migration 0055)
+            try self.stack.rpc("confirm_age", ["p_birthdate": "1990-01-01"], token: theo.accessToken)
             try self.stack.rpc("join_group", ["p_token": invite.token], token: theo.accessToken)
             let plans = try self.stack.rpcRows("next_plans", ["p_group_id": invite.groupID], token: theo.accessToken)
             guard let plan = plans.first(where: { ($0["title"] as? String) == Self.planTitle }), let planID = plan["id"] as? String else {
