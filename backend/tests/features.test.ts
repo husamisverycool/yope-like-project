@@ -284,15 +284,21 @@ describe('plans', () => {
     await expectRpcError(rpc(stranger.client, 'plan_photos', { p_plan_id: plan.id }), 'plan_not_found', 404);
   });
 
-  it('a deleted account leaves its plans, without its cover', async () => {
-    const [x, y] = await createUsers(2, 'Gone');
-    const grp = await createGroup(x, [y]);
+  it('a deleted account takes its plans with it; a cover it put on another member\u2019s plan is cleared', async () => {
+    const [x, y, z] = await createUsers(3, 'Gone');
+    const grp = await createGroup(x, [y, z]); // x is the admin
     const cover = await upload(y, `u/${y.id}/plans/${randomUUID()}.jpg`);
-    const plan = await rpc(y.client, 'create_plan', { p_group_id: grp.id, p_title: 'Still on', p_starts_at: days(3), p_cover_path: cover });
+    const mine = await rpc(y.client, 'create_plan', { p_group_id: grp.id, p_title: 'Was on', p_starts_at: days(3), p_cover_path: cover });
+    // z's plan, whose cover the admin x replaced with x's own upload
+    const theirs = await rpc(z.client, 'create_plan', { p_group_id: grp.id, p_title: 'Still on', p_starts_at: days(4) });
+    const adminCover = await upload(x, `u/${x.id}/plans/${randomUUID()}.jpg`);
+    await rpc(x.client, 'update_plan', { p_plan_id: theirs.id, p_title: 'Still on', p_starts_at: theirs.starts_at, p_cover_path: adminCover });
     await rpc(y.client, 'delete_account', {});
-    const [row] = await sql(`select created_by, cover_path from public.plans where id = $1`, [plan.id]);
-    expect(row).toEqual({ created_by: null, cover_path: null });
-    expect((await rpc<any[]>(x.client, 'next_plans', { p_group_id: grp.id })).map((p) => p.id)).toEqual([plan.id]);
+    expect(await sql(`select 1 from public.plans where id = $1`, [mine.id])).toEqual([]);
+    await rpc(x.client, 'delete_account', {});
+    const [row] = await sql(`select created_by, cover_path from public.plans where id = $1`, [theirs.id]);
+    expect(row).toEqual({ created_by: z.id, cover_path: null });
+    expect((await rpc<any[]>(z.client, 'next_plans', { p_group_id: grp.id })).map((p) => p.id)).toEqual([theirs.id]);
   });
 
   it('deleting a plan\u2019s group drops its pushes', async () => {
