@@ -1563,3 +1563,13 @@ stack motion, a 9 AM capture haptic, "delete everything still developing"; the q
 ON-1 (owner may prefer Dispo's 9 AM default), ON-4 / F-2 (no delete before the reveal), ON-7 (header label
 comprehension), ON-8, ON-11, WQ-4, WQ-5, PL-9 (Apple's split widget layout as the owner's alternative), PL-10 (same-day
 word), the two BLOCKED strings, and the captures listed in each spec's Gaps.
+
+## Finishing the vision — plans list, plan words, tributes in the app, reports, deletion, group types (FV-*)
+
+Owner decisions 24–35 (2026-10-17). Each row names the evidence; values and words are in the canonical files.
+
+### Conflicts and resolutions
+
+| id | topic | references | resolution | evidence | status |
+|---|---|---|---|---|---|
+| FV-6 | What a group's type changes | spec: "Group types offered at creation … This affects only copy and defaults"; Retro's six journal templates; Yope (no types) | only the words (`GroupKindCopy`) and the template cover offered at creation; no server default differs by kind (docs/API.md `create_group`) | Retro `journal_tab_suggestion_title_*` / `_description_*` are a title and a line each, and every template opens the one "New Album" form (`journal_creation_flow_title`, `journal_creation_name_placeholder`, "+ Add cover image"); no per-template setting string exists; Retro's album settings ("Who can share photos?", "Who can edit cover & title?", "Who can manage members?", link sharing) are chosen after creation for every album alike; Yope: "Group type … not found in any build" (design/research/yope-a.md) | resolved |

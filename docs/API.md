@@ -522,6 +522,11 @@ Creates a group; the caller becomes its only member, as `admin`. `p_name` is tri
 (1–80). `p_time_zone` is the device's IANA zone. `p_cover_path`, if given, must be an
 object you uploaded under `u/<uid>/` (convention `u/<uid>/covers/<uuid>.jpg`). Waking
 hours: both or neither; omit them to use the default window.
+`p_kind` changes only the app's words and the template cover it offers at creation; no server default (waking hours,
+invitation, weekly question, link sharing) differs by kind. Retro's journal templates ("Ideas to Get Started": Event,
+Friends, Couple, Kid(s), Hobbies, Or anything else) carry only a title, a one-line description and a cover, and every
+one opens the same "New Album" form (Retro strings `journal_tab_suggestion_*`, `journal_creation_flow_title`; JED
+phone 3); Yope offers no group types at all (design/research/yope-a.md). Decision FV-6 in design/MERGE_DECISIONS.md.
 Errors: `invalid_name`, `invalid_kind`, `invalid_time_zone`, `invalid_waking_window`,
 `invalid_path`.
 
