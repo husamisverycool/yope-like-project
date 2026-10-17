@@ -162,6 +162,7 @@ public actor RealtimeHub {
 
     private func emit(_ event: GroupEvent, groupID: GroupID, kind: GroupEventFilter) {
         guard let state = groups[groupID] else { return }
+        RealtimeTrace.log("group \(groupID.rawValue): \(RealtimeTrace.kind(event)) to \(state.subscribers.count) subscriber(s)")
         for subscriber in state.subscribers.values where !subscriber.filter.isDisjoint(with: kind) {
             subscriber.continuation.yield(event)
         }
@@ -263,6 +264,7 @@ public actor RealtimeHub {
             // The server answers a refused join (a non-member on `group:<id>`) with nothing, so a
             // failure on a connected socket is final; with the socket down (offline) it is retried.
             let socketDown = client.supabase.realtimeV2.status != .connected
+            RealtimeTrace.log("join failed \(channel.topic): \(error) (socket \(client.supabase.realtimeV2.status))")
             emit(.subscriptionFailed(topic: channel.topic), groupID: groupID, kind: kind)
             // Drop the dead channel so a later subscriber (or the retry) can join again.
             if var state = groups[groupID] {
@@ -277,9 +279,11 @@ public actor RealtimeHub {
         emit(.subscribed(topic: channel.topic), groupID: groupID, kind: kind)
         // After the first join, every return to `.subscribed` follows a reconnect.
         let statuses = channel.statusChange
+        let topic = channel.topic
         box.tasks.append(Task { [weak self] in
             var wasDown = false
             for await status in statuses {
+                RealtimeTrace.log("\(topic): \(status)")
                 switch status {
                 case .subscribed:
                     if wasDown {

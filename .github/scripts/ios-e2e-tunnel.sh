@@ -38,6 +38,12 @@ for attempt in 1 2 3; do
     for _ in $(seq 1 90); do
       if curl -fsS -m 10 -H "apikey: $E2E_ANON_KEY" "$url/auth/v1/health" > /dev/null 2>&1; then
         echo "tunnel up (attempt $attempt): $url"
+        # Realtime's WebSocket through the tunnel (the app's live updates): 101 when the upgrade passes. Logged only;
+        # the journey's live steps show the effect.
+        ws=$(curl -sS -m 10 --http1.1 -o /dev/null -w '%{http_code}' -H "Connection: Upgrade" -H "Upgrade: websocket" \
+          -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: $(head -c 16 /dev/urandom | base64)" \
+          "$url/realtime/v1/websocket?apikey=$E2E_ANON_KEY&vsn=1.0.0" 2> /dev/null || true)
+        echo "Realtime WebSocket upgrade through the tunnel: HTTP $ws"
         printf '{"url": "%s", "anonKey": "%s"}\n' "$url" "$E2E_ANON_KEY" > "$OUT/server.json"
         echo "E2E_TUNNEL_URL=$url" >> "$GITHUB_ENV"
         exit 0

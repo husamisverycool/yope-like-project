@@ -402,6 +402,9 @@ jobs:
       - name: what the server and the worker did
         run: |
           set -o pipefail
+          # Realtime's log and the gateway's Realtime requests (WebSocket upgrades: 101), for the journey's live steps.
+          docker logs "$(docker ps --format '{{.Names}}' | grep '^supabase_realtime_' | head -1)" > build/ios-e2e/realtime.log 2>&1 || true
+          docker logs "$(docker ps --format '{{.Names}}' | grep '^supabase_kong_' | head -1)" 2>&1 | grep '/realtime/' > build/ios-e2e/gateway-realtime.log || true
           bash .github/scripts/e2e-server-check.sh ios | tee build/ios-e2e/server.txt
       - name: upload the server's evidence
         if: always()
@@ -477,11 +480,12 @@ jobs:
         if: always()
         working-directory: ios
         run: mkdir -p e2e && (xcrun xcresulttool export attachments --path build/ServerJourney.xcresult --output-path e2e || true)
-      # The app's DEBUG sign-up trace (AccountTrace, subsystem app.account.trace) from the simulator's unified log.
-      - name: the app's sign-up trace
+      # The app's DEBUG traces from the simulator's unified log: sign-up (AccountTrace, app.account.trace) and Realtime
+      # (AppData RealtimeTrace, app.data.realtime: joins, failures, status changes, events by kind).
+      - name: the app's traces
         if: always()
         working-directory: ios
-        run: xcrun simctl spawn "$SIM" log show --last 2h --style compact --predicate 'subsystem == "app.account.trace"' > e2e-sim-account.log 2>&1 || true
+        run: xcrun simctl spawn "$SIM" log show --last 2h --style compact --predicate 'subsystem == "app.account.trace" OR subsystem == "app.data.realtime"' > e2e-sim-account.log 2>&1 || true
       - name: upload the journey's evidence
         if: always()
         uses: actions/upload-artifact@v4
